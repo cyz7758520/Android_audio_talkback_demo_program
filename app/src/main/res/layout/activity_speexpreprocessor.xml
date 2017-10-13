@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:text="Speex预处理\n设置\n"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:textAlignment="center"
+            android:textStyle="normal|bold"
+            android:textSize="20sp" />
+
+        <CheckBox
+            android:id="@+id/CheckBoxSpeexPreprocessorIsUseNs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:gravity="center_vertical"
+            android:text="使用NS噪音抑制" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:text="噪音的最大程度衰减的分贝值："
+                android:layout_weight="3"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical" />
+
+            <EditText
+                android:id="@+id/SpeexPreprocessorNoiseSuppress"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="number|numberSigned"
+                android:text="-200" />
+
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/CheckBoxSpeexPreprocessorIsUseVad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:checked="true"
+            android:text="使用VAD语音活动检测"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:text="从无语音活动到有语音活动的判断百分比概率，最小为0，最大为100："
+                android:layout_weight="3"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical" />
+
+            <EditText
+                android:id="@+id/SpeexPreprocessorVadProbStart"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:text="80" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:text="从有语音活动到无语音活动的判断百分比概率，最小为0，最大为100："
+                android:layout_weight="3"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical" />
+
+            <EditText
+                android:id="@+id/SpeexPreprocessorVadProbContinue"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:text="65" />
+
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/CheckBoxSpeexPreprocessorIsUseAgc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="使用AGC自动增益控制"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
+                android:text="自动增益的等级，最小为1，最大为32768：" />
+
+            <EditText
+                android:id="@+id/SpeexPreprocessorAgcLevel"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:text="30000" />
+
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/CheckBoxSpeexPreprocessorIsUseRec"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="使用REC残余回音消除，需使用Speex声学回音消除器"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_weight="3"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:text="残余回音的最大程度衰减的分贝值：" />
+
+            <EditText
+                android:id="@+id/SpeexPreprocessorEchoSuppress"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="number|numberSigned"
+                android:text="-200" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_weight="3"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:text="有近端语音活动时的残余回音的最大程度衰减的分贝值：" />
+
+            <EditText
+                android:id="@+id/SpeexPreprocessorEchoSuppressActive"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_toRightOf="@+id/textViewEchoSuppressActive"
+                android:layout_weight="1"
+                android:inputType="number|numberSigned"
+                android:text="-200" />
+
+        </LinearLayout>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="确定"
+            android:onClick="OnSpeexPreprocessorSettingOkClick" />
+
+    </LinearLayout>
+
+</ScrollView>

@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Android audio talkback demo program</string>
+    <string-array name="SamplingRate">
+        <item>16000Hz</item>
+        <item>8000Hz</item>
+        <item>32000Hz</item>
+    </string-array>
+</resources>
