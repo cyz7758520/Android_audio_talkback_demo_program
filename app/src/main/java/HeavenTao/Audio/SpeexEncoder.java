@@ -1,4 +1,4 @@
-package com.example.Android_audio_talkback_demo_program;
+package HeavenTao.Audio;
 
 public class SpeexEncoder//Speex编码器类
 {

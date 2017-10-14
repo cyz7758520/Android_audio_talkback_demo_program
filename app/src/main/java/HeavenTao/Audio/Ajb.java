@@ -1,6 +1,6 @@
-package com.example.Android_audio_talkback_demo_program;
+package HeavenTao.Audio;
 
-class Ajb//自适应抖动缓冲器类
+public class Ajb//自适应抖动缓冲器类
 {
     private Long clAjb;//自适应抖动缓冲器的内存指针
 
