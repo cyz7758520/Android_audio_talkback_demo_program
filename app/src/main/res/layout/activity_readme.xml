@@ -76,7 +76,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="    感谢 WELEN、善书 对WebRtc的指点！"/>
+            android:text="    感谢 WELEN、善书 对WebRTC的指点！"/>
 
         <Button
             android:layout_width="match_parent"
