@@ -299,7 +299,7 @@ class AudioProcessThread extends Thread
 {
     String clCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 );//当前类名称字符串
 
-    int iExitFlag;//本线程退出标记，0表示保持运行，1表示请求正常退出，2表示请求异常退出
+    int iExitFlag;//本线程退出标记，0表示保持运行，1表示请求退出
     int iAudioInputThreadExitStatus;//音频输入线程退出状态，0表示正在运行，1表示正常退出，2表示异常退出
     int iAudioOutputThreadExitStatus;//音频输出线程退出状态，0表示正在运行，1表示正常退出，2表示异常退出
     int iIsServerOrClient;//是服务端还是客户端标记，1表示创建服务端接受客户端，0表示创建客户端连接服务端
@@ -378,7 +378,7 @@ class AudioProcessThread extends Thread
     {
         this.setPriority( this.MAX_PRIORITY);//设置线程优先级
 
-        int iClientSocketIsException = 0;//TCP协议客户端套接字是否发生异常
+        int iClientSocketIsNormalExit = 0;//TCP协议客户端套接字是否正常退出，0表示否，1表示是
         short p_szhiPCMAudioInputData[];//PCM格式音频输入数据
         short p_szhiPCMAudioOutputData[];//PCM格式音频输出数据
         short p_szhiPCMAudioTempData[] = new short[m_iFrameSize];//PCM格式音频临时数据
@@ -386,10 +386,10 @@ class AudioProcessThread extends Thread
         byte p_szhhiSpeexAudioInputData[] = new byte[m_iFrameSize];//Speex格式音频输入数据
         Long p_clSpeexAudioInputDataSize = new Long( 0 );//Speex格式音频输入数据的内存长度，单位字节，大于0表示本帧Speex格式音频数据需要传输，等于0表示本帧Speex格式音频数据不需要传输
         byte p_szhhiTempData[] = new byte[m_iFrameSize * 2 + 8];
-        int iLastAudioDataIsActive = 0;//最后一帧音频数据是否有语音活动，1表示有语音活动，0表示无语音活动
-        int iSocketPrereadSize = 0;//本次套接字数据包的预读长度
-        long lSendAudioDataTimeStamp = 0;//发送音频数据的时间戳
-        long lRecvAudioDataTimeStamp = 0;//接收音频数据的时间戳
+        int iLastAudioDataIsActive;//最后一帧音频数据是否有语音活动，1表示有语音活动，0表示无语音活动
+        int iSocketPrereadSize;//本次套接字数据包的预读长度
+        long lSendAudioDataTimeStamp;//发送音频数据的时间戳
+        long lRecvAudioDataTimeStamp;//接收音频数据的时间戳
         int iTemp;
 
         while( true )
@@ -581,7 +581,7 @@ class AudioProcessThread extends Thread
                 }
 
                 //初始化Speex预处理器类对象
-                if( iIsUseSpeexPreprocessor != 0)
+                if( iIsUseSpeexPreprocessor != 0 )
                 {
                     clSpeexPreprocessor = new SpeexPreprocessor();
                     if( clSpeexAec != null)
@@ -739,6 +739,12 @@ class AudioProcessThread extends Thread
 
                 lLastPacketSendTime = System.currentTimeMillis();//记录最后一个数据包的发送时间为当前时间
                 lLastPacketRecvTime = System.currentTimeMillis();//存放最后一个数据包的接收时间为当前时间
+
+                iClientSocketIsNormalExit = 0;//TCP协议客户端套接字是否正常退出为0，表示否
+                iLastAudioDataIsActive = 0;//设置最后一帧音频数据是否有语音活动为0，表示无语音活动
+                iSocketPrereadSize = 0;//本次套接字数据包的预读长度为0
+                lSendAudioDataTimeStamp = 0;//发送音频数据的时间戳为0
+                lRecvAudioDataTimeStamp = 0;//接收音频数据的时间戳为0
 
                 {
                     String clInfoString = "开始进行音频对讲！";
@@ -1007,16 +1013,9 @@ class AudioProcessThread extends Thread
                                 }
                                 catch (IOException e)
                                 {
-                                    Log.e(clCurrentClassNameString, "m_clClientSocket.getOutputStream().write() 发送一帧音频输入数据失败！原因：" + e.getMessage());
-                                    iClientSocketIsException = 1;//标记TCP协议客户端套接字发生异常
-                                    try
-                                    {
-                                        m_clClientSocket.close();
-                                    }
-                                    catch (IOException e1)
-                                    {
-
-                                    }
+                                    String clInfoString = "m_clClientSocket.getOutputStream().write() 发送一帧音频输入数据失败！原因：" + e.getMessage();
+                                    Log.e(clCurrentClassNameString, clInfoString);
+                                    Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                                     break out;
                                 }
                             }
@@ -1041,23 +1040,32 @@ class AudioProcessThread extends Thread
                             //接收本帧音频数据的预读长度
                             if( clInputStream.read( p_szhhiTempData, 0, 4 ) != 4 )//如果接收到预读长度的长度不对，就返回
                             {
-                                Log.e(clCurrentClassNameString, "clInputStream.read 接收到预读长度的长度不对！" );
+                                Log.e(clCurrentClassNameString, "m_clClientSocket.getIntputStream().read() 接收到预读长度的长度不对！" );
+                                break out;
+                            }
+                            if( ( p_szhhiTempData[0] == 'E' ) && ( p_szhhiTempData[1] == 'X' ) && ( p_szhhiTempData[2] == 'I' ) && ( p_szhhiTempData[3] == 'T' ) )
+                            {
+                                lLastPacketRecvTime = System.currentTimeMillis();//记录最后一个数据包的接收时间
+                                iClientSocketIsNormalExit = 1;//设置TCP协议客户端套接字是否正常退出为1，表示是
+                                String clInfoString = "m_clClientSocket.getIntputStream().read() 接收到一个退出包！";
+                                Log.i(clCurrentClassNameString, clInfoString);
+                                Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                                 break out;
                             }
                             iSocketPrereadSize = (p_szhhiTempData[0] - '0') * 1000 + (p_szhhiTempData[1] - '0') * 100 + (p_szhhiTempData[2] - '0') * 10 + (p_szhhiTempData[3] - '0');
                             if( iSocketPrereadSize == 0 )//如果预读长度为0，表示这是一个心跳包，就更新一下时间即可
                             {
                                 lLastPacketRecvTime = System.currentTimeMillis();//记录最后一个数据包的接收时间
-                                Log.i(clCurrentClassNameString, System.currentTimeMillis() + " 接收到一个心跳包！");
+                                Log.i(clCurrentClassNameString, System.currentTimeMillis() + "m_clClientSocket.getIntputStream().read() 接收到一个心跳包！");
                             }
                             else if( iSocketPrereadSize < 4 )
                             {
-                                Log.e(clCurrentClassNameString, "clInputStream.read 接收到预读长度为" + iSocketPrereadSize + "小于4，表示没有时间戳，无法继续接收！" );
+                                Log.e(clCurrentClassNameString, "m_clClientSocket.getIntputStream().read() 接收到预读长度为" + iSocketPrereadSize + "小于4，表示没有时间戳，无法继续接收！" );
                                 break out;
                             }
                             if( iSocketPrereadSize > p_szhhiTempData.length )
                             {
-                                Log.e(clCurrentClassNameString, "clInputStream.read 接收到预读长度大于接收缓存区的长度，无法继续接收！" );
+                                Log.e(clCurrentClassNameString, "m_clClientSocket.getIntputStream().read() 接收到预读长度大于接收缓存区的长度，无法继续接收！" );
                                 break out;
                             }
                         }
@@ -1066,7 +1074,7 @@ class AudioProcessThread extends Thread
                             //接收本帧音频输出数据的时间戳
                             if( clInputStream.read( p_szhhiTempData, 0, 4 ) != 4 ) //如果接收到时间戳长度不对，就返回
                             {
-                                Log.e( clCurrentClassNameString, "clInputStream.read 接收到时间戳长度不对！" );
+                                Log.e( clCurrentClassNameString, "m_clClientSocket.getIntputStream().read() 接收到时间戳长度不对！" );
                                 break out;
                             }
                             //读取本帧音频输出数据的时间戳
@@ -1074,7 +1082,7 @@ class AudioProcessThread extends Thread
                             //接收音频数据帧
                             if( clInputStream.read( p_szhhiTempData, 0, iSocketPrereadSize - 4 ) != iSocketPrereadSize - 4 )//如果接收到数据长度不对，就返回
                             {
-                                Log.e(clCurrentClassNameString, "clInputStream.read 接收到的数据长度与预读长度不同！" );
+                                Log.e(clCurrentClassNameString, "m_clClientSocket.getIntputStream().read() 接收到的数据长度与预读长度不同！" );
                                 break out;
                             }
                             if( ( clSpeexDecoder == null ) && ( iSocketPrereadSize - 4 != 0 ) && ( iSocketPrereadSize - 4 != m_iFrameSize * 2 ) ) //如果没有使用Speex解码器，且接收到的PCM格式音频输出数据帧不是静音数据，且接收到的PCM格式音频输出数据帧的数据长度与帧长度不同
@@ -1083,7 +1091,7 @@ class AudioProcessThread extends Thread
                                 break out;
                             }
                             lLastPacketRecvTime = System.currentTimeMillis();//记录最后一个数据包的接收时间
-                            Log.i(clCurrentClassNameString, System.currentTimeMillis() + " 接收一帧音频输出数据成功！时间戳：" + lRecvAudioDataTimeStamp + "，总长度：" + iSocketPrereadSize);
+                            Log.i(clCurrentClassNameString, System.currentTimeMillis() + "m_clClientSocket.getIntputStream().read() 接收一帧音频输出数据成功！时间戳：" + lRecvAudioDataTimeStamp + "，总长度：" + iSocketPrereadSize);
 
                             //将本帧音频输出数据存放入自适应抖动缓冲器
                             if( clAjb != null ) //如果使用了自适应抖动缓冲器
@@ -1143,16 +1151,9 @@ class AudioProcessThread extends Thread
                     }
                     catch( IOException e )
                     {
-                        Log.e(clCurrentClassNameString, "m_clClientSocket.getIntputStream().read() 接收一帧音频输出数据失败！原因：" + e.getMessage());
-                        iClientSocketIsException = 1;//标记TCP协议客户端套接字发生异常
-                        try
-                        {
-                            m_clClientSocket.close();
-                        }
-                        catch( IOException e2 )
-                        {
-
-                        }
+                        String clInfoString = "m_clClientSocket.getIntputStream().read() 接收一帧音频输出数据失败！原因：" + e.getMessage();
+                        Log.e(clCurrentClassNameString, clInfoString);
+                        Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                         break out;
                     }
 
@@ -1175,16 +1176,9 @@ class AudioProcessThread extends Thread
                         }
                         catch (IOException e)
                         {
-                            Log.e(clCurrentClassNameString, "m_clClientSocket.getOutputStream().write() 发送一个心跳包失败！原因：" + e.getMessage());
-                            iClientSocketIsException = 1;//标记TCP协议客户端套接字发生异常
-                            try
-                            {
-                                m_clClientSocket.close();
-                            }
-                            catch (IOException e1)
-                            {
-
-                            }
+                            String clInfoString = "m_clClientSocket.getOutputStream().write() 发送一个心跳包失败！原因：" + e.getMessage();
+                            Log.e(clCurrentClassNameString, clInfoString);
+                            Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                             break out;
                         }
                     }
@@ -1193,17 +1187,44 @@ class AudioProcessThread extends Thread
                     if( System.currentTimeMillis() - lLastPacketRecvTime >= 10000 ) //如果超过10秒没有接收任何数据包，就判定连接已经断开了
                     {
                         String clInfoString = "超过10秒没有接收任何数据包，判定连接已经断开了！";
-                        Log.i(clCurrentClassNameString, clInfoString);
+                        Log.e(clCurrentClassNameString, clInfoString);
                         Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                         break out;
                     }
 
-                    if( iExitFlag != 0 )
+                    if( iExitFlag != 0 ) //如果本线程接收到退出请求
                     {
                         Log.i( clCurrentClassNameString, "本线程接收到退出请求，开始准备退出" );
+
+                        iClientSocketIsNormalExit = 1;//设置TCP协议客户端套接字是否正常退出为1，表示是
+
+                        //设置预读长度
+                        p_szhhiTempData[0] = (byte) ('E');
+                        p_szhhiTempData[1] = (byte) ('X');
+                        p_szhhiTempData[2] = (byte) ('I');
+                        p_szhhiTempData[3] = (byte) ('T');
+
+                        try
+                        {
+                            OutputStream clOutputStream = m_clClientSocket.getOutputStream();
+                            clOutputStream.write( p_szhhiTempData, 0, 4 );
+                            clOutputStream.flush();//防止出现Software caused connection abort异常
+                            lLastPacketSendTime = System.currentTimeMillis();//记录最后一个数据包的发送时间
+                            String clInfoString = "m_clClientSocket.getOutputStream().write() 发送一个退出包成功！";
+                            Log.i(clCurrentClassNameString, clInfoString);
+                            Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
+                        }
+                        catch (IOException e)
+                        {
+                            String clInfoString = "m_clClientSocket.getOutputStream().write() 发送一个退出包失败！原因：" + e.getMessage();
+                            Log.e(clCurrentClassNameString, clInfoString);
+                            Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
+                            break out;
+                        }
+
                         break out;
                     }
-                    else if( ( iAudioInputThreadExitStatus != 0 ) || ( iAudioOutputThreadExitStatus != 0 ) )
+                    else if( ( iAudioInputThreadExitStatus != 0 ) || ( iAudioOutputThreadExitStatus != 0 ) ) //如果本线程发现有子线程已经退出
                     {
                         Log.i( clCurrentClassNameString, "本线程发现有子线程已经退出，开始准备退出" );
                         break out;
@@ -1354,7 +1375,7 @@ class AudioProcessThread extends Thread
                 {
                     m_clClientSocket.close();
 
-                    if( m_clClientSocket.getInetAddress() != null )//如果套接字存在网络地址
+                    if( m_clClientSocket.getInetAddress() != null ) //如果套接字存在网络地址，就打印日志
                     {
                         String clInfoString = "m_clClientSocket.close 已断开与[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]的套接字连接！";
                         Log.i(clCurrentClassNameString, clInfoString);
@@ -1367,40 +1388,23 @@ class AudioProcessThread extends Thread
                 m_clClientSocket = null;
             }
 
-            if( ( iIsServerOrClient == 1 ) &&  ( iClientSocketIsException != 0 ))//如果是TCP协议服务端，且是因为TCP协议客户端套接字发生异常导致的退出
+            if( ( iIsServerOrClient == 1 ) && ( iExitFlag == 0 ) )//如果当前是TCP协议服务端，且本线程未接收到退出请求
             {
-                iExitFlag = 0;//继续保持监听
                 iAudioInputThreadExitStatus = 0;
                 iAudioOutputThreadExitStatus = 0;
-                iClientSocketIsException = 0;
-                Log.i(clCurrentClassNameString, "由于是TCP协议服务端，且是因为TCP协议客户端套接字发生异常导致的退出，本线程继续保持监听" );
+                Log.i(clCurrentClassNameString, "由于当前是TCP协议服务端，且本线程未接收到退出请求，本线程继续保持监听" );
             }
-            else//否则退出
+            else if( ( iIsServerOrClient == 0 ) && ( iClientSocketIsNormalExit == 0 ) && ( iExitFlag == 0 ) ) //如果当前是TCP协议客户端，且TCP协议客户端套接字不是正常退出，且本线程未接收到退出请求
+            {
+                iAudioInputThreadExitStatus = 0;
+                iAudioOutputThreadExitStatus = 0;
+                Log.i(clCurrentClassNameString, "当前是TCP协议客户端，且TCP协议客户端套接字不是正常退出，且本线程未接收到退出请求，本线程1秒后重连" );
+                SystemClock.sleep( 1000 ); //暂停1秒
+            }
+            else //否则退出
             {
                 break;
             }
-/*
-            if( iExitFlag == 1 )//如果本线程接收到退出请求
-            {
-                break;
-            }
-            else//如果本线程没有接收到退出请求
-            {
-                if( ( ( iAudioInputThreadExitStatus == 2 ) || ( iAudioOutputThreadExitStatus == 2 ) || ( iAudioProcessThreadExitStatus == 2 ) ) && //如果是由于子线程异常退出导致的
-                    ( iIsServerOrClient == 1 ) )//如果是服务端
-                {
-                    iExitFlag = 0;//继续保持监听
-                    iAudioInputThreadExitStatus = 0;
-                    iAudioOutputThreadExitStatus = 0;
-                    iAudioProcessThreadExitStatus = 0;
-                    iClientSocketIsException = 0;
-                    Log.i(clCurrentClassNameString, "由于子线程异常退出导致的，且是服务端，本线程继续保持监听" );
-                }
-                else
-                {
-                    break;
-                }
-            }*/
         }
 
         //发送本线程退出消息给主界面线程
