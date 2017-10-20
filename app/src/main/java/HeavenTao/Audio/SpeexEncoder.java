@@ -19,11 +19,11 @@ public class SpeexEncoder//Speex编码器类
     }
 
     //初始化Speex编码器
-    public int Init( int iSamplingRate, int iIsUseVbr, int iQuality )
+    public int Init( int iSamplingRate, int iIsUseVbr, int iQuality, int iComplexity, int iPlcExpectedLossRate )
     {
         if( clSpeexEncoderState.longValue() == 0)//如果Speex编码器还没有初始化
         {
-            return SpeexEncoderInit( clSpeexEncoderState, clSpeexBits, iSamplingRate, iIsUseVbr, iQuality );
+            return SpeexEncoderInit( clSpeexEncoderState, clSpeexBits, iSamplingRate, iIsUseVbr, iQuality, iComplexity, iPlcExpectedLossRate );
         }
         else//如果Speex编码器已经初始化
         {
@@ -48,7 +48,7 @@ public class SpeexEncoder//Speex编码器类
         SpeexEncoderDestory( clSpeexEncoderState, clSpeexBits);
     }
 
-    private native int SpeexEncoderInit( Long clSpeexEncoderState, Long clSpeexBits, int iSamplingRate, int iIsUseVbr, int iQuality );
+    private native int SpeexEncoderInit( Long clSpeexEncoderState, Long clSpeexBits, int iSamplingRate, int iIsUseVbr, int iQuality, int iComplexity, int iPlcExpectedLossRate );
     private native int SpeexEncoderEncode( Long clSpeexEncoderState, Long clSpeexBits, short clPCMAudioData[], byte clSpeexAudioData[], Long clSpeexAudioDataSize );
     private native void SpeexEncoderDestory( Long clSpeexEncoderState, Long clSpeexBits );
 }

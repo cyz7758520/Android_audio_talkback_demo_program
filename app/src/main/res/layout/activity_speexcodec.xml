@@ -40,7 +40,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
-                android:text="Speex编码器的质量等级，最低为0，最高为10，质量等级越高，声音越好，压缩率越低：" />
+                android:text="Speex编码器的质量等级。质量等级越高，音质越好，压缩率越低。最低为0，最高为10：" />
 
             <EditText
                 android:id="@+id/SpeexCodecEncoderQuality"
@@ -49,6 +49,48 @@
                 android:layout_weight="1"
                 android:inputType="number"
                 android:text="10" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:text="Speex编码器的复杂度。复杂度越高，压缩率越高，CPU使用率越高，音质越好。最低为0，最高为10：" />
+
+            <EditText
+                android:id="@+id/SpeexCodecEncoderComplexity"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:text="10" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:text="Speex编码器的数据包丢失隐藏的预计丢失率。预计丢失率越高，抗网络抖动越强，压缩率越低。最低为0，最高为100：" />
+
+            <EditText
+                android:id="@+id/SpeexCodecEncoderPlcExpectedLossRate"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:text="0" />
 
         </LinearLayout>
 

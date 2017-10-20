@@ -19,7 +19,7 @@
         android:focusableInTouchMode="true">
 
         <TextView
-            android:text="Android下音频对讲演示程序\n版本：2017年10月13日\n"
+            android:text="Android下音频对讲演示程序\n版本：2017年10月20日\n"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/textViewTitle"

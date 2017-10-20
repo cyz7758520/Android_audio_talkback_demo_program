@@ -343,7 +343,9 @@ class AudioProcessThread extends Thread
 
     int iIsUseSpeexCodec;//是否使用Speex编解码器，非0表示要使用，0表示不使用
     int iSpeexCodecEncoderIsUseVbr;//是否使用Speex编码器的动态比特率，非0表示要使用，0表示不使用
-    int iSpeexCodecEncoderQuality;//Speex编码器的质量等级，最低为0，最高为10，质量等级越高，音质越好，压缩率越低
+    int iSpeexCodecEncoderQuality;//Speex编码器的质量等级。质量等级越高，音质越好，压缩率越低。最低为0，最高为10。
+    int iSpeexCodecEncoderComplexity;//Speex编码器的复杂度。复杂度越高，压缩率越高，CPU使用率越高，音质越好。最低为0，最高为10。
+    int iSpeexCodecEncoderPlcExpectedLossRate;//Speex编码器的数据包丢失隐藏的预计丢失率。预计丢失率越高，抗网络抖动越强，压缩率越低。最低为0，最高为100。
 
     int iIsUseAjb;//是否使用自适应抖动缓冲器，非0表示要使用，0表示不使用
 
@@ -463,7 +465,7 @@ class AudioProcessThread extends Thread
                     m_clClientSocket = new Socket();
                     try
                     {
-                        m_clClientSocket.connect( new InetSocketAddress( m_clIPAddressString, m_iPort ), 5000 );//连接指定的IP地址和端口号，超时时间为5秒
+                        m_clClientSocket.connect( new InetSocketAddress( m_clIPAddressString, m_iPort ), 5000 ); //连接指定的IP地址和端口号，超时时间为5秒
 
                         String clInfoString = "m_clClientSocket.connect 客户端套接字连接服务端[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]成功！";
                         Log.i(clCurrentClassNameString, clInfoString);
@@ -603,7 +605,7 @@ class AudioProcessThread extends Thread
                 if( iIsUseSpeexCodec != 0)
                 {
                     clSpeexEncoder = new SpeexEncoder();
-                    iTemp = clSpeexEncoder.Init(m_iSamplingRate, iSpeexCodecEncoderIsUseVbr, iSpeexCodecEncoderQuality);
+                    iTemp = clSpeexEncoder.Init( m_iSamplingRate, iSpeexCodecEncoderIsUseVbr, iSpeexCodecEncoderQuality, iSpeexCodecEncoderComplexity, iSpeexCodecEncoderPlcExpectedLossRate );
                     if( iTemp == 0)
                     {
                         Log.i(clCurrentClassNameString, "clSpeexEncode.Init 初始化Speex编码器类对象成功！返回值：" + iTemp);
@@ -616,7 +618,7 @@ class AudioProcessThread extends Thread
                 }
 
                 //初始化Speex解码器类对象
-                if( iIsUseSpeexCodec != 0)
+                if( iIsUseSpeexCodec != 0 )
                 {
                     clSpeexDecoder = new SpeexDecoder();
                     iTemp = clSpeexDecoder.Init(m_iSamplingRate);
@@ -778,13 +780,13 @@ class AudioProcessThread extends Thread
                         {
                             for (iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++)
                             {
-                                p_szhhiTempData[8 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
-                                p_szhhiTempData[8 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00) >> 8);
+                                p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
+                                p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00) >> 8);
                             }
 
                             try
                             {
-                                clAudioInputFileOutputStream.write(p_szhhiTempData, 8, p_szhiPCMAudioInputData.length * 2);
+                                clAudioInputFileOutputStream.write(p_szhhiTempData, 6, p_szhiPCMAudioInputData.length * 2);
                             }
                             catch (IOException e)
                             {
@@ -797,13 +799,13 @@ class AudioProcessThread extends Thread
                         {
                             for (iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++)
                             {
-                                p_szhhiTempData[8 + iTemp * 2] = (byte) (p_szhiPCMAudioOutputData[iTemp] & 0xFF);
-                                p_szhhiTempData[8 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioOutputData[iTemp] & 0xFF00) >> 8);
+                                p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioOutputData[iTemp] & 0xFF);
+                                p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioOutputData[iTemp] & 0xFF00) >> 8);
                             }
 
                             try
                             {
-                                clAudioOutputFileOutputStream.write(p_szhhiTempData, 8, p_szhiPCMAudioOutputData.length * 2);
+                                clAudioOutputFileOutputStream.write(p_szhhiTempData, 6, p_szhiPCMAudioOutputData.length * 2);
                             }
                             catch (IOException e)
                             {
@@ -906,13 +908,13 @@ class AudioProcessThread extends Thread
                         {
                             for (iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++)
                             {
-                                p_szhhiTempData[8 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
-                                p_szhhiTempData[8 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00) >> 8);
+                                p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
+                                p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00) >> 8);
                             }
 
                             try
                             {
-                                clAudioResultFileOutputStream.write(p_szhhiTempData, 8, p_szhiPCMAudioInputData.length * 2);
+                                clAudioResultFileOutputStream.write(p_szhhiTempData, 6, p_szhiPCMAudioInputData.length * 2);
                             }
                             catch (IOException e)
                             {
@@ -932,7 +934,7 @@ class AudioProcessThread extends Thread
                                         {
                                             for( iTemp = 0; iTemp < p_clSpeexAudioInputDataSize.intValue(); iTemp++ )
                                             {
-                                                p_szhhiTempData[8 + iTemp] = p_szhhiSpeexAudioInputData[iTemp];
+                                                p_szhhiTempData[6 + iTemp] = p_szhhiSpeexAudioInputData[iTemp];
                                             }
 
                                             iTemp = p_clSpeexAudioInputDataSize.intValue() + 4; //预读长度=Speex格式音频输入数据长度+时间戳长度
@@ -946,8 +948,8 @@ class AudioProcessThread extends Thread
                                     {
                                         for( iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++ )
                                         {
-                                            p_szhhiTempData[8 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
-                                            p_szhhiTempData[8 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00) >> 8);
+                                            p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
+                                            p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00) >> 8);
                                         }
 
                                         iTemp = p_szhiPCMAudioInputData.length * 2 + 4; //预读长度=PCM格式音频输入数据长度+时间戳长度
@@ -980,8 +982,8 @@ class AudioProcessThread extends Thread
                                 {
                                     for (iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++)
                                     {
-                                        p_szhhiTempData[8 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
-                                        p_szhhiTempData[8 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00) >> 8);
+                                        p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
+                                        p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00) >> 8);
                                     }
 
                                     iTemp = p_szhiPCMAudioInputData.length * 2 + 4; //预读长度=PCM格式音频输入数据长度+时间戳长度
@@ -992,30 +994,28 @@ class AudioProcessThread extends Thread
                                     ( ( iTemp == 4 ) && ( iLastAudioDataIsActive != 0 ) ) ) //如果本帧音频输入数据为无语音活动，且最后一帧音频数据为有语音活动，就发送
                             {
                                 //设置预读长度
-                                p_szhhiTempData[0] = (byte) (iTemp / 1000 + '0');
-                                p_szhhiTempData[1] = (byte) (iTemp / 100 % 10 + '0');
-                                p_szhhiTempData[2] = (byte) (iTemp / 10 % 10 + '0');
-                                p_szhhiTempData[3] = (byte) (iTemp % 10 + '0');
+                                p_szhhiTempData[0] = (byte) (iTemp & 0xFF);
+                                p_szhhiTempData[1] = (byte) ((iTemp & 0xFF00) >> 8);
 
                                 //设置时间戳
-                                p_szhhiTempData[4] = (byte) (lSendAudioDataTimeStamp & 0xFF);
-                                p_szhhiTempData[5] = (byte) ((lSendAudioDataTimeStamp & 0xFF00) >> 8);
-                                p_szhhiTempData[6] = (byte) ((lSendAudioDataTimeStamp & 0xFF0000) >> 16);
-                                p_szhhiTempData[7] = (byte) ((lSendAudioDataTimeStamp & 0xFF000000) >> 24);
+                                p_szhhiTempData[2] = (byte) (lSendAudioDataTimeStamp & 0xFF);
+                                p_szhhiTempData[3] = (byte) ((lSendAudioDataTimeStamp & 0xFF00) >> 8);
+                                p_szhhiTempData[4] = (byte) ((lSendAudioDataTimeStamp & 0xFF0000) >> 16);
+                                p_szhhiTempData[5] = (byte) ((lSendAudioDataTimeStamp & 0xFF000000) >> 24);
 
                                 try
                                 {
                                     OutputStream clOutputStream = m_clClientSocket.getOutputStream();
-                                    clOutputStream.write(p_szhhiTempData, 0, iTemp + 4);
+                                    clOutputStream.write( p_szhhiTempData, 0, iTemp + 2 );
                                     clOutputStream.flush();//防止出现Software caused connection abort异常
                                     lLastPacketSendTime = System.currentTimeMillis();//记录最后一个数据包的发送时间
-                                    Log.i(clCurrentClassNameString, System.currentTimeMillis() + " 发送一帧音频输入数据成功！时间戳：" + lSendAudioDataTimeStamp + "，总长度：" + iTemp );
+                                    Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 发送一帧音频输入数据成功！时间戳：" + lSendAudioDataTimeStamp + "，总长度：" + iTemp );
                                 }
                                 catch (IOException e)
                                 {
                                     String clInfoString = "m_clClientSocket.getOutputStream().write() 发送一帧音频输入数据失败！原因：" + e.getMessage();
-                                    Log.e(clCurrentClassNameString, clInfoString);
-                                    Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
+                                    Log.e( clCurrentClassNameString, clInfoString );
+                                    Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage( clMessage );
                                     break out;
                                 }
                             }
@@ -1035,15 +1035,15 @@ class AudioProcessThread extends Thread
                     try
                     {
                         InputStream clInputStream = m_clClientSocket.getInputStream();
-                        if( ( iSocketPrereadSize == 0 ) && ( clInputStream.available() >= 4 ) ) //如果还没有接收预读长度，且客户端套接字可以接收到预读长度
+                        if( ( iSocketPrereadSize == 0 ) && ( clInputStream.available() >= 2 ) ) //如果还没有接收预读长度，且客户端套接字可以接收到预读长度
                         {
                             //接收本帧音频数据的预读长度
-                            if( clInputStream.read( p_szhhiTempData, 0, 4 ) != 4 )//如果接收到预读长度的长度不对，就返回
+                            if( clInputStream.read( p_szhhiTempData, 0, 2 ) != 2 )//如果接收到预读长度的长度不对，就返回
                             {
                                 Log.e(clCurrentClassNameString, "m_clClientSocket.getIntputStream().read() 接收到预读长度的长度不对！" );
                                 break out;
                             }
-                            if( ( p_szhhiTempData[0] == 'E' ) && ( p_szhhiTempData[1] == 'X' ) && ( p_szhhiTempData[2] == 'I' ) && ( p_szhhiTempData[3] == 'T' ) )
+                            if( ( p_szhhiTempData[0] == 'E' ) && ( p_szhhiTempData[1] == 'X' ) ) //如果接收到一个退出包
                             {
                                 lLastPacketRecvTime = System.currentTimeMillis();//记录最后一个数据包的接收时间
                                 iClientSocketIsNormalExit = 1;//设置TCP协议客户端套接字是否正常退出为1，表示是
@@ -1052,7 +1052,8 @@ class AudioProcessThread extends Thread
                                 Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                                 break out;
                             }
-                            iSocketPrereadSize = (p_szhhiTempData[0] - '0') * 1000 + (p_szhhiTempData[1] - '0') * 100 + (p_szhhiTempData[2] - '0') * 10 + (p_szhhiTempData[3] - '0');
+                            //读取本帧音频数据的预读长度
+                            iSocketPrereadSize = (p_szhhiTempData[0] & 0xFF) + (((int) (p_szhhiTempData[1] & 0xFF)) << 8);
                             if( iSocketPrereadSize == 0 )//如果预读长度为0，表示这是一个心跳包，就更新一下时间即可
                             {
                                 lLastPacketRecvTime = System.currentTimeMillis();//记录最后一个数据包的接收时间
@@ -1158,18 +1159,16 @@ class AudioProcessThread extends Thread
                     }
 
                     //发送心跳包
-                    if( System.currentTimeMillis() - lLastPacketSendTime >= 5000 ) //如果有5秒没有发送任何数据包，就发送一个心跳包
+                    if( System.currentTimeMillis() - lLastPacketSendTime >= 1000 ) //如果有1秒没有发送任何数据包，就发送一个心跳包
                     {
                         //设置预读长度
-                        p_szhhiTempData[0] = (byte) ('0');
-                        p_szhhiTempData[1] = (byte) ('0');
-                        p_szhhiTempData[2] = (byte) ('0');
-                        p_szhhiTempData[3] = (byte) ('0');
+                        p_szhhiTempData[0] = (byte) (0);
+                        p_szhhiTempData[1] = (byte) (0);
 
                         try
                         {
                             OutputStream clOutputStream = m_clClientSocket.getOutputStream();
-                            clOutputStream.write( p_szhhiTempData, 0, 4 );
+                            clOutputStream.write( p_szhhiTempData, 0, 2 );
                             clOutputStream.flush();//防止出现Software caused connection abort异常
                             lLastPacketSendTime = System.currentTimeMillis();//记录最后一个数据包的发送时间
                             Log.i(clCurrentClassNameString, System.currentTimeMillis() + " 发送一个心跳包成功！");
@@ -1184,9 +1183,9 @@ class AudioProcessThread extends Thread
                     }
 
                     //判断连接是否中断
-                    if( System.currentTimeMillis() - lLastPacketRecvTime >= 10000 ) //如果超过10秒没有接收任何数据包，就判定连接已经断开了
+                    if( System.currentTimeMillis() - lLastPacketRecvTime >= 5000 ) //如果超过5秒没有接收任何数据包，就判定连接已经断开了
                     {
-                        String clInfoString = "超过10秒没有接收任何数据包，判定连接已经断开了！";
+                        String clInfoString = "超过5秒没有接收任何数据包，判定连接已经断开了！";
                         Log.e(clCurrentClassNameString, clInfoString);
                         Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                         break out;
@@ -1196,18 +1195,16 @@ class AudioProcessThread extends Thread
                     {
                         Log.i( clCurrentClassNameString, "本线程接收到退出请求，开始准备退出" );
 
-                        iClientSocketIsNormalExit = 1;//设置TCP协议客户端套接字是否正常退出为1，表示是
+                        iClientSocketIsNormalExit = 1; //设置TCP协议客户端套接字是否正常退出为1，表示是
 
                         //设置预读长度
                         p_szhhiTempData[0] = (byte) ('E');
                         p_szhhiTempData[1] = (byte) ('X');
-                        p_szhhiTempData[2] = (byte) ('I');
-                        p_szhhiTempData[3] = (byte) ('T');
 
                         try
                         {
                             OutputStream clOutputStream = m_clClientSocket.getOutputStream();
-                            clOutputStream.write( p_szhhiTempData, 0, 4 );
+                            clOutputStream.write( p_szhhiTempData, 0, 2 );
                             clOutputStream.flush();//防止出现Software caused connection abort异常
                             lLastPacketSendTime = System.currentTimeMillis();//记录最后一个数据包的发送时间
                             String clInfoString = "m_clClientSocket.getOutputStream().write() 发送一个退出包成功！";
@@ -1855,6 +1852,26 @@ public class MainActivity extends AppCompatActivity
                     try
                     {
                         clAudioProcessThread.iSpeexCodecEncoderQuality = Integer.parseInt(((TextView) clLayoutActivitySpeexCodecView.findViewById(R.id.SpeexCodecEncoderQuality)).getText().toString());
+                    }
+                    catch (NumberFormatException e)
+                    {
+                        Toast.makeText(this, "请输入数字", Toast.LENGTH_LONG).show();
+                        break out;
+                    }
+
+                    try
+                    {
+                        clAudioProcessThread.iSpeexCodecEncoderComplexity = Integer.parseInt(((TextView) clLayoutActivitySpeexCodecView.findViewById(R.id.SpeexCodecEncoderComplexity)).getText().toString());
+                    }
+                    catch (NumberFormatException e)
+                    {
+                        Toast.makeText(this, "请输入数字", Toast.LENGTH_LONG).show();
+                        break out;
+                    }
+
+                    try
+                    {
+                        clAudioProcessThread.iSpeexCodecEncoderPlcExpectedLossRate = Integer.parseInt(((TextView) clLayoutActivitySpeexCodecView.findViewById(R.id.SpeexCodecEncoderPlcExpectedLossRate)).getText().toString());
                     }
                     catch (NumberFormatException e)
                     {
