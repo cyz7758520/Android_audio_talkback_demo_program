@@ -45,27 +45,27 @@ import HeavenTao.Audio.*;
 //音频输入线程类
 class AudioInputThread extends Thread
 {
-    String clCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 );//当前类名称字符串
+    String clCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 ); //当前类名称字符串
 
-    int iExitFlag;//本线程退出标记，0表示保持运行，1表示请求退出
+    int iExitFlag; //本线程退出标记，0表示保持运行，1表示请求退出
 
-    MainActivity clMainActivity;//主界面类对象的内存指针
-    AudioProcessThread clAudioProcessThread;//音频处理线程类对象的内存指针
+    MainActivity clMainActivity; //主界面类对象的内存指针
+    AudioProcessThread clAudioProcessThread; //音频处理线程类对象的内存指针
 
-    AudioRecord m_clAudioRecord;//录音类
+    AudioRecord m_clAudioRecord; //录音类
 
-    int m_iFrameSize;//一帧音频数据的采样数量，包括：8000Hz为160个采样，16000Hz为320个采样，32000Hz为640个采样
-    int m_iSamplingRate;//音频数据的采样频率，包括：8000Hz，16000Hz，32000Hz
+    int m_iFrameSize; //一帧音频数据的采样数量，包括：8000Hz为160个采样，16000Hz为320个采样，32000Hz为640个采样
+    int m_iSamplingRate; //音频数据的采样频率，包括：8000Hz，16000Hz，32000Hz
 
-    LinkedList<short []> m_clAlreadyAudioInputLinkedList;//已录音的链表
+    LinkedList<short []> m_clAlreadyAudioInputLinkedList; //已录音的链表
 
-    AudioOutputThread m_clAudioOutputThread;//存放音频输出线程类对象的内存指针
+    AudioOutputThread m_clAudioOutputThread; //存放音频输出线程类对象的内存指针
 
-    WebRtcAecm clWebRtcAecm;//WebRtc移动版声学回音消除器类对象
+    WebRtcAecm clWebRtcAecm; //WebRtc移动版声学回音消除器类对象
 
     public void run()
     {
-        this.setPriority( this.MAX_PRIORITY );//设置线程优先级
+        this.setPriority( this.MAX_PRIORITY ); //设置线程优先级
 
         short m_szhiTempAudioInputData[];
         int iAudioDataNumber;
@@ -77,6 +77,7 @@ class AudioInputThread extends Thread
         clLastDate = new Date();
         Log.i( clCurrentClassNameString, "音频输入线程：开始录音准备" );
 
+        //跳过刚开始录音到的空的音频数据帧
         while( true )
         {
             m_szhiTempAudioInputData = new short[m_iFrameSize];
@@ -95,14 +96,14 @@ class AudioInputThread extends Thread
 
         clNowDate = new Date();
         Log.i( clCurrentClassNameString, "音频输入线程：" + "录音准备耗时：" + (clNowDate.getTime() - clLastDate.getTime()) + "，丢弃掉刚开始录音到的空数据，现在正式开始录音并启动音频输出线程，为了保证音频输入线程走在输出数据线程的前面" );
-        if( ( clWebRtcAecm != null ) && ( clWebRtcAecm.m_iDelay == -1 ) )//自适应设置WebRtc移动版声学回音消除器的回音延迟时间
+        if( ( clWebRtcAecm != null ) && ( clWebRtcAecm.m_iDelay == -1 ) ) //自适应设置WebRtc移动版声学回音消除器的回音延迟时间
         {
             clWebRtcAecm.m_iDelay = (int)(( clNowDate.getTime() - clLastDate.getTime() ) / 3);
             Log.i( clCurrentClassNameString, "音频输入线程：自适应设置WebRtc移动版声学回音消除器的回音延迟时间为 " + clWebRtcAecm.m_iDelay + " 毫秒" );
         }
         clLastDate = clNowDate;
 
-        m_clAudioOutputThread.start();//启动音频输出线程
+        m_clAudioOutputThread.start(); //启动音频输出线程
 
         //开始循环录音
         out:
@@ -126,12 +127,12 @@ class AudioInputThread extends Thread
 
             if( iExitFlag == 1 )
             {
-                Log.i( clCurrentClassNameString, "本线程接收到退出请求，开始准备退出" );
+                Log.i( clCurrentClassNameString, "音频输入线程：本线程接收到退出请求，开始准备退出" );
                 break out;
             }
         }
 
-        if( iExitFlag == 1 )//如果本线程退出时是接收到了退出请求，就表示本线程是正常退出的
+        if( iExitFlag == 1 ) //如果本线程退出时是接收到了退出请求，就表示本线程是正常退出的
         {
             clAudioProcessThread.iAudioInputThreadExitStatus = 1;
         }
@@ -140,36 +141,36 @@ class AudioInputThread extends Thread
             clAudioProcessThread.iAudioInputThreadExitStatus = 2;
         }
 
-        Log.i( clCurrentClassNameString, "本线程已退出" );
+        Log.i( clCurrentClassNameString, "音频输入线程：本线程已退出" );
     }
 }
 
 //音频输出线程类
 class AudioOutputThread extends Thread
 {
-    String clCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 );//当前类名称字符串
+    String clCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 ); //当前类名称字符串
 
-    int iExitFlag;//本线程退出标记，0表示保持运行，1表示请求退出
+    int iExitFlag; //本线程退出标记，0表示保持运行，1表示请求退出
 
-    MainActivity clMainActivity;//主界面类对象的内存指针
-    AudioProcessThread clAudioProcessThread;//音频处理线程类对象的内存指针
+    MainActivity clMainActivity; //主界面类对象的内存指针
+    AudioProcessThread clAudioProcessThread; //音频处理线程类对象的内存指针
 
-    AudioTrack m_clAudioTrack;//播放类
+    AudioTrack m_clAudioTrack; //播放类
 
-    int m_iFrameSize;//一帧音频数据的采样数量，包括：8000Hz为160个采样，16000Hz为320个采样，32000Hz为640个采样
-    int m_iSamplingRate;//音频数据的采样频率，包括：8000Hz，16000Hz，32000Hz
+    int m_iFrameSize; //一帧音频数据的采样数量，包括：8000Hz为160个采样，16000Hz为320个采样，32000Hz为640个采样
+    int m_iSamplingRate; //音频数据的采样频率，包括：8000Hz，16000Hz，32000Hz
 
-    Ajb clAjb;//自适应抖动缓冲器类对象
-    Integer clAjbGetAudioDataSize;//从自适应抖动缓冲器中取出的音频数据的内存长度
+    Ajb clAjb; //自适应抖动缓冲器类对象
+    Integer clAjbGetAudioDataSize; //从自适应抖动缓冲器中取出的音频数据的内存长度
 
-    SpeexDecoder clSpeexDecoder;//Speex解码器类对象
+    SpeexDecoder clSpeexDecoder; //Speex解码器类对象
 
-    LinkedList<short []> m_clAlreadyAudioInputLinkedList;//已录音的链表
-    LinkedList<short []> m_clAlreadyAudioOutputLinkedList;//已播放的链表
+    LinkedList<short []> m_clAlreadyAudioInputLinkedList; //已录音的链表
+    LinkedList<short []> m_clAlreadyAudioOutputLinkedList; //已播放的链表
 
     public void run()
     {
-        this.setPriority( this.MAX_PRIORITY);//设置线程优先级
+        this.setPriority( this.MAX_PRIORITY ); //设置线程优先级
 
         byte m_szhhiSpeexAudioOutputData[];
         short m_szhiPcmAudioOutputData[];
@@ -201,29 +202,29 @@ class AudioOutputThread extends Thread
 
                     if( clAjbGetAudioDataSize.intValue() == 0 )
                     {
-                        Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 从自适应抖动缓冲器取出一帧无语音活动的音频数据" );
+                        Log.i( clCurrentClassNameString, "音频输出线程：从自适应抖动缓冲器取出一帧无语音活动的音频数据" );
                         iTemp = clSpeexDecoder.Decode( null, 0, m_szhiPcmAudioOutputData );
-                        if( iTemp == 0)
+                        if( iTemp == 0 )
                         {
 
                         }
                         else
                         {
-                            Log.e( clCurrentClassNameString, "clSpeexDecoder.Decode 出错！错误码：" + iTemp );
+                            Log.e( clCurrentClassNameString, "clSpeexDecoder.Decode() 出错！错误码：" + iTemp );
                             break out;
                         }
                     }
                     else
                     {
-                        Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 从自适应抖动缓冲器取出一帧有语音活动的音频数据" );
+                        Log.i( clCurrentClassNameString, "音频输出线程：从自适应抖动缓冲器取出一帧有语音活动的音频数据" );
                         iTemp = clSpeexDecoder.Decode( m_szhhiSpeexAudioOutputData, clAjbGetAudioDataSize.intValue(), m_szhiPcmAudioOutputData );
-                        if( iTemp == 0)
+                        if( iTemp == 0 )
                         {
 
                         }
                         else
                         {
-                            Log.e( clCurrentClassNameString, "clSpeexDecoder.Decode 出错！错误码：" + iTemp );
+                            Log.e( clCurrentClassNameString, "clSpeexDecoder.Decode() 出错！错误码：" + iTemp );
                             break out;
                         }
                     }
@@ -239,22 +240,24 @@ class AudioOutputThread extends Thread
 
                     if( clAjbGetAudioDataSize.intValue() == 0 )
                     {
-                        Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 从自适应抖动缓冲器取出一帧无语音活动的音频数据" );
+                        Log.i( clCurrentClassNameString, "音频输出线程：从自适应抖动缓冲器取出一帧无语音活动的音频数据" );
                     }
                     else
                     {
-                        Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 从自适应抖动缓冲器取出一帧有语音活动的音频数据" );
+                        Log.i( clCurrentClassNameString, "音频输出线程：从自适应抖动缓冲器取出一帧有语音活动的音频数据" );
                     }
                 }
 
-                clAjb.GetCurHaveBufferSize( clAjbGetAudioDataSize, 0 );
-                Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 自适应抖动缓冲器中有语音活动的音频数据帧有 " + clAjbGetAudioDataSize.intValue() + " 个" );
+                clAjb.GetCurHaveActiveBufferSize( clAjbGetAudioDataSize );
+                Log.i( clCurrentClassNameString, "音频输出线程：自适应抖动缓冲器的当前已缓冲有语音活动音频数据帧数量为 " + clAjbGetAudioDataSize.intValue() + " 个" );
+                clAjb.GetCurHaveInactiveBufferSize( clAjbGetAudioDataSize );
+                Log.i( clCurrentClassNameString, "音频输出线程：自适应抖动缓冲器的当前已缓冲无语音活动音频数据帧数量为 " + clAjbGetAudioDataSize.intValue() + " 个" );
                 clAjb.GetCurNeedBufferSize( clAjbGetAudioDataSize );
-                Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 自适应抖动缓冲器中当前需缓冲音频数据帧的数量为 " + clAjbGetAudioDataSize.intValue() + " 个" );
+                Log.i( clCurrentClassNameString, "音频输出线程：自适应抖动缓冲器的当前需缓冲音频数据帧的数量为 " + clAjbGetAudioDataSize.intValue() + " 个" );
             }
             else
             {
-                Log.e( clCurrentClassNameString, "没有使用自适应抖动缓冲器！无法取出音频数据" );
+                Log.e( clCurrentClassNameString, "音频输出线程：没有使用自适应抖动缓冲器！无法取出音频数据" );
                 break out;
             }
 
@@ -276,12 +279,12 @@ class AudioOutputThread extends Thread
 
             if( iExitFlag == 1 )
             {
-                Log.i( clCurrentClassNameString, "本线程接收到退出请求，开始准备退出" );
+                Log.i( clCurrentClassNameString, "音频输出线程：本线程接收到退出请求，开始准备退出" );
                 break out;
             }
         }
 
-        if( iExitFlag == 1 )//如果本线程退出时是接收到了退出请求，就表示本线程是正常退出的
+        if( iExitFlag == 1 ) //如果本线程退出时是接收到了退出请求，就表示本线程是正常退出的
         {
             clAudioProcessThread.iAudioOutputThreadExitStatus = 1;
         }
@@ -290,87 +293,87 @@ class AudioOutputThread extends Thread
             clAudioProcessThread.iAudioOutputThreadExitStatus = 2;
         }
 
-        Log.i( clCurrentClassNameString, "本线程已退出" );
+        Log.i( clCurrentClassNameString, "音频输出线程：本线程已退出" );
     }
 }
 
 //音频处理线程类
 class AudioProcessThread extends Thread
 {
-    String clCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 );//当前类名称字符串
+    String clCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 ); //当前类名称字符串
 
-    int iExitFlag;//本线程退出标记，0表示保持运行，1表示请求退出
-    int iAudioInputThreadExitStatus;//音频输入线程退出状态，0表示正在运行，1表示正常退出，2表示异常退出
-    int iAudioOutputThreadExitStatus;//音频输出线程退出状态，0表示正在运行，1表示正常退出，2表示异常退出
-    int iIsServerOrClient;//是服务端还是客户端标记，1表示创建服务端接受客户端，0表示创建客户端连接服务端
-    String m_clIPAddressString;//IP地址字符串
-    int m_iPort;//端口
-    MainActivity clMainActivity;//主界面类对象的内存指针
-    Handler clMainActivityHandler;//主界面消息处理类对象的内存指针
+    int iExitFlag; //本线程退出标记，0表示保持运行，1表示请求退出
+    int iAudioInputThreadExitStatus; //音频输入线程退出状态，0表示正在运行，1表示正常退出，2表示异常退出
+    int iAudioOutputThreadExitStatus; //音频输出线程退出状态，0表示正在运行，1表示正常退出，2表示异常退出
+    int iIsServerOrClient; //是服务端还是客户端标记，1表示创建服务端，0表示创建客户端
+    String m_clIPAddressString; //IP地址字符串
+    int m_iPort; //端口
+    MainActivity clMainActivity; //主界面类对象的内存指针
+    Handler clMainActivityHandler; //主界面消息处理类对象的内存指针
 
-    ServerSocket m_clServerSocket;//TCP协议服务端套接字类
-    Socket m_clClientSocket;//TCP协议客户端套接字类
-    long lLastPacketSendTime;//存放最后一个数据包的发送时间，用于判断连接是否中断
-    long lLastPacketRecvTime;//存放最后一个数据包的接收时间，用于判断连接是否中断
+    ServerSocket m_clServerSocket; //TCP协议服务端套接字类
+    Socket m_clClientSocket; //TCP协议客户端套接字类
+    long lLastPacketSendTime; //存放最后一个数据包的发送时间，用于判断连接是否中断
+    long lLastPacketRecvTime; //存放最后一个数据包的接收时间，用于判断连接是否中断
 
-    int m_iFrameSize;//一帧音频数据的采样数量，包括：8000Hz为160个采样，16000Hz为320个采样，32000Hz为640个采样
-    int m_iSamplingRate;//音频数据的采样频率，包括：8000Hz，16000Hz，32000Hz
+    int m_iFrameSize; //一帧音频数据的采样数量，包括：8000Hz为160个采样，16000Hz为320个采样，32000Hz为640个采样
+    int m_iSamplingRate; //音频数据的采样频率，包括：8000Hz，16000Hz，32000Hz
 
-    int iIsUseWebRtcAec;//是否使用WebRtc声学回音消除器，非0表示要使用，0表示不使用
-    int iWebRtcAecNlpMode;//WebRtc声学回音消除器的非线性滤波模式，0表示保守, 1表示适中, 2表示积极
+    int iIsUseWebRtcAec; //是否使用WebRtc声学回音消除器，非0表示要使用，0表示不使用
+    int iWebRtcAecNlpMode; //WebRtc声学回音消除器的非线性滤波模式，0表示保守, 1表示适中, 2表示积极
 
-    int iIsUseWebRtcAecm;//是否使用WebRtc移动版声学回音消除器，非0表示要使用，0表示不使用
-    int iWebRtcAecmEchoMode;//WebRtc移动版声学回音消除器的消除模式，最低为0，最高为4
-    int iWebRtcAecmDelay;//WebRtc移动版声学回音消除器的回音延迟时间，单位毫秒，-1表示自适应设置
+    int iIsUseWebRtcAecm; //是否使用WebRtc移动版声学回音消除器，非0表示要使用，0表示不使用
+    int iWebRtcAecmEchoMode; //WebRtc移动版声学回音消除器的消除模式，最低为0，最高为4
+    int iWebRtcAecmDelay; //WebRtc移动版声学回音消除器的回音延迟时间，单位毫秒，-1表示自适应设置
 
-    int iIsUseSpeexAec;//是否使用Speex声学回音消除器，非0表示要使用，0表示不使用
-    int iSpeexAecFilterLength;//Speex声学回音消除器的过滤器长度，单位毫秒
+    int iIsUseSpeexAec; //是否使用Speex声学回音消除器，非0表示要使用，0表示不使用
+    int iSpeexAecFilterLength; //Speex声学回音消除器的过滤器长度，单位毫秒
 
-    int iIsUseWebRtcNsx;//是否使用WebRtc定点噪音抑制器，非0表示要使用，0表示不使用
-    int iWebRtcNsxPolicyMode;//WebRtc定点噪音抑制器的策略模式，0表示轻微, 1表示适中, 2表示积极
+    int iIsUseWebRtcNsx; //是否使用WebRtc定点噪音抑制器，非0表示要使用，0表示不使用
+    int iWebRtcNsxPolicyMode; //WebRtc定点噪音抑制器的策略模式，0表示轻微, 1表示适中, 2表示积极
 
-    int iIsUseSpeexPreprocessor;//是否使用Speex预处理器，非0表示要使用，0表示不使用
-    int iSpeexPreprocessorIsUseNs;//是否使用Speex预处理器的NS噪音抑制，非0表示要使用，0表示不使用
-    int iSpeexPreprocessorNoiseSuppress;//Speex预处理器在NS噪音抑制时，噪音的最大程度衰减的分贝值
-    int iSpeexPreprocessorIsUseVad;//是否使用Speex预处理器的VAD语音活动检测，非0表示要使用，0表示不使用
-    int iSpeexPreprocessorVadProbStart;//Speex预处理器在VAD语音活动检测时，从无语音活动到有语音活动的判断百分比概率，最小为0，最大为100
-    int iSpeexPreprocessorVadProbContinue;//Speex预处理器在VAD语音活动检测时，从有语音活动到无语音活动的判断百分比概率，最小为0，最大为100
-    int iSpeexPreprocessorIsUseAgc;//是否使用Speex预处理器的AGC自动增益控制，非0表示要使用，0表示不使用
-    int iSpeexPreprocessorAgcLevel;//Speex预处理器在AGC自动增益控制时，自动增益的等级，最小为1，最大为32768
-    int iSpeexPreprocessorIsUseRec;//是否使用Speex预处理器的REC残余回音消除，非0表示要使用，0表示不使用
-    int iSpeexPreprocessorEchoSuppress;//Speex预处理器在REC残余回音消除时，残余回音的最大程度衰减的分贝值
-    int iSpeexPreprocessorEchoSuppressActive;//Speex预处理器在REC残余回音消除时，有近端语音活动时的残余回音的最大程度衰减的分贝值
+    int iIsUseSpeexPreprocessor; //是否使用Speex预处理器，非0表示要使用，0表示不使用
+    int iSpeexPreprocessorIsUseNs; //是否使用Speex预处理器的NS噪音抑制，非0表示要使用，0表示不使用
+    int iSpeexPreprocessorNoiseSuppress; //Speex预处理器在NS噪音抑制时，噪音的最大程度衰减的分贝值
+    int iSpeexPreprocessorIsUseVad; //是否使用Speex预处理器的VAD语音活动检测，非0表示要使用，0表示不使用
+    int iSpeexPreprocessorVadProbStart; //Speex预处理器在VAD语音活动检测时，从无语音活动到有语音活动的判断百分比概率，最小为0，最大为100
+    int iSpeexPreprocessorVadProbContinue; //Speex预处理器在VAD语音活动检测时，从有语音活动到无语音活动的判断百分比概率，最小为0，最大为100
+    int iSpeexPreprocessorIsUseAgc; //是否使用Speex预处理器的AGC自动增益控制，非0表示要使用，0表示不使用
+    int iSpeexPreprocessorAgcLevel; //Speex预处理器在AGC自动增益控制时，自动增益的等级，最小为1，最大为32768
+    int iSpeexPreprocessorIsUseRec; //是否使用Speex预处理器的REC残余回音消除，非0表示要使用，0表示不使用
+    int iSpeexPreprocessorEchoSuppress; //Speex预处理器在REC残余回音消除时，残余回音的最大程度衰减的分贝值
+    int iSpeexPreprocessorEchoSuppressActive; //Speex预处理器在REC残余回音消除时，有近端语音活动时的残余回音的最大程度衰减的分贝值
 
-    int iIsUseSpeexCodec;//是否使用Speex编解码器，非0表示要使用，0表示不使用
-    int iSpeexCodecEncoderIsUseVbr;//是否使用Speex编码器的动态比特率，非0表示要使用，0表示不使用
-    int iSpeexCodecEncoderQuality;//Speex编码器的质量等级。质量等级越高，音质越好，压缩率越低。最低为0，最高为10。
-    int iSpeexCodecEncoderComplexity;//Speex编码器的复杂度。复杂度越高，压缩率越高，CPU使用率越高，音质越好。最低为0，最高为10。
-    int iSpeexCodecEncoderPlcExpectedLossRate;//Speex编码器的数据包丢失隐藏的预计丢失率。预计丢失率越高，抗网络抖动越强，压缩率越低。最低为0，最高为100。
+    int iIsUseSpeexCodec; //是否使用Speex编解码器，非0表示要使用，0表示不使用
+    int iSpeexCodecEncoderIsUseVbr; //是否使用Speex编码器的动态比特率，非0表示要使用，0表示不使用
+    int iSpeexCodecEncoderQuality; //Speex编码器的质量等级。质量等级越高，音质越好，压缩率越低。最低为0，最高为10。
+    int iSpeexCodecEncoderComplexity; //Speex编码器的复杂度。复杂度越高，压缩率越高，CPU使用率越高，音质越好。最低为0，最高为10。
+    int iSpeexCodecEncoderPlcExpectedLossRate; //Speex编码器的数据包丢失隐藏的预计丢失率。预计丢失率越高，抗网络抖动越强，压缩率越低。最低为0，最高为100。
 
-    int iIsUseAjb;//是否使用自适应抖动缓冲器，非0表示要使用，0表示不使用
+    int iIsUseAjb; //是否使用自适应抖动缓冲器，非0表示要使用，0表示不使用
 
-    AudioRecord m_clAudioRecord;//录音类
-    AudioTrack m_clAudioTrack;//播放类
+    AudioRecord m_clAudioRecord; //录音类
+    AudioTrack m_clAudioTrack; //播放类
 
-    WebRtcAec clWebRtcAec;//WebRtc声学回音消除器类对象
-    WebRtcAecm clWebRtcAecm;//WebRtc移动版声学回音消除器类对象
-    SpeexAec clSpeexAec;//Speex声学回音消除器类对象
-    WebRtcNsx clWebRtcNsx;//WebRtc定点噪音抑制器类对象
-    SpeexPreprocessor clSpeexPreprocessor;//Speex预处理器类对象
-    SpeexEncoder clSpeexEncoder;//Speex编码器类对象
-    SpeexDecoder clSpeexDecoder;//Speex解码器类对象
-    Ajb clAjb;//自适应抖动缓冲器类对象
+    WebRtcAec clWebRtcAec; //WebRtc声学回音消除器类对象
+    WebRtcAecm clWebRtcAecm; //WebRtc移动版声学回音消除器类对象
+    SpeexAec clSpeexAec; //Speex声学回音消除器类对象
+    WebRtcNsx clWebRtcNsx; //WebRtc定点噪音抑制器类对象
+    SpeexPreprocessor clSpeexPreprocessor; //Speex预处理器类对象
+    SpeexEncoder clSpeexEncoder; //Speex编码器类对象
+    SpeexDecoder clSpeexDecoder; //Speex解码器类对象
+    Ajb clAjb; //自适应抖动缓冲器类对象
 
-    int iIsSaveAudioDataFile;//是否保存音频数据到文件
-    FileOutputStream clAudioInputFileOutputStream;//音频输入数据文件
-    FileOutputStream clAudioOutputFileOutputStream;//音频输出数据文件
-    FileOutputStream clAudioResultFileOutputStream;//音频结果数据文件
+    int iIsSaveAudioDataFile; //是否保存音频数据到文件
+    FileOutputStream clAudioInputFileOutputStream; //音频输入数据文件
+    FileOutputStream clAudioOutputFileOutputStream; //音频输出数据文件
+    FileOutputStream clAudioResultFileOutputStream; //音频结果数据文件
 
-    LinkedList<short[]> m_clAlreadyAudioInputLinkedList;//存放已录音的链表类对象的内存指针
-    LinkedList<short[]> m_clAlreadyAudioOutputLinkedList;//存放已播放的链表类对象的内存指针
+    LinkedList<short[]> m_clAlreadyAudioInputLinkedList; //存放已录音的链表类对象的内存指针
+    LinkedList<short[]> m_clAlreadyAudioOutputLinkedList; //存放已播放的链表类对象的内存指针
 
-    AudioInputThread m_clAudioInputThread;//存放音频输入线程类对象的内存指针
-    AudioOutputThread m_clAudioOutputThread;//存放音频输出线程类对象的内存指针
+    AudioInputThread m_clAudioInputThread; //存放音频输入线程类对象的内存指针
+    AudioOutputThread m_clAudioOutputThread; //存放音频输出线程类对象的内存指针
 
     public AudioProcessThread()
     {
@@ -378,20 +381,20 @@ class AudioProcessThread extends Thread
 
     public void run()
     {
-        this.setPriority( this.MAX_PRIORITY);//设置线程优先级
+        this.setPriority( this.MAX_PRIORITY); //设置线程优先级
 
-        int iClientSocketIsNormalExit = 0;//TCP协议客户端套接字是否正常退出，0表示否，1表示是
-        short p_szhiPCMAudioInputData[];//PCM格式音频输入数据
-        short p_szhiPCMAudioOutputData[];//PCM格式音频输出数据
-        short p_szhiPCMAudioTempData[] = new short[m_iFrameSize];//PCM格式音频临时数据
-        Long clVoiceActivityStatus = new Long( 0 );//语音活动状态，1表示有语音活动，0表示无语音活动
-        byte p_szhhiSpeexAudioInputData[] = new byte[m_iFrameSize];//Speex格式音频输入数据
-        Long p_clSpeexAudioInputDataSize = new Long( 0 );//Speex格式音频输入数据的内存长度，单位字节，大于0表示本帧Speex格式音频数据需要传输，等于0表示本帧Speex格式音频数据不需要传输
+        int iClientSocketIsNormalExit = 0; //TCP协议客户端套接字是否正常退出，0表示否，1表示是
+        short p_szhiPCMAudioInputData[]; //PCM格式音频输入数据
+        short p_szhiPCMAudioOutputData[]; //PCM格式音频输出数据
+        short p_szhiPCMAudioTempData[] = new short[m_iFrameSize]; //PCM格式音频临时数据
+        Long clVoiceActivityStatus = new Long( 0 ); //语音活动状态，1表示有语音活动，0表示无语音活动
+        byte p_szhhiSpeexAudioInputData[] = new byte[m_iFrameSize]; //Speex格式音频输入数据
+        Long p_clSpeexAudioInputDataSize = new Long( 0 ); //Speex格式音频输入数据的内存长度，单位字节，大于0表示本帧Speex格式音频数据需要传输，等于0表示本帧Speex格式音频数据不需要传输
         byte p_szhhiTempData[] = new byte[m_iFrameSize * 2 + 8];
-        int iLastAudioDataIsActive;//最后一帧音频数据是否有语音活动，1表示有语音活动，0表示无语音活动
-        int iSocketPrereadSize;//本次套接字数据包的预读长度
-        long lSendAudioDataTimeStamp;//发送音频数据的时间戳
-        long lRecvAudioDataTimeStamp;//接收音频数据的时间戳
+        int iLastAudioDataIsActive; //最后一帧音频数据是否有语音活动，1表示有语音活动，0表示无语音活动
+        int iSocketPrereadSize; //本次套接字数据包的预读长度
+        long lSendAudioDataTimeStamp; //发送音频数据的时间戳
+        long lRecvAudioDataTimeStamp; //接收音频数据的时间戳
         int iTemp;
 
         while( true )
@@ -399,24 +402,24 @@ class AudioProcessThread extends Thread
             out:
             while (true)
             {
-                if( iIsServerOrClient == 1)//如果是创建服务端接受客户端
+                if( iIsServerOrClient == 1 ) //如果是创建本地TCP协议服务端套接字接受远端TCP协议客户端套接字的连接
                 {
-                    if( m_clServerSocket == null)
+                    if( m_clServerSocket == null )
                     {
                         try
                         {
                             m_clServerSocket = new ServerSocket();
                             m_clServerSocket.setReuseAddress( true );
-                            m_clServerSocket.bind( new InetSocketAddress( InetAddress.getByName( m_clIPAddressString ), m_iPort ), 1);//创建服务端套接字
-                            m_clServerSocket.setSoTimeout( 500 );//设置accept()函数的超时时间
+                            m_clServerSocket.bind( new InetSocketAddress( m_clIPAddressString, m_iPort ), 1); //创建服务端套接字
+                            m_clServerSocket.setSoTimeout( 500 ); //设置accept()函数的超时时间
 
-                            String clInfoString = "new ServerSocket 创建服务端套接字[" + m_clServerSocket.getInetAddress().getHostAddress() + ":" + m_clServerSocket.getLocalPort() + "]成功！";
-                            Log.i(clCurrentClassNameString, clInfoString);
+                            String clInfoString = "创建TCP协议服务端套接字[" + m_clServerSocket.getInetAddress().getHostAddress() + ":" + m_clServerSocket.getLocalPort() + "]成功！";
+                            Log.i ( clCurrentClassNameString, clInfoString);
                             Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                         }
                         catch (IOException e)
                         {
-                            String clInfoString = "new ServerSocket 创建服务端套接字失败！原因：" + e.toString();
+                            String clInfoString = "创建TCP协议服务端套接字[" + m_clIPAddressString + ":" + m_iPort + "]失败！原因：" + e.toString();
                             Log.e(clCurrentClassNameString, clInfoString);
                             Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                             break out;
@@ -435,46 +438,55 @@ class AudioProcessThread extends Thread
 
                         }
 
-                        if( m_clClientSocket != null )//如果成功接受了客户端套接字的连接，就开始传输数据
+                        if( m_clClientSocket != null ) //如果成功接受了客户端套接字的连接，就开始传输数据
                         {
                             try
                             {
-                                m_clServerSocket.close();//关闭TCP服务端套接字，防止还有其他客户端继续连接
-                                m_clServerSocket = null;
+                                m_clServerSocket.close(); //关闭本地TCP协议服务端套接字，防止还有其他客户端继续连接
                             }
                             catch( IOException e )
                             {
-                                Log.i( clCurrentClassNameString, "m_clServerSocket.close() 关闭TCP服务端套接字失败！原因：" + e.toString() );
-                                break out;
                             }
-                            String clInfoString = "m_clServerSocket.accept 接受了客户端套接字[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]的连接！";
-                            Log.i(clCurrentClassNameString, clInfoString);
+                            m_clServerSocket = null;
+
+                            String clInfoString = System.currentTimeMillis() + " 接受了远端TCP协议客户端套接字[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]与本地TCP协议客户端套接字[" + m_clClientSocket.getLocalAddress().getHostAddress() + ":" + m_clClientSocket.getLocalPort() + "]的连接！";
+                            Log.i ( clCurrentClassNameString, clInfoString);
                             Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                             break;
                         }
 
-                        if( iExitFlag != 0)
+                        if( iExitFlag != 0 )
                         {
                             Log.i( clCurrentClassNameString, "本线程接收到退出请求，开始准备退出" );
                             break out;
                         }
                     }
                 }
-                else if( iIsServerOrClient == 0)//如果是创建客户端连接服务端
+                else if( iIsServerOrClient == 0 ) //如果是创建本地TCP协议客户端套接字连接远端TCP协议服务端套接字
                 {
                     m_clClientSocket = new Socket();
                     try
                     {
                         m_clClientSocket.connect( new InetSocketAddress( m_clIPAddressString, m_iPort ), 5000 ); //连接指定的IP地址和端口号，超时时间为5秒
 
-                        String clInfoString = "m_clClientSocket.connect 客户端套接字连接服务端[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]成功！";
-                        Log.i(clCurrentClassNameString, clInfoString);
+                        String clInfoString = "创建本地TCP协议客户端套接字[" + m_clClientSocket.getLocalAddress().getHostAddress() + ":" + m_clClientSocket.getLocalPort() + "]与远端TCP协议服务端套接字[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]的连接成功！";
+                        Log.i ( clCurrentClassNameString, clInfoString);
                         Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                     }
-                    catch (IOException e)
+                    catch( IOException e )
                     {
-                        String clInfoString = "m_clClientSocket.connect 客户端连接服务端失败！原因：" + e.getMessage();
-                        Log.i(clCurrentClassNameString, clInfoString);
+                        try
+                        {
+                            m_clClientSocket.close();
+                        }
+                        catch( IOException e1 )
+                        {
+
+                        }
+                        m_clClientSocket = null;
+
+                        String clInfoString = " 创建本地TCP协议客户端套接字与远端TCP协议服务端套接字[" + m_clIPAddressString + ":" + m_iPort + "]的连接失败！原因：" + e.getMessage();
+                        Log.i ( clCurrentClassNameString, clInfoString);
                         Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                         break out;
                     }
@@ -486,7 +498,7 @@ class AudioProcessThread extends Thread
 
                 try
                 {
-                    m_clClientSocket.setTcpNoDelay(true);//设置TCP客户端套接字TCP_NODELAY选项为true
+                    m_clClientSocket.setTcpNoDelay(true); //设置TCP客户端套接字TCP_NODELAY选项为true
                 }
                 catch (SocketException e)
                 {
@@ -499,9 +511,13 @@ class AudioProcessThread extends Thread
                         AudioFormat.CHANNEL_CONFIGURATION_MONO,
                         AudioFormat.ENCODING_PCM_16BIT,
                         AudioRecord.getMinBufferSize(m_iSamplingRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT));
-                if( m_clAudioRecord.getState() != AudioRecord.STATE_INITIALIZED)//如果AudioRecord类对象初始化失败，就返回
+                if( m_clAudioRecord.getState() == AudioRecord.STATE_INITIALIZED )
                 {
-                    Log.e(clCurrentClassNameString, "m_clAudioRecord.AudioRecord 初始化AudioRecord类失败！" );
+                    Log.i ( clCurrentClassNameString, "初始化AudioRecord类对象成功！" );
+                }
+                else
+                {
+                    Log.e(clCurrentClassNameString, "初始化AudioRecord类对象失败！" );
                     break out;
                 }
 
@@ -512,72 +528,76 @@ class AudioProcessThread extends Thread
                         AudioFormat.ENCODING_PCM_16BIT,
                         AudioTrack.getMinBufferSize(m_iSamplingRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT),
                         AudioTrack.MODE_STREAM);
-                if( m_clAudioTrack.getState() != AudioTrack.STATE_INITIALIZED)//如果AudioTrack类对象初始化失败，就返回
+                if( m_clAudioTrack.getState() == AudioTrack.STATE_INITIALIZED )
                 {
-                    Log.e(clCurrentClassNameString, "m_clAudioTrack.AudioTrack 初始化AudioTrack类失败！" );
+                    Log.i ( clCurrentClassNameString, "初始化AudioTrack类对象成功！" );
+                }
+                else
+                {
+                    Log.e(clCurrentClassNameString, "初始化AudioTrack类对象失败！" );
                     break out;
                 }
 
                 //初始化WebRtc声学回音消除器类对象
-                if( iIsUseWebRtcAec != 0)
+                if( iIsUseWebRtcAec != 0 )
                 {
                     clWebRtcAec = new WebRtcAec();
-                    iTemp = clWebRtcAec.Init(m_iSamplingRate, iWebRtcAecNlpMode);
-                    if( iTemp == 0)
+                    iTemp = clWebRtcAec.Init ( m_iSamplingRate, iWebRtcAecNlpMode);
+                    if( iTemp == 0 )
                     {
-                        Log.i(clCurrentClassNameString, "clWebRtcAec.Init 初始化WebRtc声学回音消除器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化WebRtc声学回音消除器类对象成功！返回值：" + iTemp);
                     }
                     else
                     {
-                        Log.i(clCurrentClassNameString, "clWebRtcAec.Init 初始化WebRtc声学回音消除器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化WebRtc声学回音消除器类对象失败！返回值：" + iTemp);
                         break out;
                     }
                 }
 
                 //初始化WebRtc移动版声学回音消除器类对象
-                if( iIsUseWebRtcAecm != 0)
+                if( iIsUseWebRtcAecm != 0 )
                 {
                     clWebRtcAecm = new WebRtcAecm();
-                    iTemp = clWebRtcAecm.Init(m_iSamplingRate, iWebRtcAecmEchoMode, iWebRtcAecmDelay);
-                    if( iTemp == 0)
+                    iTemp = clWebRtcAecm.Init ( m_iSamplingRate, iWebRtcAecmEchoMode, iWebRtcAecmDelay);
+                    if( iTemp == 0 )
                     {
-                        Log.i(clCurrentClassNameString, "clWebRtcAecm.Init 初始化WebRtc移动版声学回音消除器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化WebRtc移动版声学回音消除器类对象成功！返回值：" + iTemp);
                     }
                     else
                     {
-                        Log.i(clCurrentClassNameString, "clWebRtcAecm.Init 初始化WebRtc移动版声学回音消除器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化WebRtc移动版声学回音消除器类对象失败！返回值：" + iTemp);
                         break out;
                     }
                 }
 
                 //初始化Speex声学回音消除器类对象
-                if( iIsUseSpeexAec != 0)
+                if( iIsUseSpeexAec != 0 )
                 {
                     clSpeexAec = new SpeexAec();
-                    iTemp = clSpeexAec.Init(m_iFrameSize, m_iSamplingRate, iSpeexAecFilterLength);
-                    if( iTemp == 0)
+                    iTemp = clSpeexAec.Init ( m_iFrameSize, m_iSamplingRate, iSpeexAecFilterLength);
+                    if( iTemp == 0 )
                     {
-                        Log.i(clCurrentClassNameString, "clSpeexEcho.Init 初始化Speex声学回音消除器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex声学回音消除器类对象成功！返回值：" + iTemp);
                     }
                     else
                     {
-                        Log.i(clCurrentClassNameString, "clSpeexEcho.Init 初始化Speex声学回音消除器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex声学回音消除器类对象失败！返回值：" + iTemp);
                         break out;
                     }
                 }
 
                 //初始化WebRtc定点噪音抑制器类对象
-                if( iIsUseWebRtcNsx != 0)
+                if( iIsUseWebRtcNsx != 0 )
                 {
                     clWebRtcNsx = new WebRtcNsx();
-                    iTemp = clWebRtcNsx.Init(m_iSamplingRate, iWebRtcNsxPolicyMode);
-                    if( iTemp == 0)
+                    iTemp = clWebRtcNsx.Init ( m_iSamplingRate, iWebRtcNsxPolicyMode);
+                    if( iTemp == 0 )
                     {
-                        Log.i(clCurrentClassNameString, "clWebRtcNsx.Init 初始化Speex预处理器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex预处理器类对象成功！返回值：" + iTemp);
                     }
                     else
                     {
-                        Log.i(clCurrentClassNameString, "clWebRtcNsx.Init 初始化Speex预处理器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex预处理器类对象失败！返回值：" + iTemp);
                         break out;
                     }
                 }
@@ -586,33 +606,33 @@ class AudioProcessThread extends Thread
                 if( iIsUseSpeexPreprocessor != 0 )
                 {
                     clSpeexPreprocessor = new SpeexPreprocessor();
-                    if( clSpeexAec != null)
-                        iTemp = clSpeexPreprocessor.Init(m_iSamplingRate, m_iFrameSize, iSpeexPreprocessorIsUseNs, iSpeexPreprocessorNoiseSuppress, iSpeexPreprocessorIsUseVad, iSpeexPreprocessorVadProbStart, iSpeexPreprocessorVadProbContinue, iSpeexPreprocessorIsUseAgc, iSpeexPreprocessorAgcLevel, iSpeexPreprocessorIsUseRec, clSpeexAec.GetSpeexEchoState().longValue(), iSpeexPreprocessorEchoSuppress, iSpeexPreprocessorEchoSuppressActive);
+                    if( clSpeexAec != null )
+                        iTemp = clSpeexPreprocessor.Init ( m_iSamplingRate, m_iFrameSize, iSpeexPreprocessorIsUseNs, iSpeexPreprocessorNoiseSuppress, iSpeexPreprocessorIsUseVad, iSpeexPreprocessorVadProbStart, iSpeexPreprocessorVadProbContinue, iSpeexPreprocessorIsUseAgc, iSpeexPreprocessorAgcLevel, iSpeexPreprocessorIsUseRec, clSpeexAec.GetSpeexEchoState().longValue(), iSpeexPreprocessorEchoSuppress, iSpeexPreprocessorEchoSuppressActive);
                     else
-                        iTemp = clSpeexPreprocessor.Init(m_iSamplingRate, m_iFrameSize, iSpeexPreprocessorIsUseNs, iSpeexPreprocessorNoiseSuppress, iSpeexPreprocessorIsUseVad, iSpeexPreprocessorVadProbStart, iSpeexPreprocessorVadProbContinue, iSpeexPreprocessorIsUseAgc, iSpeexPreprocessorAgcLevel, 0, 0, 0, 0);
-                    if( iTemp == 0)
+                        iTemp = clSpeexPreprocessor.Init ( m_iSamplingRate, m_iFrameSize, iSpeexPreprocessorIsUseNs, iSpeexPreprocessorNoiseSuppress, iSpeexPreprocessorIsUseVad, iSpeexPreprocessorVadProbStart, iSpeexPreprocessorVadProbContinue, iSpeexPreprocessorIsUseAgc, iSpeexPreprocessorAgcLevel, 0, 0, 0, 0 );
+                    if( iTemp == 0 )
                     {
-                        Log.i(clCurrentClassNameString, "clSpeexPreprocess.Init 初始化Speex预处理器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex预处理器类对象成功！返回值：" + iTemp);
                     }
                     else
                     {
-                        Log.i(clCurrentClassNameString, "clSpeexPreprocess.Init 初始化Speex预处理器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex预处理器类对象失败！返回值：" + iTemp);
                         break out;
                     }
                 }
 
                 //初始化Speex编码器类对象
-                if( iIsUseSpeexCodec != 0)
+                if( iIsUseSpeexCodec != 0 )
                 {
                     clSpeexEncoder = new SpeexEncoder();
                     iTemp = clSpeexEncoder.Init( m_iSamplingRate, iSpeexCodecEncoderIsUseVbr, iSpeexCodecEncoderQuality, iSpeexCodecEncoderComplexity, iSpeexCodecEncoderPlcExpectedLossRate );
-                    if( iTemp == 0)
+                    if( iTemp == 0 )
                     {
-                        Log.i(clCurrentClassNameString, "clSpeexEncode.Init 初始化Speex编码器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex编码器类对象成功！返回值：" + iTemp);
                     }
                     else
                     {
-                        Log.i(clCurrentClassNameString, "clSpeexEncode.Init 初始化Speex编码器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex编码器类对象失败！返回值：" + iTemp);
                         break out;
                     }
                 }
@@ -621,14 +641,14 @@ class AudioProcessThread extends Thread
                 if( iIsUseSpeexCodec != 0 )
                 {
                     clSpeexDecoder = new SpeexDecoder();
-                    iTemp = clSpeexDecoder.Init(m_iSamplingRate);
-                    if( iTemp == 0)
+                    iTemp = clSpeexDecoder.Init ( m_iSamplingRate);
+                    if( iTemp == 0 )
                     {
-                        Log.i(clCurrentClassNameString, "clSpeexDecoder.Init 初始化Speex解码器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex解码器类对象成功！返回值：" + iTemp);
                     }
                     else
                     {
-                        Log.i(clCurrentClassNameString, "clSpeexDecoder.Init 初始化Speex解码器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex解码器类对象失败！返回值：" + iTemp);
                         break out;
                     }
                 }
@@ -637,21 +657,21 @@ class AudioProcessThread extends Thread
                 if( iIsUseAjb != 0 )
                 {
                     clAjb = new Ajb();
-                    iTemp = clAjb.Init(m_iSamplingRate, m_iFrameSize, 0);
-                    if( iTemp == 0)
+                    iTemp = clAjb.Init( m_iSamplingRate, m_iFrameSize, 0 );
+                    if( iTemp == 0 )
                     {
-                        Log.i(clCurrentClassNameString, "clAjb.Init 初始化自适应抖动缓冲器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化自适应抖动缓冲器类对象成功！返回值：" + iTemp);
                     }
                     else
                     {
-                        Log.i(clCurrentClassNameString, "clAjb.Init 初始化自适应抖动缓冲器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化自适应抖动缓冲器类对象失败！返回值：" + iTemp);
                         break out;
                     }
                 }
 
                 //创建各个链表类对象
-                m_clAlreadyAudioInputLinkedList = new LinkedList<short[]>();//创建已录音的链表类对象
-                m_clAlreadyAudioOutputLinkedList = new LinkedList<short[]>();//创建已播放的链表类对象
+                m_clAlreadyAudioInputLinkedList = new LinkedList<short[]>(); //创建已录音的链表类对象
+                m_clAlreadyAudioOutputLinkedList = new LinkedList<short[]>(); //创建已播放的链表类对象
 
                 //初始化音频数据文件
                 if( iIsSaveAudioDataFile != 0 )
@@ -684,7 +704,7 @@ class AudioProcessThread extends Thread
                     try
                     {
                         clAudioResultFileOutputStream = new FileOutputStream(Environment.getExternalStorageDirectory() + "/AudioResult.pcm");
-                        Log.i(clCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioResult.pcm 音频结果数据文件成功！");
+                        Log.i ( clCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioResult.pcm 音频结果数据文件成功！");
                     }
                     catch( FileNotFoundException e )
                     {
@@ -694,8 +714,8 @@ class AudioProcessThread extends Thread
                 }
 
                 //创建各个线程类对象
-                m_clAudioInputThread = new AudioInputThread();//创建音频输入线程类对象
-                m_clAudioOutputThread = new AudioOutputThread();//创建音频输出线程类对象
+                m_clAudioInputThread = new AudioInputThread(); //创建音频输入线程类对象
+                m_clAudioOutputThread = new AudioOutputThread(); //创建音频输出线程类对象
 
                 //设置各个线程的退出标记
                 m_clAudioInputThread.iExitFlag = 0;
@@ -709,7 +729,6 @@ class AudioProcessThread extends Thread
 
                 //设置各个线程的各个链表类对象
                 m_clAudioInputThread.m_clAlreadyAudioInputLinkedList = m_clAlreadyAudioInputLinkedList;
-
                 m_clAudioOutputThread.m_clAlreadyAudioInputLinkedList = m_clAlreadyAudioInputLinkedList;
                 m_clAudioOutputThread.m_clAlreadyAudioOutputLinkedList = m_clAlreadyAudioOutputLinkedList;
 
@@ -739,25 +758,25 @@ class AudioProcessThread extends Thread
                 //启动音频输入线程，让音频输入线程去启动音频输出线程
                 m_clAudioInputThread.start();
 
-                lLastPacketSendTime = System.currentTimeMillis();//记录最后一个数据包的发送时间为当前时间
-                lLastPacketRecvTime = System.currentTimeMillis();//存放最后一个数据包的接收时间为当前时间
+                lLastPacketSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间为当前时间
+                lLastPacketRecvTime = System.currentTimeMillis(); //存放最后一个数据包的接收时间为当前时间
 
-                iClientSocketIsNormalExit = 0;//TCP协议客户端套接字是否正常退出为0，表示否
-                iLastAudioDataIsActive = 0;//设置最后一帧音频数据是否有语音活动为0，表示无语音活动
-                iSocketPrereadSize = 0;//本次套接字数据包的预读长度为0
-                lSendAudioDataTimeStamp = 0;//发送音频数据的时间戳为0
-                lRecvAudioDataTimeStamp = 0;//接收音频数据的时间戳为0
+                iClientSocketIsNormalExit = 0; //TCP协议客户端套接字是否正常退出为0，表示否
+                iLastAudioDataIsActive = 0; //设置最后一帧音频数据是否有语音活动为0，表示无语音活动
+                iSocketPrereadSize = 0; //本次套接字数据包的预读长度为0
+                lSendAudioDataTimeStamp = 0; //发送音频数据的时间戳为0
+                lRecvAudioDataTimeStamp = 0; //接收音频数据的时间戳为0
 
                 {
                     String clInfoString = "开始进行音频对讲！";
-                    Log.i(clCurrentClassNameString, clInfoString);
+                    Log.i ( clCurrentClassNameString, clInfoString);
                     Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                 }
 
                 //开始进行音频处理
                 while( true )
                 {
-                    if( ( m_clAlreadyAudioInputLinkedList.size() > 0 ) && ( m_clAlreadyAudioOutputLinkedList.size() > 0 ) )//如果已录音的链表和已播放的链表中都有数据了，才开始处理
+                    if( ( m_clAlreadyAudioInputLinkedList.size() > 0 ) && ( m_clAlreadyAudioOutputLinkedList.size() > 0 ) ) //如果已录音的链表和已播放的链表中都有数据了，才开始处理
                     {
                         //先从已录音的链表中取出第一帧音频输入数据
                         synchronized (m_clAlreadyAudioInputLinkedList)
@@ -775,41 +794,45 @@ class AudioProcessThread extends Thread
                         }
                         Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 从已播放的链表中取出第一帧音频数据" );
 
-                        //写入音频输入数据到文件
+                        //写入音频输入数据帧到文件
                         if( clAudioInputFileOutputStream != null )
                         {
                             for (iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++)
                             {
                                 p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
-                                p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00) >> 8);
+                                p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00 ) >> 8);
                             }
 
                             try
                             {
                                 clAudioInputFileOutputStream.write(p_szhhiTempData, 6, p_szhiPCMAudioInputData.length * 2);
+
+                                Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 写入音频输入数据帧到文件成功！" );
                             }
                             catch (IOException e)
                             {
-
+                                Log.e( clCurrentClassNameString, System.currentTimeMillis() + " 写入音频输入数据帧到文件失败！" );
                             }
                         }
 
-                        //写入音频输出数据到文件
+                        //写入音频输出数据帧到文件
                         if( clAudioOutputFileOutputStream != null )
                         {
                             for (iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++)
                             {
                                 p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioOutputData[iTemp] & 0xFF);
-                                p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioOutputData[iTemp] & 0xFF00) >> 8);
+                                p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioOutputData[iTemp] & 0xFF00 ) >> 8);
                             }
 
                             try
                             {
                                 clAudioOutputFileOutputStream.write(p_szhhiTempData, 6, p_szhiPCMAudioOutputData.length * 2);
+
+                                Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 写入音频输出数据帧到文件成功！" );
                             }
                             catch (IOException e)
                             {
-
+                                Log.e( clCurrentClassNameString, System.currentTimeMillis() + " 写入音频输出数据帧到文件失败！" );
                             }
                         }
 
@@ -823,10 +846,12 @@ class AudioProcessThread extends Thread
                             {
                                 for( iTemp = 0; iTemp < p_szhiPCMAudioTempData.length; iTemp++)
                                     p_szhiPCMAudioInputData[iTemp] = p_szhiPCMAudioTempData[iTemp];
+
+                                Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 使用WebRtc声学回音消除器成功！" );
                             }
                             else
                             {
-                                Log.i( clCurrentClassNameString, "clWebRtcAec.Echo 出错！错误码：" + iTemp );
+                                Log.e( clCurrentClassNameString, System.currentTimeMillis() + " 使用WebRtc声学回音消除器失败！错误码：" + iTemp );
                             }
                         }
 
@@ -838,10 +863,12 @@ class AudioProcessThread extends Thread
                             {
                                 for( iTemp = 0; iTemp < p_szhiPCMAudioTempData.length; iTemp++)
                                     p_szhiPCMAudioInputData[iTemp] = p_szhiPCMAudioTempData[iTemp];
+
+                                Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 使用WebRtc移动版声学回音消除器成功！" );
                             }
                             else
                             {
-                                Log.i( clCurrentClassNameString, "clWebRtcAecm.Echo 出错！错误码：" + iTemp );
+                                Log.e( clCurrentClassNameString, System.currentTimeMillis() + " 使用WebRtc移动版声学回音消除器失败！错误码：" + iTemp );
                             }
                         }
 
@@ -853,10 +880,12 @@ class AudioProcessThread extends Thread
                             {
                                 for( iTemp = 0; iTemp < p_szhiPCMAudioTempData.length; iTemp++)
                                     p_szhiPCMAudioInputData[iTemp] = p_szhiPCMAudioTempData[iTemp];
+
+                                Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 使用Speex声学回音消除器成功！" );
                             }
                             else
                             {
-                                Log.i( clCurrentClassNameString, "clSpeexEcho.Echo 出错！错误码：" + iTemp );
+                                Log.e( clCurrentClassNameString, System.currentTimeMillis() + " 使用Speex声学回音消除器失败！错误码：" + iTemp );
                             }
                         }
 
@@ -866,11 +895,11 @@ class AudioProcessThread extends Thread
                             iTemp = clWebRtcNsx.Process( m_iSamplingRate, p_szhiPCMAudioInputData, p_szhiPCMAudioInputData.length );
                             if( iTemp == 0 )
                             {
-                                //Log.i( clCurrentClassNameString, "clSpeexPreprocess.Preprocess clVoiceActivityStatus：" + clVoiceActivityStatus);
+                                Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 使用WebRtc定点噪音抑制器成功！" );
                             }
                             else
                             {
-                                Log.i( clCurrentClassNameString, "clWebRtcNsx.Process 出错！错误码：" + iTemp );
+                                Log.e( clCurrentClassNameString, System.currentTimeMillis() + " 使用WebRtc定点噪音抑制器失败！错误码：" + iTemp );
                             }
                         }
 
@@ -878,13 +907,13 @@ class AudioProcessThread extends Thread
                         if( clSpeexPreprocessor != null )
                         {
                             iTemp = clSpeexPreprocessor.Preprocess( p_szhiPCMAudioInputData, clVoiceActivityStatus );
-                            if( iTemp == 0)
+                            if( iTemp == 0 )
                             {
-                                //Log.i( clCurrentClassNameString, "clSpeexPreprocess.Preprocess clVoiceActivityStatus：" + clVoiceActivityStatus);
+                                Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 使用Speex预处理器成功！语音活动状态：" + clVoiceActivityStatus );
                             }
                             else
                             {
-                                Log.i( clCurrentClassNameString, "clSpeexPreprocess.Preprocess 出错！错误码：" + iTemp );
+                                Log.e( clCurrentClassNameString, System.currentTimeMillis() + " 使用Speex预处理器失败！错误码：" + iTemp );
                             }
                         }
 
@@ -895,34 +924,36 @@ class AudioProcessThread extends Thread
                             iTemp = clSpeexEncoder.Encode( p_szhiPCMAudioInputData, p_szhhiSpeexAudioInputData, p_clSpeexAudioInputDataSize );
                             if( iTemp == 0 )
                             {
-
+                                Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 使用Speex编码器成功！" );
                             }
                             else
                             {
-                                Log.i( clCurrentClassNameString, "clSpeexEncode.Encode 出错！错误码：" + iTemp );
+                                Log.e( clCurrentClassNameString, System.currentTimeMillis() + " 使用Speex编码器失败！错误码：" + iTemp );
                             }
                         }
 
-                        //写入音频结果数据到文件
+                        //写入音频结果数据帧到文件
                         if( clAudioResultFileOutputStream != null )
                         {
                             for (iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++)
                             {
                                 p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
-                                p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00) >> 8);
+                                p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00 ) >> 8);
                             }
 
                             try
                             {
                                 clAudioResultFileOutputStream.write(p_szhhiTempData, 6, p_szhiPCMAudioInputData.length * 2);
+
+                                Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 写入音频结果数据帧到文件成功！" );
                             }
                             catch (IOException e)
                             {
-
+                                Log.e( clCurrentClassNameString, System.currentTimeMillis() + " 写入音频结果数据帧到文件失败！" );
                             }
                         }
 
-                        //使用客户端套接字发送音频输入数据
+                        //使用客户端套接字发送音频输入数据帧
                         {
                             if( clSpeexPreprocessor != null ) //如果使用了Speex预处理器
                             {
@@ -949,7 +980,7 @@ class AudioProcessThread extends Thread
                                         for( iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++ )
                                         {
                                             p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
-                                            p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00) >> 8);
+                                            p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00 ) >> 8);
                                         }
 
                                         iTemp = p_szhiPCMAudioInputData.length * 2 + 4; //预读长度=PCM格式音频输入数据长度+时间戳长度
@@ -964,7 +995,7 @@ class AudioProcessThread extends Thread
                             {
                                 if( clSpeexEncoder != null ) //如果使用了Speex编码器
                                 {
-                                    if( p_clSpeexAudioInputDataSize.intValue() > 0) //如果本帧Speex格式音频输入数据需要传输
+                                    if( p_clSpeexAudioInputDataSize.intValue() > 0 ) //如果本帧Speex格式音频输入数据需要传输
                                     {
                                         for (iTemp = 0; iTemp < p_clSpeexAudioInputDataSize.intValue(); iTemp++)
                                         {
@@ -983,7 +1014,7 @@ class AudioProcessThread extends Thread
                                     for (iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++)
                                     {
                                         p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
-                                        p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00) >> 8);
+                                        p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00 ) >> 8);
                                     }
 
                                     iTemp = p_szhiPCMAudioInputData.length * 2 + 4; //预读长度=PCM格式音频输入数据长度+时间戳长度
@@ -995,32 +1026,33 @@ class AudioProcessThread extends Thread
                             {
                                 //设置预读长度
                                 p_szhhiTempData[0] = (byte) (iTemp & 0xFF);
-                                p_szhhiTempData[1] = (byte) ((iTemp & 0xFF00) >> 8);
+                                p_szhhiTempData[1] = (byte) ((iTemp & 0xFF00 ) >> 8);
 
                                 //设置时间戳
                                 p_szhhiTempData[2] = (byte) (lSendAudioDataTimeStamp & 0xFF);
-                                p_szhhiTempData[3] = (byte) ((lSendAudioDataTimeStamp & 0xFF00) >> 8);
-                                p_szhhiTempData[4] = (byte) ((lSendAudioDataTimeStamp & 0xFF0000) >> 16);
-                                p_szhhiTempData[5] = (byte) ((lSendAudioDataTimeStamp & 0xFF000000) >> 24);
+                                p_szhhiTempData[3] = (byte) ((lSendAudioDataTimeStamp & 0xFF00 ) >> 8);
+                                p_szhhiTempData[4] = (byte) ((lSendAudioDataTimeStamp & 0xFF0000 ) >> 16);
+                                p_szhhiTempData[5] = (byte) ((lSendAudioDataTimeStamp & 0xFF000000 ) >> 24);
 
                                 try
                                 {
                                     OutputStream clOutputStream = m_clClientSocket.getOutputStream();
                                     clOutputStream.write( p_szhhiTempData, 0, iTemp + 2 );
-                                    clOutputStream.flush();//防止出现Software caused connection abort异常
-                                    lLastPacketSendTime = System.currentTimeMillis();//记录最后一个数据包的发送时间
+                                    clOutputStream.flush(); //防止出现Software caused connection abort异常
+                                    lLastPacketSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间
+
                                     Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 发送一帧音频输入数据成功！时间戳：" + lSendAudioDataTimeStamp + "，总长度：" + iTemp );
                                 }
                                 catch (IOException e)
                                 {
-                                    String clInfoString = "m_clClientSocket.getOutputStream().write() 发送一帧音频输入数据失败！原因：" + e.getMessage();
+                                    String clInfoString = System.currentTimeMillis() + " 发送一帧音频输入数据失败！原因：" + e.getMessage();
                                     Log.e( clCurrentClassNameString, clInfoString );
                                     Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage( clMessage );
                                     break out;
                                 }
                             }
 
-                            lSendAudioDataTimeStamp += m_iFrameSize;//时间戳递增一帧音频输入数据的采样数量
+                            lSendAudioDataTimeStamp += m_iFrameSize; //时间戳递增一帧音频输入数据的采样数量
 
                             //记录最后一帧音频数据是否有语音活动
                             if( iTemp != 4 ) iLastAudioDataIsActive = 1;
@@ -1031,42 +1063,44 @@ class AudioProcessThread extends Thread
                         p_szhiPCMAudioOutputData = null;
                     }
 
-                    //接收远端发送过来的音频输出数据，然后存放到自适应抖动缓冲器中
+                    //接收远端发送过来的音频输出数据帧，然后存放到自适应抖动缓冲器中
                     try
                     {
                         InputStream clInputStream = m_clClientSocket.getInputStream();
                         if( ( iSocketPrereadSize == 0 ) && ( clInputStream.available() >= 2 ) ) //如果还没有接收预读长度，且客户端套接字可以接收到预读长度
                         {
                             //接收本帧音频数据的预读长度
-                            if( clInputStream.read( p_szhhiTempData, 0, 2 ) != 2 )//如果接收到预读长度的长度不对，就返回
+                            if( clInputStream.read( p_szhhiTempData, 0, 2 ) != 2 ) //如果接收到预读长度的长度不对，就返回
                             {
-                                Log.e(clCurrentClassNameString, "m_clClientSocket.getIntputStream().read() 接收到预读长度的长度不对！" );
+                                Log.e(clCurrentClassNameString, System.currentTimeMillis() + " 接收到预读长度的长度不对！" );
                                 break out;
                             }
                             if( ( p_szhhiTempData[0] == 'E' ) && ( p_szhhiTempData[1] == 'X' ) ) //如果接收到一个退出包
                             {
-                                lLastPacketRecvTime = System.currentTimeMillis();//记录最后一个数据包的接收时间
-                                iClientSocketIsNormalExit = 1;//设置TCP协议客户端套接字是否正常退出为1，表示是
-                                String clInfoString = "m_clClientSocket.getIntputStream().read() 接收到一个退出包！";
-                                Log.i(clCurrentClassNameString, clInfoString);
+                                lLastPacketRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间
+                                iClientSocketIsNormalExit = 1; //设置TCP协议客户端套接字是否正常退出为1，表示是
+
+                                String clInfoString = System.currentTimeMillis() + " 接收到一个退出包！";
+                                Log.i ( clCurrentClassNameString, clInfoString);
                                 Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
+
                                 break out;
                             }
                             //读取本帧音频数据的预读长度
                             iSocketPrereadSize = (p_szhhiTempData[0] & 0xFF) + (((int) (p_szhhiTempData[1] & 0xFF)) << 8);
-                            if( iSocketPrereadSize == 0 )//如果预读长度为0，表示这是一个心跳包，就更新一下时间即可
+                            if( iSocketPrereadSize == 0 ) //如果预读长度为0，表示这是一个心跳包，就更新一下时间即可
                             {
-                                lLastPacketRecvTime = System.currentTimeMillis();//记录最后一个数据包的接收时间
-                                Log.i(clCurrentClassNameString, System.currentTimeMillis() + "m_clClientSocket.getIntputStream().read() 接收到一个心跳包！");
+                                lLastPacketRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间
+                                Log.i ( clCurrentClassNameString, System.currentTimeMillis() + " 接收到一个心跳包！");
                             }
                             else if( iSocketPrereadSize < 4 )
                             {
-                                Log.e(clCurrentClassNameString, "m_clClientSocket.getIntputStream().read() 接收到预读长度为" + iSocketPrereadSize + "小于4，表示没有时间戳，无法继续接收！" );
+                                Log.e(clCurrentClassNameString, System.currentTimeMillis() + " 接收到预读长度为" + iSocketPrereadSize + "小于4，表示没有时间戳，无法继续接收！" );
                                 break out;
                             }
                             if( iSocketPrereadSize > p_szhhiTempData.length )
                             {
-                                Log.e(clCurrentClassNameString, "m_clClientSocket.getIntputStream().read() 接收到预读长度大于接收缓存区的长度，无法继续接收！" );
+                                Log.e(clCurrentClassNameString, System.currentTimeMillis() + " 接收到预读长度大于接收缓存区的长度，无法继续接收！" );
                                 break out;
                             }
                         }
@@ -1075,24 +1109,24 @@ class AudioProcessThread extends Thread
                             //接收本帧音频输出数据的时间戳
                             if( clInputStream.read( p_szhhiTempData, 0, 4 ) != 4 ) //如果接收到时间戳长度不对，就返回
                             {
-                                Log.e( clCurrentClassNameString, "m_clClientSocket.getIntputStream().read() 接收到时间戳长度不对！" );
+                                Log.e( clCurrentClassNameString, System.currentTimeMillis() + " 接收到时间戳长度不对！" );
                                 break out;
                             }
                             //读取本帧音频输出数据的时间戳
                             lRecvAudioDataTimeStamp = (p_szhhiTempData[0] & 0xFF) + (((int) (p_szhhiTempData[1] & 0xFF)) << 8) + (((int) (p_szhhiTempData[2] & 0xFF)) << 16) + (((int) (p_szhhiTempData[3] & 0xFF)) << 24);
                             //接收音频数据帧
-                            if( clInputStream.read( p_szhhiTempData, 0, iSocketPrereadSize - 4 ) != iSocketPrereadSize - 4 )//如果接收到数据长度不对，就返回
+                            if( clInputStream.read( p_szhhiTempData, 0, iSocketPrereadSize - 4 ) != iSocketPrereadSize - 4 ) //如果接收到数据长度不对，就返回
                             {
-                                Log.e(clCurrentClassNameString, "m_clClientSocket.getIntputStream().read() 接收到的数据长度与预读长度不同！" );
+                                Log.e(clCurrentClassNameString, System.currentTimeMillis() + " 接收到的数据长度与预读长度不同！" );
                                 break out;
                             }
                             if( ( clSpeexDecoder == null ) && ( iSocketPrereadSize - 4 != 0 ) && ( iSocketPrereadSize - 4 != m_iFrameSize * 2 ) ) //如果没有使用Speex解码器，且接收到的PCM格式音频输出数据帧不是静音数据，且接收到的PCM格式音频输出数据帧的数据长度与帧长度不同
                             {
-                                Log.e(clCurrentClassNameString, "clInputStream.read 接收到的PCM格式音频数据帧的数据长度与帧长度不同！" );
+                                Log.e(clCurrentClassNameString, System.currentTimeMillis() + " 接收到的PCM格式音频数据帧的数据长度与帧长度不同！" );
                                 break out;
                             }
-                            lLastPacketRecvTime = System.currentTimeMillis();//记录最后一个数据包的接收时间
-                            Log.i(clCurrentClassNameString, System.currentTimeMillis() + "m_clClientSocket.getIntputStream().read() 接收一帧音频输出数据成功！时间戳：" + lRecvAudioDataTimeStamp + "，总长度：" + iSocketPrereadSize);
+                            lLastPacketRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间
+                            Log.i ( clCurrentClassNameString, System.currentTimeMillis() + " 接收一帧音频输出数据成功！时间戳：" + lRecvAudioDataTimeStamp + "，总长度：" + iSocketPrereadSize);
 
                             //将本帧音频输出数据存放入自适应抖动缓冲器
                             if( clAjb != null ) //如果使用了自适应抖动缓冲器
@@ -1144,56 +1178,60 @@ class AudioProcessThread extends Thread
                             else
                             {
                                 Log.e( clCurrentClassNameString, "没有使用自适应抖动缓冲器！无法接收音频数据" );
+
                                 break out;
                             }
 
-                            iSocketPrereadSize = 0;//清空预读长度
+                            iSocketPrereadSize = 0; //清空预读长度
                         }
                     }
                     catch( IOException e )
                     {
-                        String clInfoString = "m_clClientSocket.getIntputStream().read() 接收一帧音频输出数据失败！原因：" + e.getMessage();
+                        String clInfoString = System.currentTimeMillis() + " 接收一帧音频输出数据失败！原因：" + e.getMessage();
                         Log.e(clCurrentClassNameString, clInfoString);
                         Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
+
                         break out;
                     }
 
                     //发送心跳包
-                    if( System.currentTimeMillis() - lLastPacketSendTime >= 1000 ) //如果有1秒没有发送任何数据包，就发送一个心跳包
+                    if( System.currentTimeMillis() - lLastPacketSendTime >= 500 ) //如果超过500毫秒没有发送任何数据包，就发送一个心跳包
                     {
                         //设置预读长度
-                        p_szhhiTempData[0] = (byte) (0);
-                        p_szhhiTempData[1] = (byte) (0);
+                        p_szhhiTempData[0] = (byte) (0 );
+                        p_szhhiTempData[1] = (byte) (0 );
 
                         try
                         {
                             OutputStream clOutputStream = m_clClientSocket.getOutputStream();
                             clOutputStream.write( p_szhhiTempData, 0, 2 );
-                            clOutputStream.flush();//防止出现Software caused connection abort异常
-                            lLastPacketSendTime = System.currentTimeMillis();//记录最后一个数据包的发送时间
-                            Log.i(clCurrentClassNameString, System.currentTimeMillis() + " 发送一个心跳包成功！");
+                            clOutputStream.flush(); //防止出现Software caused connection abort异常
+                            lLastPacketSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间
+                            Log.i ( clCurrentClassNameString, System.currentTimeMillis() + " 发送一个心跳包成功！");
                         }
                         catch (IOException e)
                         {
-                            String clInfoString = "m_clClientSocket.getOutputStream().write() 发送一个心跳包失败！原因：" + e.getMessage();
+                            String clInfoString = System.currentTimeMillis() + " 发送一个心跳包失败！原因：" + e.getMessage();
                             Log.e(clCurrentClassNameString, clInfoString);
                             Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
+
                             break out;
                         }
                     }
 
                     //判断连接是否中断
-                    if( System.currentTimeMillis() - lLastPacketRecvTime >= 5000 ) //如果超过5秒没有接收任何数据包，就判定连接已经断开了
+                    if( System.currentTimeMillis() - lLastPacketRecvTime > 2000 ) //如果超过2000毫秒没有接收任何数据包，就判定连接已经断开了
                     {
-                        String clInfoString = "超过5秒没有接收任何数据包，判定连接已经断开了！";
+                        String clInfoString = System.currentTimeMillis() + " 超过2000毫秒没有接收任何数据包，判定连接已经断开了！";
                         Log.e(clCurrentClassNameString, clInfoString);
                         Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
+
                         break out;
                     }
 
                     if( iExitFlag != 0 ) //如果本线程接收到退出请求
                     {
-                        Log.i( clCurrentClassNameString, "本线程接收到退出请求，开始准备退出" );
+                        Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 本线程接收到退出请求，开始准备退出" );
 
                         iClientSocketIsNormalExit = 1; //设置TCP协议客户端套接字是否正常退出为1，表示是
 
@@ -1205,17 +1243,19 @@ class AudioProcessThread extends Thread
                         {
                             OutputStream clOutputStream = m_clClientSocket.getOutputStream();
                             clOutputStream.write( p_szhhiTempData, 0, 2 );
-                            clOutputStream.flush();//防止出现Software caused connection abort异常
-                            lLastPacketSendTime = System.currentTimeMillis();//记录最后一个数据包的发送时间
-                            String clInfoString = "m_clClientSocket.getOutputStream().write() 发送一个退出包成功！";
-                            Log.i(clCurrentClassNameString, clInfoString);
+                            clOutputStream.flush(); //防止出现Software caused connection abort异常
+                            lLastPacketSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间
+                            
+                            String clInfoString = System.currentTimeMillis() + " 发送一个退出包成功！";
+                            Log.i ( clCurrentClassNameString, clInfoString);
                             Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
                         }
                         catch (IOException e)
                         {
-                            String clInfoString = "m_clClientSocket.getOutputStream().write() 发送一个退出包失败！原因：" + e.getMessage();
+                            String clInfoString = System.currentTimeMillis() + " 发送一个退出包失败！原因：" + e.getMessage();
                             Log.e(clCurrentClassNameString, clInfoString);
                             Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
+
                             break out;
                         }
 
@@ -1223,46 +1263,49 @@ class AudioProcessThread extends Thread
                     }
                     else if( ( iAudioInputThreadExitStatus != 0 ) || ( iAudioOutputThreadExitStatus != 0 ) ) //如果本线程发现有子线程已经退出
                     {
-                        Log.i( clCurrentClassNameString, "本线程发现有子线程已经退出，开始准备退出" );
+                        Log.i( clCurrentClassNameString, System.currentTimeMillis() + " 本线程发现有子线程已经退出，开始准备退出" );
+
                         break out;
                     }
 
-                    SystemClock.sleep(1);//暂停一下，避免CPU使用率过高
+                    SystemClock.sleep(1); //暂停一下，避免CPU使用率过高
                 }
             }
 
+            Log.i ( clCurrentClassNameString, "本线程开始退出" );
+
             //设置各个线程的正常退出标记
-            if( m_clAudioInputThread != null) m_clAudioInputThread.iExitFlag = 1;
-            if( m_clAudioOutputThread != null) m_clAudioOutputThread.iExitFlag = 1;
+            if( m_clAudioInputThread != null ) m_clAudioInputThread.iExitFlag = 1;
+            if( m_clAudioOutputThread != null ) m_clAudioOutputThread.iExitFlag = 1;
 
             //等待音频输入线程退出
-            if( m_clAudioInputThread != null)
+            if( m_clAudioInputThread != null )
             {
                 try
                 {
                     m_clAudioInputThread.join();
                     m_clAudioInputThread = null;
                 }
-                catch (InterruptedException e)
+                catch( InterruptedException e )
                 {
 
                 }
             }
             //等待音频输出线程退出
-            if( m_clAudioOutputThread != null)
+            if( m_clAudioOutputThread != null )
             {
                 try
                 {
                     m_clAudioOutputThread.join();
                     m_clAudioOutputThread = null;
                 }
-                catch (InterruptedException e)
+                catch( InterruptedException e )
                 {
 
                 }
             }
 
-            if( clAudioInputFileOutputStream != null)//关闭音频输入数据文件
+            if( clAudioInputFileOutputStream != null ) //关闭音频输入数据文件
             {
                 try
                 {
@@ -1274,7 +1317,7 @@ class AudioProcessThread extends Thread
 
                 }
             }
-            if( clAudioOutputFileOutputStream != null)//关闭音频输出数据文件
+            if( clAudioOutputFileOutputStream != null ) //关闭音频输出数据文件
             {
                 try
                 {
@@ -1286,7 +1329,7 @@ class AudioProcessThread extends Thread
 
                 }
             }
-            if( clAudioResultFileOutputStream != null )//关闭音频结果数据文件
+            if( clAudioResultFileOutputStream != null ) //关闭音频结果数据文件
             {
                 try
                 {
@@ -1299,66 +1342,70 @@ class AudioProcessThread extends Thread
                 }
             }
 
-            m_clAlreadyAudioInputLinkedList = null;//清空已录音的链表
-            m_clAlreadyAudioOutputLinkedList = null;//清空已播放的链表
+            m_clAlreadyAudioInputLinkedList = null; //清空已录音的链表
+            m_clAlreadyAudioOutputLinkedList = null; //清空已播放的链表
 
-            if( clWebRtcAec != null)//销毁WebRtc声学回音消除器类对象
+            if( clWebRtcAec != null ) //销毁WebRtc声学回音消除器类对象
             {
                 clWebRtcAec.Destory();
                 clWebRtcAec = null;
             }
-            if( clWebRtcAecm != null)//销毁WebRtc移动版声学回音消除器类对象
+            if( clWebRtcAecm != null ) //销毁WebRtc移动版声学回音消除器类对象
             {
                 clWebRtcAecm.Destory();
                 clWebRtcAecm = null;
             }
-            if( clSpeexAec != null)//销毁Speex声学回音消除器类对象
+            if( clSpeexAec != null ) //销毁Speex声学回音消除器类对象
             {
                 clSpeexAec.Destory();
                 clSpeexAec = null;
             }
-            if( clWebRtcNsx != null)//销毁WebRtc定点噪音抑制器类对象
+            if( clWebRtcNsx != null ) //销毁WebRtc定点噪音抑制器类对象
             {
                 clWebRtcNsx.Destory();
                 clWebRtcNsx = null;
             }
-            if( clSpeexPreprocessor != null)//销毁Speex预处理器类对象
+            if( clSpeexPreprocessor != null ) //销毁Speex预处理器类对象
             {
                 clSpeexPreprocessor.Destory();
                 clSpeexPreprocessor = null;
             }
-            if( clSpeexEncoder != null)//销毁Speex编码器类对象
+            if( clSpeexEncoder != null ) //销毁Speex编码器类对象
             {
                 clSpeexEncoder.Destory();
                 clSpeexEncoder = null;
             }
-            if( clSpeexDecoder != null)//销毁Speex解码器类对象
+            if( clSpeexDecoder != null ) //销毁Speex解码器类对象
             {
                 clSpeexDecoder.Destory();
                 clSpeexDecoder = null;
             }
-            if( m_clAudioRecord != null)//销毁AudioRecord类对象
+            if( m_clAudioRecord != null ) //销毁AudioRecord类对象
             {
-                if( m_clAudioRecord.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING)
+                if( m_clAudioRecord.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING )
                 {
                     m_clAudioRecord.stop();
                 }
                 m_clAudioRecord.release();
                 m_clAudioRecord = null;
             }
-            if( m_clAudioTrack != null)//销毁AudioTrack类对象
+            if( m_clAudioTrack != null ) //销毁AudioTrack类对象
             {
-                if( m_clAudioTrack.getPlayState() != AudioTrack.PLAYSTATE_STOPPED)
+                if( m_clAudioTrack.getPlayState() != AudioTrack.PLAYSTATE_STOPPED )
                 {
                     m_clAudioTrack.stop();
                 }
                 m_clAudioTrack.release();
                 m_clAudioTrack = null;
             }
-            if( m_clServerSocket != null )//销毁服务端套接字
+            if( m_clServerSocket != null ) //销毁TCP协议服务端套接字
             {
                 try
                 {
+                    String clInfoString = "已关闭TCP协议服务端套接字[" + m_clServerSocket.getInetAddress().getHostAddress() + ":" + m_clServerSocket.getLocalPort() + "]！";
+                    Log.i( clCurrentClassNameString, clInfoString );
+                    Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
+
                     m_clServerSocket.close();
                 }
                 catch (IOException e)
@@ -1366,18 +1413,15 @@ class AudioProcessThread extends Thread
                 }
                 m_clServerSocket = null;
             }
-            if( m_clClientSocket != null )//销毁客户端套接字
+            if( m_clClientSocket != null ) //销毁TCP协议客户端套接字
             {
                 try
                 {
-                    m_clClientSocket.close();
+                    String clInfoString = "已断开本地TCP协议客户端套接字[" + m_clClientSocket.getLocalAddress().getHostAddress() + ":" + m_clClientSocket.getLocalPort() + "]与远端TCP协议客户端套接字[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]的连接！";
+                    Log.i ( clCurrentClassNameString, clInfoString);
+                    Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
 
-                    if( m_clClientSocket.getInetAddress() != null ) //如果套接字存在网络地址，就打印日志
-                    {
-                        String clInfoString = "m_clClientSocket.close 已断开与[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]的套接字连接！";
-                        Log.i(clCurrentClassNameString, clInfoString);
-                        Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
-                    }
+                    m_clClientSocket.close();
                 }
                 catch (IOException e)
                 {
@@ -1385,17 +1429,19 @@ class AudioProcessThread extends Thread
                 m_clClientSocket = null;
             }
 
-            if( ( iIsServerOrClient == 1 ) && ( iExitFlag == 0 ) )//如果当前是TCP协议服务端，且本线程未接收到退出请求
+            if( ( iIsServerOrClient == 1 ) && ( iExitFlag == 0 ) ) //如果当前是TCP协议服务端，且本线程未接收到退出请求
             {
                 iAudioInputThreadExitStatus = 0;
                 iAudioOutputThreadExitStatus = 0;
-                Log.i(clCurrentClassNameString, "由于当前是TCP协议服务端，且本线程未接收到退出请求，本线程继续保持监听" );
+
+                Log.i ( clCurrentClassNameString, "由于当前是TCP协议服务端，且本线程未接收到退出请求，本线程继续保持监听" );
             }
             else if( ( iIsServerOrClient == 0 ) && ( iClientSocketIsNormalExit == 0 ) && ( iExitFlag == 0 ) ) //如果当前是TCP协议客户端，且TCP协议客户端套接字不是正常退出，且本线程未接收到退出请求
             {
                 iAudioInputThreadExitStatus = 0;
                 iAudioOutputThreadExitStatus = 0;
-                Log.i(clCurrentClassNameString, "当前是TCP协议客户端，且TCP协议客户端套接字不是正常退出，且本线程未接收到退出请求，本线程1秒后重连" );
+
+                Log.i ( clCurrentClassNameString, "当前是TCP协议客户端，且TCP协议客户端套接字不是正常退出，且本线程未接收到退出请求，本线程1秒后重连" );
                 SystemClock.sleep( 1000 ); //暂停1秒
             }
             else //否则退出
@@ -1409,16 +1455,16 @@ class AudioProcessThread extends Thread
         clMessage.what = 1;
         clMainActivityHandler.sendMessage( clMessage );
 
-        Log.i(clCurrentClassNameString, "本线程已退出" );
+        Log.i ( clCurrentClassNameString, "本线程已退出" );
     }
 }
 
 //初始化线程类
 class InitThread extends Thread
 {
-    String clCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 );//当前类名称字符串
+    String clCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 ); //当前类名称字符串
 
-    View clLayoutActivityMainView;//主界面布局控件的内存指针
+    View clLayoutActivityMainView; //主界面布局控件的内存指针
 
     public void run()
     {
@@ -1431,12 +1477,12 @@ class InitThread extends Thread
             for( Enumeration<NetworkInterface> clEnumerationNetworkInterface = NetworkInterface.getNetworkInterfaces(); clEnumerationNetworkInterface.hasMoreElements();)
             {
                 NetworkInterface clNetworkInterface = clEnumerationNetworkInterface.nextElement();
-                if( clNetworkInterface.getName().compareTo( "usbnet0" ) != 0)//如果该网络接口设备不是USB接口对应的网络接口设备
+                if( clNetworkInterface.getName().compareTo( "usbnet0" ) != 0 ) //如果该网络接口设备不是USB接口对应的网络接口设备
                 {
                     for( Enumeration<InetAddress> enumIpAddr = clNetworkInterface.getInetAddresses(); enumIpAddr.hasMoreElements(); )
                     {
                         InetAddress clInetAddress = enumIpAddr.nextElement();
-                        if( (!clInetAddress.isLoopbackAddress()) && (clInetAddress.getAddress().length == 4))//如果该IP地址不是回环地址，且是IPv4的
+                        if( (!clInetAddress.isLoopbackAddress()) && (clInetAddress.getAddress().length == 4)) //如果该IP地址不是回环地址，且是IPv4的
                         {
                             clIPAddressString = clInetAddress.getHostAddress().toString();
                         }
@@ -1461,31 +1507,31 @@ public class MainActivity extends AppCompatActivity
 {
     static
     {
-        System.loadLibrary( "Func" );//加载libFunc.so
-        System.loadLibrary( "WebRtcAec" );//加载libWebRtcAec.so
-        System.loadLibrary( "WebRtcAecm" );//加载libWebRtcAecm.so
-        System.loadLibrary( "WebRtcNs" );//加载libWebRtcNs.so
-        System.loadLibrary( "SpeexDsp" );//加载libSpeexDsp.so
-        System.loadLibrary( "Speex" );//加载libSpeex.so
-        System.loadLibrary( "Ajb" );//加载libAjb.so
+        System.loadLibrary( "Func" ); //加载libFunc.so
+        System.loadLibrary( "WebRtcAec" ); //加载libWebRtcAec.so
+        System.loadLibrary( "WebRtcAecm" ); //加载libWebRtcAecm.so
+        System.loadLibrary( "WebRtcNs" ); //加载libWebRtcNs.so
+        System.loadLibrary( "SpeexDsp" ); //加载libSpeexDsp.so
+        System.loadLibrary( "Speex" ); //加载libSpeex.so
+        System.loadLibrary( "Ajb" ); //加载libAjb.so
     }
 
-    String clCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 );//当前类名称字符串
+    String clCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 ); //当前类名称字符串
 
-    View clLayoutActivityMainView;//主界面布局控件的内存指针
-    View clLayoutActivitySettingView;//设置界面布局控件的内存指针
-    View clLayoutActivityWebRtcAecView;//WebRtc声学回音消除器设置布局控件的内存指针
-    View clLayoutActivityWebRtcAecmView;//WebRtc移动版声学回音消除器设置布局控件的内存指针
-    View clLayoutActivitySpeexAecView;//Speex声学回音消除器设置布局控件的内存指针
-    View clLayoutActivityWebRtcNsxView;//WebRtc定点噪音抑制器设置布局控件的内存指针
-    View clLayoutActivitySpeexPreprocessorView;//Speex预处理器设置布局控件的内存指针
-    View clLayoutActivitySpeexCodecView;//Speex编解码器设置布局控件的内存指针
-    View clLayoutActivityReadMeView;//说明界面布局控件的内存指针
-    View clLayoutActivityCurrentView;//当前界面布局控件的内存指针
+    View clLayoutActivityMainView; //主界面布局控件的内存指针
+    View clLayoutActivitySettingView; //设置界面布局控件的内存指针
+    View clLayoutActivityWebRtcAecView; //WebRtc声学回音消除器设置布局控件的内存指针
+    View clLayoutActivityWebRtcAecmView; //WebRtc移动版声学回音消除器设置布局控件的内存指针
+    View clLayoutActivitySpeexAecView; //Speex声学回音消除器设置布局控件的内存指针
+    View clLayoutActivityWebRtcNsxView; //WebRtc定点噪音抑制器设置布局控件的内存指针
+    View clLayoutActivitySpeexPreprocessorView; //Speex预处理器设置布局控件的内存指针
+    View clLayoutActivitySpeexCodecView; //Speex编解码器设置布局控件的内存指针
+    View clLayoutActivityReadMeView; //说明界面布局控件的内存指针
+    View clLayoutActivityCurrentView; //当前界面布局控件的内存指针
 
-    MainActivity clMainActivity;//主界面类对象的内存指针
-    AudioProcessThread clAudioProcessThread;//音频处理线程类对象的内存指针
-    Handler clMainActivityHandler;//主界面消息处理类对象的内存指针
+    MainActivity clMainActivity; //主界面类对象的内存指针
+    AudioProcessThread clAudioProcessThread; //音频处理线程类对象的内存指针
+    Handler clMainActivityHandler; //主界面消息处理类对象的内存指针
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -1503,7 +1549,7 @@ public class MainActivity extends AppCompatActivity
         clLayoutActivitySpeexCodecView = layoutInflater.inflate( R.layout.activity_speexcodec, null );
         clLayoutActivityReadMeView = layoutInflater.inflate( R.layout.activity_readme, null );
 
-        setContentView( clLayoutActivityMainView );//设置界面的内容为主界面
+        setContentView( clLayoutActivityMainView ); //设置界面的内容为主界面
         clLayoutActivityCurrentView = clLayoutActivityMainView;
 
         clMainActivity = this;
@@ -1525,17 +1571,17 @@ public class MainActivity extends AppCompatActivity
         {
             public void handleMessage( Message clMessage )
             {
-                if( clMessage.what == 1 )//如果是音频处理线程正常退出的消息
+                if( clMessage.what == 1 ) //如果是音频处理线程正常退出的消息
                 {
                     clAudioProcessThread = null;
 
-                    ((Button)findViewById( R.id.CreateServerButton )).setText( "创建服务端" );//设置创建服务端按钮的内容为“创建服务端”
-                    ((Button)findViewById( R.id.ConnectServerButton )).setEnabled( true );//设置连接服务端按钮为可用
-                    ((Button)findViewById( R.id.ConnectServerButton )).setText( "连接服务端" );//设置连接服务端按钮的内容为“连接服务端”
-                    ((Button)findViewById( R.id.CreateServerButton )).setEnabled( true );//设置创建服务端按钮为可用
-                    ((Button)findViewById( R.id.SettingButton )).setEnabled( true );//设置设置按钮为可用
+                    ((Button)findViewById( R.id.CreateServerButton )).setText( "创建服务端" ); //设置创建服务端按钮的内容为“创建服务端”
+                    ((Button)findViewById( R.id.ConnectServerButton )).setEnabled( true ); //设置连接服务端按钮为可用
+                    ((Button)findViewById( R.id.ConnectServerButton )).setText( "连接服务端" ); //设置连接服务端按钮的内容为“连接服务端”
+                    ((Button)findViewById( R.id.CreateServerButton )).setEnabled( true ); //设置创建服务端按钮为可用
+                    ((Button)findViewById( R.id.SettingButton )).setEnabled( true ); //设置设置按钮为可用
                 }
-                if( clMessage.what == 2 )//如果是显示日志的消息
+                if( clMessage.what == 2 ) //如果是显示日志的消息
                 {
                     LinearLayout clLogLinearLayout = (LinearLayout)clLayoutActivityMainView.findViewById( R.id.LogLinearLayout );
                     TextView clTempTextView = new TextView(clMainActivity);
@@ -1589,7 +1635,7 @@ public class MainActivity extends AppCompatActivity
         out:
         while( true )
         {
-            if( clAudioProcessThread == null )//如果音频处理线程还没有启动
+            if( clAudioProcessThread == null ) //如果音频处理线程还没有启动
             {
                 Log.i( clCurrentClassNameString, "开始启动音频处理线程" );
 
@@ -1597,11 +1643,11 @@ public class MainActivity extends AppCompatActivity
 
                 if( v.getId() == R.id.CreateServerButton )
                 {
-                    clAudioProcessThread.iIsServerOrClient = 1;//标记创建服务端接受客户端
+                    clAudioProcessThread.iIsServerOrClient = 1; //标记创建服务端接受客户端
                 }
                 else if( v.getId() == R.id.ConnectServerButton )
                 {
-                    clAudioProcessThread.iIsServerOrClient = 0;//标记创建客户端连接服务端
+                    clAudioProcessThread.iIsServerOrClient = 0; //标记创建客户端连接服务端
                 }
 
                 clAudioProcessThread.clMainActivity = this;
@@ -1910,15 +1956,15 @@ public class MainActivity extends AppCompatActivity
 
                 if( v.getId() == R.id.CreateServerButton )
                 {
-                    ((Button) findViewById( R.id.CreateServerButton )).setText( "中断" );//设置创建服务端按钮的内容为“中断”
-                    ((Button) findViewById(R.id.ConnectServerButton )).setEnabled( false );//设置连接服务端按钮为不可用
-                    ((Button)findViewById( R.id.SettingButton )).setEnabled( false );//设置设置按钮为不可用
+                    ((Button) findViewById( R.id.CreateServerButton )).setText( "中断" ); //设置创建服务端按钮的内容为“中断”
+                    ((Button) findViewById(R.id.ConnectServerButton )).setEnabled( false ); //设置连接服务端按钮为不可用
+                    ((Button)findViewById( R.id.SettingButton )).setEnabled( false ); //设置设置按钮为不可用
                 }
                 else if( v.getId() == R.id.ConnectServerButton )
                 {
-                    ((Button)findViewById( R.id.CreateServerButton )).setEnabled( false );//设置创建服务端按钮为不可用
-                    ((Button)findViewById( R.id.ConnectServerButton )).setText( "中断" );//设置连接服务端按钮的内容为“中断”
-                    ((Button)findViewById( R.id.SettingButton )).setEnabled( false );//设置设置按钮为不可用
+                    ((Button)findViewById( R.id.CreateServerButton )).setEnabled( false ); //设置创建服务端按钮为不可用
+                    ((Button)findViewById( R.id.ConnectServerButton )).setText( "中断" ); //设置连接服务端按钮的内容为“中断”
+                    ((Button)findViewById( R.id.SettingButton )).setEnabled( false ); //设置设置按钮为不可用
                 }
             }
             else
@@ -1928,7 +1974,7 @@ public class MainActivity extends AppCompatActivity
                 try
                 {
                     Log.i( clCurrentClassNameString, "开始等待音频处理线程退出" );
-                    clAudioProcessThread.join();//等待音频处理线程退出
+                    clAudioProcessThread.join(); //等待音频处理线程退出
                     Log.i( clCurrentClassNameString, "结束等待音频处理线程退出" );
                 }
                 catch (InterruptedException e)
