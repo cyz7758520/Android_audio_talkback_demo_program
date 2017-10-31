@@ -1,9 +1,8 @@
 package HeavenTao.Audio;
 
-public class WebRtcNsx //WebRtc定点噪音抑制器类
+public class WebRtcNsx //WebRtc定点版噪音抑制器类
 {
-    private Long clWebRtcNsx; //WebRtc定点噪音抑制器的内存指针
-    int m_iSamplingRate;//采样频率
+    private Long clWebRtcNsx; //WebRtc定点版噪音抑制器的内存指针
 
     //构造函数
     public WebRtcNsx()
@@ -17,20 +16,20 @@ public class WebRtcNsx //WebRtc定点噪音抑制器类
         clWebRtcNsx = null;
     }
 
-    //初始化WebRtc定点噪音抑制器
+    //初始化WebRtc定点版噪音抑制器
     public int Init( int iSamplingRate, int iPolicyMode )
     {
-        if( clWebRtcNsx.longValue() == 0)//如果WebRtc定点噪音抑制器还没有初始化
+        if( clWebRtcNsx.longValue() == 0)//如果WebRtc定点版噪音抑制器还没有初始化
         {
             return WebRtcNsxInit( clWebRtcNsx, iSamplingRate, iPolicyMode );
         }
-        else//如果WebRtc定点噪音抑制器已经初始化
+        else//如果WebRtc定点版噪音抑制器已经初始化
         {
             return 0;
         }
     }
 
-    //获取WebRtc定点噪音抑制器的内存指针
+    //获取WebRtc定点版噪音抑制器的内存指针
     public Long GetWebRtcNsx()
     {
         return clWebRtcNsx;
@@ -42,7 +41,7 @@ public class WebRtcNsx //WebRtc定点噪音抑制器类
         return WebRtcNsxProcess( clWebRtcNsx, iSamplingRate, clAudioData, iAudioDataSize );
     }
 
-    //销毁WebRtc定点噪音抑制器
+    //销毁WebRtc定点版噪音抑制器
     public void Destory()
     {
         WebRtcNsxDestory( clWebRtcNsx);

@@ -20,6 +20,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -305,7 +306,7 @@ class AudioProcessThread extends Thread
     int iExitFlag; //本线程退出标记，0表示保持运行，1表示请求退出
     int iAudioInputThreadExitStatus; //音频输入线程退出状态，0表示正在运行，1表示正常退出，2表示异常退出
     int iAudioOutputThreadExitStatus; //音频输出线程退出状态，0表示正在运行，1表示正常退出，2表示异常退出
-    int iIsServerOrClient; //是服务端还是客户端标记，1表示创建服务端，0表示创建客户端
+    int iIsCreateServerOrClient; //创建服务端或者客户端标记，1表示创建服务端，0表示创建客户端
     String m_clIPAddressString; //IP地址字符串
     int m_iPort; //端口
     MainActivity clMainActivity; //主界面类对象的内存指针
@@ -344,11 +345,15 @@ class AudioProcessThread extends Thread
     int iSpeexPreprocessorEchoSuppress; //Speex预处理器在REC残余回音消除时，残余回音的最大程度衰减的分贝值
     int iSpeexPreprocessorEchoSuppressActive; //Speex预处理器在REC残余回音消除时，有近端语音活动时的残余回音的最大程度衰减的分贝值
 
+    int iIsUsePCM; //是否使用PCM裸数据，非0表示要使用，0表示不使用
+
     int iIsUseSpeexCodec; //是否使用Speex编解码器，非0表示要使用，0表示不使用
     int iSpeexCodecEncoderIsUseVbr; //是否使用Speex编码器的动态比特率，非0表示要使用，0表示不使用
     int iSpeexCodecEncoderQuality; //Speex编码器的质量等级。质量等级越高，音质越好，压缩率越低。最低为0，最高为10。
     int iSpeexCodecEncoderComplexity; //Speex编码器的复杂度。复杂度越高，压缩率越高，CPU使用率越高，音质越好。最低为0，最高为10。
     int iSpeexCodecEncoderPlcExpectedLossRate; //Speex编码器的数据包丢失隐藏的预计丢失率。预计丢失率越高，抗网络抖动越强，压缩率越低。最低为0，最高为100。
+
+    int iIsUseOpusCodec; //否使用Opus编解码器，非0表示要使用，0表示不使用
 
     int iIsUseAjb; //是否使用自适应抖动缓冲器，非0表示要使用，0表示不使用
 
@@ -358,7 +363,7 @@ class AudioProcessThread extends Thread
     WebRtcAec clWebRtcAec; //WebRtc声学回音消除器类对象
     WebRtcAecm clWebRtcAecm; //WebRtc移动版声学回音消除器类对象
     SpeexAec clSpeexAec; //Speex声学回音消除器类对象
-    WebRtcNsx clWebRtcNsx; //WebRtc定点噪音抑制器类对象
+    WebRtcNsx clWebRtcNsx; //WebRtc定点版噪音抑制器类对象
     SpeexPreprocessor clSpeexPreprocessor; //Speex预处理器类对象
     SpeexEncoder clSpeexEncoder; //Speex编码器类对象
     SpeexDecoder clSpeexDecoder; //Speex解码器类对象
@@ -387,7 +392,7 @@ class AudioProcessThread extends Thread
         short p_szhiPCMAudioInputData[]; //PCM格式音频输入数据
         short p_szhiPCMAudioOutputData[]; //PCM格式音频输出数据
         short p_szhiPCMAudioTempData[] = new short[m_iFrameSize]; //PCM格式音频临时数据
-        Long clVoiceActivityStatus = new Long( 0 ); //语音活动状态，1表示有语音活动，0表示无语音活动
+        Long clVoiceActivityStatus; //语音活动状态，1表示有语音活动，0表示无语音活动
         byte p_szhhiSpeexAudioInputData[] = new byte[m_iFrameSize]; //Speex格式音频输入数据
         Long p_clSpeexAudioInputDataSize = new Long( 0 ); //Speex格式音频输入数据的内存长度，单位字节，大于0表示本帧Speex格式音频数据需要传输，等于0表示本帧Speex格式音频数据不需要传输
         byte p_szhhiTempData[] = new byte[m_iFrameSize * 2 + 8];
@@ -402,7 +407,7 @@ class AudioProcessThread extends Thread
             out:
             while (true)
             {
-                if( iIsServerOrClient == 1 ) //如果是创建本地TCP协议服务端套接字接受远端TCP协议客户端套接字的连接
+                if( iIsCreateServerOrClient == 1 ) //如果是创建本地TCP协议服务端套接字接受远端TCP协议客户端套接字的连接
                 {
                     if( m_clServerSocket == null )
                     {
@@ -462,7 +467,7 @@ class AudioProcessThread extends Thread
                         }
                     }
                 }
-                else if( iIsServerOrClient == 0 ) //如果是创建本地TCP协议客户端套接字连接远端TCP协议服务端套接字
+                else if( iIsCreateServerOrClient == 0 ) //如果是创建本地TCP协议客户端套接字连接远端TCP协议服务端套接字
                 {
                     m_clClientSocket = new Socket();
                     try
@@ -493,12 +498,13 @@ class AudioProcessThread extends Thread
                 }
                 else
                 {
+                    Log.e( clCurrentClassNameString, "无法判断是创建服务端还是客户端！" );
                     break out;
                 }
 
                 try
                 {
-                    m_clClientSocket.setTcpNoDelay(true); //设置TCP客户端套接字TCP_NODELAY选项为true
+                    m_clClientSocket.setTcpNoDelay(true); //设置TCP协议客户端套接字的TCP_NODELAY选项为true
                 }
                 catch (SocketException e)
                 {
@@ -545,11 +551,11 @@ class AudioProcessThread extends Thread
                     iTemp = clWebRtcAec.Init ( m_iSamplingRate, iWebRtcAecNlpMode);
                     if( iTemp == 0 )
                     {
-                        Log.i ( clCurrentClassNameString, "初始化WebRtc声学回音消除器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化WebRtc声学回音消除器类对象成功！返回值：" + iTemp );
                     }
                     else
                     {
-                        Log.i ( clCurrentClassNameString, "初始化WebRtc声学回音消除器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化WebRtc声学回音消除器类对象失败！返回值：" + iTemp );
                         break out;
                     }
                 }
@@ -561,11 +567,11 @@ class AudioProcessThread extends Thread
                     iTemp = clWebRtcAecm.Init ( m_iSamplingRate, iWebRtcAecmEchoMode, iWebRtcAecmDelay);
                     if( iTemp == 0 )
                     {
-                        Log.i ( clCurrentClassNameString, "初始化WebRtc移动版声学回音消除器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化WebRtc移动版声学回音消除器类对象成功！返回值：" + iTemp );
                     }
                     else
                     {
-                        Log.i ( clCurrentClassNameString, "初始化WebRtc移动版声学回音消除器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化WebRtc移动版声学回音消除器类对象失败！返回值：" + iTemp );
                         break out;
                     }
                 }
@@ -577,27 +583,27 @@ class AudioProcessThread extends Thread
                     iTemp = clSpeexAec.Init ( m_iFrameSize, m_iSamplingRate, iSpeexAecFilterLength);
                     if( iTemp == 0 )
                     {
-                        Log.i ( clCurrentClassNameString, "初始化Speex声学回音消除器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex声学回音消除器类对象成功！返回值：" + iTemp );
                     }
                     else
                     {
-                        Log.i ( clCurrentClassNameString, "初始化Speex声学回音消除器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex声学回音消除器类对象失败！返回值：" + iTemp );
                         break out;
                     }
                 }
 
-                //初始化WebRtc定点噪音抑制器类对象
+                //初始化WebRtc定点版噪音抑制器类对象
                 if( iIsUseWebRtcNsx != 0 )
                 {
                     clWebRtcNsx = new WebRtcNsx();
                     iTemp = clWebRtcNsx.Init ( m_iSamplingRate, iWebRtcNsxPolicyMode);
                     if( iTemp == 0 )
                     {
-                        Log.i ( clCurrentClassNameString, "初始化Speex预处理器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex预处理器类对象成功！返回值：" + iTemp );
                     }
                     else
                     {
-                        Log.i ( clCurrentClassNameString, "初始化Speex预处理器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex预处理器类对象失败！返回值：" + iTemp );
                         break out;
                     }
                 }
@@ -612,13 +618,19 @@ class AudioProcessThread extends Thread
                         iTemp = clSpeexPreprocessor.Init ( m_iSamplingRate, m_iFrameSize, iSpeexPreprocessorIsUseNs, iSpeexPreprocessorNoiseSuppress, iSpeexPreprocessorIsUseVad, iSpeexPreprocessorVadProbStart, iSpeexPreprocessorVadProbContinue, iSpeexPreprocessorIsUseAgc, iSpeexPreprocessorAgcLevel, 0, 0, 0, 0 );
                     if( iTemp == 0 )
                     {
-                        Log.i ( clCurrentClassNameString, "初始化Speex预处理器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex预处理器类对象成功！返回值：" + iTemp );
                     }
                     else
                     {
-                        Log.i ( clCurrentClassNameString, "初始化Speex预处理器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex预处理器类对象失败！返回值：" + iTemp );
                         break out;
                     }
+                }
+
+                //初始化PCM裸数据
+                if( iIsUsePCM != 0 )
+                {
+                    //暂时没有什么要做的
                 }
 
                 //初始化Speex编码器类对象
@@ -628,11 +640,11 @@ class AudioProcessThread extends Thread
                     iTemp = clSpeexEncoder.Init( m_iSamplingRate, iSpeexCodecEncoderIsUseVbr, iSpeexCodecEncoderQuality, iSpeexCodecEncoderComplexity, iSpeexCodecEncoderPlcExpectedLossRate );
                     if( iTemp == 0 )
                     {
-                        Log.i ( clCurrentClassNameString, "初始化Speex编码器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex编码器类对象成功！返回值：" + iTemp );
                     }
                     else
                     {
-                        Log.i ( clCurrentClassNameString, "初始化Speex编码器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex编码器类对象失败！返回值：" + iTemp );
                         break out;
                     }
                 }
@@ -644,13 +656,19 @@ class AudioProcessThread extends Thread
                     iTemp = clSpeexDecoder.Init ( m_iSamplingRate);
                     if( iTemp == 0 )
                     {
-                        Log.i ( clCurrentClassNameString, "初始化Speex解码器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex解码器类对象成功！返回值：" + iTemp );
                     }
                     else
                     {
-                        Log.i ( clCurrentClassNameString, "初始化Speex解码器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化Speex解码器类对象失败！返回值：" + iTemp );
                         break out;
                     }
+                }
+
+                //初始化Opus编解码器
+                if( iIsUseOpusCodec != 0 )
+                {
+                    //暂时没有什么要做的
                 }
 
                 //初始化自适应抖动缓冲器类对象
@@ -660,11 +678,11 @@ class AudioProcessThread extends Thread
                     iTemp = clAjb.Init( m_iSamplingRate, m_iFrameSize, 0 );
                     if( iTemp == 0 )
                     {
-                        Log.i ( clCurrentClassNameString, "初始化自适应抖动缓冲器类对象成功！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化自适应抖动缓冲器类对象成功！返回值：" + iTemp );
                     }
                     else
                     {
-                        Log.i ( clCurrentClassNameString, "初始化自适应抖动缓冲器类对象失败！返回值：" + iTemp);
+                        Log.i ( clCurrentClassNameString, "初始化自适应抖动缓冲器类对象失败！返回值：" + iTemp );
                         break out;
                     }
                 }
@@ -762,6 +780,7 @@ class AudioProcessThread extends Thread
                 lLastPacketRecvTime = System.currentTimeMillis(); //存放最后一个数据包的接收时间为当前时间
 
                 iClientSocketIsNormalExit = 0; //TCP协议客户端套接字是否正常退出为0，表示否
+                clVoiceActivityStatus = new Long( 1 ); //设置语音活动状态为1，为了让在没有使用语音活动检测的情况下永远都是有语音活动
                 iLastAudioDataIsActive = 0; //设置最后一帧音频数据是否有语音活动为0，表示无语音活动
                 iSocketPrereadSize = 0; //本次套接字数据包的预读长度为0
                 lSendAudioDataTimeStamp = 0; //发送音频数据的时间戳为0
@@ -953,53 +972,27 @@ class AudioProcessThread extends Thread
                             }
                         }
 
-                        //使用客户端套接字发送音频输入数据帧
+                        //使用TCP协议客户端套接字发送音频输入数据帧
                         {
-                            if( clSpeexPreprocessor != null ) //如果使用了Speex预处理器
+                            if( clVoiceActivityStatus.intValue() == 1 ) //如果本帧音频输入数据为有语音活动
                             {
-                                if( clVoiceActivityStatus.intValue() == 1 ) //如果本帧音频输入数据为有语音活动
+                                if( iIsUsePCM != 0 ) //如果使用了PCM裸数据
                                 {
-                                    if( clSpeexEncoder != null ) //如果使用了Speex编码器
+                                    for( iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++ )
                                     {
-                                        if( p_clSpeexAudioInputDataSize.intValue() > 0 ) //如果本帧Speex格式音频输入数据需要传输
-                                        {
-                                            for( iTemp = 0; iTemp < p_clSpeexAudioInputDataSize.intValue(); iTemp++ )
-                                            {
-                                                p_szhhiTempData[6 + iTemp] = p_szhhiSpeexAudioInputData[iTemp];
-                                            }
-
-                                            iTemp = p_clSpeexAudioInputDataSize.intValue() + 4; //预读长度=Speex格式音频输入数据长度+时间戳长度
-                                        }
-                                        else //如果本帧Speex格式音频输入数据不需要传输
-                                        {
-                                            iTemp = 4; //预读长度=时间戳长度
-                                        }
+                                        p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
+                                        p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00 ) >> 8);
                                     }
-                                    else //如果没有使用Speex编码器
-                                    {
-                                        for( iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++ )
-                                        {
-                                            p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
-                                            p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00 ) >> 8);
-                                        }
 
-                                        iTemp = p_szhiPCMAudioInputData.length * 2 + 4; //预读长度=PCM格式音频输入数据长度+时间戳长度
-                                    }
+                                    iTemp = p_szhiPCMAudioInputData.length * 2 + 4; //预读长度=PCM格式音频输入数据长度+时间戳长度
                                 }
-                                else //如果本帧音频输入数据为无语音活动
-                                {
-                                    iTemp = 4; //预读长度=时间戳长度
-                                }
-                            }
-                            else //如果没有使用Speex预处理器
-                            {
-                                if( clSpeexEncoder != null ) //如果使用了Speex编码器
+                                else if( clSpeexEncoder != null ) //如果使用了Speex编码器
                                 {
                                     if( p_clSpeexAudioInputDataSize.intValue() > 0 ) //如果本帧Speex格式音频输入数据需要传输
                                     {
-                                        for (iTemp = 0; iTemp < p_clSpeexAudioInputDataSize.intValue(); iTemp++)
+                                        for( iTemp = 0; iTemp < p_clSpeexAudioInputDataSize.intValue(); iTemp++ )
                                         {
-                                            p_szhhiTempData[8 + iTemp] = p_szhhiSpeexAudioInputData[iTemp];
+                                            p_szhhiTempData[6 + iTemp] = p_szhhiSpeexAudioInputData[iTemp];
                                         }
 
                                         iTemp = p_clSpeexAudioInputDataSize.intValue() + 4; //预读长度=Speex格式音频输入数据长度+时间戳长度
@@ -1009,16 +1002,15 @@ class AudioProcessThread extends Thread
                                         iTemp = 4; //预读长度=时间戳长度
                                     }
                                 }
-                                else //如果没有使用Speex编码器
+                                else
                                 {
-                                    for (iTemp = 0; iTemp < p_szhiPCMAudioInputData.length; iTemp++)
-                                    {
-                                        p_szhhiTempData[6 + iTemp * 2] = (byte) (p_szhiPCMAudioInputData[iTemp] & 0xFF);
-                                        p_szhhiTempData[6 + iTemp * 2 + 1] = (byte) ((p_szhiPCMAudioInputData[iTemp] & 0xFF00 ) >> 8);
-                                    }
-
-                                    iTemp = p_szhiPCMAudioInputData.length * 2 + 4; //预读长度=PCM格式音频输入数据长度+时间戳长度
+                                    Log.e( clCurrentClassNameString, "没有使用任何编解码器，无法发送音频输入数据!" );
+                                    break out;
                                 }
+                            }
+                            else //如果本帧音频输入数据为无语音活动
+                            {
+                                iTemp = 4; //预读长度=时间戳长度
                             }
 
                             if( ( iTemp != 4 ) || //如果本帧音频输入数据为有语音活动，就发送
@@ -1063,7 +1055,7 @@ class AudioProcessThread extends Thread
                         p_szhiPCMAudioOutputData = null;
                     }
 
-                    //接收远端发送过来的音频输出数据帧，然后存放到自适应抖动缓冲器中
+                    //接收远端发送过来的音频输出数据帧，然后放入自适应抖动缓冲器
                     try
                     {
                         InputStream clInputStream = m_clClientSocket.getInputStream();
@@ -1120,7 +1112,7 @@ class AudioProcessThread extends Thread
                                 Log.e(clCurrentClassNameString, System.currentTimeMillis() + " 接收到的数据长度与预读长度不同！" );
                                 break out;
                             }
-                            if( ( clSpeexDecoder == null ) && ( iSocketPrereadSize - 4 != 0 ) && ( iSocketPrereadSize - 4 != m_iFrameSize * 2 ) ) //如果没有使用Speex解码器，且接收到的PCM格式音频输出数据帧不是静音数据，且接收到的PCM格式音频输出数据帧的数据长度与帧长度不同
+                            if( ( iIsUsePCM == 1 ) && ( iSocketPrereadSize - 4 != 0 ) && ( iSocketPrereadSize - 4 != m_iFrameSize * 2 ) ) //如果使用了PCM裸数据，且接收到的PCM格式音频输出数据帧不是静音数据，且接收到的PCM格式音频输出数据帧的数据长度与帧长度不同
                             {
                                 Log.e(clCurrentClassNameString, System.currentTimeMillis() + " 接收到的PCM格式音频数据帧的数据长度与帧长度不同！" );
                                 break out;
@@ -1360,7 +1352,7 @@ class AudioProcessThread extends Thread
                 clSpeexAec.Destory();
                 clSpeexAec = null;
             }
-            if( clWebRtcNsx != null ) //销毁WebRtc定点噪音抑制器类对象
+            if( clWebRtcNsx != null ) //销毁WebRtc定点版噪音抑制器类对象
             {
                 clWebRtcNsx.Destory();
                 clWebRtcNsx = null;
@@ -1429,19 +1421,19 @@ class AudioProcessThread extends Thread
                 m_clClientSocket = null;
             }
 
-            if( ( iIsServerOrClient == 1 ) && ( iExitFlag == 0 ) ) //如果当前是TCP协议服务端，且本线程未接收到退出请求
+            if( ( iIsCreateServerOrClient == 1 ) && ( iExitFlag == 0 ) ) //如果当前是创建服务端，且本线程未接收到退出请求
             {
                 iAudioInputThreadExitStatus = 0;
                 iAudioOutputThreadExitStatus = 0;
 
-                Log.i ( clCurrentClassNameString, "由于当前是TCP协议服务端，且本线程未接收到退出请求，本线程继续保持监听" );
+                Log.i ( clCurrentClassNameString, "由于当前是创建服务端，且本线程未接收到退出请求，本线程继续保持监听" );
             }
-            else if( ( iIsServerOrClient == 0 ) && ( iClientSocketIsNormalExit == 0 ) && ( iExitFlag == 0 ) ) //如果当前是TCP协议客户端，且TCP协议客户端套接字不是正常退出，且本线程未接收到退出请求
+            else if( ( iIsCreateServerOrClient == 0 ) && ( iClientSocketIsNormalExit == 0 ) && ( iExitFlag == 0 ) ) //如果当前是创建客户端，且TCP协议客户端套接字不是正常退出，且本线程未接收到退出请求
             {
                 iAudioInputThreadExitStatus = 0;
                 iAudioOutputThreadExitStatus = 0;
 
-                Log.i ( clCurrentClassNameString, "当前是TCP协议客户端，且TCP协议客户端套接字不是正常退出，且本线程未接收到退出请求，本线程1秒后重连" );
+                Log.i ( clCurrentClassNameString, "当前是创建客户端，且TCP协议客户端套接字不是正常退出，且本线程未接收到退出请求，本线程在1秒后重连" );
                 SystemClock.sleep( 1000 ); //暂停1秒
             }
             else //否则退出
@@ -1643,11 +1635,11 @@ public class MainActivity extends AppCompatActivity
 
                 if( v.getId() == R.id.CreateServerButton )
                 {
-                    clAudioProcessThread.iIsServerOrClient = 1; //标记创建服务端接受客户端
+                    clAudioProcessThread.iIsCreateServerOrClient = 1; //标记创建服务端接受客户端
                 }
                 else if( v.getId() == R.id.ConnectServerButton )
                 {
-                    clAudioProcessThread.iIsServerOrClient = 0; //标记创建客户端连接服务端
+                    clAudioProcessThread.iIsCreateServerOrClient = 0; //标记创建客户端连接服务端
                 }
 
                 clAudioProcessThread.clMainActivity = this;
@@ -1871,8 +1863,18 @@ public class MainActivity extends AppCompatActivity
                     clAudioProcessThread.iIsUseSpeexPreprocessor = 0;
                 }
 
+                //判断是否使用PCM裸数据
+                if( ((RadioButton)clLayoutActivitySettingView.findViewById(R.id.CheckBoxIsUsePCM)).isChecked() )
+                {
+                    clAudioProcessThread.iIsUsePCM = 1;
+                }
+                else
+                {
+                    clAudioProcessThread.iIsUsePCM = 0;
+                }
+
                 //判断是否使用Speex编解码器
-                if( ((CheckBox)clLayoutActivitySettingView.findViewById(R.id.CheckBoxIsUseSpeexCodec)).isChecked())
+                if( ((RadioButton)clLayoutActivitySettingView.findViewById(R.id.CheckBoxIsUseSpeexCodec)).isChecked() )
                 {
                     clAudioProcessThread.iIsUseSpeexCodec = 1;
 
@@ -1928,6 +1930,16 @@ public class MainActivity extends AppCompatActivity
                 else
                 {
                     clAudioProcessThread.iIsUseSpeexCodec = 0;
+                }
+
+                //判断是否使用Opus编解码器
+                if( ((RadioButton)clLayoutActivitySettingView.findViewById(R.id.CheckBoxIsUsePCM)).isChecked())
+                {
+                    clAudioProcessThread.iIsUseOpusCodec = 1;
+                }
+                else
+                {
+                    clAudioProcessThread.iIsUseOpusCodec = 0;
                 }
 
                 //判断是否使用自适应抖动缓冲器
