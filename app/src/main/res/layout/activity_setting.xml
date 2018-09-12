@@ -94,65 +94,81 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
 
-            <CheckBox
-                android:id="@+id/CheckBoxIsUseWebRtcAec"
-                android:layout_weight="4"
+            <TextView
+                android:gravity="center_vertical"
+                android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:checked="false"
-                android:text="使用WebRtc声学回音消除器"
-                android:enabled="false"/>
+                android:text="声学回音消除器：" />
 
-            <Button
-                android:layout_weight="1"
+            <RadioGroup
+                android:orientation="vertical"
+                android:layout_weight="5"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="设置"
-                android:onClick="OnWebRtcAecSettingClick" />
+                android:layout_height="match_parent">
 
-        </LinearLayout>
+                <RadioButton
+                    android:id="@+id/RadioButtonUseNoAec"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="不使用"/>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+                <RadioButton
+                    android:id="@+id/RadioButtonUseWebRtcAec"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="WebRtc声学回音消除器"/>
 
-            <CheckBox
-                android:id="@+id/CheckBoxIsUseWebRtcAecm"
-                android:layout_weight="4"
+                <RadioButton
+                    android:id="@+id/RadioButtonUseWebRtcAecm"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:checked="true"
+                    android:text="WebRtc移动版声学回音消除器"/>
+
+                <RadioButton
+                    android:id="@+id/RadioButtonUseSpeexAec"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="Speex声学回音消除器"/>
+
+            </RadioGroup>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_weight="2"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:checked="true"
-                android:text="使用WebRtc移动版声学回音消除器" />
+                android:layout_height="wrap_content">
 
-            <Button
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="设置"
-                android:onClick="OnWebRtcAecmSettingClick" />
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="设置"
+                    android:visibility="invisible"/>
 
-        </LinearLayout>
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="设置"
+                    android:onClick="OnWebRtcAecSettingClick"/>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="设置"
+                    android:onClick="OnWebRtcAecmSettingClick" />
 
-            <CheckBox
-                android:id="@+id/CheckBoxIsUseSpeexAec"
-                android:layout_weight="4"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:checked="true"
-                android:text="使用Speex声学回音消除器" />
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="设置"
+                    android:onClick="OnSpeexAecSettingClick" />
 
-            <Button
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="设置"
-                android:onClick="OnSpeexAecSettingClick" />
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -216,24 +232,28 @@
                 android:orientation="vertical"
                 android:layout_weight="5"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content">
+                android:layout_height="match_parent">
 
                 <RadioButton
-                    android:id="@+id/CheckBoxIsUsePCM"
+                    android:id="@+id/RadioButtonUsePcm"
+                    android:layout_weight="1"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="PCM裸数据"/>
+                    android:layout_height="0dp"
+                    android:text="PCM原始数据"/>
 
                 <RadioButton
-                    android:id="@+id/CheckBoxIsUseSpeexCodec"
+                    android:id="@+id/RadioButtonUseSpeexCodec"
+                    android:layout_weight="1"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="0dp"
                     android:checked="true"
                     android:text="Speex编解码器"/>
 
                 <RadioButton
+                    android:id="@+id/RadioButtonUseOpusCodec"
+                    android:layout_weight="1"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="0dp"
                     android:text="Opus编解码器"
                     android:enabled="false"/>
 
@@ -243,25 +263,27 @@
                 android:orientation="vertical"
                 android:layout_weight="2"
                 android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:text="" />
+                android:layout_height="wrap_content">
 
                 <Button
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="设置"
+                    android:onClick="OnPcmSettingClick"
+                    android:enabled="false"/>
+
+                <Button
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="设置"
                     android:onClick="OnSpeexCodecSettingClick" />
 
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:text="" />
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="设置"
+                    android:onClick="OnOpusCodecSettingClick"
+                    android:enabled="false"/>
 
             </LinearLayout>
 

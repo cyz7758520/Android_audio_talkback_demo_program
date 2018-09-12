@@ -1,54 +1,62 @@
 package HeavenTao.Audio;
 
-public class SpeexEncoder//Speex编码器类
+//Speex编码器类
+public class SpeexEncoder
 {
-    private Long clSpeexEncoderState;//Speex编码器的内存指针
-    private Long clSpeexBits;//SpeexBits的内存指针
+    private Long pclSpeexEncoderState; //存放Speex编码器的内存指针。
+    private Long pclSpeexBits; //存放SpeexBits的内存指针。
 
-    //构造函数
-    public SpeexEncoder()
+    static
     {
-        clSpeexEncoderState = new Long(0);
-        clSpeexBits = new Long(0);
+        System.loadLibrary( "Func" ); //加载libFunc.so。
+        System.loadLibrary( "Speex" ); //加载libSpeex.so。
     }
 
-    //析构函数
+    //构造函数。
+    public SpeexEncoder()
+    {
+        pclSpeexEncoderState = new Long(0);
+        pclSpeexBits = new Long(0);
+    }
+
+    //析构函数。
     public void finalize()
     {
         Destory();
     }
 
-    //初始化Speex编码器
-    public int Init( int iSamplingRate, int iIsUseVbr, int iQuality, int iComplexity, int iPlcExpectedLossRate )
+    //初始化Speex编码器。
+    public long Init( int i32SamplingRate, int i32UseCbrOrVbr, int i32Quality, int i32Complexity, int i32PlcExpectedLossRate )
     {
-        if( clSpeexEncoderState.longValue() == 0)//如果Speex编码器还没有初始化
+        if( pclSpeexEncoderState.longValue() == 0 ) //如果Speex编码器还没有初始化。
         {
-            return SpeexEncoderInit( clSpeexEncoderState, clSpeexBits, iSamplingRate, iIsUseVbr, iQuality, iComplexity, iPlcExpectedLossRate );
+            return SpeexEncoderInit( pclSpeexEncoderState, pclSpeexBits, i32SamplingRate, i32UseCbrOrVbr, i32Quality, i32Complexity, i32PlcExpectedLossRate );
         }
-        else//如果Speex编码器已经初始化
+        else //如果Speex编码器已经初始化。
         {
             return 0;
         }
     }
 
-    //获取Speex编码器的内存指针
+    //获取Speex编码器的内存指针。
     public Long GetSpeexEncoderState()
     {
-        return clSpeexEncoderState;
+        return pclSpeexEncoderState;
     }
 
-    //将一帧PCM格式音频数据编码成Speex格式音频数据
-    public int Encode( short clPCMAudioData[], byte clSpeexAudioData[], Long clSpeexAudioDataSize )
+    //对一个单声道16位有符号整型20毫秒PCM格式音频数据帧进行Speex格式编码。
+    public long Encode( short pszi16PcmAudioDataFrame[], byte pszi8SpeexAudioDataFrame[], Integer pclSpeexAudioDataFrameSize, Integer pclIsNeedTrans )
     {
-        return SpeexEncoderEncode( clSpeexEncoderState, clSpeexBits, clPCMAudioData, clSpeexAudioData, clSpeexAudioDataSize );
+        return SpeexEncoderEncode( pclSpeexEncoderState, pclSpeexBits, pszi16PcmAudioDataFrame, pszi8SpeexAudioDataFrame, pclSpeexAudioDataFrameSize, pclIsNeedTrans );
     }
 
-    public void Destory()//销毁Speex编码器
+    //销毁Speex编码器。
+    public long Destory()
     {
-        SpeexEncoderDestory( clSpeexEncoderState, clSpeexBits);
+        return SpeexEncoderDestory( pclSpeexEncoderState, pclSpeexBits );
     }
 
-    private native int SpeexEncoderInit( Long clSpeexEncoderState, Long clSpeexBits, int iSamplingRate, int iIsUseVbr, int iQuality, int iComplexity, int iPlcExpectedLossRate );
-    private native int SpeexEncoderEncode( Long clSpeexEncoderState, Long clSpeexBits, short clPCMAudioData[], byte clSpeexAudioData[], Long clSpeexAudioDataSize );
-    private native void SpeexEncoderDestory( Long clSpeexEncoderState, Long clSpeexBits );
+    private native long SpeexEncoderInit( Long pclSpeexEncoderState, Long pclSpeexBits, int i32SamplingRate, int i32UseCbrOrVbr, int i32Quality, int i32Complexity, int i32PlcExpectedLossRate );
+    private native long SpeexEncoderEncode( Long pclSpeexEncoderState, Long pclSpeexBits, short pszi16PcmAudioDataFrame[], byte pszi8SpeexAudioDataFrame[], Integer pclSpeexAudioDataFrameSize, Integer pclIsNeedTrans );
+    private native long SpeexEncoderDestory( Long pclSpeexEncoderState, Long pclSpeexBits );
 }

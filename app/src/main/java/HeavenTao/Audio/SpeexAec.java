@@ -2,12 +2,18 @@ package HeavenTao.Audio;
 
 public class SpeexAec //Speex声学回音消除器类
 {
-    private Long clSpeexEchoState;//Speex声学回音消除器的内存指针
+    private Long pclSpeexEchoState; //Speex声学回音消除器的内存指针
+
+    static
+    {
+        System.loadLibrary( "Func" ); //加载libFunc.so
+        System.loadLibrary( "SpeexDsp" ); //加载libSpeexDsp.so
+    }
 
     //构造函数
     public SpeexAec()
     {
-        clSpeexEchoState = new Long(0);
+        pclSpeexEchoState = new Long(0);
     }
 
     //析构函数
@@ -17,13 +23,13 @@ public class SpeexAec //Speex声学回音消除器类
     }
 
     //初始化Speex声学回音消除器
-    public int Init( int iFrameSize, int iSamplingRate, int iFilterLength )
+    public long Init( int i32SamplingRate, int i32FrameSize, int i32FilterLength )
     {
-        if( clSpeexEchoState.longValue() == 0)//如果Speex声学回音消除器还没有初始化
+        if( pclSpeexEchoState.longValue() == 0 ) //如果Speex声学回音消除器还没有初始化
         {
-            return SpeexAecInit( clSpeexEchoState, iFrameSize, iSamplingRate, iFilterLength );
+            return SpeexAecInit( pclSpeexEchoState, i32SamplingRate, i32FrameSize, i32FilterLength );
         }
-        else//如果Speex声学回音消除器已经初始化
+        else //如果Speex声学回音消除器已经初始化
         {
             return 0;
         }
@@ -32,22 +38,22 @@ public class SpeexAec //Speex声学回音消除器类
     //获取Speex声学回音消除器的内存指针
     public Long GetSpeexEchoState()
     {
-        return clSpeexEchoState;
+        return pclSpeexEchoState;
     }
 
-    //对一帧音频输入数据进行Speex声学回音消除
-    public int Aec( short clAudioInput[], short clAudioOutput[], short clAudioResult[] )
+    //对一个单声道16位有符号整型PCM格式音频输入数据帧进行Speex声学回音消除
+    public long Aec( short pszi16AudioInputDataFrame[], short pszi16AudioOutputDataFrame[], short pszi16AudioResultDataFrame[] )
     {
-        return SpeexAecAec( clSpeexEchoState, clAudioInput, clAudioOutput, clAudioResult);
+        return SpeexAecAec( pclSpeexEchoState, pszi16AudioInputDataFrame, pszi16AudioOutputDataFrame, pszi16AudioResultDataFrame);
     }
 
     //销毁Speex声学回音消除器
-    public void Destory()
+    public long Destory()
     {
-        SpeexAecDestory( clSpeexEchoState );
+        return SpeexAecDestory( pclSpeexEchoState );
     }
 
-    private native int SpeexAecInit( Long clSpeexEchoState, int iFrameSize, int iSamplingRate, int iFilterLength );
-    private native int SpeexAecAec( Long clSpeexEchoState, short clAudioInput[], short clAudioOutput[], short clAudioResult[] );
-    private native void SpeexAecDestory( Long clSpeexEchoState );
+    private native long SpeexAecInit( Long pclSpeexEchoState, int i32SamplingRate, int i32FrameSize, int i32FilterLength );
+    private native long SpeexAecAec( Long pclSpeexEchoState, short pszi16AudioInputDataFrame[], short pszi16AudioOutputDataFrame[], short pszi16AudioResultDataFrame[] );
+    private native long SpeexAecDestory( Long pclSpeexEchoState );
 }
