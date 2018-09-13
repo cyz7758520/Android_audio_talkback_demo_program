@@ -328,7 +328,7 @@ public abstract class AudioProcessThread extends Thread
                 {
                     case 0: //如果不使用声学回音消除器
                     {
-                        Log.i( m_pclCurrentClassNameString, "音频处理线程：不使用声学回音消除器" );
+                        Log.i( m_pclCurrentClassNameString, "音频处理线程：不使用声学回音消除器。" );
                         break;
                     }
                     case 1: //如果使用WebRtc声学回音消除器
@@ -514,11 +514,11 @@ public abstract class AudioProcessThread extends Thread
                     p_i64Temp = UserProcess();
                     if( p_i64Temp == 0 )
                     {
-                        //Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：调用用户定义的处理函数成功。返回值：" + p_i64Temp );
+                        //Log.i( m_pclCurrentClassNameString, "音频处理线程：调用用户定义的处理函数成功。返回值：" + p_i64Temp );
                     }
                     else
                     {
-                        Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：调用用户定义的处理函数失败。返回值：" + p_i64Temp );
+                        Log.e( m_pclCurrentClassNameString, "音频处理线程：调用用户定义的处理函数失败。返回值：" + p_i64Temp );
                         break out;
                     }
 
@@ -532,7 +532,7 @@ public abstract class AudioProcessThread extends Thread
                             p_pszi16PcmAudioInputDataFrame = m_pclAlreadyAudioInputLinkedList.getFirst();
                             m_pclAlreadyAudioInputLinkedList.removeFirst();
                         }
-                        Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：从已录音的链表中取出第一个音频输入数据帧" );
+                        Log.i( m_pclCurrentClassNameString, "音频处理线程：从已录音的链表中取出第一个音频输入数据帧。" );
 
                         //再从已播放的链表中取出第一个音频输出数据帧
                         if( m_pclAlreadyAudioOutputLinkedList.size() > 0) //如果已播放的链表里有音频输出数据帧
@@ -542,12 +542,12 @@ public abstract class AudioProcessThread extends Thread
                                 p_pszi16PcmAudioOutputDataFrame = m_pclAlreadyAudioOutputLinkedList.getFirst();
                                 m_pclAlreadyAudioOutputLinkedList.removeFirst();
                             }
-                            Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：从已播放的链表中取出第一个音频输出数据帧" );
+                            Log.i( m_pclCurrentClassNameString, "音频处理线程：从已播放的链表中取出第一个音频输出数据帧。" );
                         }
                         else //如果已播放的链表里没有音频输出数据帧
                         {
                             p_pszi16PcmAudioOutputDataFrame = new short[m_i32FrameSize];
-                            Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：已播放的链表中没有音频输出数据帧，用一个空帧代替" );
+                            Log.i( m_pclCurrentClassNameString, "音频处理线程：已播放的链表中没有音频输出数据帧，用一个空帧代替。" );
                         }
 
                         //将音频输入数据帧复制到音频结果数据帧，方便处理
@@ -558,48 +558,48 @@ public abstract class AudioProcessThread extends Thread
                         switch( m_i32UseWhatAec )
                         {
                             case 0: //如果不使用声学回音消除器
-                                Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：不使用声学回音消除器" );
+                                Log.i( m_pclCurrentClassNameString, "音频处理线程：不使用声学回音消除器。" );
                                 break;
                             case 1: //如果使用WebRtc声学回音消除器
                                 p_i64Temp = m_pclWebRtcAec.Echo( p_pszi16PcmAudioResultDataFrame, p_pszi16PcmAudioOutputDataFrame, p_pszi16PcmAudioTempDataFrame );
                                 if( p_i64Temp == 0 )
                                 {
-                                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用WebRtc声学回音消除器成功。返回值：" + p_i64Temp );
+                                    Log.i( m_pclCurrentClassNameString, "音频处理线程：使用WebRtc声学回音消除器成功。返回值：" + p_i64Temp );
 
                                     for( p_i32Temp = 0; p_i32Temp < p_pszi16PcmAudioTempDataFrame.length; p_i32Temp++ )
                                         p_pszi16PcmAudioResultDataFrame[p_i32Temp] = p_pszi16PcmAudioTempDataFrame[p_i32Temp];
                                 }
                                 else
                                 {
-                                    Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用WebRtc声学回音消除器失败。返回值：" + p_i64Temp );
+                                    Log.e( m_pclCurrentClassNameString, "音频处理线程：使用WebRtc声学回音消除器失败。返回值：" + p_i64Temp );
                                 }
                                 break;
                             case 2: //如果使用WebRtc移动版声学回音消除器
                                 p_i64Temp = m_pclWebRtcAecm.Echo( p_pszi16PcmAudioResultDataFrame, p_pszi16PcmAudioOutputDataFrame, p_pszi16PcmAudioTempDataFrame );
                                 if( p_i64Temp == 0 )
                                 {
-                                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用WebRtc移动版声学回音消除器成功。返回值：" + p_i64Temp );
+                                    Log.i( m_pclCurrentClassNameString, "音频处理线程：使用WebRtc移动版声学回音消除器成功。返回值：" + p_i64Temp );
 
                                     for( p_i32Temp = 0; p_i32Temp < p_pszi16PcmAudioTempDataFrame.length; p_i32Temp++ )
                                         p_pszi16PcmAudioResultDataFrame[p_i32Temp] = p_pszi16PcmAudioTempDataFrame[p_i32Temp];
                                 }
                                 else
                                 {
-                                    Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用WebRtc移动版声学回音消除器失败。返回值：" + p_i64Temp );
+                                    Log.e( m_pclCurrentClassNameString, "音频处理线程：使用WebRtc移动版声学回音消除器失败。返回值：" + p_i64Temp );
                                 }
                                 break;
                             case 3: //如果使用Speex声学回音消除器
                                 p_i64Temp = m_pclSpeexAec.Aec( p_pszi16PcmAudioResultDataFrame, p_pszi16PcmAudioOutputDataFrame, p_pszi16PcmAudioTempDataFrame );
                                 if( p_i64Temp == 0 )
                                 {
-                                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用Speex声学回音消除器成功。返回值：" + p_i64Temp );
+                                    Log.i( m_pclCurrentClassNameString, "音频处理线程：使用Speex声学回音消除器成功。返回值：" + p_i64Temp );
 
                                     for( p_i32Temp = 0; p_i32Temp < p_pszi16PcmAudioTempDataFrame.length; p_i32Temp++ )
                                         p_pszi16PcmAudioResultDataFrame[p_i32Temp] = p_pszi16PcmAudioTempDataFrame[p_i32Temp];
                                 }
                                 else
                                 {
-                                    Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用Speex声学回音消除器失败。返回值：" + p_i64Temp );
+                                    Log.e( m_pclCurrentClassNameString, "音频处理线程：使用Speex声学回音消除器失败。返回值：" + p_i64Temp );
                                 }
                                 break;
                         }
@@ -610,11 +610,11 @@ public abstract class AudioProcessThread extends Thread
                             p_i64Temp = m_pclWebRtcNsx.Process( m_i32SamplingRate, p_pszi16PcmAudioResultDataFrame, p_pszi16PcmAudioResultDataFrame.length );
                             if( p_i64Temp == 0 )
                             {
-                                Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用WebRtc定点噪音抑制器成功。返回值：" + p_i64Temp );
+                                Log.i( m_pclCurrentClassNameString, "音频处理线程：使用WebRtc定点噪音抑制器成功。返回值：" + p_i64Temp );
                             }
                             else
                             {
-                                Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用WebRtc定点噪音抑制器失败。返回值：" + p_i64Temp );
+                                Log.e( m_pclCurrentClassNameString, "音频处理线程：使用WebRtc定点噪音抑制器失败。返回值：" + p_i64Temp );
                             }
                         }
 
@@ -624,11 +624,11 @@ public abstract class AudioProcessThread extends Thread
                             p_i64Temp = m_pclSpeexPreprocessor.Preprocess( p_pszi16PcmAudioResultDataFrame, p_pclVoiceActivityStatus );
                             if( p_i64Temp == 0 )
                             {
-                                Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用Speex预处理器成功。语音活动状态：" + p_pclVoiceActivityStatus + "，返回值：" + p_i64Temp );
+                                Log.i( m_pclCurrentClassNameString, "音频处理线程：使用Speex预处理器成功。语音活动状态：" + p_pclVoiceActivityStatus + "，返回值：" + p_i64Temp );
                             }
                             else
                             {
-                                Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用Speex预处理器失败。返回值：" + p_i64Temp );
+                                Log.e( m_pclCurrentClassNameString, "音频处理线程：使用Speex预处理器失败。返回值：" + p_i64Temp );
                             }
                         }
 
@@ -637,7 +637,7 @@ public abstract class AudioProcessThread extends Thread
                         {
                             case 0: //如果使用PCM原始数据
                             {
-                                Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用PCM原始数据。" );
+                                Log.i( m_pclCurrentClassNameString, "音频处理线程：使用PCM原始数据。" );
                                 break;
                             }
                             case 1: //如果使用Speex编码器
@@ -646,11 +646,11 @@ public abstract class AudioProcessThread extends Thread
                                 p_i64Temp = m_pclSpeexEncoder.Encode( p_pszi16PcmAudioResultDataFrame, p_pszi8SpeexAudioInputDataFrame, p_pclSpeexAudioInputDataFrameSize, p_pclSpeexAudioInputDataFrameIsNeedTrans );
                                 if( p_i64Temp == 0 )
                                 {
-                                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用Speex编码器成功。Speex格式音频输入数据帧的内存长度：" + p_pclSpeexAudioInputDataFrameSize + "，Speex格式音频输入数据帧是否需要传输：" + p_pclSpeexAudioInputDataFrameIsNeedTrans + "，返回值：" + p_i64Temp );
+                                    Log.i( m_pclCurrentClassNameString, "音频处理线程：使用Speex编码器成功。Speex格式音频输入数据帧的内存长度：" + p_pclSpeexAudioInputDataFrameSize + "，Speex格式音频输入数据帧是否需要传输：" + p_pclSpeexAudioInputDataFrameIsNeedTrans + "，返回值：" + p_i64Temp );
                                 }
                                 else
                                 {
-                                    Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：使用Speex编码器失败。返回值：" + p_i64Temp );
+                                    Log.e( m_pclCurrentClassNameString, "音频处理线程：使用Speex编码器失败。返回值：" + p_i64Temp );
                                 }
                                 break;
                             }
@@ -673,12 +673,12 @@ public abstract class AudioProcessThread extends Thread
                             break out;
                         }
 
-                        Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：本音频数据帧处理完毕。" );
+                        Log.i( m_pclCurrentClassNameString, "音频处理线程：本音频数据帧处理完毕。" );
 
                         if( m_i32ExitFlag != 0 ) //如果本线程退出标记为请求退出
                         {
                             m_i32ExitCode = 0; //处理已经成功了，再将本线程退出代码设置为正常退出
-                            Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：接收到退出请求，开始准备退出。" );
+                            Log.i( m_pclCurrentClassNameString, "音频处理线程：接收到退出请求，开始准备退出。" );
                             break out;
                         }
                     }
@@ -728,11 +728,11 @@ public abstract class AudioProcessThread extends Thread
                 p_i64Temp = m_pclWebRtcAec.Destory();
                 if( p_i64Temp == 0 )
                 {
-                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：销毁WebRtc声学回音消除器成功。返回值：" + p_i64Temp );
+                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc声学回音消除器成功。返回值：" + p_i64Temp );
                 }
                 else
                 {
-                    Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：销毁WebRtc声学回音消除器失败。返回值：" + p_i64Temp );
+                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc声学回音消除器失败。返回值：" + p_i64Temp );
                 }
                 m_pclWebRtcAec = null;
             }
@@ -741,11 +741,11 @@ public abstract class AudioProcessThread extends Thread
                 p_i64Temp = m_pclWebRtcAecm.Destory();
                 if( p_i64Temp == 0 )
                 {
-                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：销毁WebRtc移动版声学回音消除器成功。返回值：" + p_i64Temp );
+                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc移动版声学回音消除器成功。返回值：" + p_i64Temp );
                 }
                 else
                 {
-                    Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：销毁WebRtc移动版声学回音消除器失败。返回值：" + p_i64Temp );
+                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc移动版声学回音消除器失败。返回值：" + p_i64Temp );
                 }
                 m_pclWebRtcAecm = null;
             }
@@ -754,11 +754,11 @@ public abstract class AudioProcessThread extends Thread
                 p_i64Temp = m_pclSpeexAec.Destory();
                 if( p_i64Temp == 0 )
                 {
-                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：销毁Speex声学回音消除器成功。返回值：" + p_i64Temp );
+                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁Speex声学回音消除器成功。返回值：" + p_i64Temp );
                 }
                 else
                 {
-                    Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：销毁Speex声学回音消除器失败。返回值：" + p_i64Temp );
+                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁Speex声学回音消除器失败。返回值：" + p_i64Temp );
                 }
                 m_pclSpeexAec = null;
             }
@@ -767,11 +767,11 @@ public abstract class AudioProcessThread extends Thread
                 p_i64Temp = m_pclWebRtcNsx.Destory();
                 if( p_i64Temp == 0 )
                 {
-                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：销毁WebRtc定点版噪音抑制器成功。返回值：" + p_i64Temp );
+                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc定点版噪音抑制器成功。返回值：" + p_i64Temp );
                 }
                 else
                 {
-                    Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：销毁WebRtc定点版噪音抑制器失败。返回值：" + p_i64Temp );
+                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc定点版噪音抑制器失败。返回值：" + p_i64Temp );
                 }
                 m_pclWebRtcNsx = null;
             }
@@ -780,11 +780,11 @@ public abstract class AudioProcessThread extends Thread
                 p_i64Temp = m_pclSpeexPreprocessor.Destory();
                 if( p_i64Temp == 0 )
                 {
-                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：销毁Speex预处理器成功。返回值：" + p_i64Temp );
+                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁Speex预处理器成功。返回值：" + p_i64Temp );
                 }
                 else
                 {
-                    Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 音频处理线程：销毁Speex预处理器失败。返回值：" + p_i64Temp );
+                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁Speex预处理器失败。返回值：" + p_i64Temp );
                 }
                 m_pclSpeexPreprocessor = null;
             }

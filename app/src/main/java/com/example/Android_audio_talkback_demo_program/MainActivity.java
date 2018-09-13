@@ -165,7 +165,7 @@ class MyAudioProcessThread extends AudioProcessThread
                         m_clServerSocket.bind( new InetSocketAddress( m_clIPAddressString, m_iPort ), 1 ); //创建服务端套接字
                         m_clServerSocket.setSoTimeout( 500 ); //设置accept()函数的超时时间
 
-                        String clInfoString = "创建TCP协议服务端套接字[" + m_clServerSocket.getInetAddress().getHostAddress() + ":" + m_clServerSocket.getLocalPort() + "]成功！";
+                        String clInfoString = "创建TCP协议服务端套接字[" + m_clServerSocket.getInetAddress().getHostAddress() + ":" + m_clServerSocket.getLocalPort() + "]成功。";
                         Log.i( m_pclCurrentClassNameString, clInfoString );
                         Message clMessage = new Message();
                         clMessage.what = 2;
@@ -174,7 +174,7 @@ class MyAudioProcessThread extends AudioProcessThread
                     }
                     catch( IOException e )
                     {
-                        String clInfoString = "创建TCP协议服务端套接字[" + m_clIPAddressString + ":" + m_iPort + "]失败！原因：" + e.toString();
+                        String clInfoString = "创建TCP协议服务端套接字[" + m_clIPAddressString + ":" + m_iPort + "]失败。原因：" + e.toString();
                         Log.e( m_pclCurrentClassNameString, clInfoString );
                         Message clMessage = new Message();
                         clMessage.what = 2;
@@ -207,7 +207,7 @@ class MyAudioProcessThread extends AudioProcessThread
                         }
                         m_clServerSocket = null;
 
-                        String clInfoString = System.currentTimeMillis() + " 接受了远端TCP协议客户端套接字[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]与本地TCP协议客户端套接字[" + m_clClientSocket.getLocalAddress().getHostAddress() + ":" + m_clClientSocket.getLocalPort() + "]的连接！";
+                        String clInfoString = "接受了远端TCP协议客户端套接字[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]与本地TCP协议客户端套接字[" + m_clClientSocket.getLocalAddress().getHostAddress() + ":" + m_clClientSocket.getLocalPort() + "]的连接。";
                         Log.i( m_pclCurrentClassNameString, clInfoString );
                         Message clMessage = new Message();
                         clMessage.what = 2;
@@ -218,7 +218,7 @@ class MyAudioProcessThread extends AudioProcessThread
 
                     if( m_i32ExitFlag != 0 ) //如果本线程接收到退出请求
                     {
-                        Log.i( m_pclCurrentClassNameString, "本线程接收到退出请求，开始准备退出" );
+                        Log.i( m_pclCurrentClassNameString, "本线程接收到退出请求，开始准备退出。" );
                         break out;
                     }
                 }
@@ -230,7 +230,7 @@ class MyAudioProcessThread extends AudioProcessThread
                 {
                     m_clClientSocket.connect( new InetSocketAddress( m_clIPAddressString, m_iPort ), 5000 ); //连接指定的IP地址和端口号，超时时间为5秒
 
-                    String clInfoString = "创建本地TCP协议客户端套接字[" + m_clClientSocket.getLocalAddress().getHostAddress() + ":" + m_clClientSocket.getLocalPort() + "]与远端TCP协议服务端套接字[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]的连接成功！";
+                    String clInfoString = "创建本地TCP协议客户端套接字[" + m_clClientSocket.getLocalAddress().getHostAddress() + ":" + m_clClientSocket.getLocalPort() + "]与远端TCP协议服务端套接字[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]的连接成功。";
                     Log.i( m_pclCurrentClassNameString, clInfoString );
                     Message clMessage = new Message();
                     clMessage.what = 2;
@@ -249,7 +249,7 @@ class MyAudioProcessThread extends AudioProcessThread
                     }
                     m_clClientSocket = null;
 
-                    String clInfoString = " 创建本地TCP协议客户端套接字与远端TCP协议服务端套接字[" + m_clIPAddressString + ":" + m_iPort + "]的连接失败！原因：" + e.getMessage();
+                    String clInfoString = " 创建本地TCP协议客户端套接字与远端TCP协议服务端套接字[" + m_clIPAddressString + ":" + m_iPort + "]的连接失败。原因：" + e.getMessage();
                     Log.i( m_pclCurrentClassNameString, clInfoString );
                     Message clMessage = new Message();
                     clMessage.what = 2;
@@ -273,11 +273,11 @@ class MyAudioProcessThread extends AudioProcessThread
             m_i64Temp = clAjb.Init( m_i32SamplingRate, m_i32FrameSize, 0 );
             if( m_i64Temp == 0 )
             {
-                Log.i( m_pclCurrentClassNameString, "初始化自适应抖动缓冲器类对象成功！返回值：" + m_i64Temp );
+                Log.i( m_pclCurrentClassNameString, "初始化自适应抖动缓冲器类对象成功。返回值：" + m_i64Temp );
             }
             else
             {
-                Log.i( m_pclCurrentClassNameString, "初始化自适应抖动缓冲器类对象失败！返回值：" + m_i64Temp );
+                Log.i( m_pclCurrentClassNameString, "初始化自适应抖动缓冲器类对象失败。返回值：" + m_i64Temp );
                 break out;
             }
 
@@ -292,11 +292,11 @@ class MyAudioProcessThread extends AudioProcessThread
                 try
                 {
                     clAudioInputFileOutputStream = new FileOutputStream( Environment.getExternalStorageDirectory() + "/AudioInput.pcm" );
-                    Log.i( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioInput.pcm 音频输入数据文件成功！");
+                    Log.i( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioInput.pcm 音频输入数据文件成功。");
                 }
                 catch( FileNotFoundException e )
                 {
-                    Log.e( m_pclCurrentClassNameString, "创建 AudioInput.pcm 音频输入数据文件失败！原因：" + e.toString() );
+                    Log.e( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioInput.pcm 音频输入数据文件失败。原因：" + e.toString() );
                     break out;
                 }
 
@@ -304,11 +304,11 @@ class MyAudioProcessThread extends AudioProcessThread
                 try
                 {
                     clAudioOutputFileOutputStream = new FileOutputStream(Environment.getExternalStorageDirectory() + "/AudioOutput.pcm");
-                    Log.i( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioOutput.pcm 音频输出数据文件成功！");
+                    Log.i( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioOutput.pcm 音频输出数据文件成功。");
                 }
                 catch( FileNotFoundException e )
                 {
-                    Log.e( m_pclCurrentClassNameString, "创建 AudioOutput.pcm 音频输出数据文件失败！原因：" + e.toString() );
+                    Log.e( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioOutput.pcm 音频输出数据文件失败。原因：" + e.toString() );
                     break out;
                 }
 
@@ -316,11 +316,11 @@ class MyAudioProcessThread extends AudioProcessThread
                 try
                 {
                     clAudioResultFileOutputStream = new FileOutputStream(Environment.getExternalStorageDirectory() + "/AudioResult.pcm");
-                    Log.i( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioResult.pcm 音频结果数据文件成功！");
+                    Log.i( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioResult.pcm 音频结果数据文件成功。");
                 }
                 catch( FileNotFoundException e )
                 {
-                    Log.e(m_pclCurrentClassNameString, "创建 AudioOutput.pcm 音频结果数据文件失败！原因：" + e.toString() );
+                    Log.e(m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioOutput.pcm 音频结果数据文件失败。原因：" + e.toString() );
                     break out;
                 }
             }
@@ -338,7 +338,7 @@ class MyAudioProcessThread extends AudioProcessThread
             if( m_szi16TempData == null ) m_szi16TempData =  new short[m_i32FrameSize]; //初始化存放临时数据的数组
 
             {
-                String clInfoString = "开始进行音频对讲！";
+                String clInfoString = "开始进行音频对讲。";
                 Log.i( m_pclCurrentClassNameString, clInfoString);
                 Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
             }
@@ -366,7 +366,7 @@ class MyAudioProcessThread extends AudioProcessThread
                     //接收音频输出数据帧的预读长度
                     if( clInputStream.read( m_szi8TempData, 0, 2 ) != 2 ) //如果接收到预读长度的长度不对，就返回
                     {
-                        Log.e(m_pclCurrentClassNameString, System.currentTimeMillis() + " 接收到预读长度的长度不对！" );
+                        Log.e( m_pclCurrentClassNameString, "接收到预读长度的长度不对。" );
                         break out;
                     }
 
@@ -375,14 +375,14 @@ class MyAudioProcessThread extends AudioProcessThread
                     if( iSocketPrereadSize == 0 ) //如果预读长度为0，表示这是一个心跳包，就更新一下时间即可
                     {
                         lLastPacketRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间
-                        Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 接收到一个心跳包！" );
+                        Log.i( m_pclCurrentClassNameString, "接收到一个心跳包。" );
                     }
                     else if( iSocketPrereadSize == 0xFFFF ) //如果预读长度为0xFFFF，表示这是一个退出包
                     {
                         iIsRecvExitPacket = 1; //设置已经接收到退出包
                         lLastPacketRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间
 
-                        String clInfoString = System.currentTimeMillis() + " 接收到一个退出包！";
+                        String clInfoString = "接收到一个退出包。";
                         Log.i( m_pclCurrentClassNameString, clInfoString);
                         Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
 
@@ -390,12 +390,12 @@ class MyAudioProcessThread extends AudioProcessThread
                     }
                     else if( iSocketPrereadSize < 4 ) //如果预读长度小于4，表示没有时间戳
                     {
-                        Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 接收到预读长度为" + iSocketPrereadSize + "小于4，表示没有时间戳，无法继续接收！" );
+                        Log.e( m_pclCurrentClassNameString, "接收到预读长度为" + iSocketPrereadSize + "小于4，表示没有时间戳，无法继续接收。" );
                         break out;
                     }
                     else if( iSocketPrereadSize > m_szi8TempData.length ) //如果预读长度大于接收缓存区的长度
                     {
-                        Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 接收到预读长度大于接收缓存区的长度，无法继续接收！" );
+                        Log.e( m_pclCurrentClassNameString, "接收到预读长度大于接收缓存区的长度，无法继续接收。" );
                         break out;
                     }
                 }
@@ -405,7 +405,7 @@ class MyAudioProcessThread extends AudioProcessThread
                     //接收音频输出数据帧的时间戳
                     if( clInputStream.read( m_szi8TempData, 0, 4 ) != 4 ) //如果接收到时间戳长度不对
                     {
-                        Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 接收到时间戳长度不对！" );
+                        Log.e( m_pclCurrentClassNameString, "接收到时间戳长度不对。" );
                         break out;
                     }
 
@@ -421,57 +421,48 @@ class MyAudioProcessThread extends AudioProcessThread
                     {
                         if( clInputStream.read( m_szi8TempData, 0, iSocketPrereadSize - 4 ) != iSocketPrereadSize - 4 ) //如果接收到数据长度与预读长度-时间戳长度不同
                         {
-                            Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 接收到的数据长度与预读长度不同！" );
+                            Log.e( m_pclCurrentClassNameString, "接收到的数据长度与预读长度不同。" );
                             break out;
                         }
 
                         if( ( m_i32UseWhatCodec == 0 ) && ( iSocketPrereadSize - 4 != m_i32FrameSize * 2 ) ) //如果使用了PCM原始数据，但接收到的PCM格式音频输出数据帧的数据长度与帧长度不同
                         {
-                            Log.e(m_pclCurrentClassNameString, System.currentTimeMillis() + " 接收到的PCM格式音频数据帧的数据长度与帧长度不同！" );
+                            Log.e(m_pclCurrentClassNameString, "接收到的PCM格式音频数据帧的数据长度与帧长度不同。" );
                             break out;
                         }
                     }
 
                     lLastPacketRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间
-                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 接收一个音频输出数据帧成功！时间戳：" + lRecvAudioDataTimeStamp + "，总长度：" + iSocketPrereadSize);
+                    Log.i( m_pclCurrentClassNameString, "接收一个音频输出数据帧成功。时间戳：" + lRecvAudioDataTimeStamp + "，总长度：" + iSocketPrereadSize + "。" );
 
                     //将音频输出数据帧放入自适应抖动缓冲器
-                    if( clAjb != null ) //如果使用了自适应抖动缓冲器
+                    if( iSocketPrereadSize == 4 ) //如果该音频输出数据帧为无语音活动
                     {
-                        if( iSocketPrereadSize  == 4 ) //如果该音频输出数据帧为无语音活动
-                        {
-                            clAjb.PutByteAudioData( null, 0, lRecvAudioDataTimeStamp );
-                        }
-                        else //如果该音频输出数据帧为有语音活动
-                        {
-                            if( m_i32UseWhatCodec == 0 ) //如果使用了PCM原始数据
-                            {
-                                for( m_i32Temp = 0; m_i32Temp < m_i32FrameSize; m_i32Temp++ )
-                                {
-                                    m_szi16TempData[m_i32Temp] = (short)( ( (short)m_szi8TempData[m_i32Temp * 2] ) & 0xFF | ( (short)m_szi8TempData[m_i32Temp * 2 + 1] ) << 8 );
-                                }
-
-                                //将该音频输出数据帧放入自适应抖动缓冲器
-                                synchronized( clAjb )
-                                {
-                                    clAjb.PutShortAudioData( m_szi16TempData, m_i32FrameSize, lRecvAudioDataTimeStamp );
-                                }
-                            }
-                            else //如果使用了Speex遍解码器
-                            {
-                                //将该音频输出数据帧放入自适应抖动缓冲器
-                                synchronized( clAjb )
-                                {
-                                    clAjb.PutByteAudioData( m_szi8TempData, iSocketPrereadSize - 4, lRecvAudioDataTimeStamp );
-                                }
-                            }
-                        }
+                        clAjb.PutByteAudioData( null, 0, lRecvAudioDataTimeStamp );
                     }
-                    else
+                    else //如果该音频输出数据帧为有语音活动
                     {
-                        Log.e( m_pclCurrentClassNameString, "没有使用自适应抖动缓冲器！无法接收音频数据" );
+                        if( m_i32UseWhatCodec == 0 ) //如果使用了PCM原始数据
+                        {
+                            for( m_i32Temp = 0; m_i32Temp < m_i32FrameSize; m_i32Temp++ )
+                            {
+                                m_szi16TempData[m_i32Temp] = (short)( ( (short)m_szi8TempData[m_i32Temp * 2] ) & 0xFF | ( (short)m_szi8TempData[m_i32Temp * 2 + 1] ) << 8 );
+                            }
 
-                        break out;
+                            //将该音频输出数据帧放入自适应抖动缓冲器
+                            synchronized( clAjb )
+                            {
+                                clAjb.PutShortAudioData( m_szi16TempData, m_i32FrameSize, lRecvAudioDataTimeStamp );
+                            }
+                        }
+                        else //如果使用了Speex遍解码器
+                        {
+                            //将该音频输出数据帧放入自适应抖动缓冲器
+                            synchronized( clAjb )
+                            {
+                                clAjb.PutByteAudioData( m_szi8TempData, iSocketPrereadSize - 4, lRecvAudioDataTimeStamp );
+                            }
+                        }
                     }
 
                     iSocketPrereadSize = 0; //清空预读长度
@@ -479,7 +470,7 @@ class MyAudioProcessThread extends AudioProcessThread
             }
             catch( IOException e )
             {
-                String clInfoString = System.currentTimeMillis() + " 接收一个音频输出数据帧失败！原因：" + e.getMessage();
+                String clInfoString = "接收一个音频输出数据帧失败。原因：" + e.getMessage();
                 Log.e(m_pclCurrentClassNameString, clInfoString);
                 Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
 
@@ -499,11 +490,11 @@ class MyAudioProcessThread extends AudioProcessThread
                     clOutputStream.write( m_szi8TempData, 0, 2 );
                     clOutputStream.flush(); //防止出现Software caused connection abort异常
                     lLastPacketSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间
-                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 发送一个心跳包成功！" );
+                    Log.i( m_pclCurrentClassNameString, "发送一个心跳包成功。" );
                 }
                 catch( IOException e )
                 {
-                    String clInfoString = System.currentTimeMillis() + " 发送一个心跳包失败！原因：" + e.getMessage();
+                    String clInfoString = "发送一个心跳包失败。原因：" + e.getMessage();
                     Log.e( m_pclCurrentClassNameString, clInfoString );
                     Message clMessage = new Message();
                     clMessage.what = 2;
@@ -517,7 +508,7 @@ class MyAudioProcessThread extends AudioProcessThread
             //判断连接是否中断
             if( System.currentTimeMillis() - lLastPacketRecvTime > 2000 ) //如果超过2000毫秒没有接收任何数据包，就判定连接已经断开了
             {
-                String clInfoString = System.currentTimeMillis() + " 超过2000毫秒没有接收任何数据包，判定连接已经断开了！";
+                String clInfoString = "超过2000毫秒没有接收任何数据包，判定连接已经断开了。";
                 Log.e(m_pclCurrentClassNameString, clInfoString);
                 Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
 
@@ -546,13 +537,13 @@ class MyAudioProcessThread extends AudioProcessThread
                 clOutputStream.flush(); //防止出现Software caused connection abort异常
                 lLastPacketSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间
 
-                String clInfoString = System.currentTimeMillis() + " 发送一个退出包成功！";
+                String clInfoString = "发送一个退出包成功。";
                 Log.i( m_pclCurrentClassNameString, clInfoString);
                 Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
             }
             catch (IOException e)
             {
-                String clInfoString = System.currentTimeMillis() + " 发送一个退出包失败！原因：" + e.getMessage();
+                String clInfoString = "发送一个退出包失败。原因：" + e.getMessage();
                 Log.e(m_pclCurrentClassNameString, clInfoString);
                 Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
             }
@@ -565,7 +556,7 @@ class MyAudioProcessThread extends AudioProcessThread
         {
             try
             {
-                String clInfoString = "已关闭TCP协议服务端套接字[" + m_clServerSocket.getInetAddress().getHostAddress() + ":" + m_clServerSocket.getLocalPort() + "]！";
+                String clInfoString = "已关闭TCP协议服务端套接字[" + m_clServerSocket.getInetAddress().getHostAddress() + ":" + m_clServerSocket.getLocalPort() + "]。";
                 Log.i( m_pclCurrentClassNameString, clInfoString );
                 Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
 
@@ -580,7 +571,7 @@ class MyAudioProcessThread extends AudioProcessThread
         {
             try
             {
-                String clInfoString = "已断开本地TCP协议客户端套接字[" + m_clClientSocket.getLocalAddress().getHostAddress() + ":" + m_clClientSocket.getLocalPort() + "]与远端TCP协议客户端套接字[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]的连接！";
+                String clInfoString = "已断开本地TCP协议客户端套接字[" + m_clClientSocket.getLocalAddress().getHostAddress() + ":" + m_clClientSocket.getLocalPort() + "]与远端TCP协议客户端套接字[" + m_clClientSocket.getInetAddress().getHostAddress() + ":" + m_clClientSocket.getPort() + "]的连接。";
                 Log.i( m_pclCurrentClassNameString, clInfoString);
                 Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
 
@@ -594,12 +585,12 @@ class MyAudioProcessThread extends AudioProcessThread
 
         if( ( iIsCreateServerOrClient == 1 ) && ( m_i32ExitFlag == 0 ) ) //如果当前是创建服务端，且本线程未接收到退出请求
         {
-            Log.i( m_pclCurrentClassNameString, "由于当前是创建服务端，且本线程未接收到退出请求，本线程重新初始化来继续保持监听" );
+            Log.i( m_pclCurrentClassNameString, "由于当前是创建服务端，且本线程未接收到退出请求，本线程重新初始化来继续保持监听。" );
             return 1;
         }
         else if( ( iIsCreateServerOrClient == 0 ) && ( m_i32ExitFlag == 0 ) && ( iIsRecvExitPacket == 0 ) ) //如果当前是创建客户端，且本线程未接收到退出请求，且没有接收到退出包
         {
-            Log.i( m_pclCurrentClassNameString, "由于当前是创建客户端，且本线程未接收到退出请求，且没有接收到退出包，本线程在1秒后重新初始化来重连" );
+            Log.i( m_pclCurrentClassNameString, "由于当前是创建客户端，且本线程未接收到退出请求，且没有接收到退出包，本线程在1秒后重新初始化来重连。" );
             SystemClock.sleep( 1000 ); //暂停1秒
             return 1;
         }
@@ -677,11 +668,11 @@ class MyAudioProcessThread extends AudioProcessThread
                         clOutputStream.flush(); //防止出现Software caused connection abort异常
                         lLastPacketSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间
 
-                        Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 发送一个音频输入数据帧成功！时间戳：" + lSendAudioDataTimeStamp + "，总长度：" + m_i32Temp );
+                        Log.i( m_pclCurrentClassNameString, "发送一个音频输入数据帧成功。时间戳：" + lSendAudioDataTimeStamp + "，总长度：" + m_i32Temp + "。" );
                     }
                     catch( IOException e )
                     {
-                        String clInfoString = System.currentTimeMillis() + " 发送一个音频输入数据帧失败！原因：" + e.getMessage();
+                        String clInfoString = "发送一个音频输入数据帧失败。原因：" + e.getMessage();
                         Log.e( m_pclCurrentClassNameString, clInfoString );
                         Message clMessage = new Message();
                         clMessage.what = 2;
@@ -692,7 +683,7 @@ class MyAudioProcessThread extends AudioProcessThread
                 }
                 else
                 {
-                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 本帧音频输入数据为无语音活动，且最后一个音频数据帧也为无语音活动，无需发送" );
+                    Log.i( m_pclCurrentClassNameString, "本帧音频输入数据为无语音活动，且最后一个音频数据帧也为无语音活动，无需发送。" );
                 }
 
                 lSendAudioDataTimeStamp += m_i32FrameSize; //时间戳递增一帧音频输入数据的采样数量
@@ -715,11 +706,11 @@ class MyAudioProcessThread extends AudioProcessThread
                 {
                     clAudioInputFileOutputStream.write( m_szi8TempData, 0, pszi16PcmAudioInputDataFrame.length * 2 );
 
-                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 写入音频输入数据帧到文件成功！" );
+                    Log.i( m_pclCurrentClassNameString, "写入音频输入数据帧到文件成功。" );
                 }
                 catch( IOException e )
                 {
-                    Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 写入音频输入数据帧到文件失败！" );
+                    Log.e( m_pclCurrentClassNameString, "写入音频输入数据帧到文件失败。" );
                 }
             }
 
@@ -736,11 +727,11 @@ class MyAudioProcessThread extends AudioProcessThread
                 {
                     clAudioResultFileOutputStream.write( m_szi8TempData, 0, pszi16PcmAudioResultDataFrame.length * 2 );
 
-                    Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 写入音频结果数据帧到文件成功！" );
+                    Log.i( m_pclCurrentClassNameString, "写入音频结果数据帧到文件成功。" );
                 }
                 catch( IOException e )
                 {
-                    Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 写入音频结果数据帧到文件失败！" );
+                    Log.e( m_pclCurrentClassNameString, "写入音频结果数据帧到文件失败。" );
                 }
             }
 
@@ -788,11 +779,11 @@ class MyAudioProcessThread extends AudioProcessThread
             }
 
             clAjb.GetCurHaveActiveBufferSize( pclAjbGetAudioDataSize );
-            Log.i( m_pclCurrentClassNameString, "音频输出线程：自适应抖动缓冲器的当前已缓冲有语音活动音频数据帧数量为 " + pclAjbGetAudioDataSize + " 个" );
+            Log.i( m_pclCurrentClassNameString, "自适应抖动缓冲器的当前已缓冲有语音活动音频数据帧数量为 " + pclAjbGetAudioDataSize + " 个。" );
             clAjb.GetCurHaveInactiveBufferSize( pclAjbGetAudioDataSize );
-            Log.i( m_pclCurrentClassNameString, "音频输出线程：自适应抖动缓冲器的当前已缓冲无语音活动音频数据帧数量为 " + pclAjbGetAudioDataSize + " 个" );
+            Log.i( m_pclCurrentClassNameString, "自适应抖动缓冲器的当前已缓冲无语音活动音频数据帧数量为 " + pclAjbGetAudioDataSize + " 个。" );
             clAjb.GetCurNeedBufferSize( pclAjbGetAudioDataSize );
-            Log.i( m_pclCurrentClassNameString, "音频输出线程：自适应抖动缓冲器的当前需缓冲音频数据帧的数量为 " + pclAjbGetAudioDataSize + " 个" );
+            Log.i( m_pclCurrentClassNameString, "自适应抖动缓冲器的当前需缓冲音频数据帧的数量为 " + pclAjbGetAudioDataSize + " 个。" );
         }
     }
 
@@ -812,11 +803,11 @@ class MyAudioProcessThread extends AudioProcessThread
             {
                 clAudioOutputFileOutputStream.write( m_szi8TempData2, 0, pszi16PcmAudioOutputDataFrame.length * 2 );
 
-                Log.i( m_pclCurrentClassNameString, System.currentTimeMillis() + " 写入音频输出数据帧到文件成功！" );
+                Log.i( m_pclCurrentClassNameString, "写入音频输出数据帧到文件成功。" );
             }
             catch (IOException e)
             {
-                Log.e( m_pclCurrentClassNameString, System.currentTimeMillis() + " 写入音频输出数据帧到文件失败！" );
+                Log.e( m_pclCurrentClassNameString, "写入音频输出数据帧到文件失败。" );
             }
         }
     }
@@ -892,7 +883,7 @@ public class MainActivity extends AppCompatActivity
     {
         if( clLayoutActivityCurrentView == clLayoutActivityMainView )
         {
-            Log.i( m_pclCurrentClassNameString, "用户在主界面按下返回键，本软件退出" );
+            Log.i( m_pclCurrentClassNameString, "用户在主界面按下返回键，本软件退出。" );
             System.exit( 0 );
         }
         else if( clLayoutActivityCurrentView == clLayoutActivitySettingView )
@@ -924,7 +915,7 @@ public class MainActivity extends AppCompatActivity
         {
             if( clMyAudioProcessThread == null ) //如果音频处理线程还没有启动
             {
-                Log.i( m_pclCurrentClassNameString, "开始启动音频处理线程" );
+                Log.i( m_pclCurrentClassNameString, "开始启动音频处理线程。" );
 
                 clMyAudioProcessThread = new MyAudioProcessThread();
 
@@ -1085,7 +1076,7 @@ public class MainActivity extends AppCompatActivity
 
                 clMyAudioProcessThread.start();
 
-                Log.i( m_pclCurrentClassNameString, "启动音频处理线程完毕" );
+                Log.i( m_pclCurrentClassNameString, "启动音频处理线程完毕。" );
 
                 if( v.getId() == R.id.CreateServerButton )
                 {
@@ -1106,9 +1097,9 @@ public class MainActivity extends AppCompatActivity
 
                 try
                 {
-                    Log.i( m_pclCurrentClassNameString, "开始等待音频处理线程退出" );
+                    Log.i( m_pclCurrentClassNameString, "开始等待音频处理线程退出。" );
                     clMyAudioProcessThread.join(); //等待音频处理线程退出
-                    Log.i( m_pclCurrentClassNameString, "结束等待音频处理线程退出" );
+                    Log.i( m_pclCurrentClassNameString, "结束等待音频处理线程退出。" );
                 }
                 catch (InterruptedException e)
                 {
