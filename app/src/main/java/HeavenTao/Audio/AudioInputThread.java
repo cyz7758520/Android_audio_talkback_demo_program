@@ -9,7 +9,7 @@ import java.util.LinkedList;
 //音频输入线程类
 public class AudioInputThread extends Thread
 {
-    String m_pclCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 ); //当前类名称字符串
+    String m_pclCurrentClassNameString = this.getClass().getSimpleName(); //当前类名称字符串
 
     int m_i32ExitFlag = 0; //本线程退出标记，0表示保持运行，1表示请求退出
 

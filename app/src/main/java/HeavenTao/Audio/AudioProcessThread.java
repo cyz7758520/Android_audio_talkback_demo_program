@@ -13,7 +13,7 @@ import java.util.LinkedList;
 //音频处理线程类
 public abstract class AudioProcessThread extends Thread
 {
-    public String m_pclCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 ); //当前类名称字符串
+    public String m_pclCurrentClassNameString = this.getClass().getSimpleName(); //当前类名称字符串
 
     public int m_i32ExitFlag = 0; //本线程退出标记，0表示保持运行，1表示请求退出
     public int m_i32ExitCode = 0; //本线程退出代码，0表示正常退出，-1表示初始化失败，-2表示处理失败

@@ -41,7 +41,7 @@ import HeavenTao.Audio.*;
 //初始化线程类
 class InitThread extends Thread
 {
-    String m_pclCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 ); //当前类名称字符串
+    String m_pclCurrentClassNameString = this.getClass().getSimpleName(); //当前类名称字符串
 
     View clLayoutActivityMainView; //主界面布局控件的内存指针
 
@@ -85,7 +85,7 @@ class InitThread extends Thread
 //主界面消息处理类
 class MainActivityHandler extends Handler
 {
-    String m_pclCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 ); //当前类名称字符串
+    String m_pclCurrentClassNameString = this.getClass().getSimpleName(); //当前类名称字符串
 
     MainActivity clMainActivity;
 
@@ -815,7 +815,7 @@ class MyAudioProcessThread extends AudioProcessThread
 
 public class MainActivity extends AppCompatActivity
 {
-    String m_pclCurrentClassNameString = this.getClass().getName().substring( this.getClass().getName().lastIndexOf( '.' ) + 1 ); //当前类名称字符串
+    String m_pclCurrentClassNameString = this.getClass().getSimpleName(); //当前类名称字符串
 
     View clLayoutActivityMainView; //主界面布局控件的内存指针
     View clLayoutActivitySettingView; //设置界面布局控件的内存指针
