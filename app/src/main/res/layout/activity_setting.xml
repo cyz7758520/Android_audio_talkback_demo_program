@@ -148,6 +148,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="设置"
+                    android:enabled="false"
                     android:visibility="invisible"/>
 
                 <Button
@@ -294,14 +295,56 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
 
-            <CheckBox
-                android:id="@+id/CheckBoxIsUseAjb"
+            <TextView
+                android:gravity="center_vertical"
+                android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:checked="true"
-                android:enabled="false"
-                android:text="使用自己设计的自适应抖动缓冲器"/>
+                android:text="接收音频输出数据帧：" />
+
+            <RadioGroup
+                android:orientation="vertical"
+                android:layout_weight="5"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:id="@+id/RadioButtonUseList"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="链表"/>
+
+                <RadioButton
+                    android:id="@+id/RadioButtonUseAjb"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:checked="true"
+                    android:text="自己设计的自适应抖动缓冲器"/>
+
+            </RadioGroup>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content">
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="设置"
+                    android:enabled="false"
+                    android:visibility="invisible"/>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="设置"
+                    android:onClick="OnAjbSettingClick" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

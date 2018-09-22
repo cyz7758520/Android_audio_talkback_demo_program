@@ -2,6 +2,7 @@ package HeavenTao.Audio;
 
 import android.media.AudioTrack;
 import android.util.Log;
+import android.os.Process;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -32,7 +33,7 @@ public class AudioOutputThread extends Thread
     public void run()
     {
         this.setPriority( MAX_PRIORITY ); //设置本线程优先级
-        android.os.Process.setThreadPriority( -19 ); //设置本线程优先级
+        Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级
 
         int p_i32AudioDataNumber;
         Date p_pclLastDate;

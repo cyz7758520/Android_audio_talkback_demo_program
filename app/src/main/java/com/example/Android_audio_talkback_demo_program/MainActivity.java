@@ -95,6 +95,8 @@ class MainActivityHandler extends Handler
         {
             clMainActivity.clMyAudioProcessThread = null;
 
+            ((EditText)clMainActivity.findViewById( R.id.IPAddressEdit )).setEnabled( true ); //设置IP地址控件为可用
+            ((EditText)clMainActivity.findViewById( R.id.PortEdit )).setEnabled( true ); //设置端口控件为可用
             ((Button)clMainActivity.findViewById( R.id.CreateServerButton )).setText( "创建服务端" ); //设置创建服务端按钮的内容为“创建服务端”
             ((Button)clMainActivity.findViewById( R.id.ConnectServerButton )).setEnabled( true ); //设置连接服务端按钮为可用
             ((Button)clMainActivity.findViewById( R.id.ConnectServerButton )).setText( "连接服务端" ); //设置连接服务端按钮的内容为“连接服务端”
@@ -125,26 +127,28 @@ class MyAudioProcessThread extends AudioProcessThread
     long lLastPacketSendTime; //存放最后一个数据包的发送时间，用于判断连接是否中断
     long lLastPacketRecvTime; //存放最后一个数据包的接收时间，用于判断连接是否中断
 
-    int iLastAudioDataIsActive; //最后一帧音频数据是否有语音活动，1表示有语音活动，0表示无语音活动
+    int m_i32LastSendAudioDataFrameIsActive; //最后发送的一个音频数据帧有无语音活动，1表示有语音活动，0表示无语音活动
     int iSocketPrereadSize; //本次套接字数据包的预读长度
-    long lSendAudioDataTimeStamp; //发送音频数据的时间戳
-    long lRecvAudioDataTimeStamp; //接收音频数据的时间戳
+    int m_i32SendAudioDataTimeStamp; //发送音频数据的时间戳
+    int m_i32RecvAudioDataTimeStamp; //接收音频数据的时间戳
     int iIsRecvExitPacket; //是否接收到退出包，0表示否，1表示是
 
-    Ajb clAjb; //自适应抖动缓冲器类对象的内存指针
+    int m_i32UseWhatRecvAudioOutputDataFrame; //使用什么接收音频输出数据帧，0表示链表，1表示自适应抖动缓冲器。
+    LinkedList<byte[]> m_clRecvAudioOutputDataFrameLinkedList; //存放接收音频输出数据帧的链表类对象的内存指针。
+    Ajb m_clAjb; //存放自适应抖动缓冲器类对象的内存指针。
+    int m_iAjbMaxNeedBufferDataFrameCount; //存放自适应抖动缓冲器最大需缓冲数据帧帧数量，单位帧。
+    int m_iAjbMinNeedBufferDataFrameCount; //存放自适应抖动缓冲器最小需缓冲数据帧帧数量，单位帧。
 
-    int iIsSaveAudioDataFile; //是否保存音频数据到文件
-    FileOutputStream clAudioInputFileOutputStream; //音频输入数据文件
-    FileOutputStream clAudioOutputFileOutputStream; //音频输出数据文件
-    FileOutputStream clAudioResultFileOutputStream; //音频结果数据文件
-
-    LinkedList<short[]> m_clAlreadyAudioInputLinkedList; //存放已录音的链表类对象的内存指针
-    LinkedList<short[]> m_clAlreadyAudioOutputLinkedList; //存放已播放的链表类对象的内存指针
+    int iIsSaveAudioDataFile; //是否保存音频数据到文件。
+    FileOutputStream clAudioInputFileOutputStream; //存放音频输入数据文件的文件输出流对象的内存指针。
+    FileOutputStream clAudioOutputFileOutputStream; //存放音频输出数据文件的文件输出流对象的内存指针。
+    FileOutputStream clAudioResultFileOutputStream; //存放音频结果数据文件的文件输出流对象的内存指针。
 
     byte m_szi8TempData[]; //存放临时数据
     byte m_szi8TempData2[]; //存放临时数据
     short m_szi16TempData[]; //存放临时数据
     int m_i32Temp;
+    int m_i32Temp2;
     long m_i64Temp;
 
     //用户定义的初始化函数，在本线程刚启动时调用一次，返回值表示是否成功，0表示成功，非0表示失败
@@ -261,87 +265,98 @@ class MyAudioProcessThread extends AudioProcessThread
 
             try
             {
-                m_clClientSocket.setTcpNoDelay(true); //设置TCP协议客户端套接字的TCP_NODELAY选项为true
+                m_clClientSocket.setTcpNoDelay(true); //设置TCP协议客户端套接字的TCP_NODELAY选项为true。
             }
             catch (SocketException e)
             {
                 break out;
             }
 
-            //初始化自适应抖动缓冲器类对象
-            clAjb = new Ajb();
-            m_i64Temp = clAjb.Init( m_i32SamplingRate, m_i32FrameSize, 0 );
-            if( m_i64Temp == 0 )
+            switch( m_i32UseWhatRecvAudioOutputDataFrame ) //使用什么接收音频输出数据帧。
             {
-                Log.i( m_pclCurrentClassNameString, "初始化自适应抖动缓冲器类对象成功。返回值：" + m_i64Temp );
-            }
-            else
-            {
-                Log.i( m_pclCurrentClassNameString, "初始化自适应抖动缓冲器类对象失败。返回值：" + m_i64Temp );
-                break out;
+                case 0: //如果使用链表。
+                {
+                    //初始化音频输出数据帧的链表类对象。
+                    m_clRecvAudioOutputDataFrameLinkedList = new LinkedList<byte[]>();
+
+                    Log.i( m_pclCurrentClassNameString, "初始化音频输出数据帧的链表类对象成功。" );
+
+                    break;
+                }
+                case 1: //如果使用自适应抖动缓冲器。
+                {
+                    //初始化自适应抖动缓冲器类对象。
+                    m_clAjb = new Ajb();
+                    m_i64Temp = m_clAjb.Init( m_i32SamplingRate, m_i32FrameSize, 1, 0, m_iAjbMaxNeedBufferDataFrameCount, m_iAjbMinNeedBufferDataFrameCount );
+                    if( m_i64Temp == 0 )
+                    {
+                        Log.i( m_pclCurrentClassNameString, "初始化自适应抖动缓冲器类对象成功。返回值：" + m_i64Temp );
+                    }
+                    else
+                    {
+                        Log.i( m_pclCurrentClassNameString, "初始化自适应抖动缓冲器类对象失败。返回值：" + m_i64Temp );
+                        break out;
+                    }
+
+                    break;
+                }
             }
 
-            //初始化各个链表类对象
-            m_clAlreadyAudioInputLinkedList = new LinkedList<short[]>(); //初始化已录音的链表类对象
-            m_clAlreadyAudioOutputLinkedList = new LinkedList<short[]>(); //初始化已播放的链表类对象
-
-            //初始化各个音频数据文件
+            //初始化各个音频数据文件的文件输出流对象。
             if( iIsSaveAudioDataFile != 0 )
             {
-                //创建音频输入数据文件
+                //创建音频输入数据文件的文件输出流对象。
                 try
                 {
                     clAudioInputFileOutputStream = new FileOutputStream( Environment.getExternalStorageDirectory() + "/AudioInput.pcm" );
-                    Log.i( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioInput.pcm 音频输入数据文件成功。");
+                    Log.i( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioInput.pcm 音频输入数据文件的文件输出流对象成功。");
                 }
                 catch( FileNotFoundException e )
                 {
-                    Log.e( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioInput.pcm 音频输入数据文件失败。原因：" + e.toString() );
+                    Log.e( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioInput.pcm 音频输入数据文件的文件输出流对象失败。原因：" + e.toString() );
                     break out;
                 }
 
-                //创建音频输出数据文件
+                //创建音频输出数据文件的文件输出流对象。
                 try
                 {
                     clAudioOutputFileOutputStream = new FileOutputStream(Environment.getExternalStorageDirectory() + "/AudioOutput.pcm");
-                    Log.i( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioOutput.pcm 音频输出数据文件成功。");
+                    Log.i( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioOutput.pcm 音频输出数据文件的文件输出流对象成功。");
                 }
                 catch( FileNotFoundException e )
                 {
-                    Log.e( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioOutput.pcm 音频输出数据文件失败。原因：" + e.toString() );
+                    Log.e( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioOutput.pcm 音频输出数据文件的文件输出流对象失败。原因：" + e.toString() );
                     break out;
                 }
 
-                //创建音频结果数据文件
+                //创建音频结果数据文件的文件输出流对象。
                 try
                 {
                     clAudioResultFileOutputStream = new FileOutputStream(Environment.getExternalStorageDirectory() + "/AudioResult.pcm");
-                    Log.i( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioResult.pcm 音频结果数据文件成功。");
+                    Log.i( m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioResult.pcm 音频结果数据文件的文件输出流对象成功。");
                 }
                 catch( FileNotFoundException e )
                 {
-                    Log.e(m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioOutput.pcm 音频结果数据文件失败。原因：" + e.toString() );
+                    Log.e(m_pclCurrentClassNameString, "创建 " + Environment.getExternalStorageDirectory() + "/AudioOutput.pcm 音频结果数据文件的文件输出流对象失败。原因：" + e.toString() );
                     break out;
                 }
             }
 
-            lLastPacketSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间为当前时间
-            lLastPacketRecvTime = System.currentTimeMillis(); //设置最后一个数据包的接收时间为当前时间
+            lLastPacketSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间为当前时间。
+            lLastPacketRecvTime = System.currentTimeMillis(); //设置最后一个数据包的接收时间为当前时间。
 
-            iLastAudioDataIsActive = 0; //设置最后一帧音频数据是否有语音活动为0，表示无语音活动
-            iSocketPrereadSize = 0; //本次套接字数据包的预读长度为0
-            lSendAudioDataTimeStamp = 0; //发送音频数据的时间戳为0
-            lRecvAudioDataTimeStamp = 0; //接收音频数据的时间戳为0
-            iIsRecvExitPacket = 0; //设置为没有接收到退出包
-            if( m_szi8TempData == null ) m_szi8TempData =  new byte[m_i32FrameSize * 2 + 8]; //初始化存放临时数据的数组
-            if( m_szi8TempData2 == null ) m_szi8TempData2 =  new byte[m_i32FrameSize * 2 + 8]; //初始化存放临时数据的数组
-            if( m_szi16TempData == null ) m_szi16TempData =  new short[m_i32FrameSize]; //初始化存放临时数据的数组
+            m_i32LastSendAudioDataFrameIsActive = 0; //设置最后发送的一个音频数据帧无语音活动。
+            iSocketPrereadSize = 0; //设置本次套接字数据包的预读长度为0。
+            m_i32SendAudioDataTimeStamp = 0; //设置发送音频数据的时间戳为0。
+            m_i32RecvAudioDataTimeStamp = 0; //设置接收音频数据的时间戳为0。
+            iIsRecvExitPacket = 0; //设置没有接收到退出包。
+            if( m_szi8TempData == null ) m_szi8TempData =  new byte[m_i32FrameSize * 2 + 8]; //初始化存放临时数据的数组。
+            if( m_szi8TempData2 == null ) m_szi8TempData2 =  new byte[m_i32FrameSize * 2 + 8]; //初始化存放临时数据的数组。
+            if( m_szi16TempData == null ) m_szi16TempData =  new short[m_i32FrameSize]; //初始化存放临时数据的数组。
 
-            {
-                String clInfoString = "开始进行音频对讲。";
-                Log.i( m_pclCurrentClassNameString, clInfoString);
-                Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
-            }
+            String clInfoString = "开始进行音频对讲。";
+            Log.i( m_pclCurrentClassNameString, clInfoString);
+            Message clMessage = new Message();clMessage.what = 2;clMessage.obj = clInfoString;clMainActivityHandler.sendMessage(clMessage);
 
             p_i64Result = 0; //设置本函数执行成功。
         }
@@ -410,7 +425,7 @@ class MyAudioProcessThread extends AudioProcessThread
                     }
 
                     //读取音频输出数据帧的时间戳
-                    lRecvAudioDataTimeStamp = ( m_szi8TempData[0] & 0xFF ) + ( ( (int)( m_szi8TempData[1] & 0xFF ) ) << 8) + ( ( (int)( m_szi8TempData[2] & 0xFF ) ) << 16 ) + ( ( (int)( m_szi8TempData[3] & 0xFF ) ) << 24 );
+                    m_i32RecvAudioDataTimeStamp = ( m_szi8TempData[0] & 0xFF ) + ( ( (int)( m_szi8TempData[1] & 0xFF ) ) << 8) + ( ( (int)( m_szi8TempData[2] & 0xFF ) ) << 16 ) + ( ( (int)( m_szi8TempData[3] & 0xFF ) ) << 24 );
 
                     //接收音频输出数据帧
                     if( iSocketPrereadSize == 4 ) //如果该音频输出数据帧是无语音活动，就不用再接收
@@ -433,39 +448,47 @@ class MyAudioProcessThread extends AudioProcessThread
                     }
 
                     lLastPacketRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间
-                    Log.i( m_pclCurrentClassNameString, "接收一个音频输出数据帧成功。时间戳：" + lRecvAudioDataTimeStamp + "，总长度：" + iSocketPrereadSize + "。" );
+                    Log.i( m_pclCurrentClassNameString, "接收一个音频输出数据帧成功。时间戳：" + m_i32RecvAudioDataTimeStamp + "，总长度：" + iSocketPrereadSize + "。" );
 
-                    //将音频输出数据帧放入自适应抖动缓冲器
-                    if( iSocketPrereadSize == 4 ) //如果该音频输出数据帧为无语音活动
+                    //将音频输出数据帧放入链表或自适应抖动缓冲器。
+                    switch( m_i32UseWhatRecvAudioOutputDataFrame ) //使用什么接收音频输出数据帧。
                     {
-                        clAjb.PutByteAudioData( null, 0, lRecvAudioDataTimeStamp );
-                    }
-                    else //如果该音频输出数据帧为有语音活动
-                    {
-                        if( m_i32UseWhatCodec == 0 ) //如果使用了PCM原始数据
+                        case 0: //如果使用链表。
                         {
-                            for( m_i32Temp = 0; m_i32Temp < m_i32FrameSize; m_i32Temp++ )
+                            m_i32Temp = iSocketPrereadSize - 4;
+                            byte szi8RecvAudioOutputDataFrame[] = new byte[m_i32Temp];
+
+                            for( m_i32Temp--; m_i32Temp >= 0; m_i32Temp-- )
                             {
-                                m_szi16TempData[m_i32Temp] = (short)( ( (short)m_szi8TempData[m_i32Temp * 2] ) & 0xFF | ( (short)m_szi8TempData[m_i32Temp * 2 + 1] ) << 8 );
+                                szi8RecvAudioOutputDataFrame[m_i32Temp] = m_szi8TempData[m_i32Temp];
                             }
 
-                            //将该音频输出数据帧放入自适应抖动缓冲器
-                            synchronized( clAjb )
-                            {
-                                clAjb.PutShortAudioData( m_szi16TempData, m_i32FrameSize, lRecvAudioDataTimeStamp );
-                            }
+                            m_clRecvAudioOutputDataFrameLinkedList.addLast( szi8RecvAudioOutputDataFrame );
+
+                            break;
                         }
-                        else //如果使用了Speex遍解码器
+                        case 1: //如果使用自适应抖动缓冲器。
                         {
-                            //将该音频输出数据帧放入自适应抖动缓冲器
-                            synchronized( clAjb )
+                            if( iSocketPrereadSize == 4 ) //如果该音频输出数据帧为无语音活动。
                             {
-                                clAjb.PutByteAudioData( m_szi8TempData, iSocketPrereadSize - 4, lRecvAudioDataTimeStamp );
+                                synchronized( m_clAjb )
+                                {
+                                    m_clAjb.PutOneByteDataFrame( m_i32RecvAudioDataTimeStamp, null, 0 );
+                                }
                             }
+                            else //如果该音频输出数据帧为有语音活动。
+                            {
+                                synchronized( m_clAjb )
+                                {
+                                    m_clAjb.PutOneByteDataFrame( m_i32RecvAudioDataTimeStamp, m_szi8TempData, iSocketPrereadSize - 4 );
+                                }
+                            }
+
+                            break;
                         }
                     }
 
-                    iSocketPrereadSize = 0; //清空预读长度
+                    iSocketPrereadSize = 0; //清空预读长度。
                 }
             }
             catch( IOException e )
@@ -477,10 +500,10 @@ class MyAudioProcessThread extends AudioProcessThread
                 break out;
             }
 
-            //发送心跳包
-            if( System.currentTimeMillis() - lLastPacketSendTime >= 500 ) //如果超过500毫秒没有发送任何数据包，就发送一个心跳包
+            //发送心跳包。
+            if( System.currentTimeMillis() - lLastPacketSendTime >= 500 ) //如果超过500毫秒没有发送任何数据包，就发送一个心跳包。
             {
-                //设置预读长度
+                //设置预读长度。
                 m_szi8TempData[0] = ( byte ) ( 0 );
                 m_szi8TempData[1] = ( byte ) ( 0 );
 
@@ -488,8 +511,8 @@ class MyAudioProcessThread extends AudioProcessThread
                 {
                     OutputStream clOutputStream = m_clClientSocket.getOutputStream();
                     clOutputStream.write( m_szi8TempData, 0, 2 );
-                    clOutputStream.flush(); //防止出现Software caused connection abort异常
-                    lLastPacketSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间
+                    clOutputStream.flush(); //防止出现Software caused connection abort异常。
+                    lLastPacketSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间。
                     Log.i( m_pclCurrentClassNameString, "发送一个心跳包成功。" );
                 }
                 catch( IOException e )
@@ -505,8 +528,8 @@ class MyAudioProcessThread extends AudioProcessThread
                 }
             }
 
-            //判断连接是否中断
-            if( System.currentTimeMillis() - lLastPacketRecvTime > 2000 ) //如果超过2000毫秒没有接收任何数据包，就判定连接已经断开了
+            //判断TCP协议套接字连接是否中断。
+            if( System.currentTimeMillis() - lLastPacketRecvTime > 2000 ) //如果超过2000毫秒没有接收任何数据包，就判定连接已经断开了。
             {
                 String clInfoString = "超过2000毫秒没有接收任何数据包，判定连接已经断开了。";
                 Log.e(m_pclCurrentClassNameString, clInfoString);
@@ -549,9 +572,6 @@ class MyAudioProcessThread extends AudioProcessThread
             }
         }
 
-        m_clAlreadyAudioInputLinkedList = null; //清空已录音的链表
-        m_clAlreadyAudioOutputLinkedList = null; //清空已播放的链表
-
         if( m_clServerSocket != null ) //销毁TCP协议服务端套接字
         {
             try
@@ -583,20 +603,34 @@ class MyAudioProcessThread extends AudioProcessThread
             m_clClientSocket = null;
         }
 
-        if( ( iIsCreateServerOrClient == 1 ) && ( m_i32ExitFlag == 0 ) ) //如果当前是创建服务端，且本线程未接收到退出请求
+        if( ( iIsCreateServerOrClient == 1 ) && ( m_i32ExitFlag == 0 ) ) //如果当前是创建服务端，且本线程未接收到退出请求。
         {
             Log.i( m_pclCurrentClassNameString, "由于当前是创建服务端，且本线程未接收到退出请求，本线程重新初始化来继续保持监听。" );
             return 1;
         }
-        else if( ( iIsCreateServerOrClient == 0 ) && ( m_i32ExitFlag == 0 ) && ( iIsRecvExitPacket == 0 ) ) //如果当前是创建客户端，且本线程未接收到退出请求，且没有接收到退出包
+        else if( ( iIsCreateServerOrClient == 0 ) && ( m_i32ExitFlag == 0 ) && ( iIsRecvExitPacket == 0 ) ) //如果当前是创建客户端，且本线程未接收到退出请求，且没有接收到退出包。
         {
             Log.i( m_pclCurrentClassNameString, "由于当前是创建客户端，且本线程未接收到退出请求，且没有接收到退出包，本线程在1秒后重新初始化来重连。" );
             SystemClock.sleep( 1000 ); //暂停1秒
             return 1;
         }
-        else //其他情况，本线程直接退出
+        else //其他情况，本线程直接退出。
         {
-            //发送本线程退出消息给主界面线程
+            //销毁接收音频输出数据帧的链表类对象。
+            if( m_clRecvAudioOutputDataFrameLinkedList != null )
+            {
+                m_clRecvAudioOutputDataFrameLinkedList.clear();
+                m_clRecvAudioOutputDataFrameLinkedList = null;
+            }
+
+            //销毁自适应抖动缓冲器类对象。
+            if( m_clAjb != null )
+            {
+                m_clAjb.Destory();
+                m_clAjb = null;
+            }
+
+            //发送本线程退出消息给主界面线程。
             Message clMessage = new Message();
             clMessage.what = 1;
             clMainActivityHandler.sendMessage( clMessage );
@@ -612,63 +646,72 @@ class MyAudioProcessThread extends AudioProcessThread
 
         out:
         {
-            //使用TCP协议客户端套接字发送音频输入数据帧
+            //使用TCP协议客户端套接字发送本音频输入数据帧。
             {
-                if( i32VoiceActivityStatus == 1 ) //如果本帧音频输入数据为有语音活动
+                if( i32VoiceActivityStatus == 1 ) //如果本音频输入数据帧为有语音活动。
                 {
-                    if( pszi8SpeexAudioInputDataFrame != null ) //如果使用了Speex编码器
+                    switch( m_i32UseWhatCodec ) //使用什么编解码器。
                     {
-                        if( i32SpeexAudioInputDataFrameIsNeedTrans == 1 ) //如果本帧Speex格式音频输入数据需要传输
+                        case 0: //如果使用PCM原始数据。
                         {
-                            for( m_i32Temp = 0; m_i32Temp < i32SpeexAudioInputDataFrameSize; m_i32Temp++ )
+                            for( m_i32Temp = 0; m_i32Temp < pszi16PcmAudioResultDataFrame.length; m_i32Temp++ )
                             {
-                                m_szi8TempData[6 + m_i32Temp] = pszi8SpeexAudioInputDataFrame[m_i32Temp];
+                                m_szi8TempData[6 + m_i32Temp * 2] = ( byte ) ( pszi16PcmAudioResultDataFrame[m_i32Temp] & 0xFF );
+                                m_szi8TempData[6 + m_i32Temp * 2 + 1] = ( byte ) ( ( pszi16PcmAudioResultDataFrame[m_i32Temp] & 0xFF00 ) >> 8 );
                             }
 
-                            m_i32Temp = i32SpeexAudioInputDataFrameSize + 4; //预读长度 = Speex格式音频输入数据长度 + 时间戳长度
-                        }
-                        else //如果本帧Speex格式音频输入数据不需要传输
-                        {
-                            m_i32Temp = 4; //预读长度 = 时间戳长度
-                        }
-                    }
-                    else //如果使用了PCM原始数据
-                    {
-                        for( m_i32Temp = 0; m_i32Temp < pszi16PcmAudioResultDataFrame.length; m_i32Temp++ )
-                        {
-                            m_szi8TempData[6 + m_i32Temp * 2] = ( byte ) ( pszi16PcmAudioResultDataFrame[m_i32Temp] & 0xFF );
-                            m_szi8TempData[6 + m_i32Temp * 2 + 1] = ( byte ) ( ( pszi16PcmAudioResultDataFrame[m_i32Temp] & 0xFF00 ) >> 8 );
-                        }
+                            m_i32Temp = pszi16PcmAudioResultDataFrame.length * 2 + 4; //预读长度 = PCM格式音频输入数据帧长度 + 时间戳长度。
 
-                        m_i32Temp = pszi16PcmAudioResultDataFrame.length * 2 + 4; //预读长度=PCM格式音频输入数据长度+时间戳长度
+                            break;
+                        }
+                        case 1: //如果使用Speex编解码器。
+                        {
+                            if( i32SpeexAudioInputDataFrameIsNeedTrans == 1 ) //如果本Speex格式音频输入数据帧需要传输。
+                            {
+                                for( m_i32Temp = 0; m_i32Temp < i32SpeexAudioInputDataFrameSize; m_i32Temp++ )
+                                {
+                                    m_szi8TempData[6 + m_i32Temp] = pszi8SpeexAudioInputDataFrame[m_i32Temp];
+                                }
+
+                                m_i32Temp = i32SpeexAudioInputDataFrameSize + 4; //预读长度 = Speex格式音频输入数据帧长度 + 时间戳长度。
+                            }
+                            else //如果本Speex格式音频输入数据帧不需要传输。
+                            {
+                                m_i32Temp = 4; //预读长度 = 时间戳长度。
+                            }
+
+                            break;
+                        }
                     }
                 }
-                else //如果本帧音频输入数据为无语音活动
+                else //如果本音频输入数据帧为无语音活动
                 {
                     m_i32Temp = 4; //预读长度 = 时间戳长度
                 }
 
-                if( ( m_i32Temp != 4 ) || //如果本帧音频输入数据为有语音活动，就发送
-                    ( ( m_i32Temp == 4 ) && ( iLastAudioDataIsActive != 0 ) ) ) //如果本帧音频输入数据为无语音活动，但最后一帧音频数据为有语音活动，就发送
+                if( ( m_i32Temp != 4 ) || //如果本音频输入数据帧为有语音活动，就发送。
+                    ( ( m_i32Temp == 4 ) && ( m_i32LastSendAudioDataFrameIsActive != 0 ) ) ) //如果本音频输入数据帧为无语音活动，但最后发送的一个音频数据帧为有语音活动，就发送。
                 {
-                    //设置预读长度
+                    //设置预读长度。
                     m_szi8TempData[0] = ( byte ) ( m_i32Temp & 0xFF );
                     m_szi8TempData[1] = ( byte ) ( ( m_i32Temp & 0xFF00 ) >> 8 );
 
-                    //设置时间戳
-                    m_szi8TempData[2] = ( byte ) ( lSendAudioDataTimeStamp & 0xFF );
-                    m_szi8TempData[3] = ( byte ) ( ( lSendAudioDataTimeStamp & 0xFF00 ) >> 8 );
-                    m_szi8TempData[4] = ( byte ) ( ( lSendAudioDataTimeStamp & 0xFF0000 ) >> 16 );
-                    m_szi8TempData[5] = ( byte ) ( ( lSendAudioDataTimeStamp & 0xFF000000 ) >> 24 );
+                    //设置时间戳。
+                    m_szi8TempData[2] = ( byte ) ( m_i32SendAudioDataTimeStamp & 0xFF );
+                    m_szi8TempData[3] = ( byte ) ( ( m_i32SendAudioDataTimeStamp & 0xFF00 ) >> 8 );
+                    m_szi8TempData[4] = ( byte ) ( ( m_i32SendAudioDataTimeStamp & 0xFF0000 ) >> 16 );
+                    m_szi8TempData[5] = ( byte ) ( ( m_i32SendAudioDataTimeStamp & 0xFF000000 ) >> 24 );
+
+                    m_i32SendAudioDataTimeStamp += m_i32FrameSize; //时间戳递增一个音频输入数据帧的长度。
 
                     try
                     {
                         OutputStream clOutputStream = m_clClientSocket.getOutputStream();
                         clOutputStream.write( m_szi8TempData, 0, m_i32Temp + 2 );
-                        clOutputStream.flush(); //防止出现Software caused connection abort异常
-                        lLastPacketSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间
+                        clOutputStream.flush(); //防止出现Software caused connection abort异常。
+                        lLastPacketSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
 
-                        Log.i( m_pclCurrentClassNameString, "发送一个音频输入数据帧成功。时间戳：" + lSendAudioDataTimeStamp + "，总长度：" + m_i32Temp + "。" );
+                        Log.i( m_pclCurrentClassNameString, "发送一个音频输入数据帧成功。时间戳：" + m_i32SendAudioDataTimeStamp + "，总长度：" + m_i32Temp + "。" );
                     }
                     catch( IOException e )
                     {
@@ -683,17 +726,15 @@ class MyAudioProcessThread extends AudioProcessThread
                 }
                 else
                 {
-                    Log.i( m_pclCurrentClassNameString, "本帧音频输入数据为无语音活动，且最后一个音频数据帧也为无语音活动，无需发送。" );
+                    Log.i( m_pclCurrentClassNameString, "本音频输入数据帧为无语音活动，且最后发送的一个音频数据帧为无语音活动，无需发送。" );
                 }
 
-                lSendAudioDataTimeStamp += m_i32FrameSize; //时间戳递增一帧音频输入数据的采样数量
-
-                //记录最后一帧音频数据是否有语音活动
-                if( m_i32Temp != 4 ) iLastAudioDataIsActive = 1;
-                else iLastAudioDataIsActive = 0;
+                //设置最后发送的一个音频数据帧有无语音活动。
+                if( m_i32Temp != 4 ) m_i32LastSendAudioDataFrameIsActive = 1;
+                else m_i32LastSendAudioDataFrameIsActive = 0;
             }
 
-            //写入音频输入数据帧到文件
+            //写入音频输入数据帧到文件。
             if( clAudioInputFileOutputStream != null )
             {
                 for( m_i32Temp = 0; m_i32Temp < pszi16PcmAudioInputDataFrame.length; m_i32Temp++ )
@@ -714,7 +755,7 @@ class MyAudioProcessThread extends AudioProcessThread
                 }
             }
 
-            //写入音频结果数据帧到文件
+            //写入音频结果数据帧到文件。
             if( clAudioResultFileOutputStream != null )
             {
                 for( m_i32Temp = 0; m_i32Temp < pszi16PcmAudioResultDataFrame.length; m_i32Temp++ )
@@ -741,56 +782,143 @@ class MyAudioProcessThread extends AudioProcessThread
         return p_i64Result;
     }
 
-    //用户定义的写入音频输出数据帧函数，在需要播放一个音频输出数据帧时回调一次
-    public void UserWriteAudioOutputDataFrame( short pszi16PcmAudioOutputDataFrame[], byte p_pszi8SpeexAudioInputDataFrame[], int p_pszi32SpeexAudioInputDataFrameSize[] )
+    //用户定义的写入音频输出数据帧函数，在需要播放一个音频输出数据帧时回调一次。
+    public void UserWriteAudioOutputDataFrame( short pszi16PcmAudioOutputDataFrame[], byte p_pszi8SpeexAudioInputDataFrame[], long p_pszi64SpeexAudioInputDataFrameSize[] )
     {
-        Integer pclAjbGetAudioDataSize; //从自适应抖动缓冲器中取出的音频数据帧的内存长度
+        Long p_clAjbGetAudioDataSize; //从自适应抖动缓冲器中取出的音频输出数据帧的长度。
+        Integer p_clAjbBufferSize; //自适应抖动缓冲器中数据帧的数量。
 
-        //从自适应抖动缓冲器取出第一帧音频数据
-        if( clAjb != null ) //如果使用了自适应抖动缓冲器
+        //从自适应抖动缓冲器取出一个音频输出数据帧。
+        //将音频输出数据帧放入链表或自适应抖动缓冲器。
+        switch( m_i32UseWhatRecvAudioOutputDataFrame ) //使用什么接收音频输出数据帧。
         {
-            switch( m_i32UseWhatCodec )//使用什么解码器
+            case 0: //如果使用链表。
             {
-                case 0: //如果使用PCM原始数据
-                {
-                    pclAjbGetAudioDataSize = new Integer( pszi16PcmAudioOutputDataFrame.length );
-                    synchronized( clAjb )
-                    {
-                        clAjb.GetShortAudioData( pszi16PcmAudioOutputDataFrame, pclAjbGetAudioDataSize );
-                    }
+                byte m_szi8RecvAudioOutputDataFrame[];
 
-                    break;
-                }
-                case 1: //如果使用Speex解码器
+                switch( m_i32UseWhatCodec ) //使用什么编解码器。
                 {
-                    pclAjbGetAudioDataSize = new Integer( p_pszi8SpeexAudioInputDataFrame.length );
-                    synchronized( clAjb )
+                    case 0: //如果使用PCM原始数据。
                     {
-                        clAjb.GetByteAudioData( p_pszi8SpeexAudioInputDataFrame, pclAjbGetAudioDataSize );
-                    }
-                    p_pszi32SpeexAudioInputDataFrameSize[0] = pclAjbGetAudioDataSize;
+                        if( ( m_clRecvAudioOutputDataFrameLinkedList.size() > 0 ) && ( m_clRecvAudioOutputDataFrameLinkedList.getFirst().length > 0 ) ) //如果接收音频输出数据帧的链表的第一个音频输出数据帧为有语音活动。
+                        {
+                            m_szi8RecvAudioOutputDataFrame = m_clRecvAudioOutputDataFrameLinkedList.getFirst();
 
-                    break;
+                            for( m_i32Temp2 = 0; m_i32Temp2 < m_i32FrameSize; m_i32Temp2++ )
+                            {
+                                pszi16PcmAudioOutputDataFrame[m_i32Temp2] = ( short ) ( ( ( short ) m_szi8RecvAudioOutputDataFrame[m_i32Temp2 * 2] ) & 0xFF | ( ( short ) m_szi8RecvAudioOutputDataFrame[m_i32Temp2 * 2 + 1] ) << 8 );
+                            }
+                        }
+                        else //如果接收音频输出数据帧的链表为空，或第一个音频输出数据帧为无语音活动。
+                        {
+                            for( m_i32Temp2 = 0; m_i32Temp2 < m_i32FrameSize; m_i32Temp2++ )
+                            {
+                                pszi16PcmAudioOutputDataFrame[m_i32Temp2] = 0;
+                            }
+                        }
+
+                        break;
+                    }
+                    case 1: //如果使用Speex编解码器。
+                    {
+                        if( ( m_clRecvAudioOutputDataFrameLinkedList.size() > 0 ) && ( m_clRecvAudioOutputDataFrameLinkedList.getFirst().length > 0 ) ) //如果接收音频输出数据帧的链表的第一个音频输出数据帧为有语音活动。
+                        {
+                            m_szi8RecvAudioOutputDataFrame = m_clRecvAudioOutputDataFrameLinkedList.getFirst();
+
+                            for( m_i32Temp2 = 0; m_i32Temp2 < m_szi8RecvAudioOutputDataFrame.length; m_i32Temp2++ )
+                            {
+                                p_pszi8SpeexAudioInputDataFrame[m_i32Temp2] = m_szi8RecvAudioOutputDataFrame[m_i32Temp2];
+                            }
+
+                            p_pszi64SpeexAudioInputDataFrameSize[0] = m_szi8RecvAudioOutputDataFrame.length;
+                        }
+                        else //如果接收音频输出数据帧的链表为空，或第一个音频输出数据帧为无语音活动。
+                        {
+                            p_pszi64SpeexAudioInputDataFrameSize[0] = 0;
+                        }
+
+                        break;
+                    }
                 }
-                default:
+
+                //删除接收音频输出数据帧的链表的第一个音频输出数据帧。
+                if( m_clRecvAudioOutputDataFrameLinkedList.size() > 0 )
                 {
-                    pclAjbGetAudioDataSize = new Integer( 0 );
+                    m_clRecvAudioOutputDataFrameLinkedList.removeFirst();
                 }
+
+                break;
             }
+            case 1: //如果使用自适应抖动缓冲器。
+            {
+                switch( m_i32UseWhatCodec ) //使用什么编解码器。
+                {
+                    case 0: //如果使用PCM原始数据。
+                    {
+                        //从自适应抖动缓冲器取出一个音频输出数据帧。
+                        p_clAjbGetAudioDataSize = new Long( m_szi8TempData2.length );
+                        synchronized( m_clAjb )
+                        {
+                            m_clAjb.GetOneByteDataFrame( m_szi8TempData2, p_clAjbGetAudioDataSize );
+                        }
 
-            clAjb.GetCurHaveActiveBufferSize( pclAjbGetAudioDataSize );
-            Log.i( m_pclCurrentClassNameString, "自适应抖动缓冲器的当前已缓冲有语音活动音频数据帧数量为 " + pclAjbGetAudioDataSize + " 个。" );
-            clAjb.GetCurHaveInactiveBufferSize( pclAjbGetAudioDataSize );
-            Log.i( m_pclCurrentClassNameString, "自适应抖动缓冲器的当前已缓冲无语音活动音频数据帧数量为 " + pclAjbGetAudioDataSize + " 个。" );
-            clAjb.GetCurNeedBufferSize( pclAjbGetAudioDataSize );
-            Log.i( m_pclCurrentClassNameString, "自适应抖动缓冲器的当前需缓冲音频数据帧的数量为 " + pclAjbGetAudioDataSize + " 个。" );
+                        if( p_clAjbGetAudioDataSize != 0 ) //如果取出来的音频输出数据帧为有语音活动。
+                        {
+                            for( m_i32Temp2 = 0; m_i32Temp2 < m_i32FrameSize; m_i32Temp2++ )
+                            {
+                                pszi16PcmAudioOutputDataFrame[m_i32Temp2] = ( short ) ( ( ( short ) m_szi8TempData2[m_i32Temp2 * 2] ) & 0xFF | ( ( short ) m_szi8TempData2[m_i32Temp2 * 2 + 1] ) << 8 );
+                            }
+                        }
+                        else //如果取出来的音频输出数据帧为无语音活动。
+                        {
+                            for( m_i32Temp2 = 0; m_i32Temp2 < m_i32FrameSize; m_i32Temp2++ )
+                            {
+                                pszi16PcmAudioOutputDataFrame[m_i32Temp2] = 0;
+                            }
+                        }
+
+                        break;
+                    }
+                    case 1: //如果使用Speex编解码器。
+                    {
+                        //从自适应抖动缓冲器取出一个音频输出数据帧。
+                        p_clAjbGetAudioDataSize = new Long( p_pszi8SpeexAudioInputDataFrame.length );
+                        synchronized( m_clAjb )
+                        {
+                            m_clAjb.GetOneByteDataFrame( p_pszi8SpeexAudioInputDataFrame, p_clAjbGetAudioDataSize );
+                        }
+
+                        p_pszi64SpeexAudioInputDataFrameSize[0] = p_clAjbGetAudioDataSize;
+
+                        break;
+                    }
+                }
+
+                p_clAjbBufferSize = new Integer( 0 );
+
+                m_clAjb.GetCurHaveBufferActiveDataFrameCount( p_clAjbBufferSize );
+                Log.i( m_pclCurrentClassNameString, "自适应抖动缓冲器中当前已缓冲有语音活动音频数据帧数量为 " + p_clAjbBufferSize + " 个。" );
+                m_clAjb.GetCurHaveBufferInactiveDataFrameCount( p_clAjbBufferSize );
+                Log.i( m_pclCurrentClassNameString, "自适应抖动缓冲器中当前已缓冲无语音活动音频数据帧数量为 " + p_clAjbBufferSize + " 个。" );
+                m_clAjb.GetCurHaveBufferDataFrameCount( p_clAjbBufferSize );
+                Log.i( m_pclCurrentClassNameString, "自适应抖动缓冲器中当前已缓冲活动音频数据帧数量为 " + p_clAjbBufferSize + " 个。" );
+
+                m_clAjb.GetMaxNeedBufferDataFrameCount( p_clAjbBufferSize );
+                Log.i( m_pclCurrentClassNameString, "自适应抖动缓冲器中最大需缓冲音频数据帧的数量为 " + p_clAjbBufferSize + " 个。" );
+                m_clAjb.GetMinNeedBufferDataFrameCount( p_clAjbBufferSize );
+                Log.i( m_pclCurrentClassNameString, "自适应抖动缓冲器中最小需缓冲音频数据帧的数量为 " + p_clAjbBufferSize + " 个。" );
+                m_clAjb.GetCurNeedBufferDataFrameCount( p_clAjbBufferSize );
+                Log.i( m_pclCurrentClassNameString, "自适应抖动缓冲器中当前需缓冲音频数据帧的数量为 " + p_clAjbBufferSize + " 个。" );
+
+                break;
+            }
         }
     }
 
-    //用户定义的获取PCM格式音频输出数据帧函数，在解码完一个音频输出数据帧时回调一次
+    //用户定义的获取PCM格式音频输出数据帧函数，在解码完一个音频输出数据帧时回调一次。
     public void UserGetPcmAudioOutputDataFrame( short pszi16PcmAudioOutputDataFrame[] )
     {
-        //写入音频输出数据帧到文件
+        //写入音频输出数据帧到文件。
         if( clAudioOutputFileOutputStream != null )
         {
             for( int m_i32Temp = 0; m_i32Temp < pszi16PcmAudioOutputDataFrame.length; m_i32Temp++ )
@@ -815,22 +943,23 @@ class MyAudioProcessThread extends AudioProcessThread
 
 public class MainActivity extends AppCompatActivity
 {
-    String m_pclCurrentClassNameString = this.getClass().getSimpleName(); //当前类名称字符串
+    String m_pclCurrentClassNameString = this.getClass().getSimpleName(); //存放当前类名称字符串。
 
-    View clLayoutActivityMainView; //主界面布局控件的内存指针
-    View clLayoutActivitySettingView; //设置界面布局控件的内存指针
-    View clLayoutActivityWebRtcAecView; //WebRtc声学回音消除器设置布局控件的内存指针
-    View clLayoutActivityWebRtcAecmView; //WebRtc移动版声学回音消除器设置布局控件的内存指针
-    View clLayoutActivitySpeexAecView; //Speex声学回音消除器设置布局控件的内存指针
-    View clLayoutActivityWebRtcNsxView; //WebRtc定点噪音抑制器设置布局控件的内存指针
-    View clLayoutActivitySpeexPreprocessorView; //Speex预处理器设置布局控件的内存指针
-    View clLayoutActivitySpeexCodecView; //Speex编解码器设置布局控件的内存指针
-    View clLayoutActivityReadMeView; //说明界面布局控件的内存指针
-    View clLayoutActivityCurrentView; //当前界面布局控件的内存指针
+    View clLayoutActivityMainView; //存放主界面布局控件的内存指针。
+    View clLayoutActivitySettingView; //存放设置界面布局控件的内存指针。
+    View clLayoutActivityWebRtcAecView; //存放WebRtc声学回音消除器设置布局控件的内存指针。
+    View clLayoutActivityWebRtcAecmView; //存放WebRtc移动版声学回音消除器设置布局控件的内存指针。
+    View clLayoutActivitySpeexAecView; //存放Speex声学回音消除器设置布局控件的内存指针。
+    View clLayoutActivityWebRtcNsxView; //存放WebRtc定点噪音抑制器设置布局控件的内存指针。
+    View clLayoutActivitySpeexPreprocessorView; //存放Speex预处理器设置布局控件的内存指针。
+    View clLayoutActivitySpeexCodecView; //存放Speex编解码器设置布局控件的内存指针。
+    View clLayoutActivityAjbView; //存放自适应抖动缓冲器设置布局控件的内存指针。
+    View clLayoutActivityReadMeView; //存放说明界面布局控件的内存指针。
+    View clLayoutActivityCurrentView; //存放当前界面布局控件的内存指针。
 
-    MainActivity clMainActivity; //主界面类对象的内存指针
-    MyAudioProcessThread clMyAudioProcessThread; //音频处理线程类对象的内存指针
-    MainActivityHandler clMainActivityHandler; //主界面消息处理类对象的内存指针
+    MainActivity clMainActivity; //存放主界面类对象的内存指针。
+    MyAudioProcessThread clMyAudioProcessThread; //存放音频处理线程类对象的内存指针。
+    MainActivityHandler clMainActivityHandler; //存放主界面消息处理类对象的内存指针。
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -846,6 +975,7 @@ public class MainActivity extends AppCompatActivity
         clLayoutActivityWebRtcNsxView = layoutInflater.inflate( R.layout.activity_webrtcnsx, null );
         clLayoutActivitySpeexPreprocessorView = layoutInflater.inflate( R.layout.activity_speexpreprocessor, null );
         clLayoutActivitySpeexCodecView = layoutInflater.inflate( R.layout.activity_speexcodec, null );
+        clLayoutActivityAjbView = layoutInflater.inflate( R.layout.activity_ajb, null );
         clLayoutActivityReadMeView = layoutInflater.inflate( R.layout.activity_readme, null );
 
         setContentView( clLayoutActivityMainView ); //设置界面的内容为主界面
@@ -895,7 +1025,8 @@ public class MainActivity extends AppCompatActivity
                  ( clLayoutActivityCurrentView == clLayoutActivitySpeexAecView ) ||
                  ( clLayoutActivityCurrentView == clLayoutActivityWebRtcNsxView ) ||
                  ( clLayoutActivityCurrentView == clLayoutActivitySpeexPreprocessorView ) ||
-                 ( clLayoutActivityCurrentView == clLayoutActivitySpeexCodecView ) )
+                 ( clLayoutActivityCurrentView == clLayoutActivitySpeexCodecView ) ||
+                 ( clLayoutActivityCurrentView == clLayoutActivityAjbView ) )
         {
             this.OnWebRtcAecSettingOkClick( null );
         }
@@ -908,12 +1039,11 @@ public class MainActivity extends AppCompatActivity
     //创建服务器或连接服务器按钮
     public void OnClickCreateServerAndConnectServer( View v )
     {
-        int p_iResult = -1;
+        long p_i64Result = -1;
 
         out:
-        while( true )
         {
-            if( clMyAudioProcessThread == null ) //如果音频处理线程还没有启动
+            if( clMyAudioProcessThread == null ) //如果音频处理线程还没有启动。
             {
                 Log.i( m_pclCurrentClassNameString, "开始启动音频处理线程。" );
 
@@ -921,21 +1051,21 @@ public class MainActivity extends AppCompatActivity
 
                 if( v.getId() == R.id.CreateServerButton )
                 {
-                    clMyAudioProcessThread.iIsCreateServerOrClient = 1; //标记创建服务端接受客户端
+                    clMyAudioProcessThread.iIsCreateServerOrClient = 1; //标记创建服务端接受客户端。
                 }
                 else if( v.getId() == R.id.ConnectServerButton )
                 {
-                    clMyAudioProcessThread.iIsCreateServerOrClient = 0; //标记创建客户端连接服务端
+                    clMyAudioProcessThread.iIsCreateServerOrClient = 0; //标记创建客户端连接服务端。
                 }
 
                 clMyAudioProcessThread.clMainActivity = this;
                 clMyAudioProcessThread.clMainActivityHandler = clMainActivityHandler;
 
-                //设置IP地址字符串、端口、音频播放线程启动延迟
+                //设置IP地址字符串、端口、音频播放线程启动延迟。
                 clMyAudioProcessThread.m_clIPAddressString = ((EditText) clLayoutActivityMainView.findViewById(R.id.IPAddressEdit)).getText().toString();
                 clMyAudioProcessThread.m_iPort = Integer.parseInt(((EditText) clLayoutActivityMainView.findViewById(R.id.PortEdit)).getText().toString());
 
-                //设置音频数据的采样频率、一帧音频数据的采样数量
+                //设置音频数据的采样频率、一帧音频数据的采样数量。
                 String clTempString = ((Spinner) clLayoutActivitySettingView.findViewById(R.id.SamplingRate)).getSelectedItem().toString();
                 if( clTempString.equals( "8000Hz" ) )
                 {
@@ -950,7 +1080,7 @@ public class MainActivity extends AppCompatActivity
                     clMyAudioProcessThread.SetAudioData( 32000 );
                 }
 
-                //判断是否使用WebRtc声学回音消除器
+                //判断是否使用WebRtc声学回音消除器。
                 if( ((RadioButton)clLayoutActivitySettingView.findViewById(R.id.RadioButtonUseWebRtcAec)).isChecked() )
                 {
                     try
@@ -964,7 +1094,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
 
-                //判断是否使用WebRtc移动版声学回音消除器
+                //判断是否使用WebRtc移动版声学回音消除器。
                 if( ((RadioButton)clLayoutActivitySettingView.findViewById(R.id.RadioButtonUseWebRtcAecm)).isChecked() )
                 {
                     try
@@ -978,7 +1108,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
 
-                //判断是否使用Speex声学回音消除器
+                //判断是否使用Speex声学回音消除器。
                 if( ((RadioButton)clLayoutActivitySettingView.findViewById(R.id.RadioButtonUseSpeexAec)).isChecked() )
                 {
                     try
@@ -992,7 +1122,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
 
-                //判断是否使用WebRtc定点噪音抑制器
+                //判断是否使用WebRtc定点噪音抑制器。
                 if( ((CheckBox)clLayoutActivitySettingView.findViewById(R.id.CheckBoxIsUseWebRtcNsx)).isChecked() )
                 {
                     try
@@ -1006,7 +1136,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
 
-                //判断是否使用Speex预处理
+                //判断是否使用Speex预处理。
                 if( ((CheckBox)clLayoutActivitySettingView.findViewById( R.id.CheckBoxIsUseSpeexPreprocessor )).isChecked() )
                 {
                     try
@@ -1033,13 +1163,13 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
 
-                //判断是否使用PCM原始数据
+                //判断是否使用PCM原始数据。
                 if( ((RadioButton)clLayoutActivitySettingView.findViewById(R.id.RadioButtonUsePcm)).isChecked() )
                 {
                     clMyAudioProcessThread.SetUsePcm();
                 }
 
-                //判断是否使用Speex编解码器
+                //判断是否使用Speex编解码器。
                 if( ((RadioButton)clLayoutActivitySettingView.findViewById(R.id.RadioButtonUseSpeexCodec)).isChecked() )
                 {
                     try
@@ -1058,13 +1188,36 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
 
-                //判断是否使用Opus编解码器
+                //判断是否使用Opus编解码器。
                 if( ((RadioButton)clLayoutActivitySettingView.findViewById(R.id.RadioButtonUseOpusCodec)).isChecked())
                 {
                     clMyAudioProcessThread.SetUseOpusCodec();
                 }
 
-                //判断是否保存音频数据到文件
+                //判断是否使用链表。
+                if( ((RadioButton)clLayoutActivitySettingView.findViewById(R.id.RadioButtonUseList)).isChecked())
+                {
+                    clMyAudioProcessThread.m_i32UseWhatRecvAudioOutputDataFrame = 0;
+                }
+
+                //判断是否使用自己设计的自适应抖动缓冲器。
+                if( ((RadioButton)clLayoutActivitySettingView.findViewById(R.id.RadioButtonUseAjb)).isChecked() )
+                {
+                    clMyAudioProcessThread.m_i32UseWhatRecvAudioOutputDataFrame = 1;
+
+                    try
+                    {
+                        clMyAudioProcessThread.m_iAjbMaxNeedBufferDataFrameCount = Integer.parseInt( ( ( TextView ) clLayoutActivityAjbView.findViewById( R.id.AjbMaxNeedBufferDataFrameCount ) ).getText().toString() );
+                        clMyAudioProcessThread.m_iAjbMinNeedBufferDataFrameCount = Integer.parseInt( ( ( TextView ) clLayoutActivityAjbView.findViewById( R.id.AjbMinNeedBufferDataFrameCount ) ).getText().toString() );
+                    }
+                    catch (NumberFormatException e)
+                    {
+                        Toast.makeText(this, "请输入数字", Toast.LENGTH_LONG).show();
+                        break out;
+                    }
+                }
+
+                //判断是否保存音频数据到文件。
                 if( ((CheckBox)clLayoutActivitySettingView.findViewById(R.id.CheckBoxIsSaveAudioDataFile)).isChecked())
                 {
                     clMyAudioProcessThread.iIsSaveAudioDataFile = 1;
@@ -1080,12 +1233,16 @@ public class MainActivity extends AppCompatActivity
 
                 if( v.getId() == R.id.CreateServerButton )
                 {
-                    ((Button) findViewById( R.id.CreateServerButton )).setText( "中断" ); //设置创建服务端按钮的内容为“中断”
-                    ((Button) findViewById(R.id.ConnectServerButton )).setEnabled( false ); //设置连接服务端按钮为不可用
+                    ((EditText)findViewById( R.id.IPAddressEdit )).setEnabled( false ); //设置IP地址控件为不可用
+                    ((EditText)findViewById( R.id.PortEdit )).setEnabled( false ); //设置端口控件为不可用
+                    ((Button)findViewById( R.id.CreateServerButton )).setText( "中断" ); //设置创建服务端按钮的内容为“中断”
+                    ((Button)findViewById( R.id.ConnectServerButton )).setEnabled( false ); //设置连接服务端按钮为不可用
                     ((Button)findViewById( R.id.SettingButton )).setEnabled( false ); //设置设置按钮为不可用
                 }
                 else if( v.getId() == R.id.ConnectServerButton )
                 {
+                    ((EditText)findViewById( R.id.IPAddressEdit )).setEnabled( false ); //设置IP地址控件为不可用
+                    ((EditText)findViewById( R.id.PortEdit )).setEnabled( false ); //设置端口控件为不可用
                     ((Button)findViewById( R.id.CreateServerButton )).setEnabled( false ); //设置创建服务端按钮为不可用
                     ((Button)findViewById( R.id.ConnectServerButton )).setText( "中断" ); //设置连接服务端按钮的内容为“中断”
                     ((Button)findViewById( R.id.SettingButton )).setEnabled( false ); //设置设置按钮为不可用
@@ -1107,11 +1264,12 @@ public class MainActivity extends AppCompatActivity
                 }
             }
 
-            p_iResult = 0;
+            p_i64Result = 0;
+            
             break out;
         }
 
-        if( p_iResult != 0 )
+        if( p_i64Result != 0 )
         {
             clMyAudioProcessThread = null;
         }
@@ -1238,6 +1396,20 @@ public class MainActivity extends AppCompatActivity
 
     //Opus编解码器设置界面的确定按钮
     public void OnOpusCodecSettingOkClick( View clButton )
+    {
+        setContentView( clLayoutActivitySettingView );
+        clLayoutActivityCurrentView = clLayoutActivitySettingView;
+    }
+
+    //自适应抖动缓冲器设置按钮
+    public void OnAjbSettingClick( View clButton )
+    {
+        setContentView( clLayoutActivityAjbView );
+        clLayoutActivityCurrentView = clLayoutActivityAjbView;
+    }
+
+    //自适应抖动缓冲器设置界面的确定按钮
+    public void OnAjbSettingOkClick( View clButton )
     {
         setContentView( clLayoutActivitySettingView );
         clLayoutActivityCurrentView = clLayoutActivitySettingView;

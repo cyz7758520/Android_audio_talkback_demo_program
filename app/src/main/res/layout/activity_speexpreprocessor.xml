@@ -110,7 +110,7 @@
             android:id="@+id/CheckBoxSpeexPreprocessorIsUseAgc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:checked="false"
+            android:checked="true"
             android:text="使用AGC自动增益控制"/>
 
         <LinearLayout
@@ -130,7 +130,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number"
-                android:text="30000" />
+                android:text="28000" />
 
         </LinearLayout>
 

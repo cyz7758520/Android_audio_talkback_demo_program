@@ -6,6 +6,7 @@ import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.os.SystemClock;
+import android.os.Process;
 import android.util.Log;
 
 import java.util.LinkedList;
@@ -75,7 +76,7 @@ public abstract class AudioProcessThread extends Thread
     public abstract long UserProcess(); //用户定义的处理函数，在本线程运行时每隔1毫秒就调用一次，返回值表示是否成功，0表示成功，非0表示失败
     public abstract long UserDestory(); //用户定义的销毁函数，在本线程退出时调用一次，返回值表示是否重新初始化，0表示直接退出，非0表示重新初始化
     public abstract long UserReadAudioInputDataFrame( short pszi16PcmAudioInputDataFrame[], short pszi16PcmAudioResultDataFrame[], int i32VoiceActivityStatus, byte pszi8SpeexAudioInputDataFrame[], int i32SpeexAudioInputDataFrameSize, int i32SpeexAudioInputDataFrameIsNeedTrans ); //用户定义的读取音频输入数据帧函数，在采样完一个音频输入数据帧并处理完后回调一次
-    public abstract void UserWriteAudioOutputDataFrame( short pszi16PcmAudioOutputDataFrame[], byte p_pszi8SpeexAudioInputDataFrame[], int p_pszi32SpeexAudioInputDataFrameSize[] ); //用户定义的写入音频输出数据帧函数，在需要播放一个音频输出数据帧时回调一次
+    public abstract void UserWriteAudioOutputDataFrame( short pszi16PcmAudioOutputDataFrame[], byte p_pszi8SpeexAudioInputDataFrame[], long p_pszi64SpeexAudioInputDataFrameSize[] ); //用户定义的写入音频输出数据帧函数，在需要播放一个音频输出数据帧时回调一次
     public abstract void UserGetPcmAudioOutputDataFrame( short pszi16PcmAudioOutputDataFrame[] ); //用户定义的获取PCM格式音频输出数据帧函数，在解码完一个音频输出数据帧时回调一次
 
     //请求本线程退出
@@ -199,27 +200,27 @@ public abstract class AudioProcessThread extends Thread
         long p_i64Temp;
 
         //将音频输出数据帧解码成PCM原始数据
-        switch( m_i32UseWhatCodec )//使用什么编解码器
+        switch( m_i32UseWhatCodec ) //使用什么编解码器。
         {
-            case 0: //如果使用PCM原始数据
+            case 0: //如果使用PCM原始数据。
             {
-                //调用用户定义的写入音频输出数据帧函数
+                //调用用户定义的写入音频输出数据帧函数。
                 UserWriteAudioOutputDataFrame( pszi16PcmAudioOutputDataFrame, null, null );
 
                 break;
             }
-            case 1: //如果使用Speex编解码器
+            case 1: //如果使用Speex编解码器。
             {
                 byte p_pszi8SpeexAudioInputDataFrame[] = new byte[m_i32FrameSize]; //Speex格式音频输出数据帧
-                int p_pszi32SpeexAudioInputDataFrameSize[] = new int[1]; //Speex格式音频输出数据帧的内存长度，单位字节
+                long p_pszi64SpeexAudioInputDataFrameSize[] = new long[1]; //Speex格式音频输出数据帧的内存长度，单位字节
 
                 //调用用户定义的写入音频输出数据帧函数
-                UserWriteAudioOutputDataFrame( null, p_pszi8SpeexAudioInputDataFrame, p_pszi32SpeexAudioInputDataFrameSize );
+                UserWriteAudioOutputDataFrame( null, p_pszi8SpeexAudioInputDataFrame, p_pszi64SpeexAudioInputDataFrameSize );
 
                 //使用Speex解码器
-                if( p_pszi32SpeexAudioInputDataFrameSize[0] != 0 ) //如果这个Speex格式音频输出数据帧接收到了。
+                if( p_pszi64SpeexAudioInputDataFrameSize[0] != 0 ) //如果这个Speex格式音频输出数据帧接收到了。
                 {
-                    p_i64Temp = m_pclSpeexDecoder.Decode( p_pszi8SpeexAudioInputDataFrame, p_pszi32SpeexAudioInputDataFrameSize[0], pszi16PcmAudioOutputDataFrame );
+                    p_i64Temp = m_pclSpeexDecoder.Decode( p_pszi8SpeexAudioInputDataFrame, (int)p_pszi64SpeexAudioInputDataFrameSize[0], pszi16PcmAudioOutputDataFrame );
                 }
                 else //如果这个Speex格式音频输出数据帧丢失了。
                 {
@@ -249,7 +250,7 @@ public abstract class AudioProcessThread extends Thread
     public void run()
     {
         this.setPriority( this.MAX_PRIORITY); //设置本线程优先级
-        android.os.Process.setThreadPriority( -19 ); //设置本线程优先级
+        Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级
 
         int p_i32Temp;
         long p_i64Temp;
@@ -305,6 +306,7 @@ public abstract class AudioProcessThread extends Thread
                             AudioFormat.CHANNEL_CONFIGURATION_MONO,
                             AudioFormat.ENCODING_PCM_16BIT,
                             m_i32FrameSize * 2,
+                            //2,
                             //AudioTrack.getMinBufferSize( m_i32SamplingRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT ),
                             AudioTrack.MODE_STREAM );
                     if( m_pclAudioTrack.getState() == AudioTrack.STATE_INITIALIZED )
@@ -448,35 +450,35 @@ public abstract class AudioProcessThread extends Thread
                         }
                         break;
                     }
-                    case 2: //如果使用Opus编解码器
+                    case 2: //如果使用Opus编解码器。
                     {
                         Log.e( m_pclCurrentClassNameString, "音频处理线程：暂不支持使用Opus编解码器。" );
                         break out;
                     }
                 }
 
-                //初始化各个链表类对象
-                m_pclAlreadyAudioInputLinkedList = new LinkedList<short[]>(); //初始化已录音的链表类对象
-                m_pclAlreadyAudioOutputLinkedList = new LinkedList<short[]>(); //初始化已播放的链表类对象
+                //初始化各个链表类对象。
+                m_pclAlreadyAudioInputLinkedList = new LinkedList<short[]>(); //初始化已录音的链表类对象。
+                m_pclAlreadyAudioOutputLinkedList = new LinkedList<short[]>(); //初始化已播放的链表类对象。
 
-                //初始化各个线程类对象
-                m_clAudioInputThread = new AudioInputThread(); //初始化音频输入线程类对象
-                m_clAudioOutputThread = new AudioOutputThread(); //初始化音频输出线程类对象
+                //初始化各个线程类对象。
+                m_clAudioInputThread = new AudioInputThread(); //初始化音频输入线程类对象。
+                m_clAudioOutputThread = new AudioOutputThread(); //初始化音频输出线程类对象。
 
-                //设置各个线程的退出标记
+                //设置各个线程的退出标记。
                 m_i32ExitFlag = 0;
                 m_clAudioInputThread.m_i32ExitFlag = 0;
                 m_clAudioOutputThread.m_i32ExitFlag = 0;
 
-                //设置各个线程的各个链表类对象
+                //设置各个线程的各个链表类对象。
                 m_clAudioInputThread.m_pclAlreadyAudioInputLinkedList = m_pclAlreadyAudioInputLinkedList;
                 m_clAudioOutputThread.m_pclAlreadyAudioOutputLinkedList = m_pclAlreadyAudioOutputLinkedList;
 
-                //设置各个线程的音频数据的采样频率
+                //设置各个线程的音频数据的采样频率。
                 m_clAudioInputThread.m_i32SamplingRate = m_i32SamplingRate;
                 m_clAudioOutputThread.m_i32SamplingRate = m_i32SamplingRate;
 
-                //设置各个线程的音频数据帧的长度
+                //设置各个线程的音频数据帧的长度。
                 m_clAudioInputThread.m_i32FrameSize = m_i32FrameSize;
                 m_clAudioOutputThread.m_i32FrameSize = m_i32FrameSize;
 
@@ -689,11 +691,11 @@ public abstract class AudioProcessThread extends Thread
 
             Log.i( m_pclCurrentClassNameString, "音频处理线程：本线程开始退出。" );
 
-            //设置各个线程的退出标记为请求退出
+            //设置各个线程的退出标记为请求退出。
             if( m_clAudioInputThread != null ) m_clAudioInputThread.RequireExit();
             if( m_clAudioOutputThread != null ) m_clAudioOutputThread.RequireExit();
 
-            //等待音频输入线程退出
+            //等待音频输入线程退出。
             if( m_clAudioInputThread != null )
             {
                 try
@@ -706,7 +708,8 @@ public abstract class AudioProcessThread extends Thread
 
                 }
             }
-            //等待音频输出线程退出
+
+            //等待音频输出线程退出。
             if( m_clAudioOutputThread != null )
             {
                 try
@@ -720,10 +723,22 @@ public abstract class AudioProcessThread extends Thread
                 }
             }
 
-            m_pclAlreadyAudioInputLinkedList = null; //清空已录音的链表
-            m_pclAlreadyAudioOutputLinkedList = null; //清空已播放的链表
+            //销毁已录音的链表类对象。
+            if( m_pclAlreadyAudioInputLinkedList != null )
+            {
+                m_pclAlreadyAudioInputLinkedList.clear();
+                m_pclAlreadyAudioInputLinkedList = null;
+            }
 
-            if( m_pclWebRtcAec != null ) //销毁WebRtc声学回音消除器类对象
+            //销毁已播放的链表类对象。
+            if( m_pclAlreadyAudioOutputLinkedList != null )
+            {
+                m_pclAlreadyAudioOutputLinkedList.clear();
+                m_pclAlreadyAudioOutputLinkedList = null;
+            }
+
+            //销毁WebRtc声学回音消除器类对象。
+            if( m_pclWebRtcAec != null )
             {
                 p_i64Temp = m_pclWebRtcAec.Destory();
                 if( p_i64Temp == 0 )
@@ -736,7 +751,9 @@ public abstract class AudioProcessThread extends Thread
                 }
                 m_pclWebRtcAec = null;
             }
-            if( m_pclWebRtcAecm != null ) //销毁WebRtc移动版声学回音消除器类对象
+
+            //销毁WebRtc移动版声学回音消除器类对象。
+            if( m_pclWebRtcAecm != null )
             {
                 p_i64Temp = m_pclWebRtcAecm.Destory();
                 if( p_i64Temp == 0 )
@@ -749,7 +766,9 @@ public abstract class AudioProcessThread extends Thread
                 }
                 m_pclWebRtcAecm = null;
             }
-            if( m_pclSpeexAec != null ) //销毁Speex声学回音消除器类对象
+
+            //销毁Speex声学回音消除器类对象。
+            if( m_pclSpeexAec != null )
             {
                 p_i64Temp = m_pclSpeexAec.Destory();
                 if( p_i64Temp == 0 )
@@ -762,7 +781,9 @@ public abstract class AudioProcessThread extends Thread
                 }
                 m_pclSpeexAec = null;
             }
-            if( m_pclWebRtcNsx != null ) //销毁WebRtc定点版噪音抑制器类对象
+
+            //销毁WebRtc定点版噪音抑制器类对象。
+            if( m_pclWebRtcNsx != null )
             {
                 p_i64Temp = m_pclWebRtcNsx.Destory();
                 if( p_i64Temp == 0 )
@@ -775,7 +796,9 @@ public abstract class AudioProcessThread extends Thread
                 }
                 m_pclWebRtcNsx = null;
             }
-            if( m_pclSpeexPreprocessor != null ) //销毁Speex预处理器类对象
+
+            //销毁Speex预处理器类对象。
+            if( m_pclSpeexPreprocessor != null )
             {
                 p_i64Temp = m_pclSpeexPreprocessor.Destory();
                 if( p_i64Temp == 0 )
@@ -788,17 +811,23 @@ public abstract class AudioProcessThread extends Thread
                 }
                 m_pclSpeexPreprocessor = null;
             }
-            if( m_pclSpeexEncoder != null ) //销毁Speex编码器类对象
+
+            //销毁Speex编码器类对象。
+            if( m_pclSpeexEncoder != null )
             {
                 m_pclSpeexEncoder.Destory();
                 m_pclSpeexEncoder = null;
             }
-            if( m_pclSpeexDecoder != null ) //销毁Speex解码器类对象
+
+            //销毁Speex解码器类对象。
+            if( m_pclSpeexDecoder != null )
             {
                 m_pclSpeexDecoder.Destory();
                 m_pclSpeexDecoder = null;
             }
-            if( m_pclAudioRecord != null ) //销毁AudioRecord类对象
+
+            //销毁AudioRecord类对象。
+            if( m_pclAudioRecord != null )
             {
                 if( m_pclAudioRecord.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING )
                 {
@@ -807,7 +836,9 @@ public abstract class AudioProcessThread extends Thread
                 m_pclAudioRecord.release();
                 m_pclAudioRecord = null;
             }
-            if( m_pclAudioTrack != null ) //销毁AudioTrack类对象
+
+            //销毁AudioTrack类对象。
+            if( m_pclAudioTrack != null )
             {
                 if( m_pclAudioTrack.getPlayState() != AudioTrack.PLAYSTATE_STOPPED )
                 {
@@ -817,13 +848,13 @@ public abstract class AudioProcessThread extends Thread
                 m_pclAudioTrack = null;
             }
 
-            //调用用户定义的销毁函数
-            if( UserDestory() == 0 ) //如果用户需要直接退出
+            //调用用户定义的销毁函数。
+            if( UserDestory() == 0 ) //如果用户需要直接退出。
             {
                 Log.i( m_pclCurrentClassNameString, "音频处理线程：本线程已退出。" );
                 break reinit;
             }
-            else //如果用户需用重新初始化
+            else //如果用户需用重新初始化。
             {
                 Log.i( m_pclCurrentClassNameString, "音频处理线程：本线程重新初始化。" );
             }
