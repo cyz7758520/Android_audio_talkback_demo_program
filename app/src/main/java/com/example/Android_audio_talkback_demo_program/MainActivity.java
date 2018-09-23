@@ -4,6 +4,7 @@ import android.Manifest;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -93,6 +95,13 @@ class MainActivityHandler extends Handler
     {
         if( clMessage.what == 1 ) //如果是音频处理线程正常退出的消息
         {
+            //释放唤醒锁类对象。
+            if( clMainActivity.clWakeLock != null )
+            {
+                clMainActivity.clWakeLock.release();
+                clMainActivity.clWakeLock = null;
+            }
+
             clMainActivity.clMyAudioProcessThread = null;
 
             ((EditText)clMainActivity.findViewById( R.id.IPAddressEdit )).setEnabled( true ); //设置IP地址控件为可用
@@ -119,7 +128,6 @@ class MyAudioProcessThread extends AudioProcessThread
     int iIsCreateServerOrClient; //创建服务端或者客户端标记，1表示创建服务端，0表示创建客户端
     String m_clIPAddressString; //IP地址字符串
     int m_iPort; //端口号
-    MainActivity clMainActivity; //主界面类对象的内存指针
     Handler clMainActivityHandler; //主界面消息处理类对象的内存指针
 
     ServerSocket m_clServerSocket; //TCP协议服务端套接字类
@@ -961,6 +969,8 @@ public class MainActivity extends AppCompatActivity
     MyAudioProcessThread clMyAudioProcessThread; //存放音频处理线程类对象的内存指针。
     MainActivityHandler clMainActivityHandler; //存放主界面消息处理类对象的内存指针。
 
+    PowerManager.WakeLock clWakeLock; //存放唤醒锁类对象的内存指针。
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -1058,7 +1068,6 @@ public class MainActivity extends AppCompatActivity
                     clMyAudioProcessThread.iIsCreateServerOrClient = 0; //标记创建客户端连接服务端。
                 }
 
-                clMyAudioProcessThread.clMainActivity = this;
                 clMyAudioProcessThread.clMainActivityHandler = clMainActivityHandler;
 
                 //设置IP地址字符串、端口、音频播放线程启动延迟。
@@ -1078,6 +1087,16 @@ public class MainActivity extends AppCompatActivity
                 else if( clTempString.equals( "32000Hz" ) )
                 {
                     clMyAudioProcessThread.SetAudioData( 32000 );
+                }
+
+                //判断是否使用唤醒锁。
+                if( ((CheckBox)clLayoutActivitySettingView.findViewById(R.id.CheckBoxIsUseWakeLock)).isChecked())
+                {
+                    clMyAudioProcessThread.SetUseWakeLock( 1, this );
+                }
+                else
+                {
+                    clMyAudioProcessThread.SetUseWakeLock( 0, null );
                 }
 
                 //判断是否使用WebRtc声学回音消除器。

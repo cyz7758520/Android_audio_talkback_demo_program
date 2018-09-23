@@ -94,6 +94,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
 
+            <CheckBox
+                android:id="@+id/CheckBoxIsUseWakeLock"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:checked="true"
+                android:text="使用唤醒锁"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
             <TextView
                 android:gravity="center_vertical"
                 android:layout_weight="3"

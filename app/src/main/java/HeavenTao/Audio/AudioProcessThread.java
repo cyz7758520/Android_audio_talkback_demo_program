@@ -1,10 +1,12 @@
 package HeavenTao.Audio;
 
+import android.app.Activity;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.os.Process;
 import android.util.Log;
@@ -16,39 +18,36 @@ public abstract class AudioProcessThread extends Thread
 {
     public String m_pclCurrentClassNameString = this.getClass().getSimpleName(); //当前类名称字符串
 
-    public int m_i32ExitFlag = 0; //本线程退出标记，0表示保持运行，1表示请求退出
-    public int m_i32ExitCode = 0; //本线程退出代码，0表示正常退出，-1表示初始化失败，-2表示处理失败
+    public int m_i32ExitFlag = 0; //本线程退出标记，0表示保持运行，1表示请求退出。
+    public int m_i32ExitCode = 0; //本线程退出代码，0表示正常退出，-1表示初始化失败，-2表示处理失败。
 
-    public int m_i32SamplingRate; //音频数据的采样频率，包括：8000Hz，16000Hz，32000Hz
-    public int m_i32FrameSize; //音频数据帧的长度，包括：8000Hz为160个采样，16000Hz为320个采样，32000Hz为640个采样
+    public int m_i32SamplingRate; //音频数据的采样频率，包括：8000Hz，16000Hz，32000Hz。
+    public int m_i32FrameSize; //音频数据帧的长度，包括：8000Hz为160个采样，16000Hz为320个采样，32000Hz为640个采样。
 
-    AudioRecord m_pclAudioRecord; //录音类
-    AudioTrack m_pclAudioTrack; //播放类
+    int m_i32UseWhatAec; //使用什么声学回音消除器，0表示不使用，1表示WebRtc声学回音消除器，2表示WebRtc移动版声学回音消除器，3表示Speex声学回音消除器。
 
-    int m_i32UseWhatAec; //使用什么声学回音消除器，0表示不使用，1表示WebRtc声学回音消除器，2表示WebRtc移动版声学回音消除器，3表示Speex声学回音消除器
+    int m_i32WebRtcAecNlpMode; //WebRtc声学回音消除器的非线性滤波模式，0表示保守, 1表示适中, 2表示积极。
 
-    int m_i32WebRtcAecNlpMode; //WebRtc声学回音消除器的非线性滤波模式，0表示保守, 1表示适中, 2表示积极
+    int m_i32WebRtcAecmEchoMode; //WebRtc移动版声学回音消除器的消除模式，最低为0，最高为4。
+    int m_i32WebRtcAecmDelay; //WebRtc移动版声学回音消除器的回音延迟时间，单位毫秒，-1表示自适应设置。
 
-    int m_i32WebRtcAecmEchoMode; //WebRtc移动版声学回音消除器的消除模式，最低为0，最高为4
-    int m_i32WebRtcAecmDelay; //WebRtc移动版声学回音消除器的回音延迟时间，单位毫秒，-1表示自适应设置
+    int m_i32SpeexAecFilterLength; //Speex声学回音消除器的过滤器长度，单位毫秒。
 
-    int m_i32SpeexAecFilterLength; //Speex声学回音消除器的过滤器长度，单位毫秒
+    int m_i32IsUseWebRtcNsx; //是否使用WebRtc定点版噪音抑制器，非0表示要使用，0表示不使用。
+    int m_i32WebRtcNsxPolicyMode; //WebRtc定点噪音抑制器的策略模式，0表示轻微, 1表示适中, 2表示积极，3表示激进。
 
-    int m_i32IsUseWebRtcNsx; //是否使用WebRtc定点版噪音抑制器，非0表示要使用，0表示不使用
-    int m_i32WebRtcNsxPolicyMode; //WebRtc定点噪音抑制器的策略模式，0表示轻微, 1表示适中, 2表示积极，3表示激进
-
-    int m_i32IsUseSpeexPreprocessor; //是否使用Speex预处理器，非0表示要使用，0表示不使用
-    int m_i32SpeexPreprocessorIsUseNs; //是否使用Speex预处理器的NS噪音抑制，非0表示要使用，0表示不使用
-    int m_i32SpeexPreprocessorNoiseSuppress; //Speex预处理器在NS噪音抑制时，噪音的最大程度衰减的分贝值
-    int m_i32SpeexPreprocessorIsUseVad; //是否使用Speex预处理器的VAD语音活动检测，非0表示要使用，0表示不使用
-    int m_i32SpeexPreprocessorVadProbStart; //Speex预处理器在VAD语音活动检测时，从无语音活动到有语音活动的判断百分比概率，最小为0，最大为100
-    int m_i32SpeexPreprocessorVadProbContinue; //Speex预处理器在VAD语音活动检测时，从有语音活动到无语音活动的判断百分比概率，最小为0，最大为100
-    int m_i32SpeexPreprocessorIsUseAgc; //是否使用Speex预处理器的AGC自动增益控制，非0表示要使用，0表示不使用
-    int m_i32SpeexPreprocessorAgcLevel; //Speex预处理器在AGC自动增益控制时，自动增益的等级，最小为1，最大为32768
-    int m_i32SpeexPreprocessorAgcMaxGain; //Speex预处理器在AGC自动增益控制时，最大增益的分贝值
-    int m_i32SpeexPreprocessorIsUseRec; //是否使用Speex预处理器的REC残余回音消除，非0表示要使用，0表示不使用
-    int m_i32SpeexPreprocessorEchoSuppress; //Speex预处理器在REC残余回音消除时，残余回音的最大程度衰减的分贝值
-    int m_i32SpeexPreprocessorEchoSuppressActive; //Speex预处理器在REC残余回音消除时，有近端语音活动时的残余回音的最大程度衰减的分贝值
+    int m_i32IsUseSpeexPreprocessor; //是否使用Speex预处理器，非0表示要使用，0表示不使用。
+    int m_i32SpeexPreprocessorIsUseNs; //是否使用Speex预处理器的NS噪音抑制，非0表示要使用，0表示不使用。
+    int m_i32SpeexPreprocessorNoiseSuppress; //Speex预处理器在NS噪音抑制时，噪音的最大程度衰减的分贝值。
+    int m_i32SpeexPreprocessorIsUseVad; //是否使用Speex预处理器的VAD语音活动检测，非0表示要使用，0表示不使用。
+    int m_i32SpeexPreprocessorVadProbStart; //Speex预处理器在VAD语音活动检测时，从无语音活动到有语音活动的判断百分比概率，最小为0，最大为100。
+    int m_i32SpeexPreprocessorVadProbContinue; //Speex预处理器在VAD语音活动检测时，从有语音活动到无语音活动的判断百分比概率，最小为0，最大为100。
+    int m_i32SpeexPreprocessorIsUseAgc; //是否使用Speex预处理器的AGC自动增益控制，非0表示要使用，0表示不使用。
+    int m_i32SpeexPreprocessorAgcLevel; //Speex预处理器在AGC自动增益控制时，自动增益的等级，最小为1，最大为32768。
+    int m_i32SpeexPreprocessorAgcMaxGain; //Speex预处理器在AGC自动增益控制时，最大增益的分贝值。
+    int m_i32SpeexPreprocessorIsUseRec; //是否使用Speex预处理器的REC残余回音消除，非0表示要使用，0表示不使用。
+    int m_i32SpeexPreprocessorEchoSuppress; //Speex预处理器在REC残余回音消除时，残余回音的最大程度衰减的分贝值。
+    int m_i32SpeexPreprocessorEchoSuppressActive; //Speex预处理器在REC残余回音消除时，有近端语音活动时的残余回音的最大程度衰减的分贝值。
 
     public int m_i32UseWhatCodec; //使用什么编解码器，0表示PCM原始数据，1表示Speex编解码器，2表示Opus编解码器。
 
@@ -57,35 +56,42 @@ public abstract class AudioProcessThread extends Thread
     int m_i32SpeexCodecEncoderComplexity; //Speex编码器的复杂度。复杂度越高，压缩率越高，CPU使用率越高，音质越好。最低为0，最高为10。
     int m_i32SpeexCodecEncoderPlcExpectedLossRate; //Speex编码器的数据包丢失隐藏的预计丢失率。预计丢失率越高，抗网络抖动越强，压缩率越低。最低为0，最高为100。
 
-    WebRtcAec m_pclWebRtcAec; //WebRtc声学回音消除器类对象的内存指针
-    WebRtcAecm m_pclWebRtcAecm; //WebRtc移动版声学回音消除器类对象的内存指针
-    SpeexAec m_pclSpeexAec; //Speex声学回音消除器类对象的内存指针
-    WebRtcNsx m_pclWebRtcNsx; //WebRtc定点版噪音抑制器类对象的内存指针
-    SpeexPreprocessor m_pclSpeexPreprocessor; //Speex预处理器类对象的内存指针
-    SpeexEncoder m_pclSpeexEncoder; //Speex编码器类对象的内存指针
-    SpeexDecoder m_pclSpeexDecoder; //Speex解码器类对象的内存指针
+    int m_i32IsUseWakeLock; //是否使用唤醒锁，非0表示要使用，0表示不使用。
 
-    LinkedList<short[]> m_pclAlreadyAudioInputLinkedList; //存放已录音的链表类对象的内存指针
-    LinkedList<short[]> m_pclAlreadyAudioOutputLinkedList; //存放已播放的链表类对象的内存指针
+    PowerManager.WakeLock clProximityScreenOffWakeLock; //存放接近息屏唤醒锁类对象的内存指针。
+    PowerManager.WakeLock clFullWakeLock; //存放屏幕键盘全亮唤醒锁类对象的内存指针。
+    AudioRecord m_pclAudioRecord; //存放录音类对象的内存指针。
+    AudioTrack m_pclAudioTrack; //存放播放类对象的内存指针。
+    WebRtcAec m_pclWebRtcAec; //存放WebRtc声学回音消除器类对象的内存指针。
+    WebRtcAecm m_pclWebRtcAecm; //存放WebRtc移动版声学回音消除器类对象的内存指针。
+    SpeexAec m_pclSpeexAec; //存放Speex声学回音消除器类对象的内存指针。
+    WebRtcNsx m_pclWebRtcNsx; //存放WebRtc定点版噪音抑制器类对象的内存指针。
+    SpeexPreprocessor m_pclSpeexPreprocessor; //存放Speex预处理器类对象的内存指针。
+    SpeexEncoder m_pclSpeexEncoder; //存放Speex编码器类对象的内存指针。
+    SpeexDecoder m_pclSpeexDecoder; //存放Speex解码器类对象的内存指针。
+    Activity m_clActivity; //存放Activity类对象的内存指针。
 
-    AudioInputThread m_clAudioInputThread; //存放音频输入线程类对象的内存指针
-    AudioOutputThread m_clAudioOutputThread; //存放音频输出线程类对象的内存指针
+    LinkedList<short[]> m_pclAlreadyAudioInputLinkedList; //存放已录音的链表类对象的内存指针。
+    LinkedList<short[]> m_pclAlreadyAudioOutputLinkedList; //存放已播放的链表类对象的内存指针。
 
-    //用户定义的相关函数
-    public abstract long UserInit(); //用户定义的初始化函数，在本线程刚启动时调用一次，返回值表示是否成功，0表示成功，非0表示失败
-    public abstract long UserProcess(); //用户定义的处理函数，在本线程运行时每隔1毫秒就调用一次，返回值表示是否成功，0表示成功，非0表示失败
-    public abstract long UserDestory(); //用户定义的销毁函数，在本线程退出时调用一次，返回值表示是否重新初始化，0表示直接退出，非0表示重新初始化
-    public abstract long UserReadAudioInputDataFrame( short pszi16PcmAudioInputDataFrame[], short pszi16PcmAudioResultDataFrame[], int i32VoiceActivityStatus, byte pszi8SpeexAudioInputDataFrame[], int i32SpeexAudioInputDataFrameSize, int i32SpeexAudioInputDataFrameIsNeedTrans ); //用户定义的读取音频输入数据帧函数，在采样完一个音频输入数据帧并处理完后回调一次
-    public abstract void UserWriteAudioOutputDataFrame( short pszi16PcmAudioOutputDataFrame[], byte p_pszi8SpeexAudioInputDataFrame[], long p_pszi64SpeexAudioInputDataFrameSize[] ); //用户定义的写入音频输出数据帧函数，在需要播放一个音频输出数据帧时回调一次
-    public abstract void UserGetPcmAudioOutputDataFrame( short pszi16PcmAudioOutputDataFrame[] ); //用户定义的获取PCM格式音频输出数据帧函数，在解码完一个音频输出数据帧时回调一次
+    AudioInputThread m_clAudioInputThread; //存放音频输入线程类对象的内存指针。
+    AudioOutputThread m_clAudioOutputThread; //存放音频输出线程类对象的内存指针。
 
-    //请求本线程退出
+    //用户定义的相关函数。
+    public abstract long UserInit(); //用户定义的初始化函数，在本线程刚启动时调用一次，返回值表示是否成功，0表示成功，非0表示失败。
+    public abstract long UserProcess(); //用户定义的处理函数，在本线程运行时每隔1毫秒就调用一次，返回值表示是否成功，0表示成功，非0表示失败。
+    public abstract long UserDestory(); //用户定义的销毁函数，在本线程退出时调用一次，返回值表示是否重新初始化，0表示直接退出，非0表示重新初始化。
+    public abstract long UserReadAudioInputDataFrame( short pszi16PcmAudioInputDataFrame[], short pszi16PcmAudioResultDataFrame[], int i32VoiceActivityStatus, byte pszi8SpeexAudioInputDataFrame[], int i32SpeexAudioInputDataFrameSize, int i32SpeexAudioInputDataFrameIsNeedTrans ); //用户定义的读取音频输入数据帧函数，在采样完一个音频输入数据帧并处理完后回调一次。
+    public abstract void UserWriteAudioOutputDataFrame( short pszi16PcmAudioOutputDataFrame[], byte p_pszi8SpeexAudioInputDataFrame[], long p_pszi64SpeexAudioInputDataFrameSize[] ); //用户定义的写入音频输出数据帧函数，在需要播放一个音频输出数据帧时回调一次。
+    public abstract void UserGetPcmAudioOutputDataFrame( short pszi16PcmAudioOutputDataFrame[] ); //用户定义的获取PCM格式音频输出数据帧函数，在解码完一个音频输出数据帧时回调一次。
+
+    //请求本线程退出。
     public void RequireExit()
     {
         m_i32ExitFlag = 1;
     }
 
-    //设置音频数据
+    //设置音频数据。
     public long SetAudioData( int i32SamplingRate )
     {
         long p_i64Result = -1; //存放本函数执行结果的值，0表示成功，非0表示失败。
@@ -118,6 +124,13 @@ public abstract class AudioProcessThread extends Thread
         }
 
         return p_i64Result;
+    }
+
+    //设置使用唤醒锁。
+    public void SetUseWakeLock( int i32IsUseWakeLock, Activity clActivity )
+    {
+        m_i32IsUseWakeLock = i32IsUseWakeLock;
+        m_clActivity = clActivity;
     }
 
     //设置不使用声学回音消除器
@@ -260,9 +273,41 @@ public abstract class AudioProcessThread extends Thread
         {
             out:
             {
-                m_i32ExitCode = -1; //先将本线程退出代码预设为初始化失败，如果初始化失败，这个退出代码就不用再设置了，如果初始化成功，再设置为成功的退出代码
+                m_i32ExitCode = -1; //先将本线程退出代码预设为初始化失败，如果初始化失败，这个退出代码就不用再设置了，如果初始化成功，再设置为成功的退出代码。
 
-                //调用用户定义的初始化函数
+                //初始化唤醒锁类对象。
+                if( m_i32IsUseWakeLock != 0 )
+                {
+                    //初始化接近息屏唤醒锁类对象。
+                    clProximityScreenOffWakeLock = ( ( PowerManager ) m_clActivity.getSystemService( m_clActivity.POWER_SERVICE ) ).newWakeLock( PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_pclCurrentClassNameString );
+                    if( clProximityScreenOffWakeLock != null )
+                    {
+                        clProximityScreenOffWakeLock.acquire();
+
+                        Log.i( m_pclCurrentClassNameString, "音频处理线程：初始化接近息屏唤醒锁类对象成功。" );
+                    }
+                    else
+                    {
+                        Log.e( m_pclCurrentClassNameString, "音频处理线程：初始化接近息屏唤醒锁类对象失败。" );
+                        break out;
+                    }
+
+                    //初始化屏幕键盘全亮唤醒锁类对象。
+                    clFullWakeLock = ( ( PowerManager ) m_clActivity.getSystemService( m_clActivity.POWER_SERVICE ) ).newWakeLock( PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_pclCurrentClassNameString );
+                    if( clFullWakeLock != null )
+                    {
+                        clFullWakeLock.acquire();
+
+                        Log.i( m_pclCurrentClassNameString, "音频处理线程：初始化屏幕键盘全亮唤醒锁类对象成功。" );
+                    }
+                    else
+                    {
+                        Log.e( m_pclCurrentClassNameString, "音频处理线程：初始化屏幕键盘全亮唤醒锁类对象成功。" );
+                        break out;
+                    }
+                }
+
+                //调用用户定义的初始化函数。
                 p_i64Temp = UserInit();
                 if( p_i64Temp == 0 )
                 {
@@ -274,7 +319,7 @@ public abstract class AudioProcessThread extends Thread
                     break out;
                 }
 
-                //初始化AudioRecord类对象
+                //初始化录音类对象。
                 try
                 {
                     m_pclAudioRecord = new AudioRecord( MediaRecorder.AudioSource.MIC,
@@ -298,7 +343,7 @@ public abstract class AudioProcessThread extends Thread
                     break out;
                 }
 
-                //初始化AudioTrack类对象
+                //初始化播放类对象
                 try
                 {
                     m_pclAudioTrack = new AudioTrack( AudioManager.STREAM_MUSIC,
@@ -325,15 +370,15 @@ public abstract class AudioProcessThread extends Thread
                     break out;
                 }
 
-                //使用什么声学回音消除器
+                //使用什么声学回音消除器。
                 switch( m_i32UseWhatAec )
                 {
-                    case 0: //如果不使用声学回音消除器
+                    case 0: //如果不使用声学回音消除器。
                     {
                         Log.i( m_pclCurrentClassNameString, "音频处理线程：不使用声学回音消除器。" );
                         break;
                     }
-                    case 1: //如果使用WebRtc声学回音消除器
+                    case 1: //如果使用WebRtc声学回音消除器。
                     {
                         m_pclWebRtcAec = new WebRtcAec();
                         p_i64Temp = m_pclWebRtcAec.Init( m_i32SamplingRate, m_i32WebRtcAecNlpMode );
@@ -348,7 +393,7 @@ public abstract class AudioProcessThread extends Thread
                         }
                         break;
                     }
-                    case 2: //如果使用WebRtc移动版声学回音消除器
+                    case 2: //如果使用WebRtc移动版声学回音消除器。
                     {
                         m_pclWebRtcAecm = new WebRtcAecm();
                         p_i64Temp = m_pclWebRtcAecm.Init( m_i32SamplingRate, m_i32WebRtcAecmEchoMode, m_i32WebRtcAecmDelay );
@@ -363,7 +408,7 @@ public abstract class AudioProcessThread extends Thread
                         }
                         break;
                     }
-                    case 3: //如果使用Speex声学回音消除器
+                    case 3: //如果使用Speex声学回音消除器。
                     {
                         m_pclSpeexAec = new SpeexAec();
                         p_i64Temp = m_pclSpeexAec.Init( m_i32SamplingRate, m_i32FrameSize, m_i32SpeexAecFilterLength );
@@ -380,7 +425,7 @@ public abstract class AudioProcessThread extends Thread
                     }
                 }
 
-                //初始化WebRtc定点版噪音抑制器类对象
+                //初始化WebRtc定点版噪音抑制器类对象。
                 if( m_i32IsUseWebRtcNsx != 0 )
                 {
                     m_pclWebRtcNsx = new WebRtcNsx();
@@ -396,7 +441,7 @@ public abstract class AudioProcessThread extends Thread
                     }
                 }
 
-                //初始化Speex预处理器类对象
+                //初始化Speex预处理器类对象。
                 if( m_i32IsUseSpeexPreprocessor != 0 )
                 {
                     m_pclSpeexPreprocessor = new SpeexPreprocessor();
@@ -415,15 +460,15 @@ public abstract class AudioProcessThread extends Thread
                     }
                 }
 
-                //使用什么编解码器
+                //使用什么编解码器。
                 switch( m_i32UseWhatCodec )
                 {
-                    case 0: //如果使用PCM原始数据
+                    case 0: //如果使用PCM原始数据。
                     {
-                        //什么都不要做
+                        //什么都不要做。
                         break;
                     }
-                    case 1: //如果使用Speex编解码器
+                    case 1: //如果使用Speex编解码器。
                     {
                         m_pclSpeexEncoder = new SpeexEncoder();
                         p_i64Temp = m_pclSpeexEncoder.Init( m_i32SamplingRate, m_i32SpeexCodecEncoderUseCbrOrVbr, m_i32SpeexCodecEncoderQuality, m_i32SpeexCodecEncoderComplexity, m_i32SpeexCodecEncoderPlcExpectedLossRate );
@@ -728,6 +773,8 @@ public abstract class AudioProcessThread extends Thread
             {
                 m_pclAlreadyAudioInputLinkedList.clear();
                 m_pclAlreadyAudioInputLinkedList = null;
+
+                Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁已录音的链表类对象成功。" );
             }
 
             //销毁已播放的链表类对象。
@@ -735,6 +782,8 @@ public abstract class AudioProcessThread extends Thread
             {
                 m_pclAlreadyAudioOutputLinkedList.clear();
                 m_pclAlreadyAudioOutputLinkedList = null;
+
+                Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁已播放的链表类对象成功。" );
             }
 
             //销毁WebRtc声学回音消除器类对象。
@@ -743,11 +792,11 @@ public abstract class AudioProcessThread extends Thread
                 p_i64Temp = m_pclWebRtcAec.Destory();
                 if( p_i64Temp == 0 )
                 {
-                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc声学回音消除器成功。返回值：" + p_i64Temp );
+                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc声学回音消除器类对象成功。返回值：" + p_i64Temp );
                 }
                 else
                 {
-                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc声学回音消除器失败。返回值：" + p_i64Temp );
+                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc声学回音消除器类对象失败。返回值：" + p_i64Temp );
                 }
                 m_pclWebRtcAec = null;
             }
@@ -758,11 +807,11 @@ public abstract class AudioProcessThread extends Thread
                 p_i64Temp = m_pclWebRtcAecm.Destory();
                 if( p_i64Temp == 0 )
                 {
-                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc移动版声学回音消除器成功。返回值：" + p_i64Temp );
+                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc移动版声学回音消除器类对象成功。返回值：" + p_i64Temp );
                 }
                 else
                 {
-                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc移动版声学回音消除器失败。返回值：" + p_i64Temp );
+                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc移动版声学回音消除器类对象失败。返回值：" + p_i64Temp );
                 }
                 m_pclWebRtcAecm = null;
             }
@@ -773,11 +822,11 @@ public abstract class AudioProcessThread extends Thread
                 p_i64Temp = m_pclSpeexAec.Destory();
                 if( p_i64Temp == 0 )
                 {
-                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁Speex声学回音消除器成功。返回值：" + p_i64Temp );
+                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁Speex声学回音消除器类对象成功。返回值：" + p_i64Temp );
                 }
                 else
                 {
-                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁Speex声学回音消除器失败。返回值：" + p_i64Temp );
+                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁Speex声学回音消除器类对象失败。返回值：" + p_i64Temp );
                 }
                 m_pclSpeexAec = null;
             }
@@ -788,11 +837,11 @@ public abstract class AudioProcessThread extends Thread
                 p_i64Temp = m_pclWebRtcNsx.Destory();
                 if( p_i64Temp == 0 )
                 {
-                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc定点版噪音抑制器成功。返回值：" + p_i64Temp );
+                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc定点版噪音抑制器类对象成功。返回值：" + p_i64Temp );
                 }
                 else
                 {
-                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc定点版噪音抑制器失败。返回值：" + p_i64Temp );
+                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁WebRtc定点版噪音抑制器类对象失败。返回值：" + p_i64Temp );
                 }
                 m_pclWebRtcNsx = null;
             }
@@ -803,11 +852,11 @@ public abstract class AudioProcessThread extends Thread
                 p_i64Temp = m_pclSpeexPreprocessor.Destory();
                 if( p_i64Temp == 0 )
                 {
-                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁Speex预处理器成功。返回值：" + p_i64Temp );
+                    Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁Speex预处理器类对象成功。返回值：" + p_i64Temp );
                 }
                 else
                 {
-                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁Speex预处理器失败。返回值：" + p_i64Temp );
+                    Log.e( m_pclCurrentClassNameString, "音频处理线程：销毁Speex预处理器类对象失败。返回值：" + p_i64Temp );
                 }
                 m_pclSpeexPreprocessor = null;
             }
@@ -817,6 +866,8 @@ public abstract class AudioProcessThread extends Thread
             {
                 m_pclSpeexEncoder.Destory();
                 m_pclSpeexEncoder = null;
+
+                Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁Speex编码器类对象成功。" );
             }
 
             //销毁Speex解码器类对象。
@@ -824,9 +875,11 @@ public abstract class AudioProcessThread extends Thread
             {
                 m_pclSpeexDecoder.Destory();
                 m_pclSpeexDecoder = null;
+
+                Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁Speex解码器类对象成功。" );
             }
 
-            //销毁AudioRecord类对象。
+            //销毁录音类对象。
             if( m_pclAudioRecord != null )
             {
                 if( m_pclAudioRecord.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING )
@@ -835,9 +888,11 @@ public abstract class AudioProcessThread extends Thread
                 }
                 m_pclAudioRecord.release();
                 m_pclAudioRecord = null;
+
+                Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁录音类对象成功。" );
             }
 
-            //销毁AudioTrack类对象。
+            //销毁播放类对象。
             if( m_pclAudioTrack != null )
             {
                 if( m_pclAudioTrack.getPlayState() != AudioTrack.PLAYSTATE_STOPPED )
@@ -846,10 +901,32 @@ public abstract class AudioProcessThread extends Thread
                 }
                 m_pclAudioTrack.release();
                 m_pclAudioTrack = null;
+
+                Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁播放类对象成功。" );
             }
 
             //调用用户定义的销毁函数。
-            if( UserDestory() == 0 ) //如果用户需要直接退出。
+            p_i64Temp = UserDestory();
+
+            //销毁接近息屏唤醒锁类对象。
+            if( clProximityScreenOffWakeLock != null )
+            {
+                clProximityScreenOffWakeLock.release();
+                clProximityScreenOffWakeLock = null;
+
+                Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁接近息屏唤醒锁类对象成功。" );
+            }
+
+            //销毁屏幕键盘全亮唤醒锁类对象。
+            if( clFullWakeLock != null )
+            {
+                clFullWakeLock.release();
+                clFullWakeLock = null;
+
+                Log.i( m_pclCurrentClassNameString, "音频处理线程：销毁屏幕键盘全亮唤醒锁类对象成功。" );
+            }
+
+            if( p_i64Temp == 0 ) //如果用户需要直接退出。
             {
                 Log.i( m_pclCurrentClassNameString, "音频处理线程：本线程已退出。" );
                 break reinit;
