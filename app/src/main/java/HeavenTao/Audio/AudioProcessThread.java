@@ -106,18 +106,18 @@ public abstract class AudioProcessThread extends Thread
 
             if( i32SamplingRate == 8000 )
             {
-                m_i32SamplingRate = 8000; //设置音频数据的采样频率
-                m_i32FrameSize = 160; //设置音频数据帧的长度
+                m_i32SamplingRate = 8000; //设置音频数据的采样频率。
+                m_i32FrameSize = 160; //设置音频数据帧的长度。
             }
             else if( i32SamplingRate == 16000 )
             {
-                m_i32SamplingRate = 16000; //设置音频数据的采样频率
-                m_i32FrameSize = 320; //设置音频数据帧的长度
+                m_i32SamplingRate = 16000; //设置音频数据的采样频率。
+                m_i32FrameSize = 320; //设置音频数据帧的长度。
             }
             else if( i32SamplingRate == 32000 )
             {
-                m_i32SamplingRate = 32000; //设置音频数据的采样频率
-                m_i32FrameSize = 640; //设置音频数据帧的长度
+                m_i32SamplingRate = 32000; //设置音频数据的采样频率。
+                m_i32FrameSize = 640; //设置音频数据帧的长度。
             }
 
             p_i64Result = 0;
@@ -133,20 +133,20 @@ public abstract class AudioProcessThread extends Thread
         m_clActivity = clActivity;
     }
 
-    //设置不使用声学回音消除器
+    //设置不使用声学回音消除器。
     public void SetUseNoAec()
     {
         m_i32UseWhatAec = 0;
     }
 
-    //设置使用WebRtc声学回音消除器
+    //设置使用WebRtc声学回音消除器。
     public void SetUseWebRtcAec( int i32WebRtcAecNlpMode )
     {
         m_i32UseWhatAec = 1;
         m_i32WebRtcAecNlpMode = i32WebRtcAecNlpMode;
     }
 
-    //设置使用WebRtc移动版声学回音消除器
+    //设置使用WebRtc移动版声学回音消除器。
     public void SetUseWebRtcAecm( int i32WebRtcAecmEchoMode, int i32WebRtcAecmDelay )
     {
         m_i32UseWhatAec = 2;
@@ -154,21 +154,21 @@ public abstract class AudioProcessThread extends Thread
         m_i32WebRtcAecmDelay = i32WebRtcAecmDelay;
     }
 
-    //设置使用Speex声学回音消除器
+    //设置使用Speex声学回音消除器。
     public void SetUseSpeexAec( int i32SpeexAecFilterLength )
     {
         m_i32UseWhatAec = 3;
         m_i32SpeexAecFilterLength = i32SpeexAecFilterLength;
     }
 
-    //设置WebRtc定点版噪音抑制器
+    //设置WebRtc定点版噪音抑制器。
     public void SetWebRtcNsx( int i32IsUseWebRtcNsx, int i32WebRtcNsxPolicyMode )
     {
         m_i32IsUseWebRtcNsx = i32IsUseWebRtcNsx;
         m_i32WebRtcNsxPolicyMode = i32WebRtcNsxPolicyMode;
     }
 
-    //设置Speex预处理器
+    //设置Speex预处理器。
     public void SetSpeexPreprocessor( int i32IsUseSpeexPreprocessor, int i32SpeexPreprocessorIsUseNs, int i32SpeexPreprocessorNoiseSuppress, int i32SpeexPreprocessorIsUseVad, int i32SpeexPreprocessorVadProbStart, int i32SpeexPreprocessorVadProbContinue, int i32SpeexPreprocessorIsUseAgc, int i32SpeexPreprocessorAgcLevel, int i32SpeexPreprocessorAgcMaxGain, int i32SpeexPreprocessorIsUseRec, int i32SpeexPreprocessorEchoSuppress, int i32SpeexPreprocessorEchoSuppressActive )
     {
         m_i32IsUseSpeexPreprocessor = i32IsUseSpeexPreprocessor;
@@ -185,13 +185,13 @@ public abstract class AudioProcessThread extends Thread
         m_i32SpeexPreprocessorEchoSuppressActive = i32SpeexPreprocessorEchoSuppressActive;
     }
 
-    //设置使用PCM原始数据
+    //设置使用PCM原始数据。
     public void SetUsePcm()
     {
         m_i32UseWhatCodec = 0;
     }
 
-    //设置使用Speex编解码器
+    //设置使用Speex编解码器。
     public void SetUseSpeexCodec( int i32SpeexCodecEncoderUseCbrOrVbr, int i32SpeexCodecEncoderQuality, int i32SpeexCodecEncoderComplexity, int i32SpeexCodecEncoderPlcExpectedLossRate )
     {
         m_i32UseWhatCodec = 1;
@@ -201,18 +201,18 @@ public abstract class AudioProcessThread extends Thread
         m_i32SpeexCodecEncoderPlcExpectedLossRate = i32SpeexCodecEncoderPlcExpectedLossRate;
     }
 
-    //设置使用Opus编解码器
+    //设置使用Opus编解码器。
     public void SetUseOpusCodec()
     {
         m_i32UseWhatCodec = 2;
     }
 
-    //写入音频输出数据帧
+    //写入音频输出数据帧。
     public void WriteAudioOutputDataFrame( short pszi16PcmAudioOutputDataFrame[] )
     {
         long p_i64Temp;
 
-        //将音频输出数据帧解码成PCM原始数据
+        //将音频输出数据帧解码成PCM原始数据。
         switch( m_i32UseWhatCodec ) //使用什么编解码器。
         {
             case 0: //如果使用PCM原始数据。
@@ -224,13 +224,13 @@ public abstract class AudioProcessThread extends Thread
             }
             case 1: //如果使用Speex编解码器。
             {
-                byte p_pszi8SpeexAudioInputDataFrame[] = new byte[m_i32FrameSize]; //Speex格式音频输出数据帧
-                long p_pszi64SpeexAudioInputDataFrameSize[] = new long[1]; //Speex格式音频输出数据帧的内存长度，单位字节
+                byte p_pszi8SpeexAudioInputDataFrame[] = new byte[m_i32FrameSize]; //Speex格式音频输出数据帧。
+                long p_pszi64SpeexAudioInputDataFrameSize[] = new long[1]; //Speex格式音频输出数据帧的内存长度，单位字节。
 
-                //调用用户定义的写入音频输出数据帧函数
+                //调用用户定义的写入音频输出数据帧函数。
                 UserWriteAudioOutputDataFrame( null, p_pszi8SpeexAudioInputDataFrame, p_pszi64SpeexAudioInputDataFrameSize );
 
-                //使用Speex解码器
+                //使用Speex解码器。
                 if( p_pszi64SpeexAudioInputDataFrameSize[0] != 0 ) //如果这个Speex格式音频输出数据帧接收到了。
                 {
                     p_i64Temp = m_pclSpeexDecoder.Decode( p_pszi8SpeexAudioInputDataFrame, (int)p_pszi64SpeexAudioInputDataFrameSize[0], pszi16PcmAudioOutputDataFrame );
@@ -249,21 +249,21 @@ public abstract class AudioProcessThread extends Thread
                 }
                 break;
             }
-            case 2: //如果使用Opus编解码器
+            case 2: //如果使用Opus编解码器。
             {
                 Log.e( m_pclCurrentClassNameString, "音频处理线程：暂不支持使用Opus解码器。" );
             }
         }
 
-        //调用用户定义的获取PCM格式音频输出数据帧函数
+        //调用用户定义的获取PCM格式音频输出数据帧函数。
         UserGetPcmAudioOutputDataFrame( pszi16PcmAudioOutputDataFrame );
     }
     
-    //本线程执行函数
+    //本线程执行函数。
     public void run()
     {
-        this.setPriority( this.MAX_PRIORITY); //设置本线程优先级
-        Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级
+        this.setPriority( this.MAX_PRIORITY); //设置本线程优先级。
+        Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级。
 
         int p_i32Temp;
         long p_i64Temp;
@@ -329,21 +329,21 @@ public abstract class AudioProcessThread extends Thread
                             AudioRecord.getMinBufferSize( m_i32SamplingRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT ) );
                     if( m_pclAudioRecord.getState() == AudioRecord.STATE_INITIALIZED )
                     {
-                        Log.i( m_pclCurrentClassNameString, "音频处理线程：初始化AudioRecord类对象成功。" );
+                        Log.i( m_pclCurrentClassNameString, "音频处理线程：初始化录音类对象成功。" );
                     }
                     else
                     {
-                        Log.e( m_pclCurrentClassNameString, "音频处理线程：初始化AudioRecord类对象失败。" );
+                        Log.e( m_pclCurrentClassNameString, "音频处理线程：初始化录音类对象失败。" );
                         break out;
                     }
                 }
                 catch( IllegalArgumentException e )
                 {
-                    Log.e( m_pclCurrentClassNameString, "音频处理线程：初始化AudioRecord类对象失败。原因：" + e.getMessage() );
+                    Log.e( m_pclCurrentClassNameString, "音频处理线程：初始化录音类对象失败。原因：" + e.getMessage() );
                     break out;
                 }
 
-                //初始化播放类对象
+                //初始化播放类对象。
                 try
                 {
                     m_pclAudioTrack = new AudioTrack( AudioManager.STREAM_MUSIC,
@@ -356,17 +356,17 @@ public abstract class AudioProcessThread extends Thread
                             AudioTrack.MODE_STREAM );
                     if( m_pclAudioTrack.getState() == AudioTrack.STATE_INITIALIZED )
                     {
-                        Log.i( m_pclCurrentClassNameString, "音频处理线程：初始化AudioTrack类对象成功。" );
+                        Log.i( m_pclCurrentClassNameString, "音频处理线程：初始化播放类对象成功。" );
                     }
                     else
                     {
-                        Log.e( m_pclCurrentClassNameString, "音频处理线程：初始化AudioTrack类对象失败。" );
+                        Log.e( m_pclCurrentClassNameString, "音频处理线程：初始化播放类对象失败。" );
                         break out;
                     }
                 }
                 catch( IllegalArgumentException e )
                 {
-                    Log.e( m_pclCurrentClassNameString, "音频处理线程：初始化AudioTrack类对象失败。原因：" + e.getMessage() );
+                    Log.e( m_pclCurrentClassNameString, "音频处理线程：初始化播放类对象失败。原因：" + e.getMessage() );
                     break out;
                 }
 
@@ -527,7 +527,7 @@ public abstract class AudioProcessThread extends Thread
                 m_clAudioInputThread.m_i32FrameSize = m_i32FrameSize;
                 m_clAudioOutputThread.m_i32FrameSize = m_i32FrameSize;
 
-                //设置各个线程的对象
+                //设置各个线程的对象。
                 m_clAudioInputThread.m_pclAudioRecord = m_pclAudioRecord;
                 m_clAudioInputThread.m_pclAudioOutputThread = m_clAudioOutputThread;
                 m_clAudioInputThread.m_pclWebRtcAecm = m_pclWebRtcAecm;
@@ -535,29 +535,29 @@ public abstract class AudioProcessThread extends Thread
                 m_clAudioOutputThread.m_pclAudioProcessThread = this;
                 m_clAudioOutputThread.m_pclAudioTrack = m_pclAudioTrack;
 
-                //在启动各个线程前先开始录音，再开始播放，这样可以进一步保证音频输入输出数据帧同步，且音频输入线程走在输出数据线程的前面
-                m_pclAudioRecord.startRecording(); //让AudioRecord类对象开始录音
-                m_pclAudioTrack.play(); //让AudioTrack类对象开始播放
+                //在启动各个线程前先开始录音，再开始播放，这样可以进一步保证音频输入输出数据帧同步，且音频输入线程走在输出数据线程的前面。
+                m_pclAudioRecord.startRecording(); //让录音类对象开始录音。
+                m_pclAudioTrack.play(); //让播放类对象开始播放。
 
-                //启动音频输入线程，让音频输入线程去启动音频输出线程
+                //启动音频输入线程，让音频输入线程去启动音频输出线程。
                 m_clAudioInputThread.start();
 
-                m_i32ExitCode = -2; //初始化已经成功了，再将本线程退出代码预设为处理失败，如果处理失败，这个退出代码就不用再设置了，如果处理成功，再设置为成功的退出代码
+                m_i32ExitCode = -2; //初始化已经成功了，再将本线程退出代码预设为处理失败，如果处理失败，这个退出代码就不用再设置了，如果处理成功，再设置为成功的退出代码。
                 Log.i( m_pclCurrentClassNameString, "音频处理线程：音频处理线程初始化完毕，正式开始处理音频数据。" );
 
-                //以下变量要在初始化以后再声明才行
-                short p_pszi16PcmAudioInputDataFrame[]; //PCM格式音频输入数据帧
-                short p_pszi16PcmAudioOutputDataFrame[]; //PCM格式音频输出数据帧
-                short p_pszi16PcmAudioResultDataFrame[] = new short[m_i32FrameSize]; //PCM格式音频结果数据帧
-                short p_pszi16PcmAudioTempDataFrame[] = new short[m_i32FrameSize]; //PCM格式音频临时数据帧
-                Integer p_pclVoiceActivityStatus = new Integer( 1 ); //语音活动状态，1表示有语音活动，0表示无语音活动，预设为1，为了让在没有使用语音活动检测的情况下永远都是有语音活动
-                byte p_pszi8SpeexAudioInputDataFrame[] = ( m_i32UseWhatCodec == 1 )? new byte[m_i32FrameSize] : null; //Speex格式音频输入数据帧
-                Integer p_pclSpeexAudioInputDataFrameSize = new Integer( 0 ); //Speex格式音频输入数据帧的内存长度，单位字节
-                Integer p_pclSpeexAudioInputDataFrameIsNeedTrans = new Integer( 1 ); //Speex格式音频输入数据帧是否需要传输，1表示需要传输，0表示不需要传输，预设为1，为了让在没有使用非连续传输的情况下永远都是需要传输
+                //以下变量要在初始化以后再声明才行。
+                short p_pszi16PcmAudioInputDataFrame[]; //PCM格式音频输入数据帧。
+                short p_pszi16PcmAudioOutputDataFrame[]; //PCM格式音频输出数据帧。
+                short p_pszi16PcmAudioResultDataFrame[] = new short[m_i32FrameSize]; //PCM格式音频结果数据帧。
+                short p_pszi16PcmAudioTempDataFrame[] = new short[m_i32FrameSize]; //PCM格式音频临时数据帧。
+                Integer p_pclVoiceActivityStatus = new Integer( 1 ); //语音活动状态，1表示有语音活动，0表示无语音活动，预设为1，为了让在没有使用语音活动检测的情况下永远都是有语音活动。
+                byte p_pszi8SpeexAudioInputDataFrame[] = ( m_i32UseWhatCodec == 1 )? new byte[m_i32FrameSize] : null; //Speex格式音频输入数据帧。
+                Integer p_pclSpeexAudioInputDataFrameSize = new Integer( 0 ); //Speex格式音频输入数据帧的内存长度，单位字节。
+                Integer p_pclSpeexAudioInputDataFrameIsNeedTrans = new Integer( 1 ); //Speex格式音频输入数据帧是否需要传输，1表示需要传输，0表示不需要传输，预设为1，为了让在没有使用非连续传输的情况下永远都是需要传输。
 
                 while( true )
                 {
-                    //调用用户定义的处理函数
+                    //调用用户定义的处理函数。
                     p_i64Temp = UserProcess();
                     if( p_i64Temp == 0 )
                     {
@@ -569,11 +569,11 @@ public abstract class AudioProcessThread extends Thread
                         break out;
                     }
 
-                    //开始处理一个音频输入数据帧
-                    if( ( m_pclAlreadyAudioInputLinkedList.size() > 0 ) && ( m_pclAlreadyAudioOutputLinkedList.size() > 0 ) || //如果已录音的链表和已播放的链表中都有音频数据帧了，才开始处理
-                        ( m_pclAlreadyAudioInputLinkedList.size() > 15 ) ) //如果已录音的链表里已经累积很多音频输入数据帧了，说明已播放的链表里迟迟没有音频输出数据帧，也开始处理
+                    //开始处理一个音频输入数据帧。
+                    if( ( m_pclAlreadyAudioInputLinkedList.size() > 0 ) && ( m_pclAlreadyAudioOutputLinkedList.size() > 0 ) || //如果已录音的链表和已播放的链表中都有音频数据帧了，才开始处理。
+                        ( m_pclAlreadyAudioInputLinkedList.size() > 15 ) ) //如果已录音的链表里已经累积很多音频输入数据帧了，说明已播放的链表里迟迟没有音频输出数据帧，也开始处理。
                     {
-                        //先从已录音的链表中取出第一个音频输入数据帧
+                        //先从已录音的链表中取出第一个音频输入数据帧。
                         synchronized( m_pclAlreadyAudioInputLinkedList )
                         {
                             p_pszi16PcmAudioInputDataFrame = m_pclAlreadyAudioInputLinkedList.getFirst();
@@ -581,8 +581,8 @@ public abstract class AudioProcessThread extends Thread
                         }
                         Log.i( m_pclCurrentClassNameString, "音频处理线程：从已录音的链表中取出第一个音频输入数据帧。" );
 
-                        //再从已播放的链表中取出第一个音频输出数据帧
-                        if( m_pclAlreadyAudioOutputLinkedList.size() > 0) //如果已播放的链表里有音频输出数据帧
+                        //再从已播放的链表中取出第一个音频输出数据帧。
+                        if( m_pclAlreadyAudioOutputLinkedList.size() > 0) //如果已播放的链表里有音频输出数据帧。
                         {
                             synchronized( m_pclAlreadyAudioOutputLinkedList )
                             {
@@ -591,23 +591,23 @@ public abstract class AudioProcessThread extends Thread
                             }
                             Log.i( m_pclCurrentClassNameString, "音频处理线程：从已播放的链表中取出第一个音频输出数据帧。" );
                         }
-                        else //如果已播放的链表里没有音频输出数据帧
+                        else //如果已播放的链表里没有音频输出数据帧。
                         {
                             p_pszi16PcmAudioOutputDataFrame = new short[m_i32FrameSize];
                             Log.i( m_pclCurrentClassNameString, "音频处理线程：已播放的链表中没有音频输出数据帧，用一个空帧代替。" );
                         }
 
-                        //将音频输入数据帧复制到音频结果数据帧，方便处理
+                        //将音频输入数据帧复制到音频结果数据帧，方便处理。
                         for( p_i32Temp = 0; p_i32Temp < p_pszi16PcmAudioResultDataFrame.length; p_i32Temp++ )
                             p_pszi16PcmAudioResultDataFrame[p_i32Temp] = p_pszi16PcmAudioInputDataFrame[p_i32Temp];
 
-                        //使用什么声学回音消除器
+                        //使用什么声学回音消除器。
                         switch( m_i32UseWhatAec )
                         {
-                            case 0: //如果不使用声学回音消除器
+                            case 0: //如果不使用声学回音消除器。
                                 Log.i( m_pclCurrentClassNameString, "音频处理线程：不使用声学回音消除器。" );
                                 break;
-                            case 1: //如果使用WebRtc声学回音消除器
+                            case 1: //如果使用WebRtc声学回音消除器。
                                 p_i64Temp = m_pclWebRtcAec.Echo( p_pszi16PcmAudioResultDataFrame, p_pszi16PcmAudioOutputDataFrame, p_pszi16PcmAudioTempDataFrame );
                                 if( p_i64Temp == 0 )
                                 {
@@ -621,7 +621,7 @@ public abstract class AudioProcessThread extends Thread
                                     Log.e( m_pclCurrentClassNameString, "音频处理线程：使用WebRtc声学回音消除器失败。返回值：" + p_i64Temp );
                                 }
                                 break;
-                            case 2: //如果使用WebRtc移动版声学回音消除器
+                            case 2: //如果使用WebRtc移动版声学回音消除器。
                                 p_i64Temp = m_pclWebRtcAecm.Echo( p_pszi16PcmAudioResultDataFrame, p_pszi16PcmAudioOutputDataFrame, p_pszi16PcmAudioTempDataFrame );
                                 if( p_i64Temp == 0 )
                                 {
@@ -635,7 +635,7 @@ public abstract class AudioProcessThread extends Thread
                                     Log.e( m_pclCurrentClassNameString, "音频处理线程：使用WebRtc移动版声学回音消除器失败。返回值：" + p_i64Temp );
                                 }
                                 break;
-                            case 3: //如果使用Speex声学回音消除器
+                            case 3: //如果使用Speex声学回音消除器。
                                 p_i64Temp = m_pclSpeexAec.Aec( p_pszi16PcmAudioResultDataFrame, p_pszi16PcmAudioOutputDataFrame, p_pszi16PcmAudioTempDataFrame );
                                 if( p_i64Temp == 0 )
                                 {
@@ -651,7 +651,7 @@ public abstract class AudioProcessThread extends Thread
                                 break;
                         }
 
-                        //使用WebRtc定点噪音抑制器
+                        //使用WebRtc定点噪音抑制器。
                         if( m_i32IsUseWebRtcNsx != 0 )
                         {
                             p_i64Temp = m_pclWebRtcNsx.Process( m_i32SamplingRate, p_pszi16PcmAudioResultDataFrame, p_pszi16PcmAudioResultDataFrame.length );
@@ -665,7 +665,7 @@ public abstract class AudioProcessThread extends Thread
                             }
                         }
 
-                        //使用Speex预处理器
+                        //使用Speex预处理器。
                         if( m_i32IsUseSpeexPreprocessor != 0 )
                         {
                             p_i64Temp = m_pclSpeexPreprocessor.Preprocess( p_pszi16PcmAudioResultDataFrame, p_pclVoiceActivityStatus );
@@ -679,15 +679,15 @@ public abstract class AudioProcessThread extends Thread
                             }
                         }
 
-                        //使用什么编码器
+                        //使用什么编码器。
                         switch( m_i32UseWhatCodec )
                         {
-                            case 0: //如果使用PCM原始数据
+                            case 0: //如果使用PCM原始数据。
                             {
                                 Log.i( m_pclCurrentClassNameString, "音频处理线程：使用PCM原始数据。" );
                                 break;
                             }
-                            case 1: //如果使用Speex编码器
+                            case 1: //如果使用Speex编码器。
                             {
                                 p_pclSpeexAudioInputDataFrameSize = new Integer( p_pszi8SpeexAudioInputDataFrame.length );
                                 p_i64Temp = m_pclSpeexEncoder.Encode( p_pszi16PcmAudioResultDataFrame, p_pszi8SpeexAudioInputDataFrame, p_pclSpeexAudioInputDataFrameSize, p_pclSpeexAudioInputDataFrameIsNeedTrans );
@@ -701,14 +701,14 @@ public abstract class AudioProcessThread extends Thread
                                 }
                                 break;
                             }
-                            case 2: //如果使用Opus编码器
+                            case 2: //如果使用Opus编码器。
                             {
                                 Log.e( m_pclCurrentClassNameString, "音频处理线程：暂不支持使用Opus编码器。" );
                                 break out;
                             }
                         }
 
-                        //调用用户定义的读取音频输入数据帧函数
+                        //调用用户定义的读取音频输入数据帧函数。
                         p_i64Temp = UserReadAudioInputDataFrame( p_pszi16PcmAudioInputDataFrame, p_pszi16PcmAudioResultDataFrame, p_pclVoiceActivityStatus, p_pszi8SpeexAudioInputDataFrame, p_pclSpeexAudioInputDataFrameSize, p_pclSpeexAudioInputDataFrameIsNeedTrans );
                         if( p_i64Temp == 0 )
                         {
@@ -722,15 +722,15 @@ public abstract class AudioProcessThread extends Thread
 
                         Log.i( m_pclCurrentClassNameString, "音频处理线程：本音频数据帧处理完毕。" );
 
-                        if( m_i32ExitFlag != 0 ) //如果本线程退出标记为请求退出
+                        if( m_i32ExitFlag != 0 ) //如果本线程退出标记为请求退出。
                         {
-                            m_i32ExitCode = 0; //处理已经成功了，再将本线程退出代码设置为正常退出
+                            m_i32ExitCode = 0; //处理已经成功了，再将本线程退出代码设置为正常退出。
                             Log.i( m_pclCurrentClassNameString, "音频处理线程：接收到退出请求，开始准备退出。" );
                             break out;
                         }
                     }
 
-                    SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高
+                    SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
                 }
             }
 
