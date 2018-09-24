@@ -30,14 +30,14 @@
             android:layout_height="wrap_content" >
 
             <TextView
-                android:gravity="center_vertical"
-                android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="传输协议：" />
+                android:layout_weight="3"
+                android:gravity="center_vertical"
+                android:text="传输协议："/>
 
             <RadioGroup
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:layout_weight="7"
                 android:layout_width="0dp"
                 android:layout_height="match_parent">
@@ -45,16 +45,16 @@
                 <RadioButton
                     android:id="@+id/RadioButtonTcpProtocol"
                     android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
                     android:checked="true"
                     android:text="TCP协议"/>
 
                 <RadioButton
                     android:id="@+id/RadioButtonRtpProtocol"
                     android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
                     android:text="RTP协议"
                     android:enabled="false"/>
 
