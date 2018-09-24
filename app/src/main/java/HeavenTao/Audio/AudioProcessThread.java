@@ -279,7 +279,7 @@ public abstract class AudioProcessThread extends Thread
                 if( m_i32IsUseWakeLock != 0 )
                 {
                     //初始化接近息屏唤醒锁类对象。
-                    clProximityScreenOffWakeLock = ( ( PowerManager ) m_clActivity.getSystemService( m_clActivity.POWER_SERVICE ) ).newWakeLock( PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_pclCurrentClassNameString );
+                    clProximityScreenOffWakeLock = ( ( PowerManager ) m_clActivity.getSystemService( Activity.POWER_SERVICE ) ).newWakeLock( PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_pclCurrentClassNameString );
                     if( clProximityScreenOffWakeLock != null )
                     {
                         clProximityScreenOffWakeLock.acquire();
@@ -293,7 +293,7 @@ public abstract class AudioProcessThread extends Thread
                     }
 
                     //初始化屏幕键盘全亮唤醒锁类对象。
-                    clFullWakeLock = ( ( PowerManager ) m_clActivity.getSystemService( m_clActivity.POWER_SERVICE ) ).newWakeLock( PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_pclCurrentClassNameString );
+                    clFullWakeLock = ( ( PowerManager ) m_clActivity.getSystemService( Activity.POWER_SERVICE ) ).newWakeLock( PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_pclCurrentClassNameString );
                     if( clFullWakeLock != null )
                     {
                         clFullWakeLock.acquire();
