@@ -4,7 +4,6 @@ import android.Manifest;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.os.PowerManager;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -12,7 +11,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -95,13 +93,6 @@ class MainActivityHandler extends Handler
     {
         if( clMessage.what == 1 ) //如果是音频处理线程正常退出的消息
         {
-            //释放唤醒锁类对象。
-            if( clMainActivity.clWakeLock != null )
-            {
-                clMainActivity.clWakeLock.release();
-                clMainActivity.clWakeLock = null;
-            }
-
             clMainActivity.clMyAudioProcessThread = null;
 
             ((EditText)clMainActivity.findViewById( R.id.IPAddressEdit )).setEnabled( true ); //设置IP地址控件为可用
@@ -968,8 +959,6 @@ public class MainActivity extends AppCompatActivity
     MainActivity clMainActivity; //存放主界面类对象的内存指针。
     MyAudioProcessThread clMyAudioProcessThread; //存放音频处理线程类对象的内存指针。
     MainActivityHandler clMainActivityHandler; //存放主界面消息处理类对象的内存指针。
-
-    PowerManager.WakeLock clWakeLock; //存放唤醒锁类对象的内存指针。
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
