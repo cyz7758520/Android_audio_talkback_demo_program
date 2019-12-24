@@ -13,7 +13,7 @@
 #### 特别注意：如果把两台设备放在同一房间里测试，有可能会出现啸叫、声音不完整、等问题，这是因为现在手机的麦克风都很灵敏了，一点小小的声音都会被录进去，导致软件无法正确识别回音，所以建议放在不同的房间里测试。
 
 # 移植
-#### 如果需要在自己的软件中使用本软件的音频功能，只需要将HeavenTao.Audio包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Audio.AudioProcessThread类即可。
+#### 如果需要在自己的软件中使用本软件的音频功能，只需要将HeavenTao.Audio包、HeavenTao.Data包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Audio.AudioProcessThread类即可。
 #### 如果有不需要的部分功能，则只需要删除该功能对应类文件和动态库文件，然后修改HeavenTao.Audio.AudioProcessThread类文件即可。
 #### 普通免费版功能包括：WebRtc定点版声学回音消除器、Speex预处理器的噪音抑制、WebRtc定点版噪音抑制器、WebRtc浮点版噪音抑制器、使用Speex预处理器的其他功能、Speex编解码器、自己设计的自适应抖动缓冲器。
 #### 高级收费版功能包括：Speex声学回音消除器、WebRtc浮点版声学回音消除器、SpeexWebRtc三重声学回音消除器、RNNoise噪音抑制器。
