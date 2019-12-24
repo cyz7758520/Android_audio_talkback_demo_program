@@ -33,12 +33,35 @@
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
+                android:gravity="center_vertical"
+                android:text="最小需缓冲数据帧的数量，单位帧，必须大于0：" />
+
+            <EditText
+                android:id="@+id/AjbMinNeedBufferFrameCount"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:text="5" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:gravity="center_vertical"
                 android:text="最大需缓冲数据帧的数量，单位帧，必须大于最小需缓冲数据帧的数量：" />
 
             <EditText
-                android:id="@+id/AjbMaxNeedBufferDataFrameCount"
+                android:id="@+id/AjbMaxNeedBufferFrameCount"
                 android:layout_width="0dip"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number"
                 android:text="50" />
@@ -54,15 +77,16 @@
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
-                android:text="最小需缓冲数据帧的数量，单位帧，必须大于0：" />
+                android:gravity="center_vertical"
+                android:text="自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0,127]：" />
 
             <EditText
-                android:id="@+id/AjbMinNeedBufferDataFrameCount"
+                android:id="@+id/AjbAdaptiveSensitivity"
                 android:layout_width="0dip"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number"
-                android:text="5" />
+                android:text="1" />
 
         </LinearLayout>
 

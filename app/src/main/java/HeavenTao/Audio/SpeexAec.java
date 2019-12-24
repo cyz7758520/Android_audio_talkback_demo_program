@@ -1,59 +1,51 @@
 package HeavenTao.Audio;
 
-public class SpeexAec //Speex声学回音消除器类
+import HeavenTao.Data.*;
+
+//Speex声学回音消除器类。
+public class SpeexAec
 {
-    private Long pclSpeexEchoState; //Speex声学回音消除器的内存指针
+    private long m_pvPoint; //存放Speex声学回音消除器结构体的内存指针。
 
     static
     {
-        System.loadLibrary( "Func" ); //加载libFunc.so
-        System.loadLibrary( "SpeexDsp" ); //加载libSpeexDsp.so
+        System.loadLibrary( "Func" ); //加载libFunc.so。
+        System.loadLibrary( "SpeexDsp" ); //加载libSpeexDsp.so。
     }
 
-    //构造函数
+    //构造函数。
     public SpeexAec()
     {
-        pclSpeexEchoState = new Long(0);
+        m_pvPoint = 0;
     }
 
-    //析构函数
+    //析构函数。
     public void finalize()
     {
         Destory();
     }
 
-    //初始化Speex声学回音消除器
-    public long Init( int i32SamplingRate, int i32FrameSize, int i32FilterLength )
+    //获取Speex声学回音消除器结构体的内存指针。
+    public long GetPoint()
     {
-        if( pclSpeexEchoState.longValue() == 0 ) //如果Speex声学回音消除器还没有初始化
-        {
-            return SpeexAecInit( pclSpeexEchoState, i32SamplingRate, i32FrameSize, i32FilterLength );
-        }
-        else //如果Speex声学回音消除器已经初始化
-        {
-            return 0;
-        }
+        return m_pvPoint;
     }
 
-    //获取Speex声学回音消除器的内存指针
-    public Long GetSpeexEchoState()
-    {
-        return pclSpeexEchoState;
-    }
+    //创建并初始化Speex声学回音消除器。
+    public native long Init( int i32SamplingRate, long i64FrameLength, int i32FilterLength );
 
-    //对一个单声道16位有符号整型PCM格式音频输入数据帧进行Speex声学回音消除
-    public long Aec( short pszi16AudioInputDataFrame[], short pszi16AudioOutputDataFrame[], short pszi16AudioResultDataFrame[] )
-    {
-        return SpeexAecAec( pclSpeexEchoState, pszi16AudioInputDataFrame, pszi16AudioOutputDataFrame, pszi16AudioResultDataFrame);
-    }
+    //根据Speex声学回音消除器内存块来创建并初始化Speex声学回音消除器。
+    public native long InitFromMemory( byte pszi8SpeexAecMemory[], long i64SpeexAecMemoryLength );
 
-    //销毁Speex声学回音消除器
-    public long Destory()
-    {
-        return SpeexAecDestory( pclSpeexEchoState );
-    }
+    //获取Speex声学回音消除器内存块的数据长度。
+    public native long GetMemoryLength( HTLong pclSpeexAecMemoryLength );
 
-    private native long SpeexAecInit( Long pclSpeexEchoState, int i32SamplingRate, int i32FrameSize, int i32FilterLength );
-    private native long SpeexAecAec( Long pclSpeexEchoState, short pszi16AudioInputDataFrame[], short pszi16AudioOutputDataFrame[], short pszi16AudioResultDataFrame[] );
-    private native long SpeexAecDestory( Long pclSpeexEchoState );
+    //获取Speex声学回音消除器的内存块。
+    public native long GetMemory( byte pszi8SpeexAecMemory[], long i64SpeexAecMemorySize );
+
+    //用Speex声学回音消除器对单声道16位有符号整型PCM格式输入帧进行Speex声学回音消除。
+    public native long Process( short pszi16InputFrame[], short pszi16OutputFrame[], short pszi16ResultFrame[] );
+
+    //销毁Speex声学回音消除器。
+    public native long Destory();
 }

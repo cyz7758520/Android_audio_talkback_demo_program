@@ -1,59 +1,42 @@
 package HeavenTao.Audio;
 
-public class SpeexPreprocessor//Speex预处理器类
+import HeavenTao.Data.*;
+
+//Speex预处理器类。
+public class SpeexPreprocessor
 {
-    private Long pclSpeexPreprocessState;//Speex预处理器的内存指针
+    private long m_pvPoint; //存放Speex预处理器结构体的内存指针。
 
     static
     {
-        System.loadLibrary( "Func" ); //加载libFunc.so
-        System.loadLibrary( "SpeexDsp" ); //加载libSpeexDsp.so
+        System.loadLibrary( "Func" ); //加载libFunc.so。
+        System.loadLibrary( "SpeexDsp" ); //加载libSpeexDsp.so。
     }
 
-    //构造函数
+    //构造函数。
     public SpeexPreprocessor()
     {
-        pclSpeexPreprocessState = new Long(0);
+        m_pvPoint = 0;
     }
 
-    //析构函数
+    //析构函数。
     public void finalize()
     {
         Destory();
     }
 
-    //初始化Speex预处理器
-    public long Init( int i32SamplingRate, int i32FrameSize, int i32IsUseNs, int i32NoiseSuppress, int i32IsUseVad, int i32VadProbStart, int i32VadProbContinue, int i32IsUseAgc, int i32AgcLevel, int i32AgcMaxGain, int i32IsUseRec, long i64SpeexEchoState, int i32EchoSuppress, int i32EchoSuppressActive )
+    //获取Speex预处理器结构体的内存指针。
+    public long GetPoint()
     {
-        if( pclSpeexPreprocessState.longValue() == 0)//如果Speex预处理器还没有初始化
-        {
-            return SpeexPreprocessInit( pclSpeexPreprocessState, i32SamplingRate, i32FrameSize, i32IsUseNs, i32NoiseSuppress, i32IsUseVad, i32VadProbStart, i32VadProbContinue, i32IsUseAgc, i32AgcLevel, i32AgcMaxGain, i32IsUseRec, i64SpeexEchoState, i32EchoSuppress, i32EchoSuppressActive );
-        }
-        else//如果Speex预处理器已经初始化
-        {
-            return 0;
-        }
+        return m_pvPoint;
     }
 
-    //获取Speex预处理器的内存指针
-    public Long GetSpeexPreprocessState()
-    {
-        return pclSpeexPreprocessState;
-    }
+    //创建并初始化Speex预处理器。
+    public native long Init( int i32SamplingRate, long i64FrameLength, int i32IsUseNs, int i32NoiseSuppress, int i32IsUseDereverberation, int i32IsUseVad, int i32VadProbStart, int i32VadProbContinue, int i32IsUseAgc, int i32AgcLevel, int i32AgcIncrement, int i32AgcDecrement, int i32AgcMaxGain, int i32IsUseRec, long i64SpeexAecPoint, float fEchoMultiple, int i32EchoSuppress, int i32EchoSuppressActive );
 
-    //对一个单声道16位有符号整型PCM格式音频数据帧进行Speex预处理
-    public long Preprocess( short pszi16AudioDataFrame[], Integer pclVoiceActivityStatus )
-    {
-        return SpeexPreprocessPreprocess( pclSpeexPreprocessState, pszi16AudioDataFrame, pclVoiceActivityStatus );
-    }
+    //用Speex预处理器对单声道16位有符号整型PCM格式帧进行Speex预处理。
+    public native long Process( short pszi16Frame[], short pszi16ResultFrame[], HTInteger pclVoiceActivityStatus );
 
-    //销毁Speex预处理器
-    public long Destory()
-    {
-        return SpeexPreprocessDestory( pclSpeexPreprocessState );
-    }
-
-    private native long SpeexPreprocessInit( Long pclSpeexPreprocessState, int i32SamplingRate, int i32FrameSize, int i32IsUseNs, int i32NoiseSuppress, int i32IsUseVad, int i32VadProbStart, int i32VadProbContinue, int i32IsUseAgc, int i32AgcLevel, int i32AgcMaxGain, int i32IsUseRec, long i64SpeexEchoState, int i32EchoSuppress, int i32EchoSuppressActive );
-    private native long SpeexPreprocessPreprocess( Long pclSpeexPreprocessState, short pszi16AudioDataFrame[], Integer pclVoiceActivityStatus );
-    private native long SpeexPreprocessDestory( Long pclSpeexPreprocessState );
+    //销毁Speex预处理器。
+    public native long Destory();
 }

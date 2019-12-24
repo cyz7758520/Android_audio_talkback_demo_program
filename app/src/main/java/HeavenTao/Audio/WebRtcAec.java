@@ -1,64 +1,58 @@
 package HeavenTao.Audio;
 
-//WebRtc声学回音消除器类。
+import HeavenTao.Data.*;
+
+//WebRtc浮点版声学回音消除器类。
 public class WebRtcAec
 {
-    private Long pclWebRtcAecInst; //存放WebRtc声学回音消除器的指针。
-    private int m_i32SamplingRate; //存放音频数据的采样频率，包括：8000Hz、16000Hz、32000Hz。
+    private long m_pvPoint; //存放WebRtc浮点版声学回音消除器结构体的内存指针。
 
     static
     {
         System.loadLibrary( "Func" ); //加载libFunc.so。
-        System.loadLibrary( "WebRtcAec" ); //加载libWebRtcAec.so。
+        System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
+        System.loadLibrary( "WebRtc" ); //加载libWebRtc.so。
     }
 
-    //构造函数
+    //构造函数。
     public WebRtcAec()
     {
-        pclWebRtcAecInst = new Long(0);
+        m_pvPoint = 0;
     }
 
-    //析构函数
+    //析构函数。
     public void finalize()
     {
-        Destory(); //销毁WebRtcAec声学回音消除器。
-
-        pclWebRtcAecInst = null;
+        Destory();
     }
 
-    //初始化WebRtc声学回音消除器。
-    public long Init( int i32SamplingRate, int i32NlpMode )
+    //获取WebRtc浮点版声学回音消除器结构体的内存指针。
+    public long GetPoint()
     {
-        m_i32SamplingRate = i32SamplingRate;
-        if( pclWebRtcAecInst.longValue() == 0 ) //如果WebRtc声学回音消除器还没有初始化。
-        {
-            return WebRtcAecInit( pclWebRtcAecInst, i32SamplingRate, i32NlpMode );
-        }
-        else //如果WebRtc声学回音消除器已经初始化。
-        {
-            return 0;
-        }
+        return m_pvPoint;
     }
 
-    //获取WebRtc声学回音消除器的指针。
-    public Long GetWebRtcAecInst()
-    {
-        return pclWebRtcAecInst;
-    }
+    //创建并初始化WebRtc浮点版声学回音消除器。
+    public native long Init( int i32SamplingRate, long i64FrameLength, int i32EchoMode, int i32Delay, int i32IsUseDelayAgnosticMode, int i32IsUseAdaptiveAdjustDelay );
 
-    //对一个单声道16位有符号整型PCM格式音频输入数据帧进行WebRtc声学回音消除。
-    public long Echo( short pszi16AudioInputDataFrame[], short pszi16AudioOutputDataFrame[], short pszi16AudioResultDataFrame[] )
-    {
-        return WebRtcAecEcho( pclWebRtcAecInst, pszi16AudioInputDataFrame, pszi16AudioOutputDataFrame, pszi16AudioResultDataFrame, m_i32SamplingRate, pszi16AudioInputDataFrame.length );
-    }
+    //根据WebRtc浮点版声学回音消除器内存块来创建并初始化WebRtc浮点版声学回音消除器。
+    public native long InitFromMemory( byte pszi8WebRtcAecMemory[], long i64WebRtcAecMemoryLength );
 
-    //销毁WebRtcAec声学回音消除器。
-    public long Destory()
-    {
-        return WebRtcAecDestory( pclWebRtcAecInst );
-    }
+    //获取WebRtc浮点版声学回音消除器内存块的数据长度。
+    public native long GetMemoryLength( HTLong pclWebRtcAecMemoryLength );
 
-    public native long WebRtcAecInit( Long pclWebRtcAecInst, int i32SamplingRate, int i32NlpMode );
-    public native long WebRtcAecEcho( Long pclWebRtcAecInst, short pszi16AudioInputDataFrame[], short pszi16AudioOutputDataFrame[], short pszi16AudioResultDataFrame[], int i32SamplingRate, int i32FrameSize );
-    public native long WebRtcAecDestory( Long pclWebRtcAecInst );
+    //获取WebRtc浮点版声学回音消除器的内存块。
+    public native long GetMemory( byte pszi8WebRtcAecMemory[], long i64WebRtcAecMemorySize );
+
+    //设置WebRtc浮点版声学回音消除器的回音延迟。
+    public native long SetDelay( int i32Delay );
+
+    //获取WebRtc浮点版声学回音消除器的回音延迟。
+    public native long GetDelay( HTInteger pclDelay );
+
+    //用WebRtc浮点版声学回音消除器对单声道16位有符号整型PCM格式输入帧进行WebRtc浮点版声学回音消除。
+    public native long Process( short pszi16InputFrame[], short pszi16OutputFrame[], short pszi16ResultFrame[] );
+
+    //销毁WebRtc浮点版声学回音消除器。
+    public native long Destory();
 }

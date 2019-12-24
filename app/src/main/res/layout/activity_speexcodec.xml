@@ -37,21 +37,23 @@
                 android:text="编码方式：" />
 
             <RadioGroup
-                android:orientation="vertical"
-                android:layout_weight="7"
+                android:orientation="horizontal"
+                android:layout_weight="8"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content">
 
                 <RadioButton
                     android:id="@+id/RadioButtonSpeexCodecEncoderUseCbr"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
                     android:text="固定比特率"/>
 
                 <RadioButton
                     android:id="@+id/RadioButtonSpeexCodecEncoderUseVbr"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
                     android:checked="true"
                     android:text="动态比特率"/>
 
@@ -65,10 +67,11 @@
             android:orientation="horizontal">
 
             <TextView
+                android:gravity="center_vertical"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
-                android:text="Speex编码器的质量等级。质量等级越高，音质越好，压缩率越低。最低为0，最高为10：" />
+                android:text="Speex编码器的编码质量等级，质量等级越高音质越好、压缩率越低，取值区间为[0,10]：" />
 
             <EditText
                 android:id="@+id/SpeexCodecEncoderQuality"
@@ -89,7 +92,8 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
-                android:text="Speex编码器的复杂度。复杂度越高，压缩率越高，CPU使用率越高，音质越好。最低为0，最高为10：" />
+                android:gravity="center_vertical"
+                android:text="Speex编码器的编码复杂度，复杂度越高压缩率不变、CPU使用率越高、音质越好，取值区间为[0,10]：" />
 
             <EditText
                 android:id="@+id/SpeexCodecEncoderComplexity"
@@ -110,7 +114,8 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
-                android:text="Speex编码器的数据包丢失隐藏的预计丢失率。预计丢失率越高，抗网络抖动越强，压缩率越低。最低为0，最高为100：" />
+                android:gravity="center_vertical"
+                android:text="Speex编码器在数据包丢失隐藏时，数据包的预计丢失概率，预计丢失概率越高抗网络抖动越强、压缩率越低，取值区间为[0,100]：" />
 
             <EditText
                 android:id="@+id/SpeexCodecEncoderPlcExpectedLossRate"
@@ -121,6 +126,13 @@
                 android:text="100" />
 
         </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/CheckBoxSpeexCodecIsUsePerceptualEnhancement"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Speex解码器使用知觉增强"/>
 
         <Button
             android:layout_width="match_parent"

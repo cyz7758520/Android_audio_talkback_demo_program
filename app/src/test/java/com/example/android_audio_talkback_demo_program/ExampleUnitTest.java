@@ -1,4 +1,4 @@
-package com.example.android_audio_talkback_demo_program;
+package com.example.Android_audio_talkback_demo_program;
 
 import org.junit.Test;
 

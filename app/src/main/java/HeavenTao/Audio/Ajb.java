@@ -1,9 +1,11 @@
 package HeavenTao.Audio;
 
+import HeavenTao.Data.*;
+
 //自适应抖动缓冲器类。
 public class Ajb
 {
-    private Long pclAjb; //自适应抖动缓冲器的内存指针。
+    private long m_pvPoint; //存放自适应抖动缓冲器结构体的内存指针。
 
     static
     {
@@ -14,7 +16,7 @@ public class Ajb
     //构造函数。
     public Ajb()
     {
-        pclAjb = new Long(0);
+        m_pvPoint = 0;
     }
 
     //析构函数。
@@ -23,113 +25,48 @@ public class Ajb
         Destory();
     }
 
-    //初始化自适应抖动缓冲器。
-    public long Init( int iSamplingRate, int iFrameSize, int iIsHaveTimeStamp, int iInactiveIsContinuePut, int iMaxNeedBufferDataFrameCount, int iMinNeedBufferDataFrameCount )
+    //获取自适应抖动缓冲器结构体的内存指针。
+    public long GetPoint()
     {
-        if( pclAjb == 0 )//如果自适应抖动缓冲器还没有初始化。
-        {
-            return AjbInit( pclAjb, iSamplingRate, iFrameSize, iIsHaveTimeStamp, iInactiveIsContinuePut, iMaxNeedBufferDataFrameCount, iMinNeedBufferDataFrameCount );
-        }
-        else //如果自适应抖动缓冲器已经初始化。
-        {
-            return 0;
-        }
+        return m_pvPoint;
     }
 
-    //销毁自适应抖动缓冲器。
-    public void Destory()
-    {
-        AjbDestory( pclAjb );
-    }
+    //创建并初始化自适应抖动缓冲器。
+    public native long Init( int i32SamplingRate, long i64FrameLength, byte i8IsHaveTimeStamp, byte i8InactiveIsContinuePut, int i32MinNeedBufferFrameCount, int i32MaxNeedBufferFrameCount, byte i8AdaptiveSensitivity );
 
-    //获取自适应抖动缓冲器的内存指针。
-    public long GetAjb()
-    {
-        return pclAjb;
-    }
+    //放入一个字节型帧到自适应抖动缓冲器。
+    public native long PutOneByteFrame( int i32TimeStamp, byte pszi8Frame[], long i64FrameLength );
 
-    //放入一个字节型数据帧到自适应抖动缓冲器。
-    public long PutOneByteDataFrame( int iTimeStamp, byte clData[], long lDataSize )
-    {
-        return AjbPutOneByteDataFrame( pclAjb, iTimeStamp, clData, lDataSize );
-    }
+    //放入一个短整型帧到自适应抖动缓冲器。
+    public native long PutOneShortFrame( int i32TimeStamp, short pszi16Frame[], long i64FrameLength );
 
-    //放入一个短整型数据帧到自适应抖动缓冲器。
-    public long PutOneShortDataFrame( int iTimeStamp, short clData[], long lDataSize )
-    {
-        return AjbPutOneShortDataFrame( pclAjb, iTimeStamp, clData, lDataSize );
-    }
+    //从自适应抖动缓冲器取出一个字节型帧。
+    public native long GetOneByteFrame( byte pszi8Frame[], long i64FrameSize, HTLong pclFrameLength );
 
-    //从自适应抖动缓冲器取出一个字节型数据帧。
-    public long GetOneByteDataFrame( byte clData[], Long clDataSize )
-    {
-        return AjbGetOneByteDataFrame( pclAjb, clData, clDataSize );
-    }
+    //从自适应抖动缓冲器取出一个短整型帧。
+    public native long GetOneShortFrame( short pszi16Frame[], long i64FrameSize, HTLong pclFrameLength );
 
-    //从自适应抖动缓冲器取出一个短整型数据帧。
-    public long GetOneShortDataFrame( short clData[], Long clDataSize )
-    {
-        return AjbGetOneShortDataFrame( pclAjb, clData, clDataSize );
-    }
+    //获取当前已缓冲有活动帧的数量。
+    public native long GetCurHaveBufferActiveFrameCount( HTInteger pclFrameCount );
 
-    //获取当前已缓冲有活动数据帧的数量。
-    public long GetCurHaveBufferActiveDataFrameCount( Integer clBufferSize )
-    {
-        return AjbGetCurHaveBufferActiveDataFrameCount( pclAjb, clBufferSize );
-    }
+    //获取当前已缓冲无活动帧的数量。
+    public native long GetCurHaveBufferInactiveFrameCount( HTInteger pclFrameCount );
 
-    //获取当前已缓冲无活动数据帧的数量。
-    public long GetCurHaveBufferInactiveDataFrameCount( Integer clBufferSize )
-    {
-        return AjbGetCurHaveBufferInactiveDataFrameCount( pclAjb, clBufferSize );
-    }
+    //获取当前已缓冲帧的数量。
+    public native long GetCurHaveBufferFrameCount( HTInteger pclFrameCount );
 
-    //获取当前已缓冲数据帧的数量。
-    public long GetCurHaveBufferDataFrameCount( Integer clBufferSize )
-    {
-        return AjbGetCurHaveBufferDataFrameCount( pclAjb, clBufferSize );
-    }
+    //获取最大需缓冲帧的数量。
+    public native long GetMaxNeedBufferFrameCount( HTInteger pclFrameCount );
 
-    //获取最大需缓冲数据帧的数量。
-    public long GetMaxNeedBufferDataFrameCount( Integer clBufferSize )
-    {
-        return AjbGetMaxNeedBufferDataFrameCount( pclAjb, clBufferSize );
-    }
+    //获取最小需缓冲帧的数量。
+    public native long GetMinNeedBufferFrameCount( HTInteger pclFrameCount );
 
-    //获取最小需缓冲数据帧的数量。
-    public long GetMinNeedBufferDataFrameCount( Integer clBufferSize )
-    {
-        return AjbGetMinNeedBufferDataFrameCount( pclAjb, clBufferSize );
-    }
-
-    //获取当前需缓冲数据帧的数量。
-    public long GetCurNeedBufferDataFrameCount( Integer clBufferSize )
-    {
-        return AjbGetCurNeedBufferDataFrameCount( pclAjb, clBufferSize );
-    }
+    //获取当前需缓冲帧的数量。
+    public native long GetCurNeedBufferFrameCount( HTInteger pclFrameCount );
 
     //清空自适应抖动缓冲器。
-    private long ClearAjb()
-    {
-        return AjbClearAjb( pclAjb );
-    }
+    public native long Clear();
 
-    private native long AjbInit( Long pclAjb, int iSamplingRate, int iFrameSize, int iIsHaveTimeStamp, int iInactiveIsContinuePut, int iMaxNeedBufferDataFrameCount, int iMinNeedBufferDataFrameCount ); //初始化自适应抖动缓冲器。
-    private native void AjbDestory( Long pclAjb ); //销毁自适应抖动缓冲器。
-
-    private native long AjbPutOneByteDataFrame( Long pclAjb, int iTimeStamp, byte clData[], long lDataSize ); //放入一个字节型数据帧到自适应抖动缓冲器。
-    private native long AjbPutOneShortDataFrame( Long pclAjb, int iTimeStamp, short clData[], long lDataSize ); //放入一个短整型数据帧到自适应抖动缓冲器。
-    private native long AjbGetOneByteDataFrame( Long pclAjb, byte clData[], Long clDataSize ); //从自适应抖动缓冲器取出一个字节型数据帧。
-    private native long AjbGetOneShortDataFrame( Long pclAjb, short clData[], Long clDataSize ); //从自适应抖动缓冲器取出一个短整型数据帧。
-
-    private native long AjbGetCurHaveBufferActiveDataFrameCount( Long pclAjb, Integer clBufferSize ); //获取当前已缓冲有活动数据帧的数量。
-    private native long AjbGetCurHaveBufferInactiveDataFrameCount( Long pclAjb, Integer clBufferSize ); //获取当前已缓冲无活动数据帧的数量。
-    private native long AjbGetCurHaveBufferDataFrameCount( Long pclAjb, Integer clBufferSize ); //获取当前已缓冲数据帧的数量。
-
-    private native long AjbGetMaxNeedBufferDataFrameCount( Long pclAjb, Integer clBufferSize ); //获取最大需缓冲数据帧的数量。
-    private native long AjbGetMinNeedBufferDataFrameCount( Long pclAjb, Integer clBufferSize ); //获取最小需缓冲数据帧的数量。
-    private native long AjbGetCurNeedBufferDataFrameCount( Long pclAjb, Integer clBufferSize ); //获取当前需缓冲数据帧的数量。
-
-    private native long AjbClearAjb( Long pclAjb ); //清空自适应抖动缓冲器。
-
+    //销毁自适应抖动缓冲器。
+    public native long Destory();
 }

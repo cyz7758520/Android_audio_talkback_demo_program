@@ -24,13 +24,20 @@
             android:textStyle="normal|bold"
             android:textSize="20sp" />
 
+        <CheckBox
+            android:id="@+id/CheckBoxWebRtcAecmIsUseCNGMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="使用舒适噪音生成模式"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <TextView
-                android:text="消除模式，最低为0，最高为4："
+                android:text="消除模式，消除模式越高消除越强，取值区间为[0,4]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -52,7 +59,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="回音延迟时间，单位毫秒，-1表示自适应设置："
+                android:text="回音的延迟，单位毫秒，取值区间为[-2147483648,2147483647]，为0表示自适应设置："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -61,10 +68,10 @@
             <EditText
                 android:id="@+id/WebRtcAecmDelay"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number|numberSigned"
-                android:text="-1" />
+                android:text="0" />
 
         </LinearLayout>
 

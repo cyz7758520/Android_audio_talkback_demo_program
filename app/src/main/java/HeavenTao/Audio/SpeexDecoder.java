@@ -1,62 +1,42 @@
 package HeavenTao.Audio;
 
-//Speex解码器类
+import HeavenTao.Data.*;
+
+//Speex解码器类。
 public class SpeexDecoder
 {
-    private Long pclSpeexDecoderState; //存放Speex解码器的指针
-    private Long pclSpeexBits; //存放SpeexBits的指针
+    private long m_pvPoint; //存放Speex解码器结构体的内存指针。
 
     static
     {
-        System.loadLibrary( "Func" ); //加载libFunc.so
-        System.loadLibrary( "Speex" ); //加载libSpeex.so
+        System.loadLibrary( "Func" ); //加载libFunc.so。
+        System.loadLibrary( "Speex" ); //加载libSpeex.so。
     }
 
-    //构造函数
+    //构造函数。
     public SpeexDecoder()
     {
-        pclSpeexDecoderState = new Long(0);
-        pclSpeexBits = new Long(0);
+        m_pvPoint = 0;
     }
 
-    //析构函数
+    //析构函数。
     public void finalize()
     {
         Destory();
     }
 
-    //初始化Speex解码器
-    public long Init( int i32SamplingRate )
+    //获取Speex解码器结构体的内存指针。
+    public long GetPoint()
     {
-        if( pclSpeexDecoderState.longValue() == 0)//如果Speex编码器还没有初始化
-        {
-            return SpeexDecoderInit( pclSpeexDecoderState, pclSpeexBits, i32SamplingRate );
-        }
-        else//如果Speex编码器已经初始化
-        {
-            return 0;
-        }
+        return m_pvPoint;
     }
 
-    //获取Speex解码器的内存指针
-    public Long GetSpeexDecoderState()
-    {
-        return pclSpeexDecoderState;
-    }
+    //创建并初始化Speex解码器。
+    public native long Init( int i32SamplingRate, int i32IsUsePerceptualEnhancement );
 
-    //对一帧Speex音频数据进行解码
-    public long Decode( byte pszi8SpeexAudioDataFrame[], int i32SpeexAudioDataFrameSize, short pszi16PcmAudioDataFrame[] )
-    {
-        return SpeexDecoderDecode( pclSpeexDecoderState, pclSpeexBits, pszi8SpeexAudioDataFrame, i32SpeexAudioDataFrameSize, pszi16PcmAudioDataFrame );
-    }
+    //用Speex解码器对单声道16位有符号整型20毫秒Speex格式帧进行PCM格式解码。
+    public native long Process( byte pszi8SpeexFrame[], long i64SpeexFrameLength, short pszi16PcmFrame[] );
 
-    //销毁Speex解码器
-    public long Destory()
-    {
-        return SpeexDecoderDestory( pclSpeexDecoderState, pclSpeexBits );
-    }
-
-    private native long SpeexDecoderInit( Long pclSpeexDecoderState, Long pclSpeexBits, int i32SamplingRate );
-    private native long SpeexDecoderDecode( Long pclSpeexDecoderState, Long pclSpeexBits, byte pszi8SpeexAudioDataFrame[], int i32SpeexAudioDataFrameSize, short pszi16PcmAudioDataFrame[] );
-    private native long SpeexDecoderDestory( Long pclSpeexDecoderState, Long pclSpeexBits );
+    //销毁Speex解码器。
+    public native long Destory();
 }

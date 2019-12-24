@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="Android下音频对讲演示程序\n版本：2018年9月23日\n"
+            android:text="Android下音频对讲演示程序\n版本：2019年12月24日\n"
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="normal|bold"/>
@@ -38,8 +38,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:text="IP地址："
-                android:textSize="14sp"/>
+                android:text="IP地址："/>
 
             <EditText
                 android:id="@+id/IPAddressEdit"
@@ -48,7 +47,7 @@
                 android:layout_weight="2"
                 android:hint="请输入IP地址或者域名"
                 android:singleLine="true"
-                android:text="IPAddressEdit"/>
+                android:textStyle="normal"/>
 
         </LinearLayout>
 
@@ -62,8 +61,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:text="端口："
-                android:textSize="14sp"/>
+                android:text="端口："/>
 
             <EditText
                 android:id="@+id/PortEdit"
@@ -71,8 +69,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="2"
                 android:hint="请输入端口号"
-                android:text="PortEdit"
-                android:singleLine="true"/>
+                android:inputType="number"
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -90,7 +88,7 @@
             <Button
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="10"
+                android:layout_weight="11"
                 android:text="创建服务端"
                 android:id="@+id/CreateServerButton"
                 android:onClick="OnClickCreateServerAndConnectServer" />
@@ -104,7 +102,7 @@
             <Button
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="10"
+                android:layout_weight="11"
                 android:text="连接服务端"
                 android:id="@+id/ConnectServerButton"
                 android:onClick="OnClickCreateServerAndConnectServer" />
@@ -169,8 +167,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="10"
                 android:gravity="center_vertical"
-                android:text="日志："
-                android:textSize="14sp"/>
+                android:text="日志："/>
 
             <Button
                 android:layout_weight="1"

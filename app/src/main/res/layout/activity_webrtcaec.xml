@@ -30,25 +30,85 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="非线性滤波模式，0表示保守, 1表示适中, 2表示积极："
+                android:text="消除模式，消除模式越高消除越强，取值区间为[0,2]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/WebRtcAecNlpMode"
+                android:id="@+id/WebRtcAecEchoMode"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:text="2" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:text="回音的延迟，单位毫秒，取值区间为[-2147483648,2147483647]，为0表示自适应设置："
+                android:layout_weight="3"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical" />
+
+            <EditText
+                android:id="@+id/WebRtcAecDelay"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number|numberSigned"
-                android:text="2" />
+                android:text="0" />
+
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/CheckBoxWebRtcAecIsUseDelayAgnostic"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:checked="true"
+            android:gravity="center_vertical"
+            android:text="使用回音延迟不可知模式" />
+
+        <CheckBox
+            android:id="@+id/CheckBoxWebRtcAecIsUseAdaptiveAdjustDelay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:checked="true"
+            android:gravity="center_vertical"
+            android:text="使用自适应调节回音的延迟" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <CheckBox
+                android:id="@+id/CheckBoxWebRtcAecIsSaveMemoryFile"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:checked="false"
+                android:text="将WebRtc浮点版声学回音消除器的内存块保存到内部存储根目录（/mnt/sdcard）下的WebRtcAecMemory文件中，以便缩短下一次初始化时的收敛时间"/>
+
+            <Button
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:text="删除内存块文件"
+                android:onClick="OnWebRtcAecDeleteMemoryFileClick" />
 
         </LinearLayout>
 
         <Button
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:text="确定"
             android:onClick="OnWebRtcAecSettingOkClick" />
 
