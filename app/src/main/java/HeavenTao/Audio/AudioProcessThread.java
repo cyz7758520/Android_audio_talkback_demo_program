@@ -1716,7 +1716,7 @@ public abstract class AudioProcessThread extends Thread
                                 if( p_i64Temp == 0 )
                                 {
                                     if( m_i32IsPrintLogcat != 0 )
-                                        Log.i( m_pclCurrentClassNameString, "音频处理线程：使用Speex编码器成功。Speex格式输入帧的内存长度：" + p_pclSpeexInputFrameLength + "，Speex格式输入帧是否需要传输：" + p_pclSpeexInputFrameIsNeedTrans + "，返回值：" + p_i64Temp );
+                                        Log.i( m_pclCurrentClassNameString, "音频处理线程：使用Speex编码器成功。Speex格式输入帧的内存长度：" + p_pclSpeexInputFrameLength.m_i64Value + "，Speex格式输入帧是否需要传输：" + p_pclSpeexInputFrameIsNeedTrans.m_i32Value + "，返回值：" + p_i64Temp );
                                 }
                                 else
                                 {
