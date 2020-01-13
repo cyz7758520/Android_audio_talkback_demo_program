@@ -188,19 +188,19 @@ public abstract class AudioProcessThread extends Thread
                 p_i32Temp = ( int ) ( ( m_i32AudioTrackBufferSize / 2 - m_i64FrameLength ) * 1000 / m_i32SamplingRate + ( p_pclNowDate.getTime() - p_pclLastDate.getTime() ) );
                 if( ( m_pclWebRtcAecm != null ) && ( m_pclWebRtcAecm.GetDelay( pclDelay ) == 0 ) && ( pclDelay.m_i32Value == 0 ) ) //如果使用了WebRtc定点版声学回音消除器，且需要自适应设置回音的延迟。
                 {
-                    m_pclWebRtcAecm.SetDelay( p_i32Temp > 80 + 60 ? p_i32Temp - 60 : 80 );
+                    m_pclWebRtcAecm.SetDelay( p_i32Temp / 2 );
                     m_pclWebRtcAecm.GetDelay( pclDelay );
                     if( m_i32IsPrintLogcat != 0 )
                         Log.i( m_pclCurrentClassNameString, "音频输入线程：自适应设置WebRtc定点版声学回音消除器的回音延迟为 " + pclDelay.m_i32Value + " 毫秒。" );
                 }
                 if( ( m_pclWebRtcAec != null ) && ( m_pclWebRtcAec.GetDelay( pclDelay ) == 0 ) && ( pclDelay.m_i32Value == 0 ) ) //如果使用了WebRtc浮点版声学回音消除器，且需要自适应设置回音的延迟。
                 {
-                    if( m_i32WebRtcAecIsUseDelayAgnosticMode == 0 ) //如果不使用WebRtc浮点版声学回音消除器的回音延迟不可知模式。
+                    if( m_i32WebRtcAecIsUseDelayAgnosticMode == 0 ) //如果WebRtc浮点版声学回音消除器不使用回音延迟不可知模式。
                     {
                         m_pclWebRtcAec.SetDelay( p_i32Temp );
                         m_pclWebRtcAec.GetDelay( pclDelay );
                     }
-                    else //如果要使用WebRtc浮点版声学回音消除器的回音延迟不可知模式。
+                    else //如果WebRtc浮点版声学回音消除器要使用回音延迟不可知模式。
                     {
                         m_pclWebRtcAec.SetDelay( 20 );
                         m_pclWebRtcAec.GetDelay( pclDelay );
@@ -208,14 +208,14 @@ public abstract class AudioProcessThread extends Thread
                     if( m_i32IsPrintLogcat != 0 )
                         Log.i( m_pclCurrentClassNameString, "音频输入线程：自适应设置WebRtc浮点版声学回音消除器的回音延迟为 " + pclDelay.m_i32Value + " 毫秒。" );
                 }
-                /*if( ( m_pclSpeexWebRtcAec != null ) && ( m_pclSpeexWebRtcAec.GetWebRtcAecmDelay( pclDelay ) == 0 ) && ( pclDelay == 0 ) ) //如果使用了SpeexWebRtc三重声学回音消除器，且WebRtc浮点版声学回音消除器需要自适应设置回音的延迟。
+                if( ( m_pclSpeexWebRtcAec != null ) && ( m_pclSpeexWebRtcAec.GetWebRtcAecmDelay( pclDelay ) == 0 ) && ( pclDelay.m_i32Value == 0 ) ) //如果使用了SpeexWebRtc三重声学回音消除器，且WebRtc定点版声学回音消除器需要自适应设置回音的延迟。
                 {
-                    m_pclSpeexWebRtcAec.SetWebRtcAecmDelay( p_i32Temp > 80 + 60 ? p_i32Temp - 60 : 80 );
+                    m_pclSpeexWebRtcAec.SetWebRtcAecmDelay( p_i32Temp / 2 );
                     m_pclSpeexWebRtcAec.GetWebRtcAecmDelay( pclDelay );
                     if( m_i32IsPrintLogcat != 0 )
-                        Log.i( m_pclCurrentClassNameString, "音频输入线程：SpeexWebRtc三重声学回音消除器的WebRtc定点版声学回音消除器自适应设置回音延迟为 " + pclDelay + " 毫秒。" );
+                        Log.i( m_pclCurrentClassNameString, "音频输入线程：SpeexWebRtc三重声学回音消除器的WebRtc定点版声学回音消除器自适应设置回音延迟为 " + pclDelay.m_i32Value + " 毫秒。" );
                 }
-                if( ( m_pclSpeexWebRtcAec != null ) && ( m_pclSpeexWebRtcAec.GetWebRtcAecDelay( pclDelay ) == 0 ) && ( pclDelay == 0 ) ) //如果使用了SpeexWebRtc三重声学回音消除器，且WebRtc浮点版声学回音消除器需要自适应设置回音的延迟。
+                if( ( m_pclSpeexWebRtcAec != null ) && ( m_pclSpeexWebRtcAec.GetWebRtcAecDelay( pclDelay ) == 0 ) && ( pclDelay.m_i32Value == 0 ) ) //如果使用了SpeexWebRtc三重声学回音消除器，且WebRtc浮点版声学回音消除器需要自适应设置回音的延迟。
                 {
                     if( m_i32SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode == 0 ) //如果SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器不使用回音延迟不可知模式。
                     {
@@ -228,8 +228,8 @@ public abstract class AudioProcessThread extends Thread
                         m_pclSpeexWebRtcAec.GetWebRtcAecDelay( pclDelay );
                     }
                     if( m_i32IsPrintLogcat != 0 )
-                        Log.i( m_pclCurrentClassNameString, "音频输入线程：SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器自适应设置的回音延迟为 " + pclDelay + " 毫秒。" );
-                }*/
+                        Log.i( m_pclCurrentClassNameString, "音频输入线程：SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器自适应设置的回音延迟为 " + pclDelay.m_i32Value + " 毫秒。" );
+                }
 
                 p_pclLastDate = p_pclNowDate;
             }

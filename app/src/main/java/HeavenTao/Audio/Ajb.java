@@ -10,6 +10,7 @@ public class Ajb
     static
     {
         System.loadLibrary( "Func" ); //加载libFunc.so。
+        System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
         System.loadLibrary( "Ajb" ); //加载libAjb.so。
     }
 
