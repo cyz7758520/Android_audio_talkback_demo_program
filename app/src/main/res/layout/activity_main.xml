@@ -19,11 +19,10 @@
         android:focusableInTouchMode="true">
 
         <TextView
-            android:id="@+id/textViewTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="Android下音频对讲演示程序\n版本：2019年12月24日\n"
+            android:text="Android下音频对讲演示程序\n版本：2020年03月08日\n"
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="normal|bold"/>
@@ -41,7 +40,7 @@
                 android:text="IP地址："/>
 
             <EditText
-                android:id="@+id/IPAddressEdit"
+                android:id="@+id/IPAddrEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
@@ -90,8 +89,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="11"
                 android:text="创建服务端"
-                android:id="@+id/CreateServerButton"
-                android:onClick="OnClickCreateServerAndConnectServer" />
+                android:id="@+id/CreateSrvrBtn"
+                android:onClick="OnClickCreateSrvrAndConnectSrvr" />
 
             <TextView
                 android:layout_weight="1"
@@ -104,8 +103,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="11"
                 android:text="连接服务端"
-                android:id="@+id/ConnectServerButton"
-                android:onClick="OnClickCreateServerAndConnectServer" />
+                android:id="@+id/ConnectSrvrBtn"
+                android:onClick="OnClickCreateSrvrAndConnectSrvr" />
 
             <TextView
                 android:layout_weight="1"
@@ -118,7 +117,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="6"
                 android:text="设置"
-                android:id="@+id/SettingButton"
+                android:id="@+id/SettingBtn"
                 android:onClick="OnClickSetting" />
 
             <TextView
@@ -145,7 +144,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="4"
                 android:text="必读说明"
-                android:id="@+id/ReadMeButton"
+                android:id="@+id/ReadMeBtn"
                 android:onClick="OnClickReadMe" />
 
             <TextView
@@ -162,7 +161,6 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/textView2"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="10"
@@ -179,7 +177,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/LogLinearLayout"
+            android:id="@+id/LogLinearLyot"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >

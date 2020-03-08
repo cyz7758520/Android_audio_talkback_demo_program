@@ -5,7 +5,7 @@ import HeavenTao.Data.*;
 //Speex解码器类。
 public class SpeexDecoder
 {
-    private long m_pvPoint; //存放Speex解码器结构体的内存指针。
+    private long m_SpeexDecoderPt; //存放Speex解码器的内存指针。
 
     static
     {
@@ -16,27 +16,27 @@ public class SpeexDecoder
     //构造函数。
     public SpeexDecoder()
     {
-        m_pvPoint = 0;
+        m_SpeexDecoderPt = 0;
     }
 
     //析构函数。
     public void finalize()
     {
-        Destory();
+        Destroy();
     }
 
-    //获取Speex解码器结构体的内存指针。
-    public long GetPoint()
+    //获取Speex解码器的内存指针。
+    public long GetSpeexDecoderPt()
     {
-        return m_pvPoint;
+        return m_SpeexDecoderPt;
     }
 
     //创建并初始化Speex解码器。
-    public native long Init( int i32SamplingRate, int i32IsUsePerceptualEnhancement );
+    public native int Init( int SamplingRate, int IsUsePerceptualEnhancement );
 
     //用Speex解码器对单声道16位有符号整型20毫秒Speex格式帧进行PCM格式解码。
-    public native long Process( byte pszi8SpeexFrame[], long i64SpeexFrameLength, short pszi16PcmFrame[] );
+    public native int Proc( byte SpeexFramePt[], long SpeexFrameLen, short PcmFramePt[] );
 
     //销毁Speex解码器。
-    public native long Destory();
+    public native int Destroy();
 }

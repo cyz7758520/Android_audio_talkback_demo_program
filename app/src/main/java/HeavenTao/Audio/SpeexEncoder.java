@@ -5,7 +5,7 @@ import HeavenTao.Data.*;
 //Speex编码器类。
 public class SpeexEncoder
 {
-    private long m_pvPoint; //存放Speex编码器结构体的内存指针。
+    private long m_SpeexEncoderPt; //存放Speex编码器的内存指针。
 
     static
     {
@@ -16,27 +16,27 @@ public class SpeexEncoder
     //构造函数。
     public SpeexEncoder()
     {
-        m_pvPoint = 0;
+        m_SpeexEncoderPt = 0;
     }
 
     //析构函数。
     public void finalize()
     {
-        Destory();
+        Destroy();
     }
 
-    //获取Speex编码器结构体的内存指针。
-    public long GetPoint()
+    //获取Speex编码器的内存指针。
+    public long GetSpeexEncoderPt()
     {
-        return m_pvPoint;
+        return m_SpeexEncoderPt;
     }
 
     //创建并初始化Speex编码器。
-    public native long Init( int i32SamplingRate, int i32UseCbrOrVbr, int i32Quality, int i32Complexity, int i32PlcExpectedLossRate );
+    public native int Init( int SamplingRate, int UseCbrOrVbr, int Quality, int Complexity, int PlcExpectedLossRate );
 
     //用Speex编码器对单声道16位有符号整型20毫秒PCM格式帧进行Speex格式编码。
-    public native long Process( short pszi16PcmFrame[], byte pszi8SpeexFrame[], long i64SpeexFrameSize, HTLong pclSpeexFrameLength, HTInteger pclIsNeedTrans );
+    public native int Proc( short PcmFramePt[], byte SpeexFramePt[], long SpeexFrameSz, HTLong SpeexFrameLenPt, HTInt IsNeedTransPt );
 
     //销毁Speex编码器。
-    public native long Destory();
+    public native int Destroy();
 }

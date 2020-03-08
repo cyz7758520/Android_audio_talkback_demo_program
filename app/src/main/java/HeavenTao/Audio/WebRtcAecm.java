@@ -5,7 +5,7 @@ import HeavenTao.Data.*;
 //WebRtc定点版声学回音消除器类。
 public class WebRtcAecm
 {
-    private long m_pvPoint; //存放WebRtc定点版声学回音消除器结构体的内存指针。
+    private long m_WebRtcAecmPt; //存放WebRtc定点版声学回音消除器的内存指针。
 
     static
     {
@@ -17,33 +17,33 @@ public class WebRtcAecm
     //构造函数。
     public WebRtcAecm()
     {
-        m_pvPoint = 0;
+        m_WebRtcAecmPt = 0;
     }
 
     //析构函数。
     public void finalize()
     {
-        Destory();
+        Destroy();
     }
 
-    //获取WebRtc定点版声学回音消除器结构体的内存指针。
-    public long GetPoint()
+    //获取WebRtc定点版声学回音消除器的内存指针。
+    public long GetWebRtcAecmPt()
     {
-        return m_pvPoint;
+        return m_WebRtcAecmPt;
     }
 
     //创建并初始化WebRtc定点版声学回音消除器。
-    public native long Init( int i32SamplingRate, long i64FrameLength, int i32IsUseCNGMode, int i32EchoMode, int i32Delay );
+    public native int Init( int SamplingRate, int FrameLen, int IsUseCNGMode, int EchoMode, int Delay );
 
     //设置WebRtc定点版声学回音消除器的回音延迟。
-    public native long SetDelay( int i32Delay );
+    public native int SetDelay( int Delay );
 
     //获取WebRtc定点版声学回音消除器的回音延迟。
-    public native long GetDelay( HTInteger pclDelay );
+    public native int GetDelay( HTInt DelayPt );
 
     //用WebRtc定点版声学回音消除器对单声道16位有符号整型PCM格式输入帧进行WebRtc定点版声学回音消除。
-    public native long Process( short pszi16InputFrame[], short pszi16OutputFrame[], short pszi16ResultFrame[] );
+    public native int Proc( short InputFramePt[], short OutputFramePt[], short ResultFramePt[] );
 
     //销毁WebRtc定点版声学回音消除器。
-    public native long Destory();
+    public native int Destroy();
 }

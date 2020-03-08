@@ -43,14 +43,14 @@
                 android:layout_height="wrap_content">
 
                 <RadioButton
-                    android:id="@+id/RadioButtonSpeexCodecEncoderUseCbr"
+                    android:id="@+id/SpeexCodecEncoderUseCbrRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:text="固定比特率"/>
 
                 <RadioButton
-                    android:id="@+id/RadioButtonSpeexCodecEncoderUseVbr"
+                    android:id="@+id/SpeexCodecEncoderUseVbrRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -74,7 +74,7 @@
                 android:text="Speex编码器的编码质量等级，质量等级越高音质越好、压缩率越低，取值区间为[0,10]：" />
 
             <EditText
-                android:id="@+id/SpeexCodecEncoderQuality"
+                android:id="@+id/SpeexCodecEncoderQualityEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -96,7 +96,7 @@
                 android:text="Speex编码器的编码复杂度，复杂度越高压缩率不变、CPU使用率越高、音质越好，取值区间为[0,10]：" />
 
             <EditText
-                android:id="@+id/SpeexCodecEncoderComplexity"
+                android:id="@+id/SpeexCodecEncoderComplexityEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -118,7 +118,7 @@
                 android:text="Speex编码器在数据包丢失隐藏时，数据包的预计丢失概率，预计丢失概率越高抗网络抖动越强、压缩率越低，取值区间为[0,100]：" />
 
             <EditText
-                android:id="@+id/SpeexCodecEncoderPlcExpectedLossRate"
+                android:id="@+id/SpeexCodecEncoderPlcExpectedLossRateEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -128,7 +128,7 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/CheckBoxSpeexCodecIsUsePerceptualEnhancement"
+            android:id="@+id/SpeexCodecIsUsePerceptualEnhancementCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="true"
@@ -138,7 +138,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="确定"
-            android:onClick="OnSpeexCodecSettingOkClick" />
+            android:onClick="OnClickSpeexCodecSettingOk" />
 
     </LinearLayout>
 

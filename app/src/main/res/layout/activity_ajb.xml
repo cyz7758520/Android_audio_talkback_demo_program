@@ -37,7 +37,7 @@
                 android:text="最小需缓冲数据帧的数量，单位帧，必须大于0：" />
 
             <EditText
-                android:id="@+id/AjbMinNeedBufferFrameCount"
+                android:id="@+id/AjbMinNeedBufFrameCnt"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -59,7 +59,7 @@
                 android:text="最大需缓冲数据帧的数量，单位帧，必须大于最小需缓冲数据帧的数量：" />
 
             <EditText
-                android:id="@+id/AjbMaxNeedBufferFrameCount"
+                android:id="@+id/AjbMaxNeedBufFrameCnt"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -81,7 +81,7 @@
                 android:text="自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0,127]：" />
 
             <EditText
-                android:id="@+id/AjbAdaptiveSensitivity"
+                android:id="@+id/AjbAdaptSensitivity"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -94,7 +94,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="确定"
-            android:onClick="OnAjbSettingOkClick" />
+            android:onClick="OnClickAjbSettingOk" />
 
     </LinearLayout>
 

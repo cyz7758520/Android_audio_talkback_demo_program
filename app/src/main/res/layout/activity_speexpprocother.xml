@@ -25,7 +25,7 @@
             android:textSize="20sp" />
 
         <CheckBox
-            android:id="@+id/CheckBoxSpeexPreprocessorIsUseVad"
+            android:id="@+id/SpeexPprocIsUseVadCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -45,7 +45,7 @@
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/SpeexPreprocessorVadProbStart"
+                android:id="@+id/SpeexPprocVadProbStartEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -67,7 +67,7 @@
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/SpeexPreprocessorVadProbContinue"
+                android:id="@+id/SpeexPprocVadProbContEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -77,11 +77,11 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/CheckBoxSpeexPreprocessorIsUseAgc"
+            android:id="@+id/SpeexPprocIsUseAgcCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:checked="false"
-            android:text="使用自动增益控制"/>
+            android:checked="true"
+            android:text="使用自动增益控制" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -96,7 +96,7 @@
                 android:text="自动增益控制时，增益的目标等级，目标等级越大增益越大，取值区间为[1,2147483647]：" />
 
             <EditText
-                android:id="@+id/SpeexPreprocessorAgcLevel"
+                android:id="@+id/SpeexPprocAgcLevelEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -118,7 +118,7 @@
                 android:text="在自动增益控制时，每秒最大增益的分贝值，分贝值越大增益越大，取值区间为[0,2147483647]：" />
 
             <EditText
-                android:id="@+id/SpeexPreprocessorAgcIncrement"
+                android:id="@+id/SpeexPprocAgcIncrementEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -140,7 +140,7 @@
                 android:text="在自动增益控制时，每秒最大减益的分贝值，分贝值越小减益越大，取值区间为[-2147483648,0]：" />
 
             <EditText
-                android:id="@+id/SpeexPreprocessorAgcDecrement"
+                android:id="@+id/SpeexPprocAgcDecrementEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -162,7 +162,7 @@
                 android:text="在自动增益控制时，最大增益的分贝值，分贝值越大增益越大，取值区间为[0,2147483647]：" />
 
             <EditText
-                android:id="@+id/SpeexPreprocessorAgcMaxGain"
+                android:id="@+id/SpeexPprocAgcMaxGainEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -173,7 +173,7 @@
 
         <Button
             android:text="确定"
-            android:onClick="OnSpeexPreprocessorOtherSettingOkClick"
+            android:onClick="OnClickSpeexPprocOtherSettingOk"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 

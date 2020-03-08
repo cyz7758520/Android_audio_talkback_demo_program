@@ -5,7 +5,7 @@ import HeavenTao.Data.*;
 //RNNoise噪音抑制器类。
 public class RNNoise
 {
-    private long m_pvPoint; //RNNoise噪音抑制器结构体的内存指针。
+    private long m_RNNoisePt; //RNNoise噪音抑制器的内存指针。
 
     static
     {
@@ -18,27 +18,27 @@ public class RNNoise
     //构造函数。
     public RNNoise()
     {
-        m_pvPoint = 0;
+        m_RNNoisePt = 0;
     }
 
     //析构函数。
     public void finalize()
     {
-        Destory();
+        Destroy();
     }
 
-    //获取RNNoise噪音抑制器结构体的内存指针。
-    public long GetPoint()
+    //获取RNNoise噪音抑制器的内存指针。
+    public long GetRNNoisePt()
     {
-        return m_pvPoint;
+        return m_RNNoisePt;
     }
 
     //创建并初始化RNNoise噪音抑制器。
-    public native long Init( int i32SamplingRate, long i64FrameLength );
+    public native int Init( int SamplingRate, int FrameLen );
 
     //用RNNoise噪音抑制器对单声道16位有符号整型PCM格式帧进行RNNoise噪音抑制。
-    public native long Process( short pszi16Frame[], short pszi16ResultFrame[] );
+    public native int Proc( short FrameObj[], short ResultFrameObj[] );
 
     //销毁RNNoise噪音抑制器。
-    public native long Destory();
+    public native int Destroy();
 }

@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Android_audio_talkback_demo_program.iml" filepath="$PROJECT_DIR$/Android_audio_talkback_demo_program.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Android_audio_talkback_demo_program.iml" filepath="$PROJECT_DIR$/Android_audio_talkback_demo_program.iml" group="Android_audio_talkback_demo_program" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="Android_audio_talkback_demo_program/app" />
     </modules>
   </component>
 </project>

@@ -5,7 +5,7 @@ import HeavenTao.Data.*;
 //Wave文件写入器类。
 public class WaveFileWriter
 {
-    private long m_pvPoint; //存放Wave文件写入器的内存指针。
+    private long m_WaveFileWriterPt; //存放Wave文件写入器的内存指针。
 
     static
     {
@@ -16,27 +16,27 @@ public class WaveFileWriter
     //构造函数。
     public WaveFileWriter()
     {
-        m_pvPoint = 0;
+        m_WaveFileWriterPt = 0;
     }
 
     //析构函数。
     public void finalize()
     {
-        Destory();
+        Destroy();
     }
 
     //获取Wave文件写入器的内存指针。
-    public long GetPoint()
+    public long GetWaveFileWriterPt()
     {
-        return m_pvPoint;
+        return m_WaveFileWriterPt;
     }
 
     //创建并初始化Wave文件写入器。
-    public native long Init( byte pszi8WaveFileFullPath[], short i16NumChannel, int i32SamplingRate, int i32SamplingBit );
+    public native int Init( byte WaveFileFullPathStrPt[], short NumChanl, int SamplingRate, int SamplingBit );
 
     //用Wave文件写入器写入数据。
-    public native long WriteData( short pszi16Data[], int i32DataLength );
+    public native int WriteData( short DataPt[], long DataLen );
 
     //销毁Wave文件写入器。
-    public native long Destory();
+    public native int Destroy();
 }

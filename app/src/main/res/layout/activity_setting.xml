@@ -44,7 +44,7 @@
 
                 <RadioButton
                     android:text="TCP协议"
-                    android:id="@+id/RadioButtonUseTcpProtocol"
+                    android:id="@+id/UseTcpProtocolRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -52,7 +52,7 @@
 
                 <RadioButton
                     android:text="UDP协议"
-                    android:id="@+id/RadioButtonRtpProtocol"
+                    android:id="@+id/UseUdpProtocolRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -82,14 +82,15 @@
 
                 <RadioButton
                     android:text="8000"
-                    android:id="@+id/RadioButtonUseSamplingRate8000"
+                    android:id="@+id/UseSamplingRate8000RadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:checked="false"/>
 
                 <RadioButton
                     android:text="16000"
-                    android:id="@+id/RadioButtonUseSamplingRate16000"
+                    android:id="@+id/UseSamplingRate16000RadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -97,24 +98,71 @@
 
                 <RadioButton
                     android:text="32000"
-                    android:id="@+id/RadioButtonUseSamplingRate32000"
+                    android:id="@+id/UseSamplingRate32000RadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:checked="false"/>
+
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:gravity="center_vertical"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="match_parent"
+                android:text="帧毫秒长度：" />
+
+            <RadioGroup
+                android:orientation="horizontal"
+                android:layout_weight="8"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:text="10ms"
+                    android:id="@+id/UseFrame10msLenRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:checked="false"/>
+
+                <RadioButton
+                    android:text="20ms"
+                    android:id="@+id/UseFrame20msLenRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:checked="true"/>
+
+                <RadioButton
+                    android:text="30ms"
+                    android:id="@+id/UseFrame30msLenRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:checked="false"/>
 
             </RadioGroup>
 
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/CheckBoxIsPrintLogcat"
+            android:id="@+id/IsPrintLogcatCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="打印Logcat日志"/>
 
         <CheckBox
-            android:id="@+id/CheckBoxIsUseWakeLock"
+            android:id="@+id/IsUseWakeLockCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="true"
@@ -139,44 +187,44 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:text="不使用"
-                    android:id="@+id/RadioButtonUseNoAec"
-                    android:layout_weight="1"
+                    android:id="@+id/UseNoAecRadioBtn"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    />
+                    android:layout_weight="1"
+                    android:checked="false"
+                    android:text="不使用" />
 
                 <RadioButton
-                    android:text="Speex声学回音消除器"
-                    android:id="@+id/RadioButtonUseSpeexAec"
-                    android:layout_weight="1"
+                    android:id="@+id/UseSpeexAecRadioBtn"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    />
+                    android:layout_weight="1"
+                    android:checked="false"
+                    android:text="Speex声学回音消除器" />
 
                 <RadioButton
                     android:text="WebRtc定点版声学回音消除器"
-                    android:id="@+id/RadioButtonUseWebRtcAecm"
+                    android:id="@+id/UseWebRtcAecmRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    />
+                    android:checked="false"/>
 
                 <RadioButton
                     android:text="WebRtc浮点版声学回音消除器"
-                    android:id="@+id/RadioButtonUseWebRtcAec"
+                    android:id="@+id/UseWebRtcAecRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    />
+                    android:checked="false"/>
 
                 <RadioButton
-                    android:text="SpeexWebRtc三重声学回音消除器"
-                    android:id="@+id/RadioButtonUseSpeexWebRtcAec"
-                    android:layout_weight="1"
+                    android:id="@+id/UseSpeexWebRtcAecRadioBtn"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:checked="true"/>
+                    android:layout_weight="1"
+                    android:checked="true"
+                    android:text="SpeexWebRtc三重声学回音消除器" />
 
             </RadioGroup>
 
@@ -197,25 +245,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnSpeexAecSettingClick"/>
+                    android:onClick="OnClickSpeexAecSetting"/>
 
                 <Button
                     android:text="设置"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnWebRtcAecmSettingClick"/>
+                    android:onClick="OnClickWebRtcAecmSetting"/>
 
                 <Button
                     android:text="设置"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnWebRtcAecSettingClick"/>
+                    android:onClick="OnClickWebRtcAecSetting"/>
 
                 <Button
                     android:text="设置"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnSpeexWebRtcAecSettingClick"/>
+                    android:onClick="OnClickSpeexWebRtcAecSetting"/>
 
             </LinearLayout>
 
@@ -241,43 +289,43 @@
 
                     <RadioButton
                         android:text="不使用"
-                        android:id="@+id/RadioButtonUseNoNs"
+                        android:id="@+id/UseNoNsRadioBtn"
                         android:layout_weight="1"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        />
+                        android:checked="false"/>
 
                     <RadioButton
-                        android:text="Speex预处理器的噪音抑制"
-                        android:id="@+id/RadioButtonUseSpeexPreorocessorNs"
-                        android:layout_weight="1"
+                        android:id="@+id/UseSpeexPprocNsRadioBtn"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        />
+                        android:layout_weight="1"
+                        android:checked="false"
+                        android:text="Speex预处理器的噪音抑制" />
 
                     <RadioButton
                         android:text="WebRtc定点版噪音抑制器"
-                        android:id="@+id/RadioButtonUseWebRtcNsx"
+                        android:id="@+id/UseWebRtcNsxRadioBtn"
                         android:layout_weight="1"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        />
+                        android:checked="false"/>
 
                     <RadioButton
                         android:text="WebRtc浮点版噪音抑制器"
-                        android:id="@+id/RadioButtonUseWebRtcNs"
+                        android:id="@+id/UseWebRtcNsRadioBtn"
                         android:layout_weight="1"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        />
+                        android:checked="false"/>
 
                     <RadioButton
-                        android:text="RNNoise噪音抑制器"
-                        android:id="@+id/RadioButtonUseRNNoise"
-                        android:layout_weight="1"
+                        android:id="@+id/UseRNNoiseRadioBtn"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:checked="true"/>
+                        android:layout_weight="1"
+                        android:checked="true"
+                        android:text="RNNoise噪音抑制器" />
 
                 </RadioGroup>
 
@@ -298,19 +346,19 @@
                     android:text="设置"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnSpeexPreprocessorNsSettingClick" />
+                    android:onClick="OnClickSpeexPprocNsSetting" />
 
                 <Button
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnWebRtcNsxSettingClick"/>
+                    android:onClick="OnClickWebRtcNsxSetting"/>
 
                 <Button
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnWebRtcNsSettingClick" />
+                    android:onClick="OnClickWebRtcNsSetting" />
 
                 <Button
                     android:layout_width="match_parent"
@@ -329,7 +377,7 @@
             android:layout_height="wrap_content" >
 
             <CheckBox
-                android:id="@+id/CheckBoxIsUseSpeexPreprocessorOther"
+                android:id="@+id/IsUseSpeexPprocOtherCheckBox"
                 android:layout_weight="9"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -341,7 +389,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:text="设置"
-                android:onClick="OnSpeexPreprocessorOtherSettingClick"/>
+                android:onClick="OnClickSpeexPprocOtherSetting"/>
 
         </LinearLayout>
 
@@ -364,15 +412,15 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:id="@+id/RadioButtonUsePcm"
+                    android:id="@+id/UsePcmRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:text="PCM原始数据"
-                    />
+                    android:checked="false"/>
 
                 <RadioButton
-                    android:id="@+id/RadioButtonUseSpeexCodec"
+                    android:id="@+id/UseSpeexCodecRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
@@ -380,13 +428,13 @@
                     android:checked="true"/>
 
                 <RadioButton
-                    android:id="@+id/RadioButtonUseOpusCodec"
+                    android:id="@+id/UseOpusCodecRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:text="Opus编解码器"
                     android:enabled="false"
-                    />
+                    android:checked="false"/>
 
             </RadioGroup>
 
@@ -407,13 +455,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnSpeexCodecSettingClick" />
+                    android:onClick="OnClickSpeexCodecSetting" />
 
                 <Button
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnOpusCodecSettingClick"
+                    android:onClick="OnClickOpusCodecSetting"
                     android:enabled="false"/>
 
             </LinearLayout>
@@ -439,20 +487,20 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:id="@+id/RadioButtonUseList"
-                    android:layout_weight="1"
+                    android:id="@+id/UseLnkLstRadioBtn"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:text="链表"
-                    />
+                    android:layout_weight="1"
+                    android:checked="false"
+                    android:text="链表" />
 
                 <RadioButton
-                    android:id="@+id/RadioButtonUseAjb"
-                    android:layout_weight="1"
+                    android:id="@+id/UseAjbRadioBtn"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:text="自己设计的自适应抖动缓冲器"
-                    android:checked="true"/>
+                    android:layout_weight="1"
+                    android:checked="true"
+                    android:text="自己设计的自适应抖动缓冲器" />
 
             </RadioGroup>
 
@@ -473,18 +521,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnAjbSettingClick" />
+                    android:onClick="OnClickAjbSetting" />
 
             </LinearLayout>
 
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/CheckBoxIsSaveAudioToFile"
+            android:id="@+id/IsSaveAudioToFileCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:checked="true"
-            android:text="将音频输入帧、音频输出帧、音频结果帧分别替换保存到内部存储根目录（/mnt/sdcard）下的AudioInput.wav、AudioOutput.wav、AudioResult.wav文件中"/>
+            android:text="将音频输入帧、音频输出帧、音频结果帧分别替换保存到内部存储根目录（/mnt/sdcard）下的AudioInput.wav、AudioOutput.wav、AudioResult.wav文件中" />
 
         <Button
             android:layout_width="match_parent"

@@ -1,16 +1,16 @@
 package HeavenTao.Data;
 
-public class HTLong
+public class HTInt
 {
-    public long m_Val;
+    public int m_Val;
 
     //构造函数。
-    public HTLong()
+    public HTInt()
     {
         m_Val = 0;
     }
 
-    public HTLong( long Val )
+    public HTInt( int Val )
     {
         m_Val = Val;
     }

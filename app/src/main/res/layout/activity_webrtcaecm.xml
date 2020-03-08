@@ -79,7 +79,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="确定"
-            android:onClick="OnWebRtcAecmSettingOkClick" />
+            android:onClick="OnClickWebRtcAecmSettingOk" />
 
     </LinearLayout>
 

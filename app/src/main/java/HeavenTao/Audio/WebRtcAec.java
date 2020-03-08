@@ -5,7 +5,7 @@ import HeavenTao.Data.*;
 //WebRtc浮点版声学回音消除器类。
 public class WebRtcAec
 {
-    private long m_pvPoint; //存放WebRtc浮点版声学回音消除器结构体的内存指针。
+    private long m_WebRtcAecPt; //存放WebRtc浮点版声学回音消除器的内存指针。
 
     static
     {
@@ -17,42 +17,42 @@ public class WebRtcAec
     //构造函数。
     public WebRtcAec()
     {
-        m_pvPoint = 0;
+        m_WebRtcAecPt = 0;
     }
 
     //析构函数。
     public void finalize()
     {
-        Destory();
+        Destroy();
     }
 
-    //获取WebRtc浮点版声学回音消除器结构体的内存指针。
-    public long GetPoint()
+    //获取WebRtc浮点版声学回音消除器的内存指针。
+    public long GetWebRtcAecPt()
     {
-        return m_pvPoint;
+        return m_WebRtcAecPt;
     }
 
     //创建并初始化WebRtc浮点版声学回音消除器。
-    public native long Init( int i32SamplingRate, long i64FrameLength, int i32EchoMode, int i32Delay, int i32IsUseDelayAgnosticMode, int i32IsUseAdaptiveAdjustDelay );
+    public native int Init( int SamplingRate, int FrameLen, int EchoMode, int Delay, int IsUseDelayAgnosticMode, int IsUseAdaptAdjDelay );
 
     //根据WebRtc浮点版声学回音消除器内存块来创建并初始化WebRtc浮点版声学回音消除器。
-    public native long InitFromMemory( byte pszi8WebRtcAecMemory[], long i64WebRtcAecMemoryLength );
+    public native int InitFromMem( byte WebRtcAecMemPt[], long WebRtcAecMemLen );
 
     //获取WebRtc浮点版声学回音消除器内存块的数据长度。
-    public native long GetMemoryLength( HTLong pclWebRtcAecMemoryLength );
+    public native int GetMemLen( HTLong WebrtcAecMemLenPt );
 
     //获取WebRtc浮点版声学回音消除器的内存块。
-    public native long GetMemory( byte pszi8WebRtcAecMemory[], long i64WebRtcAecMemorySize );
+    public native int GetMem( byte WebRtcAecMemPt[], long WebRtcAecMemSz );
 
     //设置WebRtc浮点版声学回音消除器的回音延迟。
-    public native long SetDelay( int i32Delay );
+    public native int SetDelay( int Delay );
 
     //获取WebRtc浮点版声学回音消除器的回音延迟。
-    public native long GetDelay( HTInteger pclDelay );
+    public native int GetDelay( HTInt DelayPt );
 
     //用WebRtc浮点版声学回音消除器对单声道16位有符号整型PCM格式输入帧进行WebRtc浮点版声学回音消除。
-    public native long Process( short pszi16InputFrame[], short pszi16OutputFrame[], short pszi16ResultFrame[] );
+    public native int Proc( short InputFramePt[], short OutputFramePt[], short ResultFramePt[] );
 
     //销毁WebRtc浮点版声学回音消除器。
-    public native long Destory();
+    public native int Destroy();
 }

@@ -37,7 +37,7 @@
                 android:text="滤波器的数据长度，单位毫秒：" />
 
             <EditText
-                android:id="@+id/SpeexAecFilterLength"
+                android:id="@+id/SpeexAecFilterLenEdit"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -52,7 +52,7 @@
             android:layout_height="wrap_content" >
 
             <CheckBox
-                android:id="@+id/CheckBoxSpeexAecIsSaveMemoryFile"
+                android:id="@+id/SpeexAecIsSaveMemFileCheckBox"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="4"
@@ -65,7 +65,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:text="删除内存块文件"
-                android:onClick="OnSpeexAecDeleteMemoryFileClick" />
+                android:onClick="OnClickSpeexAecDelMemFile" />
 
         </LinearLayout>
 
@@ -73,7 +73,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="确定"
-            android:onClick="OnSpeexAecSettingOkClick" />
+            android:onClick="OnClickSpeexAecSettingOk" />
 
     </LinearLayout>
 

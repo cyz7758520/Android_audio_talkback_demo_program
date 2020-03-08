@@ -5,7 +5,7 @@ import HeavenTao.Data.*;
 //SpeexWebRtc三重声学回音消除器类。
 public class SpeexWebRtcAec
 {
-    private long m_pvPoint; //存放SpeexWebRtc三重声学回音消除器结构体的内存指针。
+    private long m_SpeexWebRtcAecPt; //存放SpeexWebRtc三重声学回音消除器的内存指针。
 
     static
     {
@@ -19,39 +19,39 @@ public class SpeexWebRtcAec
     //构造函数。
     public SpeexWebRtcAec()
     {
-        m_pvPoint = 0;
+        m_SpeexWebRtcAecPt = 0;
     }
 
     //析构函数。
     public void finalize()
     {
-        Destory();
+        Destroy();
     }
 
-    //获取SpeexWebRtc三重声学回音消除器结构体的内存指针。
-    public long GetPoint()
+    //获取SpeexWebRtc三重声学回音消除器的内存指针。
+    public long GetSpeexWebRtcAecPt()
     {
-        return m_pvPoint;
+        return m_SpeexWebRtcAecPt;
     }
 
     //创建并初始化SpeexWebRtc三重声学回音消除器。
-    public native long Init( int i32SamplingRate, long i64FrameLength, int i32WorkMode, int i32SpeexAecFilterLength, float fSpeexAecEchoMultiple, int i32SpeexAecEchoSuppress, int i32SpeexAecEchoSuppressActive,  int i32WebRtcAecmIsUseCNGMode, int i32WebRtcAecmEchoMode, int i32WebRtcAecmDelay, int i32WebRtcAecEchoMode, int i32WebRtcAecDelay, int i32WebRtcAecIsUseDelayAgnostic, int i32WebRtcAecIsUseAdaptiveAdjustDelay );
+    public native int Init( int SamplingRate, int FrameLen, int WorkMode, int SpeexAecFilterLen, float SpeexAecEchoMultiple, int SpeexAecEchoSupes, int SpeexAecEchoSupesAct, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgnosticMode, int WebRtcAecIsUseAdaptAdjDelay );
 
     //设置SpeexWebRtc三重声学回音消除器的WebRtc定点版声学回音消除器的回音延迟。
-    public native long SetWebRtcAecmDelay( int i32WebRtcAecmDelay );
+    public native int SetWebRtcAecmDelay( int WebRtcAecmDelay );
 
     //获取SpeexWebRtc三重声学回音消除器的WebRtc定点版声学回音消除器的回音延迟。
-    public native long GetWebRtcAecmDelay( HTInteger pclWebRtcAecmDelay );
+    public native int GetWebRtcAecmDelay( HTInt WebRtcAecmDelayPt );
 
     //设置SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器的回音延迟。
-    public native long SetWebRtcAecDelay( int i32WebRtcAecDelay );
+    public native int SetWebRtcAecDelay( int WebRtcAecDelay );
 
     //获取SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器的回音延迟。
-    public native long GetWebRtcAecDelay( HTInteger pclWebRtcAecDelay );
+    public native int GetWebRtcAecDelay( HTInt WebRtcAecDelayPt );
 
     //用SpeexWebRtc三重声学回音消除器对单声道16位有符号整型PCM格式输入帧进行SpeexWebRtc三重声学回音消除。
-    public native long Process( short pszi16InputFrame[], short pszi16OutputFrame[], short pszi16ResultFrame[] );
+    public native int Proc( short InputFramePt[], short OutputFramePt[], short ResultFramePt[] );
 
     //销毁SpeexWebRtc三重声学回音消除器。
-    public native long Destory();
+    public native int Destroy();
 }
