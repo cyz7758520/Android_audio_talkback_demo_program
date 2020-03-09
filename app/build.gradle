@@ -4,9 +4,6 @@ android {
     compileSdkVersion 29
     defaultConfig {
         applicationId "com.example.android_audio_talkback_demo_program"
-        //applicationId "cn.ubia.ubox"
-        //applicationId "cn.ubia.icamplus"
-        //applicationId "cn.yfc.ybox"
         minSdkVersion 9
         targetSdkVersion 29
         versionCode 1
