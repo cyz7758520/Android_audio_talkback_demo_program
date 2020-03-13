@@ -34,7 +34,7 @@ public abstract class AudioProcThread extends Thread
     public int m_SamplingRate = 16000; //采样频率，取值只能为8000、16000、32000。
     public int m_FrameLen = 320; //帧的数据长度，单位采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960。
 
-    public int m_IsPrintLogcat = 1; //存放是否打印Logcat日志。
+    public int m_IsPrintLogcat = 0; //存放是否打印Logcat日志。
 
     PowerManager.WakeLock m_ProximityScreenOffWakeLockPt; //存放接近息屏唤醒锁类对象的内存指针。
     PowerManager.WakeLock m_FullWakeLockPt; //存放屏幕键盘全亮唤醒锁类对象的内存指针。
@@ -46,7 +46,7 @@ public abstract class AudioProcThread extends Thread
     AudioTrack m_AudioTrackPt; //存放音频输出类对象的内存指针。
     int m_AudioTrackBufSz; //存放音频输出类对象的缓冲区大小，单位字节。
 
-    public int m_UseWhatAec; //存放使用什么声学回音消除器，为0表示不使用，为1表示Speex声学回音消除器，为2表示WebRtc定点版声学回音消除器，为2表示WebRtc浮点版声学回音消除器，为4表示SpeexWebRtc三重声学回音消除器。
+    public int m_UseWhatAec = 0; //存放使用什么声学回音消除器，为0表示不使用，为1表示Speex声学回音消除器，为2表示WebRtc定点版声学回音消除器，为2表示WebRtc浮点版声学回音消除器，为4表示SpeexWebRtc三重声学回音消除器。
 
     SpeexAec m_SpeexAecPt; //存放Speex声学回音消除器类对象的内存指针。
     int m_SpeexAecFilterLen; //存放Speex声学回音消除器的滤波器数据长度，单位毫秒。
@@ -80,8 +80,9 @@ public abstract class AudioProcThread extends Thread
     int m_SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode; //存放SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器是否使用回音延迟不可知模式，为非0表示要使用，为0表示不使用。
     int m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay; //存放SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器是否使用自适应调节回音的延迟，为非0表示要使用，为0表示不使用。
 
-    public int m_UseWhatNs; //存放使用什么噪音抑制器，为0表示不使用，为1表示Speex预处理器的噪音抑制，为2表示WebRtc定点版噪音抑制器，为3表示WebRtc浮点版噪音抑制器，为4表示RNNoise噪音抑制器。
+    public int m_UseWhatNs = 0; //存放使用什么噪音抑制器，为0表示不使用，为1表示Speex预处理器的噪音抑制，为2表示WebRtc定点版噪音抑制器，为3表示WebRtc浮点版噪音抑制器，为4表示RNNoise噪音抑制器。
 
+    SpeexPproc m_SpeexPprocPt; //存放Speex预处理器类对象的内存指针。
     int m_SpeexPprocIsUseNs; //存放Speex预处理器是否使用噪音抑制，为非0表示要使用，为0表示不使用。
     int m_SpeexPprocNoiseSupes; //存放Speex预处理器在噪音抑制时，噪音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]。
     int m_SpeexPprocIsUseDereverb; //存放Speex预处理器是否使用混响音消除，为非0表示要使用，为0表示不使用。
@@ -98,7 +99,6 @@ public abstract class AudioProcThread extends Thread
 
     RNNoise m_RNNoisePt; //RNNoise噪音抑制器类对象的内存指针。
 
-    SpeexPproc m_SpeexPprocPt; //存放Speex预处理器类对象的内存指针。
     int m_IsUseSpeexPprocOther; //存放Speex预处理器是否使用其他功能，为非0表示要使用，为0表示不使用。
     int m_SpeexPprocIsUseVad; //存放Speex预处理器是否使用语音活动检测，为非0表示要使用，为0表示不使用。
     int m_SpeexPprocVadProbStart; //存放Speex预处理器在语音活动检测时，从无语音活动到有语音活动的判断百分比概率，概率越大越难判断为有语音活，取值区间为[0,100]。
@@ -109,7 +109,7 @@ public abstract class AudioProcThread extends Thread
     int m_SpeexPprocAgcDecrement; //存放Speex预处理器在自动增益控制时，每秒最大减益的分贝值，分贝值越小减益越大，取值区间为[-2147483648,0]。
     int m_SpeexPprocAgcMaxGain; //存放Speex预处理器在自动增益控制时，最大增益的分贝值，分贝值越大增益越大，取值区间为[0,2147483647]。
 
-    public int m_UseWhatCodec; //存放使用什么编解码器，为0表示PCM原始数据，为1表示Speex编解码器，为2表示Opus编解码器。
+    public int m_UseWhatCodec = 0; //存放使用什么编解码器，为0表示PCM原始数据，为1表示Speex编解码器，为2表示Opus编解码器。
 
     SpeexEncoder m_SpeexEncoderPt; //存放Speex编码器类对象的内存指针。
     SpeexDecoder m_SpeexDecoderPt; //存放Speex解码器类对象的内存指针。
@@ -119,10 +119,10 @@ public abstract class AudioProcThread extends Thread
     int m_SpeexCodecEncoderPlcExpectedLossRate; //存放Speex编码器在数据包丢失隐藏时，数据包的预计丢失概率，预计丢失概率越高抗网络抖动越强、压缩率越低，取值区间为[0,100]。
     int m_SpeexCodecDecoderIsUsePerceptualEnhancement; //存放Speex解码器是否使用知觉增强，为非0表示要使用，为0表示不使用。
 
+    int m_IsSaveAudioToFile = 0; //存放是否保存音频到文件，非0表示要使用，0表示不使用。
     WaveFileWriter m_AudioInputWaveFileWriterPt; //存放音频输入Wave文件写入器对象的内存指针。
     WaveFileWriter m_AudioOutputWaveFileWriterPt; //存放音频输出Wave文件写入器对象的内存指针。
     WaveFileWriter m_AudioResultWaveFileWriterPt; //存放音频结果Wave文件写入器对象的内存指针。
-    int m_IsSaveAudioToFile; //存放是否保存音频到文件，非0表示要使用，0表示不使用。
     String m_AudioInputFileFullPathStrPt; //存放音频输入文件的完整路径字符串。
     String m_AudioOutputFileFullPathStrPt; //存放音频输出文件的完整路径字符串。
     String m_AudioResultFileFullPathStrPt; //存放音频结果文件的完整路径字符串。
