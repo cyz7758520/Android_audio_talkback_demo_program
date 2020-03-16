@@ -70,6 +70,7 @@ public abstract class AudioProcThread extends Thread
     int m_SpeexWebRtcAecWorkMode; //存放SpeexWebRtc三重声学回音消除器的工作模式，为1表示Speex声学回音消除器+WebRtc定点版声学回音消除器，为2表示WebRtc定点版声学回音消除器+WebRtc浮点版声学回音消除器，为3表示Speex声学回音消除器+WebRtc定点版声学回音消除器+WebRtc浮点版声学回音消除器。
     int m_SpeexWebRtcAecSpeexAecFilterLen; //存放SpeexWebRtc三重声学回音消除器的Speex声学回音消除器的滤波器数据长度，单位毫秒。
     float m_SpeexWebRtcAecSpeexAecEchoMultiple; //存放SpeexWebRtc三重声学回音消除器的Speex声学回音消除器在残余回音消除时，残余回音的倍数，倍数越大消除越强，取值区间为[0.0,100.0]。
+    float m_SpeexWebRtcAecSpeexAecEchoCont; //存放SpeexWebRtc三重声学回音消除器的Speex声学回音消除器在残余回音消除时，残余回音的持续系数，系数越大消除越强，取值区间为[0.0,0.9]。
     int m_SpeexWebRtcAecSpeexAecEchoSupes; //存放SpeexWebRtc三重声学回音消除器的Speex声学回音消除器在残余回音消除时，残余回音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]。
     int m_SpeexWebRtcAecSpeexAecEchoSupesAct; //存放SpeexWebRtc三重声学回音消除器的Speex声学回音消除器在残余回音消除时，有近端语音活动时残余回音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]。
     int m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode; //存放SpeexWebRtc三重声学回音消除器的WebRtc定点版声学回音消除器是否使用舒适噪音生成模式，为非0表示要使用，为0表示不使用。
@@ -88,6 +89,7 @@ public abstract class AudioProcThread extends Thread
     int m_SpeexPprocIsUseDereverb; //存放Speex预处理器是否使用混响音消除，为非0表示要使用，为0表示不使用。
     int m_SpeexPprocIsUseRec; //存放Speex预处理器是否使用残余回音消除，为非0表示要使用，为0表示不使用。
     float m_SpeexPprocEchoMultiple; //存放Speex预处理器在残余回音消除时，残余回音的倍数，倍数越大消除越强，取值区间为[0.0,100.0]。
+    float m_SpeexPprocEchoCont; //存放Speex预处理器在残余回音消除时，残余回音的持续系数，系数越大消除越强，取值区间为[0.0,0.9]。
     int m_SpeexPprocEchoSupes; //存放Speex预处理器在残余回音消除时，残余回音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]。
     int m_SpeexPprocEchoSupesAct; //存放Speex预处理器在残余回音消除时，有近端语音活动时残余回音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]。
 
@@ -163,12 +165,12 @@ public abstract class AudioProcThread extends Thread
                 int p_TmpInt32;
 
                 p_LastDatePt = new Date();
+                p_TmpInputFramePt = new short[m_FrameLen];
 
                 //跳过刚开始读取到的空输入帧。
                 skip:
                 while( true )
                 {
-                    p_TmpInputFramePt = new short[m_FrameLen];
                     m_AudioRecordPt.read( p_TmpInputFramePt, 0, p_TmpInputFramePt.length );
 
                     for( p_TmpInt32 = 0; p_TmpInt32 < p_TmpInputFramePt.length; p_TmpInt32++ )
@@ -285,12 +287,15 @@ public abstract class AudioProcThread extends Thread
             Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级。
 
             short p_TmpOutputDataPt[];
-            Date p_LastDatePt;
+            Date p_LastDatePt = null;
             Date p_NowDatePt;
             int p_TmpInt32;
 
-            p_LastDatePt = new Date();
-            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输出线程：开始准备音频输出。" );
+            if( m_IsPrintLogcat != 0 )
+            {
+                p_LastDatePt = new Date();
+                Log.i( m_CurClsNameStrPt, "音频输出线程：开始准备音频输出。" );
+            }
 
             //开始音频输出循环。
             out:
@@ -344,11 +349,11 @@ public abstract class AudioProcThread extends Thread
                     }
                 }
 
-                //调用用户定义的获取PCM格式输出帧函数。
-                UserGetPcmOutputFrame( p_TmpOutputDataPt );
-
                 //写入本次输出帧。
                 m_AudioTrackPt.write( p_TmpOutputDataPt, 0, p_TmpOutputDataPt.length );
+
+                //调用用户定义的获取PCM格式输出帧函数。
+                UserGetPcmOutputFrame( p_TmpOutputDataPt );
 
                 if( m_IsPrintLogcat != 0 )
                 {
@@ -468,12 +473,13 @@ public abstract class AudioProcThread extends Thread
     }
 
     //设置使用SpeexWebRtc三重声学回音消除器。
-    public void SetUseSpeexWebRtcAec( int WorkMode, int SpeexAecFilterLength, float SpeexAecEchoMultiple, int SpeexAecEchoSuppress, int SpeexAecEchoSuppressActive, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgnosticMode, int WebRtcAecIsUseAdaptAdjDelay )
+    public void SetUseSpeexWebRtcAec( int WorkMode, int SpeexAecFilterLength, float SpeexAecEchoMultiple, float SpeexAecEchoCont, int SpeexAecEchoSuppress, int SpeexAecEchoSuppressActive, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgnosticMode, int WebRtcAecIsUseAdaptAdjDelay )
     {
         m_UseWhatAec = 4;
         m_SpeexWebRtcAecWorkMode = WorkMode;
         m_SpeexWebRtcAecSpeexAecFilterLen = SpeexAecFilterLength;
         m_SpeexWebRtcAecSpeexAecEchoMultiple = SpeexAecEchoMultiple;
+        m_SpeexWebRtcAecSpeexAecEchoCont = SpeexAecEchoCont;
         m_SpeexWebRtcAecSpeexAecEchoSupes = SpeexAecEchoSuppress;
         m_SpeexWebRtcAecSpeexAecEchoSupesAct = SpeexAecEchoSuppressActive;
         m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode = WebRtcAecmIsUseCNGMode;
@@ -492,7 +498,7 @@ public abstract class AudioProcThread extends Thread
     }
 
     //设置使用Speex预处理器的噪音抑制。
-    public void SetUseSpeexPprocNs( int IsUseNs, int NoiseSuppress, int IsUseDereverberation, int IsUseRec, float EchoMultiple, int EchoSuppress, int EchoSuppressActive )
+    public void SetUseSpeexPprocNs( int IsUseNs, int NoiseSuppress, int IsUseDereverberation, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSuppress, int EchoSuppressActive )
     {
         m_UseWhatNs = 1;
         m_SpeexPprocIsUseNs = IsUseNs;
@@ -500,6 +506,7 @@ public abstract class AudioProcThread extends Thread
         m_SpeexPprocIsUseDereverb = IsUseDereverberation;
         m_SpeexPprocIsUseRec = IsUseRec;
         m_SpeexPprocEchoMultiple = EchoMultiple;
+        m_SpeexPprocEchoCont = EchoCont;
         m_SpeexPprocEchoSupes = EchoSuppress;
         m_SpeexPprocEchoSupesAct = EchoSuppressActive;
     }
@@ -1234,7 +1241,7 @@ public abstract class AudioProcThread extends Thread
                     case 4: //如果使用SpeexWebRtc三重声学回音消除器。
                     {
                         m_SpeexWebRtcAecPt = new SpeexWebRtcAec();
-                        p_TmpInt32 = m_SpeexWebRtcAecPt.Init( m_SamplingRate, m_FrameLen, m_SpeexWebRtcAecWorkMode, m_SpeexWebRtcAecSpeexAecFilterLen, m_SpeexWebRtcAecSpeexAecEchoMultiple, m_SpeexWebRtcAecSpeexAecEchoSupes, m_SpeexWebRtcAecSpeexAecEchoSupesAct, m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode, m_SpeexWebRtcAecWebRtcAecmEchoMode, m_SpeexWebRtcAecWebRtcAecmDelay, m_SpeexWebRtcAecWebRtcAecEchoMode, m_SpeexWebRtcAecWebRtcAecDelay, m_SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode, m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay );
+                        p_TmpInt32 = m_SpeexWebRtcAecPt.Init( m_SamplingRate, m_FrameLen, m_SpeexWebRtcAecWorkMode, m_SpeexWebRtcAecSpeexAecFilterLen, m_SpeexWebRtcAecSpeexAecEchoMultiple, m_SpeexWebRtcAecSpeexAecEchoCont, m_SpeexWebRtcAecSpeexAecEchoSupes, m_SpeexWebRtcAecSpeexAecEchoSupesAct, m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode, m_SpeexWebRtcAecWebRtcAecmEchoMode, m_SpeexWebRtcAecWebRtcAecmDelay, m_SpeexWebRtcAecWebRtcAecEchoMode, m_SpeexWebRtcAecWebRtcAecDelay, m_SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode, m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay );
                         if( p_TmpInt32 == 0 )
                         {
                             if( m_IsPrintLogcat != 0 )
@@ -1336,9 +1343,9 @@ public abstract class AudioProcThread extends Thread
 
                     m_SpeexPprocPt = new SpeexPproc();
                     if( m_SpeexAecPt != null )
-                        p_TmpInt32 = m_SpeexPprocPt.Init( m_SamplingRate, m_FrameLen, m_SpeexPprocIsUseNs, m_SpeexPprocNoiseSupes, m_SpeexPprocIsUseDereverb, m_SpeexPprocIsUseVad, m_SpeexPprocVadProbStart, m_SpeexPprocVadProbCont, m_SpeexPprocIsUseAgc, m_SpeexPprocAgcLevel, m_SpeexPprocAgcIncrement, m_SpeexPprocAgcDecrement, m_SpeexPprocAgcMaxGain, m_SpeexPprocIsUseRec, m_SpeexAecPt.GetSpeexAecPt(), m_SpeexPprocEchoMultiple, m_SpeexPprocEchoSupes, m_SpeexPprocEchoSupesAct );
+                        p_TmpInt32 = m_SpeexPprocPt.Init( m_SamplingRate, m_FrameLen, m_SpeexPprocIsUseNs, m_SpeexPprocNoiseSupes, m_SpeexPprocIsUseDereverb, m_SpeexPprocIsUseVad, m_SpeexPprocVadProbStart, m_SpeexPprocVadProbCont, m_SpeexPprocIsUseAgc, m_SpeexPprocAgcLevel, m_SpeexPprocAgcIncrement, m_SpeexPprocAgcDecrement, m_SpeexPprocAgcMaxGain, m_SpeexPprocIsUseRec, m_SpeexAecPt.GetSpeexAecPt(), m_SpeexPprocEchoMultiple, m_SpeexPprocEchoCont, m_SpeexPprocEchoSupes, m_SpeexPprocEchoSupesAct );
                     else
-                        p_TmpInt32 = m_SpeexPprocPt.Init( m_SamplingRate, m_FrameLen, m_SpeexPprocIsUseNs, m_SpeexPprocNoiseSupes, m_SpeexPprocIsUseDereverb, m_SpeexPprocIsUseVad, m_SpeexPprocVadProbStart, m_SpeexPprocVadProbCont, m_SpeexPprocIsUseAgc, m_SpeexPprocAgcLevel, m_SpeexPprocAgcIncrement, m_SpeexPprocAgcDecrement, m_SpeexPprocAgcMaxGain, 0, 0, 0, 0, 0 );
+                        p_TmpInt32 = m_SpeexPprocPt.Init( m_SamplingRate, m_FrameLen, m_SpeexPprocIsUseNs, m_SpeexPprocNoiseSupes, m_SpeexPprocIsUseDereverb, m_SpeexPprocIsUseVad, m_SpeexPprocVadProbStart, m_SpeexPprocVadProbCont, m_SpeexPprocIsUseAgc, m_SpeexPprocAgcLevel, m_SpeexPprocAgcIncrement, m_SpeexPprocAgcDecrement, m_SpeexPprocAgcMaxGain, 0, 0, 0, 0, 0, 0 );
                     if( p_TmpInt32 == 0 )
                     {
                         if( m_IsPrintLogcat != 0 )
@@ -1536,8 +1543,7 @@ public abstract class AudioProcThread extends Thread
                         }
 
                         //将输入帧复制到结果帧，方便处理。
-                        for( p_TmpInt32 = 0; p_TmpInt32 < m_FrameLen; p_TmpInt32++ )
-                            p_PcmResultFramePt[p_TmpInt32] = p_PcmInputFramePt[p_TmpInt32];
+                        System.arraycopy( p_PcmInputFramePt, 0, p_PcmResultFramePt, 0, m_FrameLen );
 
                         //使用什么声学回音消除器。
                         switch( m_UseWhatAec )

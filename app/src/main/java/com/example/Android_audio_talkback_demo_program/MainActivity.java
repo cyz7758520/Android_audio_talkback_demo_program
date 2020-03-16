@@ -1,11 +1,13 @@
 package com.example.Android_audio_talkback_demo_program;
 
 import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -281,7 +283,7 @@ class MyAudioProcThread extends AudioProcThread
                     }
 
                     //读取预读长度。
-                    m_PktPrereadSz = ( short )( ( m_TmpBytePt[0] & 0xFF ) + ( ( m_TmpBytePt[1] & 0xFF ) << 8 ) );
+                    m_PktPrereadSz = ( short ) ( ( m_TmpBytePt[0] & 0xFF ) + ( ( m_TmpBytePt[1] & 0xFF ) << 8 ) );
                     if( m_PktPrereadSz == 0 ) //如果预读长度为0，表示这是一个心跳包，就更新一下时间即可。
                     {
                         m_LastPktRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间。
@@ -348,15 +350,14 @@ class MyAudioProcThread extends AudioProcThread
                     {
                         case 0: //如果使用链表。
                         {
-                            m_TmpInt32 = m_PktPrereadSz - 4;
-                            byte p_TmpOutputFramePt[] = new byte[m_TmpInt32];
+                            byte p_TmpOutputFramePt[] = new byte[m_PktPrereadSz - 4]; //创建只有输出帧的数据长度大小的临时数组。
 
-                            for( m_TmpInt32--; m_TmpInt32 >= 0; m_TmpInt32-- )
+                            System.arraycopy( m_TmpBytePt, 0, p_TmpOutputFramePt, 0, p_TmpOutputFramePt.length );
+
+                            synchronized( m_RecvOutputFrameLnkLstPt )
                             {
-                                p_TmpOutputFramePt[m_TmpInt32] = m_TmpBytePt[m_TmpInt32];
+                                m_RecvOutputFrameLnkLstPt.addLast( p_TmpOutputFramePt );
                             }
-
-                            m_RecvOutputFrameLnkLstPt.addLast( p_TmpOutputFramePt );
 
                             Log.i( m_CurClsNameStrPt, "接收一个输出帧并放入链表成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + m_PktPrereadSz + "。" );
 
@@ -607,10 +608,7 @@ class MyAudioProcThread extends AudioProcThread
                         {
                             if( SpeexInputFrameIsNeedTrans == 1 ) //如果本Speex格式音频输入数据帧需要传输。
                             {
-                                for( m_TmpInt32 = 0; m_TmpInt32 < SpeexInputFrameLen; m_TmpInt32++ )
-                                {
-                                    m_TmpBytePt[6 + m_TmpInt32] = SpeexInputFramePt[m_TmpInt32];
-                                }
+                                System.arraycopy( SpeexInputFramePt, 0, m_TmpBytePt, 6, ( int ) SpeexInputFrameLen );
 
                                 m_TmpInt32 = ( int ) SpeexInputFrameLen + 4; //预读长度 = Speex格式音频输入数据帧长度 + 时间戳长度。
                             }
@@ -623,9 +621,9 @@ class MyAudioProcThread extends AudioProcThread
                         }
                     }
                 }
-                else //如果本音频输入数据帧为无语音活动
+                else //如果本音频输入数据帧为无语音活动。
                 {
-                    m_TmpInt32 = 4; //预读长度 = 时间戳长度
+                    m_TmpInt32 = 4; //预读长度 = 时间戳长度。
                 }
 
                 if( ( m_TmpInt32 != 4 ) || //如果本音频输入数据帧为有语音活动，就发送。
@@ -689,22 +687,29 @@ class MyAudioProcThread extends AudioProcThread
         {
             case 0: //如果使用链表。
             {
-                byte p_TmpOutputFramePt[];
+                byte p_TmpOutputFramePt[] = null;
+
+                if( m_RecvOutputFrameLnkLstPt.size() != 0 ) //如果接收输出帧链表不为空。
+                {
+                    synchronized( m_RecvOutputFrameLnkLstPt )
+                    {
+                        p_TmpOutputFramePt = m_RecvOutputFrameLnkLstPt.getFirst(); //获取接收输出帧链表的第一个输出帧。
+                        m_RecvOutputFrameLnkLstPt.removeFirst(); //删除接收输出帧链表的第一个输出帧。
+                    }
+                }
 
                 switch( m_UseWhatCodec ) //使用什么编解码器。
                 {
                     case 0: //如果使用PCM原始数据。
                     {
-                        if( ( m_RecvOutputFrameLnkLstPt.size() > 0 ) && ( m_RecvOutputFrameLnkLstPt.getFirst().length > 0 ) ) //如果接收输出帧链表的第一个输出帧为有语音活动。
+                        if( ( p_TmpOutputFramePt != null ) && ( p_TmpOutputFramePt.length > 0 ) ) //如果接收输出帧链表的第一个输出帧为有语音活动。
                         {
-                            p_TmpOutputFramePt = m_RecvOutputFrameLnkLstPt.getFirst(); //获取接收输出帧链表的第一个输出帧。
-
                             for( m_TmpInt32 = 0; m_TmpInt32 < m_FrameLen; m_TmpInt32++ )
                             {
                                 PcmOutputFramePt[m_TmpInt32] = ( short ) ( ( p_TmpOutputFramePt[m_TmpInt32 * 2] & 0xFF ) | ( p_TmpOutputFramePt[m_TmpInt32 * 2 + 1] << 8 ) );
                             }
 
-                            Log.i( m_CurClsNameStrPt, "从接收输出帧链表取出一个有语音活动的PCM格式输出帧，帧的数据长度：" + m_RecvOutputFrameLnkLstPt.getFirst().length + "。" );
+                            Log.i( m_CurClsNameStrPt, "从接收输出帧链表取出一个有语音活动的PCM格式输出帧，帧的数据长度：" + p_TmpOutputFramePt.length + "。" );
                         }
                         else //如果接收音频输出数据帧的链表为空，或第一个音频输出数据帧为无语音活动。
                         {
@@ -720,18 +725,13 @@ class MyAudioProcThread extends AudioProcThread
                     }
                     case 1: //如果使用Speex编解码器。
                     {
-                        if( ( m_RecvOutputFrameLnkLstPt.size() > 0 ) && ( m_RecvOutputFrameLnkLstPt.getFirst().length > 0 ) ) //如果接收输出帧链表的第一个输出帧为有语音活动。
+                        if( ( p_TmpOutputFramePt != null ) && ( p_TmpOutputFramePt.length > 0 ) ) //如果接收输出帧链表的第一个输出帧为有语音活动。
                         {
-                            p_TmpOutputFramePt = m_RecvOutputFrameLnkLstPt.getFirst(); //获取接收输出帧链表的第一个输出帧。
-
-                            for( m_TmpInt32 = 0; m_TmpInt32 < p_TmpOutputFramePt.length; m_TmpInt32++ )
-                            {
-                                SpeexOutputFramePt[m_TmpInt32] = p_TmpOutputFramePt[m_TmpInt32];
-                            }
+                            System.arraycopy( p_TmpOutputFramePt, 0, SpeexOutputFramePt, 0, p_TmpOutputFramePt.length );
 
                             SpeexOutputFrameLenPt.m_Val = p_TmpOutputFramePt.length;
 
-                            Log.i( m_CurClsNameStrPt, "从接收输出帧链表取出一个有语音活动的Speex格式输出帧，帧的数据长度：" + m_RecvOutputFrameLnkLstPt.getFirst().length + "。" );
+                            Log.i( m_CurClsNameStrPt, "从接收输出帧链表取出一个有语音活动的Speex格式输出帧，帧的数据长度：" + p_TmpOutputFramePt.length + "。" );
                         }
                         else //如果接收音频输出数据帧的链表为空，或第一个音频输出数据帧为无语音活动。
                         {
@@ -742,12 +742,6 @@ class MyAudioProcThread extends AudioProcThread
 
                         break;
                     }
-                }
-
-                //删除接收输出帧链表的第一个输出帧。
-                if( m_RecvOutputFrameLnkLstPt.size() > 0 )
-                {
-                    m_RecvOutputFrameLnkLstPt.removeFirst();
                 }
 
                 break;
@@ -855,58 +849,13 @@ public class MainActivity extends AppCompatActivity
     MyAudioProcThread m_MyAudioProcThreadPt; //存放音频处理线程类对象的内存指针。
     MainActivityHandler m_MainActivityHandlerPt; //存放主界面消息处理类对象的内存指针。
 
+    String m_ExternalDirFullPathStrPt; //存放扩展目录绝对路径字符串的内存指针。
+
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
         super.onCreate( savedInstanceState );
-/*
-        AudioProcessThread.m_pclApplicationContext = getApplicationContext();
 
-        int p_Result;
-        SpeexPproc p_SpeexPprocPt = new SpeexPproc();
-        SpeexAec p_SpeexAec = new SpeexAec();
-        WebRtcNsx p_WebRtcNsx = new WebRtcNsx();
-        WebRtcNs p_WebRtcNs = new WebRtcNs();
-        RNNoise p_RNNoise = new RNNoise();
-        SpeexEncoder asd = new SpeexEncoder();
-        SpeexDecoder qwe = new SpeexDecoder();
-        short PcmFrameObj[] = new short[320];
-        short PcmResultFrameObj[] = new short[320];
-        byte SpeexFrameObj[] = new byte[320];
-        HTInt VoiceActStsObj = new HTInt(  );
-        HTLong SpeexFrameLenObj = new HTLong(  );
-        HTInt IsNeedTransObj = new HTInt(  );
-
-        for( p_Result = 0; p_Result < PcmFrameObj.length; p_Result++ )
-            PcmFrameObj[p_Result] = ( short )( p_Result * 10 );
-
-        p_Result = p_SpeexPprocPt.Init( 16000, 320,
-                1, -32768,
-                0,
-                0, 80, 65,
-                0, 32767, 32768, -32768, 32768,
-                0, 0, 0, 0, 0 );
-        p_Result = p_SpeexAec.Init( 16000, 320, 500 );
-        p_Result = p_WebRtcNsx.Init( 16000, 320, 3 );
-        p_Result = p_WebRtcNs.Init( 16000, 320, 3 );
-        p_Result = p_RNNoise.Init( 16000, 320 );
-        p_Result = asd.Init( 16000, 0, 10, 10, 100 );
-        p_Result = qwe.Init( 16000, 1 );
-
-        p_Result = p_SpeexPprocPt.Proc( PcmFrameObj, PcmResultFrameObj, VoiceActStsObj );
-        p_Result = p_WebRtcNsx.Proc( PcmFrameObj, PcmResultFrameObj );
-        p_Result = p_WebRtcNs.Proc( PcmFrameObj, PcmResultFrameObj );
-        p_Result = p_RNNoise.Proc( PcmFrameObj, PcmResultFrameObj );
-        p_Result = asd.Proc( PcmFrameObj, SpeexFrameObj, SpeexFrameObj.length, SpeexFrameLenObj, IsNeedTransObj );
-        p_Result = qwe.Proc( SpeexFrameObj, SpeexFrameLenObj.m_i64Value, PcmFrameObj );
-
-        p_Result = p_SpeexPprocPt.Destroy();
-        p_Result = p_WebRtcNsx.Destroy();
-        p_Result = p_WebRtcNs.Destroy();
-        p_Result = p_RNNoise.Destroy();
-        p_Result = asd.Destroy();
-        p_Result = qwe.Destroy();
-*/
         LayoutInflater layoutInflater = LayoutInflater.from( this );
         m_LyotActivityMainViewPt = layoutInflater.inflate( R.layout.activity_main, null );
         m_LyotActivitySettingViewPt = layoutInflater.inflate( R.layout.activity_setting, null );
@@ -927,8 +876,17 @@ public class MainActivity extends AppCompatActivity
 
         m_MainActivityPt = this;
 
-        //请求录音权限、网络权限、唤醒锁权限。
-        ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET, Manifest.permission.WAKE_LOCK}, 1 );
+        //检测并请求录音权限。
+        if( ContextCompat.checkSelfPermission( this, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED )
+            ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.RECORD_AUDIO}, 1 );
+
+        //检测并请求网络权限。
+        if( ContextCompat.checkSelfPermission( this, Manifest.permission.INTERNET ) != PackageManager.PERMISSION_GRANTED )
+            ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.INTERNET}, 1 );
+
+        //检测并请求唤醒锁权限。
+        if( ContextCompat.checkSelfPermission( this, Manifest.permission.WAKE_LOCK ) != PackageManager.PERMISSION_GRANTED )
+            ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.WAKE_LOCK}, 1 );
 
         //初始化消息处理类对象。
         m_MainActivityHandlerPt = new MainActivityHandler();
@@ -971,6 +929,159 @@ public class MainActivity extends AppCompatActivity
 
         //设置端口控件的内容。
         ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.PortEdit ) ).setText( "12345" );
+
+        //获取扩展目录绝对路径字符串。
+        if( getExternalFilesDir( null ) != null )
+        {
+            m_ExternalDirFullPathStrPt = getExternalFilesDir( null ).getPath();
+        }
+        else
+        {
+            m_ExternalDirFullPathStrPt = Environment.getExternalStorageDirectory().getPath() + "/Android/data/" + getApplicationContext().getPackageName();
+        }
+
+        //测试代码。
+        /*m_MyAudioProcThreadPt.m_AppContextPt = getApplicationContext();
+
+        String p_AudioInputFileFullPathStrPt = m_ExternalDirFullPathStrPt + "/AudioInput.wav";
+        String p_AudioOutputFileFullPathStrPt = m_ExternalDirFullPathStrPt + "/AudioOutput.wav";
+        String p_AudioResultFileFullPathStrPt = m_ExternalDirFullPathStrPt + "/AudioResult.wav";
+        int p_SamplingRate = 16000;
+        int p_FrameLen = 320;
+
+        int p_Result;
+        HTShort NumChanlPt = new HTShort();
+        HTInt SamplingRatePt = new HTInt();
+        HTInt SamplingBitPt = new HTInt();
+        WaveFileReader p_AudioInputWaveFileReaderPt = new WaveFileReader();
+        WaveFileReader p_AudioOutputWaveFileReaderPt = new WaveFileReader();
+        WaveFileWriter p_AudioResultWaveFileWriterPt = new WaveFileWriter();
+        SpeexAec p_SpeexAecPt = new SpeexAec();
+        SpeexPproc p_SpeexPprocPt = new SpeexPproc();
+        SpeexPproc p_SpeexPprocOtherPt = new SpeexPproc();
+        WebRtcAecm p_WebRtcAecmPt = new WebRtcAecm();
+        WebRtcAec p_WebRtcAecPt = new WebRtcAec();
+        SpeexWebRtcAec p_SpeexWebRtcAecPt = new SpeexWebRtcAec();
+        WebRtcNsx p_WebRtcNsx = new WebRtcNsx();
+        WebRtcNs p_WebRtcNs = new WebRtcNs();
+        RNNoise p_RNNoise = new RNNoise();
+        SpeexEncoder p_SpeexEncoderPt = new SpeexEncoder();
+        SpeexDecoder p_SpeexDecoderPt = new SpeexDecoder();
+        short p_PcmInputFramePt[] = new short[p_FrameLen];
+        short p_PcmOutputFramePt[] = new short[p_FrameLen];
+        short p_PcmSwapFramePt[];
+        short p_PcmResultFramePt[] = new short[p_FrameLen];
+        HTLong DataLenPt = new HTLong();
+        byte p_SpeexFramePt[] = new byte[p_FrameLen];
+        HTInt p_VoiceActStsPt = new HTInt();
+        HTLong SpeexFrameLenObj = new HTLong();
+        HTInt IsNeedTransObj = new HTInt();
+        long p_FrameTotal; //帧总数。
+
+        p_Result = p_AudioInputWaveFileReaderPt.Init( ( p_AudioInputFileFullPathStrPt + "\0" ).getBytes(), NumChanlPt, SamplingRatePt, SamplingBitPt );
+        p_Result = p_AudioOutputWaveFileReaderPt.Init( ( p_AudioOutputFileFullPathStrPt + "\0" ).getBytes(), NumChanlPt, SamplingRatePt, SamplingBitPt );
+        p_Result = p_AudioResultWaveFileWriterPt.Init( ( p_AudioResultFileFullPathStrPt + "\0" ).getBytes(), NumChanlPt.m_Val, SamplingRatePt.m_Val, SamplingBitPt.m_Val );
+
+        p_Result = p_SpeexAecPt.Init( p_SamplingRate, p_FrameLen, 500 );
+        p_Result = p_SpeexPprocPt.Init( p_SamplingRate, p_FrameLen,
+                1, -32768,
+                0,
+                0, 98, 98,
+                0, 32767, 32768, -32768, 32768,
+                1, p_SpeexAecPt.GetSpeexAecPt(), 3.0f, 0.6f, -32768, -32768 );
+        p_Result = p_SpeexPprocOtherPt.Init( p_SamplingRate, p_FrameLen,
+                0, -32768,
+                0,
+                1, 98, 98,
+                1, 32767, 32768, -32768, 32768,
+                0, p_SpeexAecPt.GetSpeexAecPt(), 3.0f, 0.6f, -32768, -32768 );
+        p_Result = p_WebRtcAecmPt.Init( p_SamplingRate, p_FrameLen, 0, 4, 0 );
+        p_Result = p_WebRtcAecPt.Init( p_SamplingRate, p_FrameLen, 2, 20, 1, 1 );
+        p_Result = p_SpeexWebRtcAecPt.Init( p_SamplingRate, p_FrameLen, 3,
+                500, 3.0f, 0.6f, -32768, -32768,
+                0, 4, 0,
+                2, 20, 1, 1 );
+        p_Result = p_WebRtcNsx.Init( p_SamplingRate, p_FrameLen, 3 );
+        p_Result = p_WebRtcNs.Init( p_SamplingRate, p_FrameLen, 3 );
+        p_Result = p_RNNoise.Init( p_SamplingRate, p_FrameLen );
+        p_Result = p_SpeexEncoderPt.Init( p_SamplingRate, 0, 10, 10, 100 );
+        p_Result = p_SpeexDecoderPt.Init( p_SamplingRate, 1 );
+
+        for( p_FrameTotal = 0; ; p_FrameTotal++ )
+        {
+            if( p_AudioInputWaveFileReaderPt.ReadData( p_PcmInputFramePt, p_PcmInputFramePt.length, DataLenPt ) != 0 )
+                break;
+            if( DataLenPt.m_Val != p_PcmInputFramePt.length ) break;
+
+            if( p_AudioOutputWaveFileReaderPt.ReadData( p_PcmOutputFramePt, p_PcmOutputFramePt.length, DataLenPt ) != 0 )
+                break;
+            if( DataLenPt.m_Val != p_PcmOutputFramePt.length ) break;
+
+            /*p_Result = p_SpeexAecPt.Proc( p_PcmInputFramePt, p_PcmOutputFramePt, p_PcmResultFramePt );
+            p_PcmSwapFramePt = p_PcmInputFramePt;
+            p_PcmInputFramePt = p_PcmResultFramePt;
+            p_PcmResultFramePt = p_PcmSwapFramePt;*/
+
+            /*p_Result = p_SpeexPprocPt.Proc( p_PcmInputFramePt, p_PcmResultFramePt, p_VoiceActStsPt );
+            p_PcmSwapFramePt = p_PcmInputFramePt;
+            p_PcmInputFramePt = p_PcmResultFramePt;
+            p_PcmResultFramePt = p_PcmSwapFramePt;*/
+
+            /*p_Result = p_WebRtcAecmPt.Proc( p_PcmInputFramePt, p_PcmOutputFramePt, p_PcmResultFramePt );
+            p_PcmSwapFramePt = p_PcmInputFramePt;
+            p_PcmInputFramePt = p_PcmResultFramePt;
+            p_PcmResultFramePt = p_PcmSwapFramePt;*/
+
+            /*p_Result = p_WebRtcAecPt.Proc( p_PcmInputFramePt, p_PcmOutputFramePt, p_PcmResultFramePt );
+            p_PcmSwapFramePt = p_PcmInputFramePt;
+            p_PcmInputFramePt = p_PcmResultFramePt;
+            p_PcmResultFramePt = p_PcmSwapFramePt;*/
+
+            /*p_Result = p_SpeexWebRtcAecPt.Proc( p_PcmInputFramePt, p_PcmOutputFramePt, p_PcmResultFramePt );
+            p_PcmSwapFramePt = p_PcmInputFramePt;
+            p_PcmInputFramePt = p_PcmResultFramePt;
+            p_PcmResultFramePt = p_PcmSwapFramePt;*/
+
+            /*p_Result = p_WebRtcNsx.Proc( p_PcmInputFramePt, p_PcmResultFramePt );
+            p_PcmSwapFramePt = p_PcmInputFramePt;
+            p_PcmInputFramePt = p_PcmResultFramePt;
+            p_PcmResultFramePt = p_PcmSwapFramePt;*/
+
+            /*p_Result = p_WebRtcNs.Proc( p_PcmInputFramePt, p_PcmResultFramePt );
+            p_PcmSwapFramePt = p_PcmInputFramePt;
+            p_PcmInputFramePt = p_PcmResultFramePt;
+            p_PcmResultFramePt = p_PcmSwapFramePt;*/
+
+            /*p_Result = p_RNNoise.Proc( p_PcmInputFramePt, p_PcmResultFramePt );
+            p_PcmSwapFramePt = p_PcmInputFramePt;
+            p_PcmInputFramePt = p_PcmResultFramePt;
+            p_PcmResultFramePt = p_PcmSwapFramePt;*/
+
+            /*p_Result = p_SpeexPprocOtherPt.Proc( p_PcmInputFramePt, p_PcmResultFramePt, p_VoiceActStsPt );
+            if( p_VoiceActStsPt.m_Val == 0 ) Arrays.fill( p_PcmResultFramePt, ( short ) 0 );
+            p_PcmSwapFramePt = p_PcmInputFramePt;
+            p_PcmInputFramePt = p_PcmResultFramePt;
+            p_PcmResultFramePt = p_PcmSwapFramePt;*/
+
+            /*p_Result = p_SpeexEncoderPt.Proc( p_PcmInputFramePt, p_SpeexFramePt, p_SpeexFramePt.length, SpeexFrameLenObj, IsNeedTransObj );
+            p_Result = p_SpeexDecoderPt.Proc( p_SpeexFramePt, SpeexFrameLenObj.m_Val, p_PcmInputFramePt );*/
+
+            /*if( p_AudioResultWaveFileWriterPt.WriteData( p_PcmInputFramePt, p_PcmInputFramePt.length ) != 0 )
+                break;
+        }
+
+        p_Result = p_SpeexAecPt.Destroy();
+        p_Result = p_SpeexPprocPt.Destroy();
+        p_Result = p_WebRtcAecmPt.Destroy();
+        p_Result = p_WebRtcAecPt.Destroy();
+        p_Result = p_WebRtcNsx.Destroy();
+        p_Result = p_WebRtcNs.Destroy();
+        p_Result = p_RNNoise.Destroy();
+        p_Result = p_SpeexEncoderPt.Destroy();
+        p_Result = p_SpeexDecoderPt.Destroy();
+        p_Result = p_AudioInputWaveFileReaderPt.Destroy();
+        p_Result = p_AudioOutputWaveFileReaderPt.Destroy();
+        p_Result = p_AudioResultWaveFileWriterPt.Destroy();*/
     }
 
     //返回键。
@@ -1009,6 +1120,7 @@ public class MainActivity extends AppCompatActivity
     public void OnClickCreateSrvrAndConnectSrvr( View BtnPt )
     {
         int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+
 
         out:
         {
@@ -1077,7 +1189,7 @@ public class MainActivity extends AppCompatActivity
                         m_MyAudioProcThreadPt.SetUseSpeexAec(
                                 Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).getText().toString() ),
                                 ( ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsSaveMemFileCheckBox ) ).isChecked() ) ? 1 : 0,
-                                Environment.getExternalStorageDirectory() + "/SpeexAecMemory"
+                                m_ExternalDirFullPathStrPt + "/SpeexAecMemory"
                         );
                     }
                     catch( NumberFormatException e )
@@ -1116,7 +1228,7 @@ public class MainActivity extends AppCompatActivity
                                 ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgnosticModeCheckBox ) ).isChecked() ) ? 1 : 0,
                                 ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCheckBox ) ).isChecked() ) ? 1 : 0,
                                 ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCheckBox ) ).isChecked() ) ? 1 : 0,
-                                Environment.getExternalStorageDirectory() + "/WebRtcAecMemory"
+                                m_ExternalDirFullPathStrPt + "/WebRtcAecMemory"
                         );
                     }
                     catch( NumberFormatException e )
@@ -1137,6 +1249,7 @@ public class MainActivity extends AppCompatActivity
                                                 ( ( RadioButton ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRadioBtn ) ).isChecked() ? 3 : 0,
                                 Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdit ) ).getText().toString() ),
                                 Float.parseFloat( ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMultipleEdit ) ).getText().toString() ),
+                                Float.parseFloat( ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoContEdit ) ).getText().toString() ),
                                 Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesEdit ) ).getText().toString() ),
                                 Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesActEdit ) ).getText().toString() ),
                                 ( ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmIsUseCNGModeCheckBox ) ).isChecked() ) ? 1 : 0,
@@ -1172,6 +1285,7 @@ public class MainActivity extends AppCompatActivity
                                 ( ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).isChecked() ) ? 1 : 0,
                                 ( ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseRecCheckBox ) ).isChecked() ) ? 1 : 0,
                                 Float.parseFloat( ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocEchoMultipleEdit ) ).getText().toString() ),
+                                Float.parseFloat( ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocEchoContEdit ) ).getText().toString() ),
                                 Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocEchoSupesEdit ) ).getText().toString() ),
                                 Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocEchoSupesActEdit ) ).getText().toString() )
                         );
@@ -1312,24 +1426,12 @@ public class MainActivity extends AppCompatActivity
                 //判断是否保存音频到文件。
                 if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).isChecked() )
                 {
-                    if( getExternalFilesDir( null ) != null )
-                    {
-                        m_MyAudioProcThreadPt.SetSaveAudioToFile(
-                                1,
-                                getExternalFilesDir( null ) + "/AudioInput.wav",
-                                getExternalFilesDir( null ) + "/AudioOutput.wav",
-                                getExternalFilesDir( null ) + "/AudioResult.wav"
-                        );
-                    }
-                    else
-                    {
-                        m_MyAudioProcThreadPt.SetSaveAudioToFile(
-                                1,
-                                Environment.getExternalStorageDirectory().getPath() + "/Android/data/" + getApplicationContext().getPackageName() + "/files/AudioInput.wav",
-                                Environment.getExternalStorageDirectory().getPath() + "/Android/data/" + getApplicationContext().getPackageName() + "/files/AudioOutput.wav",
-                                Environment.getExternalStorageDirectory().getPath() + "/Android/data/" + getApplicationContext().getPackageName() + "/files/AudioResult.wav"
-                        );
-                    }
+                    m_MyAudioProcThreadPt.SetSaveAudioToFile(
+                            1,
+                            m_ExternalDirFullPathStrPt + "/AudioInput.wav",
+                            m_ExternalDirFullPathStrPt + "/AudioOutput.wav",
+                            m_ExternalDirFullPathStrPt + "/AudioResult.wav"
+                    );
                 }
 
                 m_MyAudioProcThreadPt.start();
@@ -1425,7 +1527,7 @@ public class MainActivity extends AppCompatActivity
     //Speex声学回音消除器设置界面的删除内存块文件按钮。
     public void OnClickSpeexAecDelMemFile( View BtnPt )
     {
-        String p_pclSpeexAecMemoryFullPath = Environment.getExternalStorageDirectory() + "/SpeexAecMemory";
+        String p_pclSpeexAecMemoryFullPath = m_ExternalDirFullPathStrPt + "/SpeexAecMemory";
         File file = new File( p_pclSpeexAecMemoryFullPath );
         if( file.exists() )
         {
@@ -1475,7 +1577,7 @@ public class MainActivity extends AppCompatActivity
     //WebRtc浮点版声学回音消除器设置界面的删除内存块文件按钮。
     public void OnClickWebRtcAecDelMemFile( View BtnPt )
     {
-        String p_pclWebRtcAecMemoryFullPath = Environment.getExternalStorageDirectory() + "/WebRtcAecMemory";
+        String p_pclWebRtcAecMemoryFullPath = m_ExternalDirFullPathStrPt + "/WebRtcAecMemory";
         File file = new File( p_pclWebRtcAecMemoryFullPath );
         if( file.exists() )
         {

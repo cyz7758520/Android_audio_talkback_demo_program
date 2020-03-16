@@ -5,7 +5,7 @@ import HeavenTao.Data.*;
 //Wave文件读取器类。
 public class WaveFileReader
 {
-    private long m_pvPoint; //存放Wave文件读取器的内存指针。
+    private long m_WaveFileReaderPt; //存放Wave文件读取器的内存指针。
 
     static
     {
@@ -16,27 +16,27 @@ public class WaveFileReader
     //构造函数。
     public WaveFileReader()
     {
-        m_pvPoint = 0;
+        m_WaveFileReaderPt = 0;
     }
 
     //析构函数。
     public void finalize()
     {
-        Destory();
+        Destroy();
     }
 
     //获取Wave文件读取器的内存指针。
-    public long GetPoint()
+    public long GetWaveFileReaderPt()
     {
-        return m_pvPoint;
+        return m_WaveFileReaderPt;
     }
 
     //创建并初始化Wave文件读取器。
-    public native long Init( byte pszi8WaveFileFullPath[], short i16NumChannel, int i32SamplingRate, int i32SamplingBit );
+    public native int Init( byte WaveFileFullPathStrPt[], HTShort NumChanlPt, HTInt SamplingRatePt, HTInt SamplingBitPt );
 
     //用Wave文件读取器读取数据。
-    public native long WriteData( short pszi16Data[], int i32DataLength );
+    public native int ReadData( short DataPt[], long DataSz, HTLong DataLenPt );
 
     //销毁Wave文件读取器。
-    public native long Destory();
+    public native int Destroy();
 }
