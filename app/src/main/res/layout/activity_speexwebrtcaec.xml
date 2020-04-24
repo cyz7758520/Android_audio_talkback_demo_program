@@ -286,6 +286,22 @@
             android:text="WebRtc浮点版声学回音消除器使用回音延迟不可知模式" />
 
         <CheckBox
+            android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:checked="true"
+            android:gravity="center_vertical"
+            android:text="WebRtc浮点版声学回音消除器使用扩展滤波器模式" />
+
+        <CheckBox
+            android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:checked="false"
+            android:gravity="center_vertical"
+            android:text="WebRtc浮点版声学回音消除器使用精制滤波器自适应Aec模式" />
+
+        <CheckBox
             android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

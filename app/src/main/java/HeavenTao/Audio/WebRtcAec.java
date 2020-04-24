@@ -33,7 +33,7 @@ public class WebRtcAec
     }
 
     //创建并初始化WebRtc浮点版声学回音消除器。
-    public native int Init( int SamplingRate, int FrameLen, int EchoMode, int Delay, int IsUseDelayAgnosticMode, int IsUseAdaptAdjDelay );
+    public native int Init( int SamplingRate, int FrameLen, int EchoMode, int Delay, int IsUseDelayAgnosticMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay );
 
     //根据WebRtc浮点版声学回音消除器内存块来创建并初始化WebRtc浮点版声学回音消除器。
     public native int InitFromMem( byte WebRtcAecMemPt[], long WebRtcAecMemLen );

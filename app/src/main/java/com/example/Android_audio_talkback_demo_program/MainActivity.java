@@ -32,6 +32,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -996,11 +997,11 @@ public class MainActivity extends AppCompatActivity
                 1, 32767, 32768, -32768, 32768,
                 0, p_SpeexAecPt.GetSpeexAecPt(), 3.0f, 0.6f, -32768, -32768 );
         p_Result = p_WebRtcAecmPt.Init( p_SamplingRate, p_FrameLen, 0, 4, 0 );
-        p_Result = p_WebRtcAecPt.Init( p_SamplingRate, p_FrameLen, 2, 20, 1, 1 );
+        p_Result = p_WebRtcAecPt.Init( p_SamplingRate, p_FrameLen, 2, 20, 1, 1, 0, 1 );
         p_Result = p_SpeexWebRtcAecPt.Init( p_SamplingRate, p_FrameLen, 3,
                 500, 3.0f, 0.6f, -32768, -32768,
                 0, 4, 0,
-                2, 20, 1, 1 );
+                2, 20, 1, 1, 0, 1 );
         p_Result = p_WebRtcNsx.Init( p_SamplingRate, p_FrameLen, 3 );
         p_Result = p_WebRtcNs.Init( p_SamplingRate, p_FrameLen, 3 );
         p_Result = p_RNNoise.Init( p_SamplingRate, p_FrameLen );
@@ -1226,6 +1227,8 @@ public class MainActivity extends AppCompatActivity
                                 Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecEchoModeEdit ) ).getText().toString() ),
                                 Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecDelayEdit ) ).getText().toString() ),
                                 ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgnosticModeCheckBox ) ).isChecked() ) ? 1 : 0,
+                                ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseExtdFilterModeCheckBox ) ).isChecked() ) ? 1 : 0,
+                                ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).isChecked() ) ? 1 : 0,
                                 ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCheckBox ) ).isChecked() ) ? 1 : 0,
                                 ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCheckBox ) ).isChecked() ) ? 1 : 0,
                                 m_ExternalDirFullPathStrPt + "/WebRtcAecMemory"
@@ -1258,6 +1261,8 @@ public class MainActivity extends AppCompatActivity
                                 Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecEchoModeEdit ) ).getText().toString() ),
                                 Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecDelayEdit ) ).getText().toString() ),
                                 ( ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticModeCheckBox ) ).isChecked() ) ? 1 : 0,
+                                ( ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCheckBox ) ).isChecked() ) ? 1 : 0,
+                                ( ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).isChecked() ) ? 1 : 0,
                                 ( ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox ) ).isChecked() ) ? 1 : 0
                         );
                     }

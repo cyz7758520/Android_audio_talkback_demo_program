@@ -77,6 +77,22 @@
             android:text="使用回音延迟不可知模式" />
 
         <CheckBox
+            android:id="@+id/WebRtcAecIsUseExtdFilterModeCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:checked="true"
+            android:gravity="center_vertical"
+            android:text="使用扩展滤波器模式" />
+
+        <CheckBox
+            android:id="@+id/WebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:checked="false"
+            android:gravity="center_vertical"
+            android:text="使用精制滤波器自适应Aec模式" />
+
+        <CheckBox
             android:id="@+id/WebRtcAecIsUseAdaptAdjDelayCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
