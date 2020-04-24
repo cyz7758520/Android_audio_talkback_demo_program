@@ -604,6 +604,9 @@ public abstract class AudioProcThread extends Thread
 
                 m_ExitCode = -1; //先将本线程退出代码预设为初始化失败，如果初始化失败，这个退出代码就不用再设置了，如果初始化成功，再设置为成功的退出代码。
 
+                if( m_IsPrintLogcat != 0 )
+                    Log.i( m_CurClsNameStrPt, "音频处理线程：本地代码的指令集的名称（CPU类型+ ABI约定）为" + android.os.Build.CPU_ABI + "。" );
+
                 //初始化唤醒锁类对象。
                 if( m_IsUseWakeLock != 0 )
                 {
