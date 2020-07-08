@@ -36,13 +36,19 @@ public class WebRtcAec
     public native int Init( int SamplingRate, int FrameLen, int EchoMode, int Delay, int IsUseDelayAgnosticMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay );
 
     //根据WebRtc浮点版声学回音消除器内存块来创建并初始化WebRtc浮点版声学回音消除器。
-    public native int InitFromMem( byte WebRtcAecMemPt[], long WebRtcAecMemLen );
+    public native int InitByMem( byte WebRtcAecMemPt[], long WebRtcAecMemLen );
+
+    //根据WebRtc浮点版声学回音消除器内存块文件来创建并初始化WebRtc浮点版声学回音消除器。
+    public native int InitByMemFile( int SamplingRate, int FrameLen, int EchoMode, int Delay, int IsUseDelayAgnosticMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, byte WebRtcAecMemFileFullPathStrPt[] );
 
     //获取WebRtc浮点版声学回音消除器内存块的数据长度。
     public native int GetMemLen( HTLong WebrtcAecMemLenPt );
 
     //获取WebRtc浮点版声学回音消除器的内存块。
     public native int GetMem( byte WebRtcAecMemPt[], long WebRtcAecMemSz );
+
+    //将WebRtc浮点版声学回音消除器内存块保存到指定的文件。
+    public native int SaveMemFile( int SamplingRate, int FrameLen, int EchoMode, int Delay, int IsUseDelayAgnosticMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, byte WebRtcAecMemFileFullPathStrPt[] );
 
     //设置WebRtc浮点版声学回音消除器的回音延迟。
     public native int SetDelay( int Delay );

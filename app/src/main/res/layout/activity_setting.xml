@@ -203,12 +203,12 @@
                     android:text="Speex声学回音消除器" />
 
                 <RadioButton
-                    android:text="WebRtc定点版声学回音消除器"
                     android:id="@+id/UseWebRtcAecmRadioBtn"
-                    android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:checked="false"/>
+                    android:layout_weight="1"
+                    android:checked="false"
+                    android:text="WebRtc定点版声学回音消除器" />
 
                 <RadioButton
                     android:text="WebRtc浮点版声学回音消除器"

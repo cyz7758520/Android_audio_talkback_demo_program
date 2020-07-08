@@ -49,7 +49,26 @@ class MainActivityHandler extends Handler
 
     public void handleMessage( Message MessagePt )
     {
-        if( MessagePt.what == 1 ) //如果是音频处理线程正常退出的消息。
+        if( MessagePt.what == 1 ) //如果是音频处理线程启动的消息。
+        {
+            if( m_MainActivityPt.m_MyAudioProcThreadPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
+            {
+                ( ( EditText ) m_MainActivityPt.findViewById( R.id.IPAddrEdit ) ).setEnabled( false ); //设置IP地址控件为不可用
+                ( ( EditText ) m_MainActivityPt.findViewById( R.id.PortEdit ) ).setEnabled( false ); //设置端口控件为不可用
+                ( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtn ) ).setText( "中断" ); //设置创建服务端按钮的内容为“中断”
+                ( ( Button ) m_MainActivityPt.findViewById( R.id.ConnectSrvrBtn ) ).setEnabled( false ); //设置连接服务端按钮为不可用
+                ( ( Button ) m_MainActivityPt.findViewById( R.id.SettingBtn ) ).setEnabled( false ); //设置设置按钮为不可用
+            }
+            else //如果是创建客户端。
+            {
+                ( ( EditText ) m_MainActivityPt.findViewById( R.id.IPAddrEdit ) ).setEnabled( false ); //设置IP地址控件为不可用
+                ( ( EditText ) m_MainActivityPt.findViewById( R.id.PortEdit ) ).setEnabled( false ); //设置端口控件为不可用
+                ( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtn ) ).setEnabled( false ); //设置创建服务端按钮为不可用
+                ( ( Button ) m_MainActivityPt.findViewById( R.id.ConnectSrvrBtn ) ).setText( "中断" ); //设置连接服务端按钮的内容为“中断”
+                ( ( Button ) m_MainActivityPt.findViewById( R.id.SettingBtn ) ).setEnabled( false ); //设置设置按钮为不可用
+            }
+        }
+        else if( MessagePt.what == 2 ) //如果是音频处理线程退出的消息。
         {
             m_MainActivityPt.m_MyAudioProcThreadPt = null;
 
@@ -61,7 +80,7 @@ class MainActivityHandler extends Handler
             ( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtn ) ).setEnabled( true ); //设置创建服务端按钮为可用。
             ( ( Button ) m_MainActivityPt.findViewById( R.id.SettingBtn ) ).setEnabled( true ); //设置设置按钮为可用。
         }
-        if( MessagePt.what == 2 ) //如果是显示日志的消息。
+        else if( MessagePt.what == 3 ) //如果是显示日志的消息。
         {
             LinearLayout clLogLinearLayout = m_MainActivityPt.m_LyotActivityMainViewPt.findViewById( R.id.LogLinearLyot );
             TextView clTempTextView = new TextView( m_MainActivityPt );
@@ -107,6 +126,8 @@ class MyAudioProcThread extends AudioProcThread
 
         out:
         {
+            {Message p_MessagePt = new Message();p_MessagePt.what = 1;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送音频处理线程启动的消息。
+
             if( m_IsCreateSrvrOrClnt == 1 ) //如果是创建本地TCP协议服务端套接字接受远端TCP协议客户端套接字的连接。
             {
                 if( m_SrvrSocketPt == null ) //如果还没有创建TCP协议服务端套接字。
@@ -120,19 +141,13 @@ class MyAudioProcThread extends AudioProcThread
 
                         String p_InfoStrPt = "创建本地TCP协议服务端套接字[" + m_SrvrSocketPt.getInetAddress().getHostAddress() + ":" + m_SrvrSocketPt.getLocalPort() + "]成功。";
                         Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                        Message p_MessagePt = new Message();
-                        p_MessagePt.what = 2;
-                        p_MessagePt.obj = p_InfoStrPt;
-                        m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                     }
                     catch( IOException e )
                     {
                         String p_InfoStrPt = "创建本地TCP协议服务端套接字[" + m_IPAddrStrPt + ":" + m_Port + "]失败。原因：" + e.toString();
                         Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                        Message p_MessagePt = new Message();
-                        p_MessagePt.what = 2;
-                        p_MessagePt.obj = p_InfoStrPt;
-                        m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                         break out;
                     }
                 }
@@ -161,10 +176,7 @@ class MyAudioProcThread extends AudioProcThread
 
                         String p_InfoStrPt = "接受了远端TCP协议客户端套接字[" + m_ClntSocketPt.getInetAddress().getHostAddress() + ":" + m_ClntSocketPt.getPort() + "]与本地TCP协议客户端套接字[" + m_ClntSocketPt.getLocalAddress().getHostAddress() + ":" + m_ClntSocketPt.getLocalPort() + "]的连接。";
                         Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                        Message p_MessagePt = new Message();
-                        p_MessagePt.what = 2;
-                        p_MessagePt.obj = p_InfoStrPt;
-                        m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                         break;
                     }
 
@@ -184,19 +196,13 @@ class MyAudioProcThread extends AudioProcThread
 
                     String p_InfoStrPt = "创建本地TCP协议客户端套接字[" + m_ClntSocketPt.getLocalAddress().getHostAddress() + ":" + m_ClntSocketPt.getLocalPort() + "]与远端TCP协议服务端套接字[" + m_ClntSocketPt.getInetAddress().getHostAddress() + ":" + m_ClntSocketPt.getPort() + "]的连接成功。";
                     Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                    Message p_MessagePt = new Message();
-                    p_MessagePt.what = 2;
-                    p_MessagePt.obj = p_InfoStrPt;
-                    m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                 }
                 catch( IOException e )
                 {
-                    String p_InfoStrPt = " 创建本地TCP协议客户端套接字与远端TCP协议服务端套接字[" + m_IPAddrStrPt + ":" + m_Port + "]的连接失败。原因：" + e.getMessage();
+                    String p_InfoStrPt = "创建本地TCP协议客户端套接字与远端TCP协议服务端套接字[" + m_IPAddrStrPt + ":" + m_Port + "]的连接失败。原因：" + e.getMessage();
                     Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                    Message p_MessagePt = new Message();
-                    p_MessagePt.what = 2;
-                    p_MessagePt.obj = p_InfoStrPt;
-                    m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                     break out;
                 }
             }
@@ -251,10 +257,7 @@ class MyAudioProcThread extends AudioProcThread
 
             String p_InfoStrPt = "开始进行音频对讲。";
             Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-            Message p_MessagePt = new Message();
-            p_MessagePt.what = 2;
-            p_MessagePt.obj = p_InfoStrPt;
-            m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 
             p_Result = 0; //设置本函数执行成功。
         }
@@ -297,10 +300,7 @@ class MyAudioProcThread extends AudioProcThread
 
                         String p_InfoStrPt = "接收到一个退出包。";
                         Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                        Message p_MessagePt = new Message();
-                        p_MessagePt.what = 2;
-                        p_MessagePt.obj = p_InfoStrPt;
-                        m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 
                         break out;
                     }
@@ -394,10 +394,7 @@ class MyAudioProcThread extends AudioProcThread
             {
                 String p_InfoStrPt = "接收一个输出帧失败。原因：" + e.getMessage();
                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();
-                p_MessagePt.what = 2;
-                p_MessagePt.obj = p_InfoStrPt;
-                m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 
                 break out;
             }
@@ -422,10 +419,7 @@ class MyAudioProcThread extends AudioProcThread
                 {
                     String p_InfoStrPt = "发送一个心跳包失败。原因：" + e.getMessage();
                     Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                    Message p_MessagePt = new Message();
-                    p_MessagePt.what = 2;
-                    p_MessagePt.obj = p_InfoStrPt;
-                    m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 
                     break out;
                 }
@@ -436,10 +430,7 @@ class MyAudioProcThread extends AudioProcThread
             {
                 String p_InfoStrPt = "超过2000毫秒没有接收任何数据包，判定连接已经断开了。";
                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();
-                p_MessagePt.what = 2;
-                p_MessagePt.obj = p_InfoStrPt;
-                m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 
                 break out;
             }
@@ -472,19 +463,13 @@ class MyAudioProcThread extends AudioProcThread
 
                 String p_InfoStrPt = "发送一个退出包成功。";
                 Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();
-                p_MessagePt.what = 2;
-                p_MessagePt.obj = p_InfoStrPt;
-                m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
             }
             catch( IOException e )
             {
                 String p_InfoStrPt = "发送一个退出包失败。原因：" + e.getMessage();
                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();
-                p_MessagePt.what = 2;
-                p_MessagePt.obj = p_InfoStrPt;
-                m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
             }
         }
 
@@ -503,10 +488,7 @@ class MyAudioProcThread extends AudioProcThread
                     p_InfoStrPt = "已关闭TCP协议服务端套接字。";
                 }
                 Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();
-                p_MessagePt.what = 2;
-                p_MessagePt.obj = p_InfoStrPt;
-                m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 
                 m_SrvrSocketPt.close(); //关闭TCP协议服务端套接字。
             }
@@ -531,10 +513,7 @@ class MyAudioProcThread extends AudioProcThread
                     p_InfoStrPt = "已关闭TCP协议客户端套接字。";
                 }
                 Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();
-                p_MessagePt.what = 2;
-                p_MessagePt.obj = p_InfoStrPt;
-                m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 
                 m_ClntSocketPt.close(); //关闭TCP协议客户端套接字。
             }
@@ -571,17 +550,13 @@ class MyAudioProcThread extends AudioProcThread
         }
         else //其他情况，本线程直接退出。
         {
-            //发送本线程退出消息给主界面线程。
-            Message clMessage = new Message();
-            clMessage.what = 1;
-            m_MainActivityHandlerPt.sendMessage( clMessage );
-
+            Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage ); //向主界面发送音频处理线程退出的消息。
             return 0;
         }
     }
 
     //用户定义的读取输入帧函数，在读取到一个输入帧并处理完后回调一次，为0表示成功，为非0表示失败。
-    public int UserReadInputFrame( short PcmInputFramePt[], short PcmResultFramePt[], int VoiceActSts, byte SpeexInputFramePt[], long SpeexInputFrameLen, int SpeexInputFrameIsNeedTrans )
+    public int UserReadInputFrame( short PcmInputFramePt[], short PcmResultFramePt[], int VoiceActSts, byte SpeexInputFramePt[], HTLong SpeexInputFrameLen, HTInt SpeexInputFrameIsNeedTrans )
     {
         int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
 
@@ -607,11 +582,11 @@ class MyAudioProcThread extends AudioProcThread
                         }
                         case 1: //如果使用Speex编解码器。
                         {
-                            if( SpeexInputFrameIsNeedTrans == 1 ) //如果本Speex格式音频输入数据帧需要传输。
+                            if( SpeexInputFrameIsNeedTrans.m_Val == 1 ) //如果本Speex格式音频输入数据帧需要传输。
                             {
-                                System.arraycopy( SpeexInputFramePt, 0, m_TmpBytePt, 6, ( int ) SpeexInputFrameLen );
+                                System.arraycopy( SpeexInputFramePt, 0, m_TmpBytePt, 6, ( int ) SpeexInputFrameLen.m_Val );
 
-                                m_TmpInt32 = ( int ) SpeexInputFrameLen + 4; //预读长度 = Speex格式音频输入数据帧长度 + 时间戳长度。
+                                m_TmpInt32 = ( int ) SpeexInputFrameLen.m_Val + 4; //预读长度 = Speex格式音频输入数据帧长度 + 时间戳长度。
                             }
                             else //如果本Speex格式音频输入数据帧不需要传输。
                             {
@@ -655,10 +630,7 @@ class MyAudioProcThread extends AudioProcThread
                     {
                         String p_InfoStrPt = "发送一个输入帧失败。原因：" + e.getMessage();
                         Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                        Message p_MessagePt = new Message();
-                        p_MessagePt.what = 2;
-                        p_MessagePt.obj = p_InfoStrPt;
-                        m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                         break out;
                     }
                 }
@@ -875,8 +847,6 @@ public class MainActivity extends AppCompatActivity
         setContentView( m_LyotActivityMainViewPt ); //设置界面的内容为主界面。
         m_LyotActivityCurViewPt = m_LyotActivityMainViewPt;
 
-        m_MainActivityPt = this;
-
         //检测并请求录音权限。
         if( ContextCompat.checkSelfPermission( this, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED )
             ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.RECORD_AUDIO}, 1 );
@@ -888,6 +858,9 @@ public class MainActivity extends AppCompatActivity
         //检测并请求唤醒锁权限。
         if( ContextCompat.checkSelfPermission( this, Manifest.permission.WAKE_LOCK ) != PackageManager.PERMISSION_GRANTED )
             ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.WAKE_LOCK}, 1 );
+
+        //设置主界面类对象。
+        m_MainActivityPt = this;
 
         //初始化消息处理类对象。
         m_MainActivityHandlerPt = new MainActivityHandler();
@@ -948,7 +921,7 @@ public class MainActivity extends AppCompatActivity
         String p_AudioOutputFileFullPathStrPt = m_ExternalDirFullPathStrPt + "/AudioOutput.wav";
         String p_AudioResultFileFullPathStrPt = m_ExternalDirFullPathStrPt + "/AudioResult.wav";
         int p_SamplingRate = 16000;
-        int p_FrameLen = 320;
+        int p_FrameLen = 480;
 
         int p_Result;
         HTShort NumChanlPt = new HTShort();
@@ -992,9 +965,9 @@ public class MainActivity extends AppCompatActivity
                 1, p_SpeexAecPt.GetSpeexAecPt(), 3.0f, 0.6f, -32768, -32768 );
         p_Result = p_SpeexPprocOtherPt.Init( p_SamplingRate, p_FrameLen,
                 0, -32768,
-                0,
+                1,
                 1, 98, 98,
-                1, 32767, 32768, -32768, 32768,
+                1, 32768, 32768, -32768, 32768,
                 0, p_SpeexAecPt.GetSpeexAecPt(), 3.0f, 0.6f, -32768, -32768 );
         p_Result = p_WebRtcAecmPt.Init( p_SamplingRate, p_FrameLen, 0, 4, 0 );
         p_Result = p_WebRtcAecPt.Init( p_SamplingRate, p_FrameLen, 2, 20, 1, 1, 0, 1 );
@@ -1056,13 +1029,13 @@ public class MainActivity extends AppCompatActivity
             /*p_Result = p_RNNoise.Proc( p_PcmInputFramePt, p_PcmResultFramePt );
             p_PcmSwapFramePt = p_PcmInputFramePt;
             p_PcmInputFramePt = p_PcmResultFramePt;
-            p_PcmResultFramePt = p_PcmSwapFramePt;*/
+            p_PcmResultFramePt = p_PcmSwapFramePt;
 
-            /*p_Result = p_SpeexPprocOtherPt.Proc( p_PcmInputFramePt, p_PcmResultFramePt, p_VoiceActStsPt );
+            p_Result = p_SpeexPprocOtherPt.Proc( p_PcmInputFramePt, p_PcmResultFramePt, p_VoiceActStsPt );
             if( p_VoiceActStsPt.m_Val == 0 ) Arrays.fill( p_PcmResultFramePt, ( short ) 0 );
             p_PcmSwapFramePt = p_PcmInputFramePt;
             p_PcmInputFramePt = p_PcmResultFramePt;
-            p_PcmResultFramePt = p_PcmSwapFramePt;*/
+            p_PcmResultFramePt = p_PcmSwapFramePt;
 
             /*p_Result = p_SpeexEncoderPt.Proc( p_PcmInputFramePt, p_SpeexFramePt, p_SpeexFramePt.length, SpeexFrameLenObj, IsNeedTransObj );
             p_Result = p_SpeexDecoderPt.Proc( p_SpeexFramePt, SpeexFrameLenObj.m_Val, p_PcmInputFramePt );*/
@@ -1121,7 +1094,6 @@ public class MainActivity extends AppCompatActivity
     public void OnClickCreateSrvrAndConnectSrvr( View BtnPt )
     {
         int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
-
 
         out:
         {
@@ -1442,28 +1414,10 @@ public class MainActivity extends AppCompatActivity
                 m_MyAudioProcThreadPt.start();
 
                 Log.i( m_CurClsNameStrPt, "启动音频处理线程完毕。" );
-
-                if( BtnPt.getId() == R.id.CreateSrvrBtn )
-                {
-                    ( ( EditText ) findViewById( R.id.IPAddrEdit ) ).setEnabled( false ); //设置IP地址控件为不可用
-                    ( ( EditText ) findViewById( R.id.PortEdit ) ).setEnabled( false ); //设置端口控件为不可用
-                    ( ( Button ) findViewById( R.id.CreateSrvrBtn ) ).setText( "中断" ); //设置创建服务端按钮的内容为“中断”
-                    ( ( Button ) findViewById( R.id.ConnectSrvrBtn ) ).setEnabled( false ); //设置连接服务端按钮为不可用
-                    ( ( Button ) findViewById( R.id.SettingBtn ) ).setEnabled( false ); //设置设置按钮为不可用
-                }
-                else if( BtnPt.getId() == R.id.ConnectSrvrBtn )
-                {
-                    ( ( EditText ) findViewById( R.id.IPAddrEdit ) ).setEnabled( false ); //设置IP地址控件为不可用
-                    ( ( EditText ) findViewById( R.id.PortEdit ) ).setEnabled( false ); //设置端口控件为不可用
-                    ( ( Button ) findViewById( R.id.CreateSrvrBtn ) ).setEnabled( false ); //设置创建服务端按钮为不可用
-                    ( ( Button ) findViewById( R.id.ConnectSrvrBtn ) ).setText( "中断" ); //设置连接服务端按钮的内容为“中断”
-                    ( ( Button ) findViewById( R.id.SettingBtn ) ).setEnabled( false ); //设置设置按钮为不可用
-                }
             }
             else
             {
                 m_MyAudioProcThreadPt.RequireExit(); //请求音频处理线程退出。
-
                 try
                 {
                     Log.i( m_CurClsNameStrPt, "开始等待音频处理线程退出。" );
@@ -1472,7 +1426,6 @@ public class MainActivity extends AppCompatActivity
                 }
                 catch( InterruptedException e )
                 {
-
                 }
             }
 

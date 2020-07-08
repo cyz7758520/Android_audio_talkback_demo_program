@@ -25,26 +25,23 @@ import HeavenTao.Data.*;
 //音频处理线程类。
 public abstract class AudioProcThread extends Thread
 {
-    public String m_CurClsNameStrPt = this.getClass().getSimpleName(); //当前类名称字符串
+    public String m_CurClsNameStrPt = this.getClass().getSimpleName(); //存放当前类名称字符串。
 
-    public int m_ExitFlag = 0; //本线程退出标记，为0表示保持运行，为1表示请求退出。
-    public int m_ExitCode = 0; //本线程退出代码，为0表示正常退出，为-1表示初始化失败，为-2表示处理失败。
+    public int m_ExitFlag = 0; //存放本线程退出标记，为0表示保持运行，为1表示请求退出。
+    public int m_ExitCode = 0; //存放本线程退出代码，为0表示正常退出，为-1表示初始化失败，为-2表示处理失败。
 
     public static Context m_AppContextPt; //存放应用程序上下文类对象的内存指针。
-    public int m_SamplingRate = 16000; //采样频率，取值只能为8000、16000、32000。
-    public int m_FrameLen = 320; //帧的数据长度，单位采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960。
+    public int m_SamplingRate = 16000; //存放采样频率，取值只能为8000、16000、32000。
+    public int m_FrameLen = 320; //存放帧的数据长度，单位采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960。
 
-    public int m_IsPrintLogcat = 0; //存放是否打印Logcat日志。
+    public int m_IsPrintLogcat = 0; //存放是否打印Logcat日志，为非0表示要打印，为0表示不打印。
 
+    int m_IsUseWakeLock; //存放是否使用唤醒锁，非0表示要使用，0表示不使用。
     PowerManager.WakeLock m_ProximityScreenOffWakeLockPt; //存放接近息屏唤醒锁类对象的内存指针。
     PowerManager.WakeLock m_FullWakeLockPt; //存放屏幕键盘全亮唤醒锁类对象的内存指针。
-    int m_IsUseWakeLock; //存放是否使用唤醒锁，非0表示要使用，0表示不使用。
 
-    AudioRecord m_AudioRecordPt; //存放音频输入类对象的内存指针。
-    int m_AudioRecordBufSz; //存放音频输入类对象的缓冲区大小，单位字节。
-
-    AudioTrack m_AudioTrackPt; //存放音频输出类对象的内存指针。
-    int m_AudioTrackBufSz; //存放音频输出类对象的缓冲区大小，单位字节。
+    LinkedList< short[] > m_InputFrameLnkLstPt; //存放输入帧链表类对象的内存指针。
+    LinkedList< short[] > m_OutputFrameLnkLstPt; //存放输出帧链表类对象的内存指针。
 
     public int m_UseWhatAec = 0; //存放使用什么声学回音消除器，为0表示不使用，为1表示Speex声学回音消除器，为2表示WebRtc定点版声学回音消除器，为2表示WebRtc浮点版声学回音消除器，为4表示SpeexWebRtc三重声学回音消除器。
 
@@ -103,7 +100,7 @@ public abstract class AudioProcThread extends Thread
     WebRtcNs m_WebRtcNsPt; //存放WebRtc浮点版噪音抑制器类对象的内存指针。
     int m_WebRtcNsPolicyMode; //存放WebRtc浮点版噪音抑制器的策略模式，策略模式越高抑制越强，取值区间为[0,3]。
 
-    RNNoise m_RNNoisePt; //RNNoise噪音抑制器类对象的内存指针。
+    RNNoise m_RNNoisePt; //存放RNNoise噪音抑制器类对象的内存指针。
 
     int m_IsUseSpeexPprocOther; //存放Speex预处理器是否使用其他功能，为非0表示要使用，为0表示不使用。
     int m_SpeexPprocIsUseVad; //存放Speex预处理器是否使用语音活动检测，为非0表示要使用，为0表示不使用。
@@ -133,13 +130,14 @@ public abstract class AudioProcThread extends Thread
     String m_AudioOutputFileFullPathStrPt; //存放音频输出文件的完整路径字符串。
     String m_AudioResultFileFullPathStrPt; //存放音频结果文件的完整路径字符串。
 
-    LinkedList< short[] > m_InputFrameLnkLstPt; //存放输入帧链表类对象的内存指针。
-    LinkedList< short[] > m_OutputFrameLnkLstPt; //存放已出帧链表类对象的内存指针。
+    AudioRecord m_AudioRecordPt; //存放音频输入类对象的内存指针。
+    int m_AudioRecordBufSz; //存放音频输入类对象的缓冲区大小，单位字节。
+
+    AudioTrack m_AudioTrackPt; //存放音频输出类对象的内存指针。
+    int m_AudioTrackBufSz; //存放音频输出类对象的缓冲区大小，单位字节。
 
     AudioInputThread m_AudioInputThreadPt; //存放音频输入线程类对象的内存指针。
     AudioOutputThread m_AudioOutputThreadPt; //存放音频输出线程类对象的内存指针。
-
-    long m_HasVoiceActFrameTotal; //有语音活动帧总数。
 
     //音频输入线程类。
     private class AudioInputThread extends Thread
@@ -165,76 +163,78 @@ public abstract class AudioProcThread extends Thread
 
             //计算WebRtc定点版和浮点版声学回音消除器的回音延迟。
             {
-                HTInt pclDelay = new HTInt( 0 );
-                int p_TmpInt32;
+                HTInt p_HTIntDelay = new HTInt( 0 );
+                int p_IntDelay = 0;
 
+                //计算音频输出的延迟。
+                m_AudioTrackPt.play(); //让音频输出类对象开始播放。
+                p_TmpInputFramePt = new short[m_FrameLen]; //创建一个空输出帧。
                 p_LastDatePt = new Date();
-                p_TmpInputFramePt = new short[m_FrameLen];
-
-                //跳过刚开始读取到的空输入帧。
                 skip:
                 while( true )
                 {
-                    m_AudioRecordPt.read( p_TmpInputFramePt, 0, p_TmpInputFramePt.length );
-
-                    for( p_TmpInt32 = 0; p_TmpInt32 < p_TmpInputFramePt.length; p_TmpInt32++ )
+                    m_AudioTrackPt.write( p_TmpInputFramePt, 0, p_TmpInputFramePt.length ); //播放一个空输出帧。
+                    p_NowDatePt = new Date();
+                    p_IntDelay += m_FrameLen; //递增音频输出的延迟。
+                    if( p_NowDatePt.getTime() - p_LastDatePt.getTime() >= 10 ) //如果播放耗时较长，就表示音频输出类对象的缓冲区已经写满，结束计算。
                     {
-                        if( p_TmpInputFramePt[p_TmpInt32] != 0 )
-                            break skip;
+                        break skip;
                     }
+                    p_LastDatePt = p_NowDatePt;
                 }
+                p_IntDelay = p_IntDelay * 1000 / m_SamplingRate; //将音频输出的延迟转换为毫秒。
+                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "音频输出延迟：" + p_IntDelay + " 毫秒。" );
 
+                //计算音频输入的延迟。
+                m_AudioRecordPt.startRecording(); //让音频输入类对象开始录音。
+                p_TmpInputFramePt = new short[m_FrameLen];
+                p_LastDatePt = new Date();
+                m_AudioRecordPt.read( p_TmpInputFramePt, 0, p_TmpInputFramePt.length );
                 p_NowDatePt = new Date();
+                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "音频输入延迟：" + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒，现在启动音频输出线程，并开始音频输入循环，为了保证音频输入线程走在输出数据线程的前面。" );
 
                 m_AudioOutputThreadPt.start(); //启动音频输出线程。
 
-                if( m_IsPrintLogcat != 0 )
-                    Log.i( m_CurClsNameStrPt, "音频输入线程：" + "准备耗时：" + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒，丢弃掉刚开始读取到的空输入帧，现在启动音频输出线程，并开始音频输入循环，为了保证音频输入线程走在输出数据线程的前面。" );
-
-                p_TmpInt32 = ( int ) ( ( m_AudioTrackBufSz / 2 - m_FrameLen ) * 1000 / m_SamplingRate + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) );
-                if( ( m_WebRtcAecmPt != null ) && ( m_WebRtcAecmPt.GetDelay( pclDelay ) == 0 ) && ( pclDelay.m_Val == 0 ) ) //如果使用了WebRtc定点版声学回音消除器，且需要自适应设置回音的延迟。
+                p_IntDelay = ( int ) ( p_IntDelay + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) );
+                if( ( m_WebRtcAecmPt != null ) && ( m_WebRtcAecmPt.GetDelay( p_HTIntDelay ) == 0 ) && ( p_HTIntDelay.m_Val == 0 ) ) //如果使用了WebRtc定点版声学回音消除器，且需要自适应设置回音的延迟。
                 {
-                    m_WebRtcAecmPt.SetDelay( p_TmpInt32 / 2 );
-                    m_WebRtcAecmPt.GetDelay( pclDelay );
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频输入线程：自适应设置WebRtc定点版声学回音消除器的回音延迟为 " + pclDelay.m_Val + " 毫秒。" );
+                    m_WebRtcAecmPt.SetDelay( p_IntDelay / 2 );
+                    m_WebRtcAecmPt.GetDelay( p_HTIntDelay );
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：自适应设置WebRtc定点版声学回音消除器的回音延迟为 " + p_HTIntDelay.m_Val + " 毫秒。" );
                 }
-                if( ( m_WebRtcAecPt != null ) && ( m_WebRtcAecPt.GetDelay( pclDelay ) == 0 ) && ( pclDelay.m_Val == 0 ) ) //如果使用了WebRtc浮点版声学回音消除器，且需要自适应设置回音的延迟。
+                if( ( m_WebRtcAecPt != null ) && ( m_WebRtcAecPt.GetDelay( p_HTIntDelay ) == 0 ) && ( p_HTIntDelay.m_Val == 0 ) ) //如果使用了WebRtc浮点版声学回音消除器，且需要自适应设置回音的延迟。
                 {
                     if( m_WebRtcAecIsUseDelayAgnosticMode == 0 ) //如果WebRtc浮点版声学回音消除器不使用回音延迟不可知模式。
                     {
-                        m_WebRtcAecPt.SetDelay( p_TmpInt32 );
-                        m_WebRtcAecPt.GetDelay( pclDelay );
+                        m_WebRtcAecPt.SetDelay( p_IntDelay );
+                        m_WebRtcAecPt.GetDelay( p_HTIntDelay );
                     }
                     else //如果WebRtc浮点版声学回音消除器要使用回音延迟不可知模式。
                     {
                         m_WebRtcAecPt.SetDelay( 20 );
-                        m_WebRtcAecPt.GetDelay( pclDelay );
+                        m_WebRtcAecPt.GetDelay( p_HTIntDelay );
                     }
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频输入线程：自适应设置WebRtc浮点版声学回音消除器的回音延迟为 " + pclDelay.m_Val + " 毫秒。" );
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：自适应设置WebRtc浮点版声学回音消除器的回音延迟为 " + p_HTIntDelay.m_Val + " 毫秒。" );
                 }
-                if( ( m_SpeexWebRtcAecPt != null ) && ( m_SpeexWebRtcAecPt.GetWebRtcAecmDelay( pclDelay ) == 0 ) && ( pclDelay.m_Val == 0 ) ) //如果使用了SpeexWebRtc三重声学回音消除器，且WebRtc定点版声学回音消除器需要自适应设置回音的延迟。
+                if( ( m_SpeexWebRtcAecPt != null ) && ( m_SpeexWebRtcAecPt.GetWebRtcAecmDelay( p_HTIntDelay ) == 0 ) && ( p_HTIntDelay.m_Val == 0 ) ) //如果使用了SpeexWebRtc三重声学回音消除器，且WebRtc定点版声学回音消除器需要自适应设置回音的延迟。
                 {
-                    m_SpeexWebRtcAecPt.SetWebRtcAecmDelay( p_TmpInt32 / 2 );
-                    m_SpeexWebRtcAecPt.GetWebRtcAecmDelay( pclDelay );
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频输入线程：SpeexWebRtc三重声学回音消除器的WebRtc定点版声学回音消除器自适应设置回音延迟为 " + pclDelay.m_Val + " 毫秒。" );
+                    m_SpeexWebRtcAecPt.SetWebRtcAecmDelay( p_IntDelay / 2 );
+                    m_SpeexWebRtcAecPt.GetWebRtcAecmDelay( p_HTIntDelay );
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：自适应设置SpeexWebRtc三重声学回音消除器的WebRtc定点版声学回音消除器的回音延迟为 " + p_HTIntDelay.m_Val + " 毫秒。" );
                 }
-                if( ( m_SpeexWebRtcAecPt != null ) && ( m_SpeexWebRtcAecPt.GetWebRtcAecDelay( pclDelay ) == 0 ) && ( pclDelay.m_Val == 0 ) ) //如果使用了SpeexWebRtc三重声学回音消除器，且WebRtc浮点版声学回音消除器需要自适应设置回音的延迟。
+                if( ( m_SpeexWebRtcAecPt != null ) && ( m_SpeexWebRtcAecPt.GetWebRtcAecDelay( p_HTIntDelay ) == 0 ) && ( p_HTIntDelay.m_Val == 0 ) ) //如果使用了SpeexWebRtc三重声学回音消除器，且WebRtc浮点版声学回音消除器需要自适应设置回音的延迟。
                 {
                     if( m_SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode == 0 ) //如果SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器不使用回音延迟不可知模式。
                     {
-                        m_SpeexWebRtcAecPt.SetWebRtcAecDelay( p_TmpInt32 );
-                        m_SpeexWebRtcAecPt.GetWebRtcAecDelay( pclDelay );
+                        m_SpeexWebRtcAecPt.SetWebRtcAecDelay( p_IntDelay );
+                        m_SpeexWebRtcAecPt.GetWebRtcAecDelay( p_HTIntDelay );
                     }
                     else //如果SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器要使用回音延迟不可知模式。
                     {
                         m_SpeexWebRtcAecPt.SetWebRtcAecDelay( 20 );
-                        m_SpeexWebRtcAecPt.GetWebRtcAecDelay( pclDelay );
+                        m_SpeexWebRtcAecPt.GetWebRtcAecDelay( p_HTIntDelay );
                     }
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频输入线程：SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器自适应设置的回音延迟为 " + pclDelay.m_Val + " 毫秒。" );
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：自适应设置SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器的回音延迟为 " + p_HTIntDelay.m_Val + " 毫秒。" );
                 }
 
                 p_LastDatePt = p_NowDatePt;
@@ -252,7 +252,7 @@ public abstract class AudioProcThread extends Thread
                 if( m_IsPrintLogcat != 0 )
                 {
                     p_NowDatePt = new Date();
-                    Log.i( m_CurClsNameStrPt, "音频输入线程：读取耗时：" + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒，" + "输入帧链表元素个数：" + m_InputFrameLnkLstPt.size() + "。" );
+                    Log.i( m_CurClsNameStrPt, "音频输入线程：读取耗时 " + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒，" + "输入帧链表元素个数：" + m_InputFrameLnkLstPt.size() + "。" );
                     p_LastDatePt = p_NowDatePt;
                 }
 
@@ -264,8 +264,7 @@ public abstract class AudioProcThread extends Thread
 
                 if( m_ExitFlag == 1 ) //如果退出标记为请求退出。
                 {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频输入线程：本线程接收到退出请求，开始准备退出。" );
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：本线程接收到退出请求，开始准备退出。" );
                     break out;
                 }
             }
@@ -290,10 +289,9 @@ public abstract class AudioProcThread extends Thread
             this.setPriority( MAX_PRIORITY ); //设置本线程优先级。
             Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级。
 
-            short p_TmpOutputDataPt[];
+            short p_TmpOutputFramePt[];
             Date p_LastDatePt = null;
             Date p_NowDatePt;
-            int p_TmpInt32;
 
             if( m_IsPrintLogcat != 0 )
             {
@@ -305,7 +303,7 @@ public abstract class AudioProcThread extends Thread
             out:
             while( true )
             {
-                p_TmpOutputDataPt = new short[m_FrameLen];
+                p_TmpOutputFramePt = new short[m_FrameLen];
 
                 //调用用户定义的写入输出帧函数，并解码成PCM原始数据。
                 switch( m_UseWhatCodec ) //使用什么编解码器。
@@ -313,8 +311,7 @@ public abstract class AudioProcThread extends Thread
                     case 0: //如果使用PCM原始数据。
                     {
                         //调用用户定义的写入输出帧函数。
-                        UserWriteOutputFrame( p_TmpOutputDataPt, null, null );
-
+                        UserWriteOutputFrame( p_TmpOutputFramePt, null, null );
                         break;
                     }
                     case 1: //如果使用Speex编解码器。
@@ -326,56 +323,44 @@ public abstract class AudioProcThread extends Thread
                         UserWriteOutputFrame( null, p_SpeexOutputFramePt, p_SpeexOutputFrameLenPt );
 
                         //使用Speex解码器。
-                        if( p_SpeexOutputFrameLenPt.m_Val != 0 ) //如果本次Speex格式输出帧接收到了。
+                        if( m_SpeexDecoderPt.Proc( ( p_SpeexOutputFrameLenPt.m_Val != 0 ) ? p_SpeexOutputFramePt : null, p_SpeexOutputFrameLenPt.m_Val, p_TmpOutputFramePt ) == 0 ) //如果本次Speex格式输出帧接收到了或丢失了。
                         {
-                            p_TmpInt32 = m_SpeexDecoderPt.Proc( p_SpeexOutputFramePt, p_SpeexOutputFrameLenPt.m_Val, p_TmpOutputDataPt );
-                        }
-                        else //如果本次Speex格式输出帧丢失了。
-                        {
-                            p_TmpInt32 = m_SpeexDecoderPt.Proc( null, 0, p_TmpOutputDataPt );
-                        }
-                        if( p_TmpInt32 == 0 )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "使用Speex解码器成功。返回值：" + p_TmpInt32 );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输出线程：使用Speex解码器成功。" );
                         }
                         else
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "使用Speex解码器失败。返回值：" + p_TmpInt32 );
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频输出线程：使用Speex解码器失败。" );
                         }
                         break;
                     }
                     case 2: //如果使用Opus编解码器。
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.e( m_CurClsNameStrPt, "暂不支持使用Opus解码器。" );
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频输出线程：暂不支持使用Opus解码器。" );
                     }
                 }
 
                 //写入本次输出帧。
-                m_AudioTrackPt.write( p_TmpOutputDataPt, 0, p_TmpOutputDataPt.length );
+                m_AudioTrackPt.write( p_TmpOutputFramePt, 0, p_TmpOutputFramePt.length );
 
                 //调用用户定义的获取PCM格式输出帧函数。
-                UserGetPcmOutputFrame( p_TmpOutputDataPt );
+                UserGetPcmOutputFrame( p_TmpOutputFramePt );
 
                 if( m_IsPrintLogcat != 0 )
                 {
                     p_NowDatePt = new Date();
-                    Log.i( m_CurClsNameStrPt, "音频输出线程：写入耗时：" + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒，" + "输出帧链表元素个数：" + m_OutputFrameLnkLstPt.size() + "。" );
+                    Log.i( m_CurClsNameStrPt, "音频输出线程：写入耗时 " + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒，输出帧链表元素个数：" + m_OutputFrameLnkLstPt.size() + "。" );
                     p_LastDatePt = p_NowDatePt;
                 }
 
                 //追加本次输出帧到输出帧链表。
                 synchronized( m_OutputFrameLnkLstPt )
                 {
-                    m_OutputFrameLnkLstPt.addLast( p_TmpOutputDataPt );
+                    m_OutputFrameLnkLstPt.addLast( p_TmpOutputFramePt );
                 }
 
                 if( m_ExitFlag == 1 ) //如果退出标记为请求退出。
                 {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频输出线程：本线程接收到退出请求，开始准备退出。" );
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输出线程：本线程接收到退出请求，开始准备退出。" );
                     break out;
                 }
             }
@@ -391,7 +376,7 @@ public abstract class AudioProcThread extends Thread
 
     public abstract int UserDestroy(); //用户定义的销毁函数，在本线程退出时调用一次，返回值表示是否重新初始化，为0表示直接退出，为非0表示重新初始化。
 
-    public abstract int UserReadInputFrame( short PcmInputFramePt[], short PcmResultFramePt[], int VoiceActSts, byte SpeexInputFramePt[], long SpeexInputFrameLen, int SpeexInputFrameIsNeedTrans ); //用户定义的读取输入帧函数，在读取到一个输入帧并处理完后回调一次，为0表示成功，为非0表示失败。
+    public abstract int UserReadInputFrame( short PcmInputFramePt[], short PcmResultFramePt[], int VoiceActSts, byte SpeexInputFramePt[], HTLong SpeexInputFrameLen, HTInt SpeexInputFrameIsNeedTrans ); //用户定义的读取输入帧函数，在读取到一个输入帧并处理完后回调一次，为0表示成功，为非0表示失败。
 
     public abstract void UserWriteOutputFrame( short PcmOutputFramePt[], byte SpeexOutputFramePt[], HTLong SpeexOutputFrameLenPt ); //用户定义的写入输出帧函数，在需要写入一个输出帧时回调一次。注意：本函数不是在音频处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致回音消除失败。
 
@@ -412,7 +397,7 @@ public abstract class AudioProcThread extends Thread
         {
             //判断各个变量是否正确。
             if( ( AppContextPt == null ) || //如果上下文类对象不正确。
-                    ( SamplingRate != 8000 ) && ( SamplingRate != 16000 ) && ( SamplingRate != 32000 ) || //如果采样频率不正确。
+                    ( ( SamplingRate != 8000 ) && ( SamplingRate != 16000 ) && ( SamplingRate != 32000 ) ) || //如果采样频率不正确。
                     ( ( FrameMsLen == 0 ) || ( FrameMsLen % 10 != 0 ) ) ) //如果帧的毫秒长度不正确。
             {
                 break out;
@@ -447,11 +432,11 @@ public abstract class AudioProcThread extends Thread
     }
 
     //设置使用Speex声学回音消除器。
-    public void SetUseSpeexAec( int FilterLength, int IsSaveMemoryFile, String MemFileFullPathStrPt )
+    public void SetUseSpeexAec( int FilterLen, int IsSaveMemFile, String MemFileFullPathStrPt )
     {
         m_UseWhatAec = 1;
-        m_SpeexAecFilterLen = FilterLength;
-        m_SpeexAecIsSaveMemFile = IsSaveMemoryFile;
+        m_SpeexAecFilterLen = FilterLen;
+        m_SpeexAecIsSaveMemFile = IsSaveMemFile;
         m_SpeexAecMemFileFullPathStrPt = MemFileFullPathStrPt;
     }
 
@@ -465,7 +450,7 @@ public abstract class AudioProcThread extends Thread
     }
 
     //设置使用WebRtc浮点版声学回音消除器。
-    public void SetUseWebRtcAec( int EchoMode, int Delay, int IsUseDelayAgnosticMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptiveAdjustDelay, int IsSaveMemoryFile, String MemFileFullPathStrPt )
+    public void SetUseWebRtcAec( int EchoMode, int Delay, int IsUseDelayAgnosticMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, int IsSaveMemFile, String MemFileFullPathStrPt )
     {
         m_UseWhatAec = 3;
         m_WebRtcAecEchoMode = EchoMode;
@@ -473,17 +458,17 @@ public abstract class AudioProcThread extends Thread
         m_WebRtcAecIsUseDelayAgnosticMode = IsUseDelayAgnosticMode;
         m_WebRtcAecIsUseExtdFilterMode = IsUseExtdFilterMode;
         m_WebRtcAecIsUseRefinedFilterAdaptAecMode = IsUseRefinedFilterAdaptAecMode;
-        m_WebRtcAecIsUseAdaptAdjDelay = IsUseAdaptiveAdjustDelay;
-        m_WebRtcAecIsSaveMemFile = IsSaveMemoryFile;
+        m_WebRtcAecIsUseAdaptAdjDelay = IsUseAdaptAdjDelay;
+        m_WebRtcAecIsSaveMemFile = IsSaveMemFile;
         m_WebRtcAecMemFileFullPathStrPt = MemFileFullPathStrPt;
     }
 
     //设置使用SpeexWebRtc三重声学回音消除器。
-    public void SetUseSpeexWebRtcAec( int WorkMode, int SpeexAecFilterLength, float SpeexAecEchoMultiple, float SpeexAecEchoCont, int SpeexAecEchoSuppress, int SpeexAecEchoSuppressActive, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgnosticMode, int WebRtcAecIsUseExtdFilterMode, int WebRtcAecIsUseRefinedFilterAdaptAecMode, int WebRtcAecIsUseAdaptAdjDelay )
+    public void SetUseSpeexWebRtcAec( int WorkMode, int SpeexAecFilterLen, float SpeexAecEchoMultiple, float SpeexAecEchoCont, int SpeexAecEchoSuppress, int SpeexAecEchoSuppressActive, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgnosticMode, int WebRtcAecIsUseExtdFilterMode, int WebRtcAecIsUseRefinedFilterAdaptAecMode, int WebRtcAecIsUseAdaptAdjDelay )
     {
         m_UseWhatAec = 4;
         m_SpeexWebRtcAecWorkMode = WorkMode;
-        m_SpeexWebRtcAecSpeexAecFilterLen = SpeexAecFilterLength;
+        m_SpeexWebRtcAecSpeexAecFilterLen = SpeexAecFilterLen;
         m_SpeexWebRtcAecSpeexAecEchoMultiple = SpeexAecEchoMultiple;
         m_SpeexWebRtcAecSpeexAecEchoCont = SpeexAecEchoCont;
         m_SpeexWebRtcAecSpeexAecEchoSupes = SpeexAecEchoSuppress;
@@ -506,17 +491,17 @@ public abstract class AudioProcThread extends Thread
     }
 
     //设置使用Speex预处理器的噪音抑制。
-    public void SetUseSpeexPprocNs( int IsUseNs, int NoiseSuppress, int IsUseDereverberation, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSuppress, int EchoSuppressActive )
+    public void SetUseSpeexPprocNs( int IsUseNs, int NoiseSupes, int IsUseDereverberation, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesActive )
     {
         m_UseWhatNs = 1;
         m_SpeexPprocIsUseNs = IsUseNs;
-        m_SpeexPprocNoiseSupes = NoiseSuppress;
+        m_SpeexPprocNoiseSupes = NoiseSupes;
         m_SpeexPprocIsUseDereverb = IsUseDereverberation;
         m_SpeexPprocIsUseRec = IsUseRec;
         m_SpeexPprocEchoMultiple = EchoMultiple;
         m_SpeexPprocEchoCont = EchoCont;
-        m_SpeexPprocEchoSupes = EchoSuppress;
-        m_SpeexPprocEchoSupesAct = EchoSuppressActive;
+        m_SpeexPprocEchoSupes = EchoSupes;
+        m_SpeexPprocEchoSupesAct = EchoSupesActive;
     }
 
     //设置使用WebRtc定点版噪音抑制器。
@@ -592,368 +577,129 @@ public abstract class AudioProcThread extends Thread
         Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级。
 
         int p_TmpInt32;
-        Date p_LastDatePt;
-        Date p_NowDatePt;
+        Date p_LastDatePt = null;
+        Date p_NowDatePt = null;
+
+        short p_PcmInputFramePt[] = null; //PCM格式输入帧。
+        short p_PcmOutputFramePt[] = null; //PCM格式输出帧。
+        short p_PcmResultFramePt[] = null; //PCM格式结果帧。
+        short p_PcmTmpFramePt[] = null; //PCM格式临时帧。
+        short p_PcmSwapFramePt[] = null; //PCM格式交换帧。
+        HTInt p_VoiceActStsPt = null; //语音活动状态，1表示有语音活动，0表示无语音活动。
+        byte p_SpeexInputFramePt[] = null; //Speex格式输入帧。
+        HTLong p_SpeexInputFrameLenPt = null; //Speex格式输入帧的数据长度，单位字节。
+        HTInt p_SpeexInputFrameIsNeedTransPt = null; //Speex格式输入帧是否需要传输，1表示需要传输，0表示不需要传输，预设为1为了让在没有使用非连续传输的情况下永远都是需要传输。
 
         ReInit:
         while( true )
         {
             out:
             {
-                p_LastDatePt = new Date(); //记录初始化开始的时间。
+                if( m_IsPrintLogcat != 0 ) p_LastDatePt = new Date(); //记录初始化开始的时间。
+
+                m_ExitFlag = 0; //设置本线程退出标记为保持运行。
 
                 m_ExitCode = -1; //先将本线程退出代码预设为初始化失败，如果初始化失败，这个退出代码就不用再设置了，如果初始化成功，再设置为成功的退出代码。
 
-                if( m_IsPrintLogcat != 0 )
-                    Log.i( m_CurClsNameStrPt, "音频处理线程：本地代码的指令集的名称（CPU类型+ ABI约定）为" + android.os.Build.CPU_ABI + "。" );
+                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：本地代码的指令集名称（CPU类型+ ABI约定）为" + android.os.Build.CPU_ABI + "。" );
 
-                //初始化唤醒锁类对象。
+                //初始化接近息屏唤醒锁类对象、屏幕键盘全亮唤醒锁类对象。
                 if( m_IsUseWakeLock != 0 )
                 {
-                    //初始化接近息屏唤醒锁类对象。
                     m_ProximityScreenOffWakeLockPt = ( ( PowerManager ) m_AppContextPt.getSystemService( Activity.POWER_SERVICE ) ).newWakeLock( PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_CurClsNameStrPt );
                     if( m_ProximityScreenOffWakeLockPt != null )
                     {
                         m_ProximityScreenOffWakeLockPt.acquire();
-
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：初始化接近息屏唤醒锁类对象成功。" );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化接近息屏唤醒锁类对象成功。" );
                     }
                     else
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.e( m_CurClsNameStrPt, "音频处理线程：初始化接近息屏唤醒锁类对象失败。" );
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化接近息屏唤醒锁类对象失败。" );
                         break out;
                     }
-
-                    //初始化屏幕键盘全亮唤醒锁类对象。
                     m_FullWakeLockPt = ( ( PowerManager ) m_AppContextPt.getSystemService( Activity.POWER_SERVICE ) ).newWakeLock( PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_CurClsNameStrPt );
                     if( m_FullWakeLockPt != null )
                     {
                         m_FullWakeLockPt.acquire();
-
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：初始化屏幕键盘全亮唤醒锁类对象成功。" );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化屏幕键盘全亮唤醒锁类对象成功。" );
                     }
                     else
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.e( m_CurClsNameStrPt, "音频处理线程：初始化屏幕键盘全亮唤醒锁类对象成功。" );
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化屏幕键盘全亮唤醒锁类对象失败。" );
                         break out;
                     }
                 }
 
                 //调用用户定义的初始化函数。
-                p_TmpInt32 = UserInit();
-                if( p_TmpInt32 == 0 )
                 {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频处理线程：调用用户定义的初始化函数成功。返回值：" + p_TmpInt32 );
-                }
-                else
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：调用用户定义的初始化函数失败。返回值：" + p_TmpInt32 );
-                    break out;
-                }
-
-                //初始化音频输入类对象。
-                try
-                {
-                    m_AudioRecordBufSz = AudioRecord.getMinBufferSize( m_SamplingRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT );
-                    m_AudioRecordBufSz = ( int ) ( m_AudioRecordBufSz > m_FrameLen * 2 ? m_AudioRecordBufSz : m_FrameLen * 2 );
-                    m_AudioRecordPt = new AudioRecord(
-                            MediaRecorder.AudioSource.MIC,
-                            m_SamplingRate,
-                            AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                            AudioFormat.ENCODING_PCM_16BIT,
-                            m_AudioRecordBufSz
-                    );
-                    if( m_AudioRecordPt.getState() == AudioRecord.STATE_INITIALIZED )
+                    p_TmpInt32 = UserInit();
+                    if( p_TmpInt32 == 0 )
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：初始化音频输入类对象成功。音频输入缓冲区大小：" + m_AudioRecordBufSz );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：调用用户定义的初始化函数成功。返回值：" + p_TmpInt32 );
                     }
                     else
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.e( m_CurClsNameStrPt, "音频处理线程：初始化音频输入类对象失败。" );
-                        break out;
-                    }
-                }
-                catch( IllegalArgumentException e )
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：初始化音频输入类对象失败。原因：" + e.getMessage() );
-                    break out;
-                }
-
-                //用第一种方法初始化音频输出类对象。
-                try
-                {
-                    m_AudioTrackBufSz = m_FrameLen * 2;
-                    m_AudioTrackPt = new AudioTrack( AudioManager.STREAM_MUSIC,
-                            m_SamplingRate,
-                            AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                            AudioFormat.ENCODING_PCM_16BIT,
-                            m_AudioTrackBufSz,
-                            AudioTrack.MODE_STREAM );
-                    if( m_AudioTrackPt.getState() == AudioTrack.STATE_INITIALIZED )
-                    {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：用第一种方法初始化音频输出类对象成功。音频输出缓冲区大小：" + m_AudioTrackBufSz );
-                    }
-                    else
-                    {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.e( m_CurClsNameStrPt, "音频处理线程：用第一种方法初始化音频输出类对象失败。" );
-                        m_AudioTrackPt.release();
-                        m_AudioTrackPt = null;
-                    }
-                }
-                catch( IllegalArgumentException e )
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：用第一种方法初始化音频输出类对象失败。原因：" + e.getMessage() );
-                }
-
-                //用第二种方法初始化音频输出类对象。
-                if( m_AudioTrackPt == null )
-                {
-                    try
-                    {
-                        m_AudioTrackBufSz = AudioTrack.getMinBufferSize( m_SamplingRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT );
-                        m_AudioTrackPt = new AudioTrack( AudioManager.STREAM_MUSIC,
-                                m_SamplingRate,
-                                AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                                AudioFormat.ENCODING_PCM_16BIT,
-                                m_AudioTrackBufSz,
-                                AudioTrack.MODE_STREAM );
-                        if( m_AudioTrackPt.getState() == AudioTrack.STATE_INITIALIZED )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：用第二种方法初始化音频输出类对象成功。音频输出缓冲区大小：" + m_AudioTrackBufSz );
-                        }
-                        else
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：用第二种方法初始化音频输出类对象失败。" );
-                            break out;
-                        }
-                    }
-                    catch( IllegalArgumentException e )
-                    {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.e( m_CurClsNameStrPt, "音频处理线程：用第二种方法初始化音频输出类对象失败。原因：" + e.getMessage() );
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：调用用户定义的初始化函数失败。返回值：" + p_TmpInt32 );
                         break out;
                     }
                 }
 
-                //初始化声学回音消除器对象。
+                //初始化PCM格式输入帧、PCM格式输出帧、PCM格式结果帧、PCM格式临时帧、PCM格式交换帧、语音活动状态、Speex格式输入帧、Speex格式输入帧的数据长度、Speex格式输入帧是否需要传输。
+                {
+                    p_PcmInputFramePt = null;
+                    p_PcmOutputFramePt = null;
+                    p_PcmResultFramePt = new short[m_FrameLen];
+                    p_PcmTmpFramePt = new short[m_FrameLen];
+                    p_PcmSwapFramePt = null;
+                    p_VoiceActStsPt = new HTInt( 1 ); //语音活动状态预设为1，为了让在没有使用语音活动检测的情况下永远都是有语音活动。
+                    p_SpeexInputFramePt = ( m_UseWhatCodec == 1 ) ? new byte[m_FrameLen] : null; //Speex格式输入帧。
+                    p_SpeexInputFrameLenPt = ( m_UseWhatCodec == 1 ) ? new HTLong( 0 ) : null; //Speex格式输入帧的数据长度，单位字节。
+                    p_SpeexInputFrameIsNeedTransPt = ( m_UseWhatCodec == 1 ) ? new HTInt( 1 ) : null; //Speex格式输入帧是否需要传输，1表示需要传输，0表示不需要传输，预设为1为了让在没有使用非连续传输的情况下永远都是需要传输。
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化PCM格式输入帧、PCM格式输出帧、PCM格式结果帧、PCM格式临时帧、PCM格式交换帧、语音活动状态、Speex格式输入帧、Speex格式输入帧的数据长度、Speex格式输入帧是否需要传输成功。" );
+                }
+
+                //初始化输入帧链表类对象、输出帧链表类对象。
+                {
+                    m_InputFrameLnkLstPt = new LinkedList< short[] >();
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化输入帧链表类对象成功。" );
+                    m_OutputFrameLnkLstPt = new LinkedList< short[] >();
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化输出帧链表类对象成功。" );
+                }
+
+                //初始化声学回音消除器类对象。
                 switch( m_UseWhatAec )
                 {
                     case 0: //如果不使用声学回音消除器。
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：不使用声学回音消除器。" );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：不使用声学回音消除器。" );
                         break;
                     }
                     case 1: //如果使用Speex声学回音消除器。
                     {
-                        //读取Speex声学回音消除器的内存块到文件。
-                        if( ( m_SpeexAecIsSaveMemFile != 0 ) && ( new File( m_SpeexAecMemFileFullPathStrPt ).exists() ) )
-                        {
-                            byte p_SpeexAecMemPt[];
-                            long p_SpeexAecMemLen;
-                            FileInputStream p_SpeexAecMemFileInputStreamPt = null;
-
-                            ReadSpeexAecMemoryFile:
-                            {
-                                try
-                                {
-                                    p_SpeexAecMemFileInputStreamPt = new FileInputStream( m_SpeexAecMemFileFullPathStrPt );
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：创建Speex声学回音消除器内存块文件 " + m_SpeexAecMemFileFullPathStrPt + " 的文件输入流对象成功。" );
-                                }
-                                catch( FileNotFoundException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：创建Speex声学回音消除器内存块文件 " + m_SpeexAecMemFileFullPathStrPt + " 的文件输入流对象失败。原因：" + e.toString() );
-                                    break ReadSpeexAecMemoryFile;
-                                }
-
-                                p_SpeexAecMemPt = new byte[8];
-
-                                //读取Speex声学回音消除器内存块文件的采样频率。
-                                try
-                                {
-                                    if( p_SpeexAecMemFileInputStreamPt.read( p_SpeexAecMemPt, 0, 4 ) != 4 )
-                                    {
-                                        throw new IOException( "文件中没有采样频率。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：读取Speex声学回音消除器内存块文件的采样频率成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：读取Speex声学回音消除器内存块文件的采样频率失败。原因：" + e.toString() );
-                                    break ReadSpeexAecMemoryFile;
-                                }
-                                p_TmpInt32 = ( ( int ) p_SpeexAecMemPt[0] & 0xFF ) + ( ( ( int ) p_SpeexAecMemPt[1] & 0xFF ) << 8 ) + ( ( ( int ) p_SpeexAecMemPt[2] & 0xFF ) << 16 ) + ( ( ( int ) p_SpeexAecMemPt[3] & 0xFF ) << 24 );
-                                if( p_TmpInt32 != m_SamplingRate )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：Speex声学回音消除器内存块文件中的采样频率已被修改，需要重新初始化。" );
-                                    break ReadSpeexAecMemoryFile;
-                                }
-
-                                //读取Speex声学回音消除器内存块文件的帧数据长度。
-                                try
-                                {
-                                    if( p_SpeexAecMemFileInputStreamPt.read( p_SpeexAecMemPt, 0, 4 ) != 4 )
-                                    {
-                                        throw new IOException( "文件中没有帧的数据长度。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：读取Speex声学回音消除器内存块文件的帧数据长度成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：读取Speex声学回音消除器内存块文件的帧数据长度失败。原因：" + e.toString() );
-                                    break ReadSpeexAecMemoryFile;
-                                }
-                                p_TmpInt32 = ( ( int ) p_SpeexAecMemPt[0] & 0xFF ) + ( ( ( int ) p_SpeexAecMemPt[1] & 0xFF ) << 8 ) + ( ( ( int ) p_SpeexAecMemPt[2] & 0xFF ) << 16 ) + ( ( ( int ) p_SpeexAecMemPt[3] & 0xFF ) << 24 );
-                                if( p_TmpInt32 != m_FrameLen )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：Speex声学回音消除器内存块文件中的帧数据长度已被修改，需要重新初始化。" );
-                                    break ReadSpeexAecMemoryFile;
-                                }
-
-                                //读取Speex声学回音消除器内存块文件的滤波器数据长度。
-                                try
-                                {
-                                    if( p_SpeexAecMemFileInputStreamPt.read( p_SpeexAecMemPt, 0, 4 ) != 4 )
-                                    {
-                                        throw new IOException( "文件中没有滤波器的数据长度。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：读取Speex声学回音消除器内存块文件的滤波器数据长度成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：读取Speex声学回音消除器内存块文件的滤波器数据长度失败。原因：" + e.toString() );
-                                    break ReadSpeexAecMemoryFile;
-                                }
-                                p_TmpInt32 = ( ( int ) p_SpeexAecMemPt[0] & 0xFF ) + ( ( ( int ) p_SpeexAecMemPt[1] & 0xFF ) << 8 ) + ( ( ( int ) p_SpeexAecMemPt[2] & 0xFF ) << 16 ) + ( ( ( int ) p_SpeexAecMemPt[3] & 0xFF ) << 24 );
-                                if( p_TmpInt32 != m_SpeexAecFilterLen )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：Speex声学回音消除器内存块文件中的滤波器数据长度已被修改，需要重新初始化。" );
-                                    break ReadSpeexAecMemoryFile;
-                                }
-
-                                //跳过Speex声学回音消除器内存块文件的有语音活动帧总数。
-                                try
-                                {
-                                    if( p_SpeexAecMemFileInputStreamPt.skip( 8 ) != 8 )
-                                    {
-                                        throw new IOException( "文件中没有有语音活动帧总数。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：跳过Speex声学回音消除器内存块文件的有语音活动帧总数成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：跳过Speex声学回音消除器内存块文件的有语音活动帧总数失败。原因：" + e.toString() );
-                                    break ReadSpeexAecMemoryFile;
-                                }
-
-                                //读取Speex声学回音消除器内存块文件的内存块。
-                                try
-                                {
-                                    p_SpeexAecMemLen = p_SpeexAecMemFileInputStreamPt.available();
-                                    if( p_SpeexAecMemLen <= 0 )
-                                    {
-                                        throw new IOException( "文件中没有内存块。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：获取Speex声学回音消除器内存块文件的内存块数据长度成功。内存块数据长度：" + p_SpeexAecMemLen );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：获取Speex声学回音消除器内存块文件的内存块数据长度失败。原因：" + e.toString() );
-                                    break ReadSpeexAecMemoryFile;
-                                }
-                                p_SpeexAecMemPt = new byte[( int ) p_SpeexAecMemLen];
-                                try
-                                {
-                                    if( p_SpeexAecMemFileInputStreamPt.read( p_SpeexAecMemPt, 0, ( int ) p_SpeexAecMemLen ) != p_SpeexAecMemLen )
-                                    {
-                                        throw new IOException( "文件中没有内存块。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：读取Speex声学回音消除器内存块文件中的内存块成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：读取Speex声学回音消除器内存块文件中的内存块失败。原因：" + e.toString() );
-                                    break ReadSpeexAecMemoryFile;
-                                }
-
-                                m_SpeexAecPt = new SpeexAec();
-                                p_TmpInt32 = m_SpeexAecPt.InitFromMem( p_SpeexAecMemPt, p_SpeexAecMemLen );
-                                if( p_TmpInt32 == 0 )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：根据Speex声学回音消除器内存块来初始化Speex声学回音消除器类对象成功。返回值：" + p_TmpInt32 );
-                                }
-                                else
-                                {
-                                    m_SpeexAecPt = null;
-
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：根据Speex声学回音消除器内存块来初始化Speex声学回音消除器类对象失败，重新初始化。返回值：" + p_TmpInt32 );
-                                    break ReadSpeexAecMemoryFile;
-                                }
-                            }
-
-                            //销毁Speex声学回音消除器内存块文件的文件输入流对象。
-                            if( p_SpeexAecMemFileInputStreamPt != null )
-                            {
-                                try
-                                {
-                                    p_SpeexAecMemFileInputStreamPt.close();
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁Speex声学回音消除器内存块文件的文件输入流对象成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁Speex声学回音消除器内存块文件的文件输入流对象失败。原因：" + e.toString() );
-                                }
-                            }
-                        }
-
-                        if( m_SpeexAecPt == null )
+                        if( m_SpeexAecIsSaveMemFile != 0 )
                         {
                             m_SpeexAecPt = new SpeexAec();
-                            p_TmpInt32 = m_SpeexAecPt.Init( m_SamplingRate, m_FrameLen, m_SpeexAecFilterLen );
-                            if( p_TmpInt32 == 0 )
+                            if( m_SpeexAecPt.InitByMemFile( m_SamplingRate, m_FrameLen, m_SpeexAecFilterLen, ( m_SpeexAecMemFileFullPathStrPt + "\0" ).getBytes() ) == 0 )
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.i( m_CurClsNameStrPt, "音频处理线程：初始化Speex声学回音消除器类对象成功。返回值：" + p_TmpInt32 );
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：根据Speex声学回音消除器内存块文件 " + m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器类对象成功。" );
                             }
                             else
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.e( m_CurClsNameStrPt, "音频处理线程：初始化Speex声学回音消除器类对象失败。返回值：" + p_TmpInt32 );
+                                m_SpeexAecPt = null;
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：根据Speex声学回音消除器内存块文件 " + m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器类对象失败。" );
+                            }
+                        }
+                        if( m_SpeexAecPt == null )
+                        {
+                            m_SpeexAecPt = new SpeexAec();
+                            if( m_SpeexAecPt.Init( m_SamplingRate, m_FrameLen, m_SpeexAecFilterLen ) == 0 )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化Speex声学回音消除器类对象成功。" );
+                            }
+                            else
+                            {
+                                m_SpeexAecPt = null;
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化Speex声学回音消除器类对象失败。" );
                                 break out;
                             }
                         }
@@ -962,288 +708,44 @@ public abstract class AudioProcThread extends Thread
                     case 2: //如果使用WebRtc定点版声学回音消除器。
                     {
                         m_WebRtcAecmPt = new WebRtcAecm();
-                        p_TmpInt32 = m_WebRtcAecmPt.Init( m_SamplingRate, m_FrameLen, m_WebRtcAecmIsUseCNGMode, m_WebRtcAecmEchoMode, m_WebRtcAecmDelay );
-                        if( p_TmpInt32 == 0 )
+                        if( m_WebRtcAecmPt.Init( m_SamplingRate, m_FrameLen, m_WebRtcAecmIsUseCNGMode, m_WebRtcAecmEchoMode, m_WebRtcAecmDelay ) == 0 )
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc定点版声学回音消除器类对象成功。返回值：" + p_TmpInt32 );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc定点版声学回音消除器类对象成功。" );
                         }
                         else
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc定点版声学回音消除器类对象失败。返回值：" + p_TmpInt32 );
+                            m_WebRtcAecmPt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc定点版声学回音消除器类对象失败。" );
                             break out;
                         }
                         break;
                     }
                     case 3: //如果使用WebRtc浮点版声学回音消除器。
                     {
-                        //读取WebRtc浮点版声学回音消除器的内存块到文件。
-                        if( ( m_WebRtcAecIsSaveMemFile != 0 ) && ( new File( m_WebRtcAecMemFileFullPathStrPt ).exists() ) )
-                        {
-                            byte p_WebRtcAecMemPt[];
-                            long p_WebRtcAecMemLen;
-                            FileInputStream p_WebRtcAecMemFileInputStreamPt = null;
-
-                            ReadWebRtcAecMemoryFile:
-                            {
-                                try
-                                {
-                                    p_WebRtcAecMemFileInputStreamPt = new FileInputStream( m_WebRtcAecMemFileFullPathStrPt );
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：创建WebRtc浮点版声学回音消除器内存块文件 " + m_WebRtcAecMemFileFullPathStrPt + " 的文件输入流对象成功。" );
-                                }
-                                catch( FileNotFoundException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：创建WebRtc浮点版声学回音消除器内存块文件 " + m_WebRtcAecMemFileFullPathStrPt + " 的文件输入流对象失败。原因：" + e.toString() );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-
-                                p_WebRtcAecMemPt = new byte[8];
-
-                                //读取WebRtc浮点版声学回音消除器内存块文件的采样频率。
-                                try
-                                {
-                                    if( p_WebRtcAecMemFileInputStreamPt.read( p_WebRtcAecMemPt, 0, 4 ) != 4 )
-                                    {
-                                        throw new IOException( "文件中没有采样频率。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件的采样频率成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件的采样频率失败。原因：" + e.toString() );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-                                p_TmpInt32 = ( ( int ) p_WebRtcAecMemPt[0] & 0xFF ) + ( ( ( int ) p_WebRtcAecMemPt[1] & 0xFF ) << 8 ) + ( ( ( int ) p_WebRtcAecMemPt[2] & 0xFF ) << 16 ) + ( ( ( int ) p_WebRtcAecMemPt[3] & 0xFF ) << 24 );
-                                if( p_TmpInt32 != m_SamplingRate )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：WebRtc浮点版声学回音消除器内存块文件中的采样频率已被修改，需要重新初始化。" );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-
-                                //读取WebRtc浮点版声学回音消除器内存块文件的帧数据长度。
-                                try
-                                {
-                                    if( p_WebRtcAecMemFileInputStreamPt.read( p_WebRtcAecMemPt, 0, 4 ) != 4 )
-                                    {
-                                        throw new IOException( "文件中没有帧的数据长度。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件的帧数据长度成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件的帧数据长度失败。原因：" + e.toString() );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-                                p_TmpInt32 = ( ( int ) p_WebRtcAecMemPt[0] & 0xFF ) + ( ( ( int ) p_WebRtcAecMemPt[1] & 0xFF ) << 8 ) + ( ( ( int ) p_WebRtcAecMemPt[2] & 0xFF ) << 16 ) + ( ( ( int ) p_WebRtcAecMemPt[3] & 0xFF ) << 24 );
-                                if( p_TmpInt32 != m_FrameLen )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：WebRtc浮点版声学回音消除器内存块文件中的帧数据长度已被修改，需要重新初始化。" );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-
-                                //读取WebRtc浮点版声学回音消除器内存块文件的消除模式。
-                                try
-                                {
-                                    if( p_WebRtcAecMemFileInputStreamPt.read( p_WebRtcAecMemPt, 0, 4 ) != 4 )
-                                    {
-                                        throw new IOException( "文件中没有消除模式。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件的消除模式成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件的消除模式失败。原因：" + e.toString() );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-                                p_TmpInt32 = ( ( int ) p_WebRtcAecMemPt[0] & 0xFF ) + ( ( ( int ) p_WebRtcAecMemPt[1] & 0xFF ) << 8 ) + ( ( ( int ) p_WebRtcAecMemPt[2] & 0xFF ) << 16 ) + ( ( ( int ) p_WebRtcAecMemPt[3] & 0xFF ) << 24 );
-                                if( p_TmpInt32 != m_WebRtcAecEchoMode )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：WebRtc浮点版声学回音消除器内存块文件中的消除模式已被修改，需要重新初始化。" );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-
-                                //读取WebRtc浮点版声学回音消除器内存块文件的回音延迟。
-                                try
-                                {
-                                    if( p_WebRtcAecMemFileInputStreamPt.read( p_WebRtcAecMemPt, 0, 4 ) != 4 )
-                                    {
-                                        throw new IOException( "文件中没有消除模式。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件的回音延迟成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件的回音延迟失败。原因：" + e.toString() );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-                                p_TmpInt32 = ( ( int ) p_WebRtcAecMemPt[0] & 0xFF ) + ( ( ( int ) p_WebRtcAecMemPt[1] & 0xFF ) << 8 ) + ( ( ( int ) p_WebRtcAecMemPt[2] & 0xFF ) << 16 ) + ( ( ( int ) p_WebRtcAecMemPt[3] & 0xFF ) << 24 );
-                                if( p_TmpInt32 != m_WebRtcAecDelay )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：WebRtc浮点版声学回音消除器内存块文件中的回音延迟已被修改，需要重新初始化。" );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-
-                                //读取WebRtc浮点版声学回音消除器内存块文件的是否使用回音延迟不可知模式。
-                                try
-                                {
-                                    if( p_WebRtcAecMemFileInputStreamPt.read( p_WebRtcAecMemPt, 0, 4 ) != 4 )
-                                    {
-                                        throw new IOException( "文件中没有消除模式。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件的是否使用回音延迟不可知模式成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件的是否使用回音延迟不可知模式失败。原因：" + e.toString() );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-                                p_TmpInt32 = ( ( int ) p_WebRtcAecMemPt[0] & 0xFF ) + ( ( ( int ) p_WebRtcAecMemPt[1] & 0xFF ) << 8 ) + ( ( ( int ) p_WebRtcAecMemPt[2] & 0xFF ) << 16 ) + ( ( ( int ) p_WebRtcAecMemPt[3] & 0xFF ) << 24 );
-                                if( p_TmpInt32 != m_WebRtcAecIsUseDelayAgnosticMode )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：WebRtc浮点版声学回音消除器内存块文件中的是否使用回音延迟不可知模式已被修改，需要重新初始化。" );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-
-                                //读取WebRtc浮点版声学回音消除器内存块文件的是否使用自适应调节回音的延迟。
-                                try
-                                {
-                                    if( p_WebRtcAecMemFileInputStreamPt.read( p_WebRtcAecMemPt, 0, 4 ) != 4 )
-                                    {
-                                        throw new IOException( "文件中没有消除模式。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件的是否使用自适应调节回音的延迟成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件的是否使用自适应调节回音的延迟失败。原因：" + e.toString() );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-                                p_TmpInt32 = ( ( int ) p_WebRtcAecMemPt[0] & 0xFF ) + ( ( ( int ) p_WebRtcAecMemPt[1] & 0xFF ) << 8 ) + ( ( ( int ) p_WebRtcAecMemPt[2] & 0xFF ) << 16 ) + ( ( ( int ) p_WebRtcAecMemPt[3] & 0xFF ) << 24 );
-                                if( p_TmpInt32 != m_WebRtcAecIsUseAdaptAdjDelay )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：WebRtc浮点版声学回音消除器内存块文件中的是否使用自适应调节回音的延迟已被修改，需要重新初始化。" );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-
-                                //跳过WebRtc浮点版声学回音消除器内存块文件的有语音活动帧总数。
-                                try
-                                {
-                                    if( p_WebRtcAecMemFileInputStreamPt.skip( 8 ) != 8 )
-                                    {
-                                        throw new IOException( "文件中没有有语音活动帧总数。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：跳过WebRtc浮点版声学回音消除器内存块文件的有语音活动帧总数成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：跳过WebRtc浮点版声学回音消除器内存块文件的有语音活动帧总数失败。原因：" + e.toString() );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-
-                                //读取WebRtc浮点版声学回音消除器内存块文件的内存块。
-                                try
-                                {
-                                    p_WebRtcAecMemLen = p_WebRtcAecMemFileInputStreamPt.available();
-                                    if( p_WebRtcAecMemLen <= 0 )
-                                    {
-                                        throw new IOException( "文件中没有内存块。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：获取WebRtc浮点版声学回音消除器内存块文件的内存块数据长度成功。内存块数据长度：" + p_WebRtcAecMemLen );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：获取WebRtc浮点版声学回音消除器内存块文件的内存块数据长度失败。原因：" + e.toString() );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-                                p_WebRtcAecMemPt = new byte[( int ) p_WebRtcAecMemLen];
-                                try
-                                {
-                                    if( p_WebRtcAecMemFileInputStreamPt.read( p_WebRtcAecMemPt, 0, ( int ) p_WebRtcAecMemLen ) != p_WebRtcAecMemLen )
-                                    {
-                                        throw new IOException( "文件中没有内存块。" );
-                                    }
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件中的内存块成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器内存块文件中的内存块失败。原因：" + e.toString() );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-
-                                m_WebRtcAecPt = new WebRtcAec();
-                                p_TmpInt32 = m_WebRtcAecPt.InitFromMem( p_WebRtcAecMemPt, p_WebRtcAecMemLen );
-                                if( p_TmpInt32 == 0 )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：根据WebRtc浮点版声学回音消除器内存块来初始化WebRtc浮点版声学回音消除器类对象成功。返回值：" + p_TmpInt32 );
-                                }
-                                else
-                                {
-                                    m_WebRtcAecPt = null;
-
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：根据WebRtc浮点版声学回音消除器内存块来初始化WebRtc浮点版声学回音消除器类对象失败，重新初始化。返回值：" + p_TmpInt32 );
-                                    break ReadWebRtcAecMemoryFile;
-                                }
-                            }
-
-                            //销毁WebRtc浮点版声学回音消除器内存块文件的文件输入流对象。
-                            if( p_WebRtcAecMemFileInputStreamPt != null )
-                            {
-                                try
-                                {
-                                    p_WebRtcAecMemFileInputStreamPt.close();
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版声学回音消除器内存块文件的文件输入流对象成功。" );
-                                }
-                                catch( IOException e )
-                                {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版声学回音消除器内存块文件的文件输入流对象失败。原因：" + e.toString() );
-                                }
-                            }
-                        }
-
-                        if( m_WebRtcAecPt == null )
+                        if( m_WebRtcAecIsSaveMemFile != 0 )
                         {
                             m_WebRtcAecPt = new WebRtcAec();
-                            p_TmpInt32 = m_WebRtcAecPt.Init( m_SamplingRate, m_FrameLen, m_WebRtcAecEchoMode, m_WebRtcAecDelay, m_WebRtcAecIsUseDelayAgnosticMode, m_WebRtcAecIsUseExtdFilterMode, m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_WebRtcAecIsUseAdaptAdjDelay );
-                            if( p_TmpInt32 == 0 )
+                            if( m_WebRtcAecPt.InitByMemFile( m_SamplingRate, m_FrameLen, m_WebRtcAecEchoMode, m_WebRtcAecDelay, m_WebRtcAecIsUseDelayAgnosticMode, m_WebRtcAecIsUseExtdFilterMode, m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_WebRtcAecIsUseAdaptAdjDelay, ( m_WebRtcAecMemFileFullPathStrPt + "\0" ).getBytes() ) == 0 )
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.i( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc浮点版声学回音消除器类对象成功。返回值：" + p_TmpInt32 );
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器类对象成功。" );
                             }
                             else
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.e( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc浮点版声学回音消除器类对象失败。返回值：" + p_TmpInt32 );
+                                m_WebRtcAecPt = null;
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器类对象失败。" );
+                            }
+                        }
+                        if( m_WebRtcAecPt == null )
+                        {
+                            m_WebRtcAecPt = new WebRtcAec();
+                            if( m_WebRtcAecPt.Init( m_SamplingRate, m_FrameLen, m_WebRtcAecEchoMode, m_WebRtcAecDelay, m_WebRtcAecIsUseDelayAgnosticMode, m_WebRtcAecIsUseExtdFilterMode, m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_WebRtcAecIsUseAdaptAdjDelay ) == 0 )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc浮点版声学回音消除器类对象成功。" );
+                            }
+                            else
+                            {
+                                m_WebRtcAecPt = null;
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc浮点版声学回音消除器类对象失败。" );
                                 break out;
                             }
                         }
@@ -1252,16 +754,14 @@ public abstract class AudioProcThread extends Thread
                     case 4: //如果使用SpeexWebRtc三重声学回音消除器。
                     {
                         m_SpeexWebRtcAecPt = new SpeexWebRtcAec();
-                        p_TmpInt32 = m_SpeexWebRtcAecPt.Init( m_SamplingRate, m_FrameLen, m_SpeexWebRtcAecWorkMode, m_SpeexWebRtcAecSpeexAecFilterLen, m_SpeexWebRtcAecSpeexAecEchoMultiple, m_SpeexWebRtcAecSpeexAecEchoCont, m_SpeexWebRtcAecSpeexAecEchoSupes, m_SpeexWebRtcAecSpeexAecEchoSupesAct, m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode, m_SpeexWebRtcAecWebRtcAecmEchoMode, m_SpeexWebRtcAecWebRtcAecmDelay, m_SpeexWebRtcAecWebRtcAecEchoMode, m_SpeexWebRtcAecWebRtcAecDelay, m_SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode, m_SpeexWebRtcAecWebRtcAecIsUseExtdFilterMode, m_SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecMode, m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay );
-                        if( p_TmpInt32 == 0 )
+                        if( m_SpeexWebRtcAecPt.Init( m_SamplingRate, m_FrameLen, m_SpeexWebRtcAecWorkMode, m_SpeexWebRtcAecSpeexAecFilterLen, m_SpeexWebRtcAecSpeexAecEchoMultiple, m_SpeexWebRtcAecSpeexAecEchoCont, m_SpeexWebRtcAecSpeexAecEchoSupes, m_SpeexWebRtcAecSpeexAecEchoSupesAct, m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode, m_SpeexWebRtcAecWebRtcAecmEchoMode, m_SpeexWebRtcAecWebRtcAecmDelay, m_SpeexWebRtcAecWebRtcAecEchoMode, m_SpeexWebRtcAecWebRtcAecDelay, m_SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode, m_SpeexWebRtcAecWebRtcAecIsUseExtdFilterMode, m_SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecMode, m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay ) == 0 )
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：初始化SpeexWebRtc三重声学回音消除器类对象成功。返回值：" + p_TmpInt32 );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化SpeexWebRtc三重声学回音消除器类对象成功。" );
                         }
                         else
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：初始化SpeexWebRtc三重声学回音消除器类对象失败。返回值：" + p_TmpInt32 );
+                            m_SpeexWebRtcAecPt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化SpeexWebRtc三重声学回音消除器类对象失败。" );
                             break out;
                         }
                         break;
@@ -1273,29 +773,25 @@ public abstract class AudioProcThread extends Thread
                 {
                     case 0: //如果不使用噪音抑制器。
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：不使用噪音抑制器。" );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：不使用噪音抑制器。" );
                         break;
                     }
                     case 1: //如果使用Speex预处理器的噪音抑制。
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：稍后在初始化Speex预处理器时一起初始化Speex预处理器的噪音抑制。" );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：稍后在初始化Speex预处理器时一起初始化Speex预处理器的噪音抑制。" );
                         break;
                     }
                     case 2: //如果使用WebRtc定点版噪音抑制器。
                     {
                         m_WebRtcNsxPt = new WebRtcNsx();
-                        p_TmpInt32 = m_WebRtcNsxPt.Init( m_SamplingRate, m_FrameLen, m_WebRtcNsxPolicyMode );
-                        if( p_TmpInt32 == 0 )
+                        if( m_WebRtcNsxPt.Init( m_SamplingRate, m_FrameLen, m_WebRtcNsxPolicyMode ) == 0 )
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc定点版噪音抑制器类对象成功。返回值：" + p_TmpInt32 );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc定点版噪音抑制器类对象成功。" );
                         }
                         else
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc定点版噪音抑制器类对象失败。返回值：" + p_TmpInt32 );
+                            m_WebRtcNsxPt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc定点版噪音抑制器类对象失败。" );
                             break out;
                         }
                         break;
@@ -1303,16 +799,14 @@ public abstract class AudioProcThread extends Thread
                     case 3: //如果使用WebRtc浮点版噪音抑制器。
                     {
                         m_WebRtcNsPt = new WebRtcNs();
-                        p_TmpInt32 = m_WebRtcNsPt.Init( m_SamplingRate, m_FrameLen, m_WebRtcNsxPolicyMode );
-                        if( p_TmpInt32 == 0 )
+                        if( m_WebRtcNsPt.Init( m_SamplingRate, m_FrameLen, m_WebRtcNsPolicyMode ) == 0 )
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc浮点版噪音抑制器类对象成功。返回值：" + p_TmpInt32 );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc浮点版噪音抑制器类对象成功。" );
                         }
                         else
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc浮点版噪音抑制器类对象失败。返回值：" + p_TmpInt32 );
+                            m_WebRtcNsPt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化WebRtc浮点版噪音抑制器类对象失败。" );
                             break out;
                         }
                         break;
@@ -1320,16 +814,14 @@ public abstract class AudioProcThread extends Thread
                     case 4: //如果使用RNNoise噪音抑制器。
                     {
                         m_RNNoisePt = new RNNoise();
-                        p_TmpInt32 = m_RNNoisePt.Init( m_SamplingRate, m_FrameLen );
-                        if( p_TmpInt32 == 0 )
+                        if( m_RNNoisePt.Init( m_SamplingRate, m_FrameLen ) == 0 )
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：初始化RNNoise噪音抑制器类对象成功。返回值：" + p_TmpInt32 );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化RNNoise噪音抑制器类对象成功。" );
                         }
                         else
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：初始化RNNoise噪音抑制器类对象失败。返回值：" + p_TmpInt32 );
+                            m_RNNoisePt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化RNNoise噪音抑制器类对象失败。" );
                             break out;
                         }
                         break;
@@ -1345,27 +837,20 @@ public abstract class AudioProcThread extends Thread
                         m_SpeexPprocIsUseDereverb = 0;
                         m_SpeexPprocIsUseRec = 0;
                     }
-
                     if( m_IsUseSpeexPprocOther == 0 )
                     {
                         m_SpeexPprocIsUseVad = 0;
                         m_SpeexPprocIsUseAgc = 0;
                     }
-
                     m_SpeexPprocPt = new SpeexPproc();
-                    if( m_SpeexAecPt != null )
-                        p_TmpInt32 = m_SpeexPprocPt.Init( m_SamplingRate, m_FrameLen, m_SpeexPprocIsUseNs, m_SpeexPprocNoiseSupes, m_SpeexPprocIsUseDereverb, m_SpeexPprocIsUseVad, m_SpeexPprocVadProbStart, m_SpeexPprocVadProbCont, m_SpeexPprocIsUseAgc, m_SpeexPprocAgcLevel, m_SpeexPprocAgcIncrement, m_SpeexPprocAgcDecrement, m_SpeexPprocAgcMaxGain, m_SpeexPprocIsUseRec, m_SpeexAecPt.GetSpeexAecPt(), m_SpeexPprocEchoMultiple, m_SpeexPprocEchoCont, m_SpeexPprocEchoSupes, m_SpeexPprocEchoSupesAct );
-                    else
-                        p_TmpInt32 = m_SpeexPprocPt.Init( m_SamplingRate, m_FrameLen, m_SpeexPprocIsUseNs, m_SpeexPprocNoiseSupes, m_SpeexPprocIsUseDereverb, m_SpeexPprocIsUseVad, m_SpeexPprocVadProbStart, m_SpeexPprocVadProbCont, m_SpeexPprocIsUseAgc, m_SpeexPprocAgcLevel, m_SpeexPprocAgcIncrement, m_SpeexPprocAgcDecrement, m_SpeexPprocAgcMaxGain, 0, 0, 0, 0, 0, 0 );
-                    if( p_TmpInt32 == 0 )
+                    if( m_SpeexPprocPt.Init( m_SamplingRate, m_FrameLen, m_SpeexPprocIsUseNs, m_SpeexPprocNoiseSupes, m_SpeexPprocIsUseDereverb, m_SpeexPprocIsUseVad, m_SpeexPprocVadProbStart, m_SpeexPprocVadProbCont, m_SpeexPprocIsUseAgc, m_SpeexPprocAgcLevel, m_SpeexPprocAgcIncrement, m_SpeexPprocAgcDecrement, m_SpeexPprocAgcMaxGain, ( m_SpeexAecPt != null ) ? m_SpeexPprocIsUseRec : 0, ( m_SpeexAecPt != null ) ? m_SpeexAecPt.GetSpeexAecPt() : 0, m_SpeexPprocEchoMultiple, m_SpeexPprocEchoCont, m_SpeexPprocEchoSupes, m_SpeexPprocEchoSupesAct ) == 0 )
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：初始化Speex预处理器类对象成功。返回值：" + p_TmpInt32 );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化Speex预处理器类对象成功。"  );
                     }
                     else
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.e( m_CurClsNameStrPt, "音频处理线程：初始化Speex预处理器类对象失败。返回值：" + p_TmpInt32 );
+                        m_SpeexPprocPt = null;
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化Speex预处理器类对象失败。" );
                         break out;
                     }
                 }
@@ -1375,114 +860,177 @@ public abstract class AudioProcThread extends Thread
                 {
                     case 0: //如果使用PCM原始数据。
                     {
-                        //什么都不要做。
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用PCM原始数据。" );
                         break;
                     }
                     case 1: //如果使用Speex编解码器。
                     {
-                        if( m_FrameLen != m_SamplingRate / 50 )
+                        if( m_FrameLen != m_SamplingRate / 1000 * 20 )
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：帧的数据长度不为20毫秒不能使用Speex编解码器。" );
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：帧的数据长度不为20毫秒不能使用Speex编解码器。" );
                             break out;
                         }
-
                         m_SpeexEncoderPt = new SpeexEncoder();
-                        p_TmpInt32 = m_SpeexEncoderPt.Init( m_SamplingRate, m_SpeexCodecEncoderUseCbrOrVbr, m_SpeexCodecEncoderQuality, m_SpeexCodecEncoderComplexity, m_SpeexCodecEncoderPlcExpectedLossRate );
-                        if( p_TmpInt32 == 0 )
+                        if( m_SpeexEncoderPt.Init( m_SamplingRate, m_SpeexCodecEncoderUseCbrOrVbr, m_SpeexCodecEncoderQuality, m_SpeexCodecEncoderComplexity, m_SpeexCodecEncoderPlcExpectedLossRate ) == 0 )
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：初始化Speex编码器类对象成功。返回值：" + p_TmpInt32 );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化Speex编码器类对象成功。" );
                         }
                         else
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：初始化Speex编码器类对象失败。返回值：" + p_TmpInt32 );
+                            m_SpeexEncoderPt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化Speex编码器类对象失败。" );
                             break out;
                         }
-
                         m_SpeexDecoderPt = new SpeexDecoder();
-                        p_TmpInt32 = m_SpeexDecoderPt.Init( m_SamplingRate, m_SpeexCodecDecoderIsUsePerceptualEnhancement );
-                        if( p_TmpInt32 == 0 )
+                        if( m_SpeexDecoderPt.Init( m_SamplingRate, m_SpeexCodecDecoderIsUsePerceptualEnhancement ) == 0 )
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：初始化Speex解码器类对象成功。返回值：" + p_TmpInt32 );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化Speex解码器类对象成功。" );
                         }
                         else
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：初始化Speex解码器类对象失败。返回值：" + p_TmpInt32 );
+                            m_SpeexDecoderPt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化Speex解码器类对象失败。" );
                             break out;
                         }
                         break;
                     }
                     case 2: //如果使用Opus编解码器。
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.e( m_CurClsNameStrPt, "音频处理线程：暂不支持使用Opus编解码器。" );
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：暂不支持使用Opus编解码器。" );
                         break out;
                     }
                 }
 
-                //初始化各个音频文件的文件输出流对象。
+                //初始化音频输入Wave文件写入器类对象、音频输出Wave文件写入器类对象、音频结果Wave文件写入器类对象。
                 if( m_IsSaveAudioToFile != 0 )
                 {
-                    //创建并初始化音频输入Wave文件写入器对象。
                     m_AudioInputWaveFileWriterPt = new WaveFileWriter();
                     if( m_AudioInputWaveFileWriterPt.Init( ( m_AudioInputFileFullPathStrPt + "\0" ).getBytes(), ( short ) 1, m_SamplingRate, 16 ) == 0 )
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "创建音频输入文件 " + m_AudioInputFileFullPathStrPt + " 的Wave文件写入器对象成功。" );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：创建音频输入文件 " + m_AudioInputFileFullPathStrPt + " 的Wave文件写入器类对象成功。" );
                     }
                     else
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.e( m_CurClsNameStrPt, "创建音频输入文件 " + m_AudioInputFileFullPathStrPt + " 的Wave文件写入器对象失败。" );
+                        m_AudioInputWaveFileWriterPt = null;
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：创建音频输入文件 " + m_AudioInputFileFullPathStrPt + " 的Wave文件写入器类对象失败。" );
                         break out;
                     }
-
-                    //创建并初始化音频输出Wave文件写入器对象。
                     m_AudioOutputWaveFileWriterPt = new WaveFileWriter();
                     if( m_AudioOutputWaveFileWriterPt.Init( ( m_AudioOutputFileFullPathStrPt + "\0" ).getBytes(), ( short ) 1, m_SamplingRate, 16 ) == 0 )
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "创建音频输出文件 " + m_AudioOutputFileFullPathStrPt + " 的Wave文件写入器对象成功。" );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：创建音频输出文件 " + m_AudioInputFileFullPathStrPt + " 的Wave文件写入器类类对象成功。" );
                     }
                     else
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.e( m_CurClsNameStrPt, "创建音频输出文件 " + m_AudioOutputFileFullPathStrPt + " 的Wave文件写入器对象失败。" );
+                        m_AudioOutputWaveFileWriterPt = null;
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：创建音频输出文件 " + m_AudioOutputFileFullPathStrPt + " 的Wave文件写入器类对象失败。" );
                         break out;
                     }
-
-                    //创建并初始化音频结果Wave文件写入器对象。
                     m_AudioResultWaveFileWriterPt = new WaveFileWriter();
                     if( m_AudioResultWaveFileWriterPt.Init( ( m_AudioResultFileFullPathStrPt + "\0" ).getBytes(), ( short ) 1, m_SamplingRate, 16 ) == 0 )
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "创建音频结果文件 " + m_AudioResultFileFullPathStrPt + " 的Wave文件写入器对象成功。" );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：创建音频结果文件 " + m_AudioInputFileFullPathStrPt + " 的Wave文件写入器类对象成功。" );
                     }
                     else
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.e( m_CurClsNameStrPt, "创建音频结果文件 " + m_AudioResultFileFullPathStrPt + " 的Wave文件写入器对象失败。" );
+                        m_AudioResultWaveFileWriterPt = null;
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：创建音频结果文件 " + m_AudioResultFileFullPathStrPt + " 的Wave文件写入器类对象失败。" );
                         break out;
                     }
                 }
 
-                //初始化各个链表类对象。
-                m_InputFrameLnkLstPt = new LinkedList< short[] >(); //初始化输入帧链表类对象。
-                m_OutputFrameLnkLstPt = new LinkedList< short[] >(); //初始化输出帧链表类对象。
+                //初始化音频输入类对象、音频输出类对象、音频输入线程类对象、音频输出线程类对象。
+                {
+                    //初始化音频输入类对象。
+                    try
+                    {
+                        m_AudioRecordBufSz = AudioRecord.getMinBufferSize( m_SamplingRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT );
+                        m_AudioRecordBufSz = m_AudioRecordBufSz > m_FrameLen * 2 ? m_AudioRecordBufSz : m_FrameLen * 2;
+                        m_AudioRecordPt = new AudioRecord(
+                                MediaRecorder.AudioSource.MIC,
+                                m_SamplingRate,
+                                AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                                AudioFormat.ENCODING_PCM_16BIT,
+                                m_AudioRecordBufSz
+                        );
+                        if( m_AudioRecordPt.getState() == AudioRecord.STATE_INITIALIZED )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：初始化音频输入类对象成功。音频输入缓冲区大小：" + m_AudioRecordBufSz );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化音频输入类对象失败。" );
+                            break out;
+                        }
+                    }
+                    catch( IllegalArgumentException e )
+                    {
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：初始化音频输入类对象失败。原因：" + e.getMessage() );
+                        break out;
+                    }
 
-                //初始化各个线程类对象。
-                m_AudioInputThreadPt = new AudioInputThread(); //初始化音频输入线程类对象。
-                m_AudioOutputThreadPt = new AudioOutputThread(); //初始化音频输出线程类对象。
+                    //用第一种方法初始化音频输出类对象。
+                    try
+                    {
+                        m_AudioTrackBufSz = m_FrameLen * 2;
+                        m_AudioTrackPt = new AudioTrack( AudioManager.STREAM_MUSIC,
+                                m_SamplingRate,
+                                AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                                AudioFormat.ENCODING_PCM_16BIT,
+                                m_AudioTrackBufSz,
+                                AudioTrack.MODE_STREAM );
+                        if( m_AudioTrackPt.getState() == AudioTrack.STATE_INITIALIZED )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：用第一种方法初始化音频输出类对象成功。音频输出缓冲区大小：" + m_AudioTrackBufSz );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：用第一种方法初始化音频输出类对象失败。" );
+                            m_AudioTrackPt.release();
+                            m_AudioTrackPt = null;
+                        }
+                    }
+                    catch( IllegalArgumentException e )
+                    {
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：用第一种方法初始化音频输出类对象失败。原因：" + e.getMessage() );
+                    }
 
-                m_AudioRecordPt.startRecording(); //让音频输入类对象开始录音。
-                m_AudioTrackPt.play(); //让音频输出类对象开始播放。
+                    //用第二种方法初始化音频输出类对象。
+                    if( m_AudioTrackPt == null )
+                    {
+                        try
+                        {
+                            m_AudioTrackBufSz = AudioTrack.getMinBufferSize( m_SamplingRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT );
+                            m_AudioTrackPt = new AudioTrack( AudioManager.STREAM_MUSIC,
+                                    m_SamplingRate,
+                                    AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                                    AudioFormat.ENCODING_PCM_16BIT,
+                                    m_AudioTrackBufSz,
+                                    AudioTrack.MODE_STREAM );
+                            if( m_AudioTrackPt.getState() == AudioTrack.STATE_INITIALIZED )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：用第二种方法初始化音频输出类对象成功。音频输出缓冲区大小：" + m_AudioTrackBufSz );
+                            }
+                            else
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：用第二种方法初始化音频输出类对象失败。" );
+                                break out;
+                            }
+                        }
+                        catch( IllegalArgumentException e )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：用第二种方法初始化音频输出类对象失败。原因：" + e.getMessage() );
+                            break out;
+                        }
+                    }
 
-                //启动音频输入线程，让音频输入线程去启动音频输出线程。
-                m_AudioInputThreadPt.start();
+                    //初始化音频输入线程类对象、音频输出线程类对象。必须在初始化音频输入类对象、音频输出类对象后初始化音频输入线程类对象、音频输出线程类对象，因为音频输入线程类对象、音频输出线程类对象会使用音频输入类对象、音频输出类对象。
+                    m_AudioInputThreadPt = new AudioInputThread(); //初始化音频输入线程类对象。
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：创建音频输入线程类对象成功。" );
+                    m_AudioOutputThreadPt = new AudioOutputThread(); //初始化音频输出线程类对象。
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：创建音频输出线程类对象成功。" );
+                    m_AudioInputThreadPt.start(); //启动音频输入线程，让音频输入线程去启动音频输出线程。
+                }
 
                 m_ExitCode = -2; //初始化已经成功了，再将本线程退出代码预设为处理失败，如果处理失败，这个退出代码就不用再设置了，如果处理成功，再设置为成功的退出代码。
 
@@ -1492,18 +1040,6 @@ public abstract class AudioProcThread extends Thread
                     Log.i( m_CurClsNameStrPt, "音频处理线程：音频处理线程初始化完毕，耗时：" + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒，正式开始处理音频。" );
                 }
 
-                //以下变量要在初始化以后再声明才行。
-                short p_PcmInputFramePt[]; //PCM格式输入帧。
-                short p_PcmOutputFramePt[]; //PCM格式音频输出帧。
-                short p_PcmResultFramePt[] = new short[m_FrameLen]; //PCM格式结果帧。
-                short p_PcmTmpFramePt[] = new short[m_FrameLen]; //PCM格式临时帧。
-                short p_PcmSwapFramePt[]; //PCM格式交换帧。
-                HTInt p_VoiceActStsPt = new HTInt( 1 ); //语音活动状态，1表示有语音活动，0表示无语音活动，预设为1，为了让在没有使用语音活动检测的情况下永远都是有语音活动。
-                m_HasVoiceActFrameTotal = 0; //有语音活动帧总数清0。
-                byte p_SpeexInputFramePt[] = ( m_UseWhatCodec == 1 ) ? new byte[m_FrameLen] : null; //Speex格式输入帧。
-                HTLong p_SpeexInputFrameLenPt = new HTLong( 0 ); //Speex格式输入帧数组的数据长度，单位字节。
-                HTInt p_SpeexInputFrameIsNeedTransPt = new HTInt( 1 ); //Speex格式输入帧是否需要传输，1表示需要传输，0表示不需要传输，预设为1为了让在没有使用非连续传输的情况下永远都是需要传输。
-
                 while( true )
                 {
                     if( m_IsPrintLogcat != 0 ) p_LastDatePt = new Date();
@@ -1512,19 +1048,17 @@ public abstract class AudioProcThread extends Thread
                     p_TmpInt32 = UserProcess();
                     if( p_TmpInt32 == 0 )
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：调用用户定义的处理函数成功。返回值：" + p_TmpInt32 );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：调用用户定义的处理函数成功。返回值：" + p_TmpInt32 );
                     }
                     else
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.e( m_CurClsNameStrPt, "音频处理线程：调用用户定义的处理函数失败。返回值：" + p_TmpInt32 );
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：调用用户定义的处理函数失败。返回值：" + p_TmpInt32 );
                         break out;
                     }
 
                     //开始处理输入帧。
                     if( ( m_InputFrameLnkLstPt.size() > 0 ) && ( m_OutputFrameLnkLstPt.size() > 0 ) || //如果输入帧链表和输出帧链表中都有帧了，才开始处理。
-                            ( m_InputFrameLnkLstPt.size() > 15 ) ) //如果输入帧链表里已经累积很多输入帧了，说明输出帧链表里迟迟没有音频输出帧，也开始处理。
+                        ( m_InputFrameLnkLstPt.size() > 15 ) ) //如果输入帧链表里已经累积很多输入帧了，说明输出帧链表里迟迟没有音频输出帧，也开始处理。
                     {
                         //从输入帧链表中取出第一个输入帧。
                         synchronized( m_InputFrameLnkLstPt )
@@ -1532,8 +1066,7 @@ public abstract class AudioProcThread extends Thread
                             p_PcmInputFramePt = m_InputFrameLnkLstPt.getFirst();
                             m_InputFrameLnkLstPt.removeFirst();
                         }
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：从输入帧链表中取出第一个输入帧。" );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：从输入帧链表中取出第一个输入帧。" );
 
                         //从输出帧链表中取出第一个输出帧。
                         if( m_OutputFrameLnkLstPt.size() > 0 ) //如果输出帧链表里有输出帧。
@@ -1543,165 +1076,128 @@ public abstract class AudioProcThread extends Thread
                                 p_PcmOutputFramePt = m_OutputFrameLnkLstPt.getFirst();
                                 m_OutputFrameLnkLstPt.removeFirst();
                             }
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：从输出帧链表中取出第一个输出帧。" );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：从输出帧链表中取出第一个输出帧。" );
                         }
                         else //如果输出帧链表里没有输出帧。
                         {
                             p_PcmOutputFramePt = new short[m_FrameLen];
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：输出帧链表中没有输出帧，用一个空帧代替。" );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：输出帧链表中没有输出帧，用一个空帧代替。" );
                         }
 
                         //将输入帧复制到结果帧，方便处理。
                         System.arraycopy( p_PcmInputFramePt, 0, p_PcmResultFramePt, 0, m_FrameLen );
 
-                        //使用什么声学回音消除器。
+                        //使用声学回音消除器。
                         switch( m_UseWhatAec )
                         {
                             case 0: //如果不使用声学回音消除器。
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.i( m_CurClsNameStrPt, "音频处理线程：不使用声学回音消除器。" );
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：不使用声学回音消除器。" );
                                 break;
+                            }
                             case 1: //如果使用Speex声学回音消除器。
-                                p_TmpInt32 = m_SpeexAecPt.Proc( p_PcmResultFramePt, p_PcmOutputFramePt, p_PcmTmpFramePt );
-                                if( p_TmpInt32 == 0 )
+                            {
+                                if( m_SpeexAecPt.Proc( p_PcmResultFramePt, p_PcmOutputFramePt, p_PcmTmpFramePt ) == 0 )
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：使用Speex声学回音消除器成功。返回值：" + p_TmpInt32 );
-
-                                    p_PcmSwapFramePt = p_PcmResultFramePt;
-                                    p_PcmResultFramePt = p_PcmTmpFramePt;
-                                    p_PcmTmpFramePt = p_PcmSwapFramePt;
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用Speex声学回音消除器成功。" );
+                                    p_PcmSwapFramePt = p_PcmResultFramePt;p_PcmResultFramePt = p_PcmTmpFramePt;p_PcmTmpFramePt = p_PcmSwapFramePt; //交换结果帧和临时帧。
                                 }
                                 else
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：使用Speex声学回音消除器失败。返回值：" + p_TmpInt32 );
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用Speex声学回音消除器失败。" );
                                 }
                                 break;
+                            }
                             case 2: //如果使用WebRtc定点版声学回音消除器。
-                                p_TmpInt32 = m_WebRtcAecmPt.Proc( p_PcmResultFramePt, p_PcmOutputFramePt, p_PcmTmpFramePt );
-                                if( p_TmpInt32 == 0 )
+                            {
+                                if( m_WebRtcAecmPt.Proc( p_PcmResultFramePt, p_PcmOutputFramePt, p_PcmTmpFramePt ) == 0 )
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：使用WebRtc定点版声学回音消除器成功。返回值：" + p_TmpInt32 );
-
-                                    p_PcmSwapFramePt = p_PcmResultFramePt;
-                                    p_PcmResultFramePt = p_PcmTmpFramePt;
-                                    p_PcmTmpFramePt = p_PcmSwapFramePt;
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用WebRtc定点版声学回音消除器成功。" );
+                                    p_PcmSwapFramePt = p_PcmResultFramePt;p_PcmResultFramePt = p_PcmTmpFramePt;p_PcmTmpFramePt = p_PcmSwapFramePt; //交换结果帧和临时帧。
                                 }
                                 else
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：使用WebRtc定点版声学回音消除器失败。返回值：" + p_TmpInt32 );
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用WebRtc定点版声学回音消除器失败。" );
                                 }
                                 break;
+                            }
                             case 3: //如果使用WebRtc浮点版声学回音消除器。
-                                p_TmpInt32 = m_WebRtcAecPt.Proc( p_PcmResultFramePt, p_PcmOutputFramePt, p_PcmTmpFramePt );
-                                if( p_TmpInt32 == 0 )
+                            {
+                                if( m_WebRtcAecPt.Proc( p_PcmResultFramePt, p_PcmOutputFramePt, p_PcmTmpFramePt ) == 0 )
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：使用WebRtc浮点版声学回音消除器成功。返回值：" + p_TmpInt32 );
-
-                                    p_PcmSwapFramePt = p_PcmResultFramePt;
-                                    p_PcmResultFramePt = p_PcmTmpFramePt;
-                                    p_PcmTmpFramePt = p_PcmSwapFramePt;
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用WebRtc浮点版声学回音消除器成功。" );
+                                    p_PcmSwapFramePt = p_PcmResultFramePt;p_PcmResultFramePt = p_PcmTmpFramePt;p_PcmTmpFramePt = p_PcmSwapFramePt; //交换结果帧和临时帧。
                                 }
                                 else
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：使用WebRtc浮点版声学回音消除器失败。返回值：" + p_TmpInt32 );
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用WebRtc浮点版声学回音消除器失败。" );
                                 }
                                 break;
+                            }
                             case 4: //如果使用SpeexWebRtc三重浮点版声学回音消除器。
-                                p_TmpInt32 = m_SpeexWebRtcAecPt.Proc( p_PcmResultFramePt, p_PcmOutputFramePt, p_PcmTmpFramePt );
-                                if( p_TmpInt32 == 0 )
+                            {
+                                if( m_SpeexWebRtcAecPt.Proc( p_PcmResultFramePt, p_PcmOutputFramePt, p_PcmTmpFramePt ) == 0 )
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：使用SpeexWebRtc三重浮点版声学回音消除器成功。返回值：" + p_TmpInt32 );
-
-                                    p_PcmSwapFramePt = p_PcmResultFramePt;
-                                    p_PcmResultFramePt = p_PcmTmpFramePt;
-                                    p_PcmTmpFramePt = p_PcmSwapFramePt;
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用SpeexWebRtc三重浮点版声学回音消除器成功。" );
+                                    p_PcmSwapFramePt = p_PcmResultFramePt;p_PcmResultFramePt = p_PcmTmpFramePt;p_PcmTmpFramePt = p_PcmSwapFramePt; //交换结果帧和临时帧。
                                 }
                                 else
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：使用SpeexWebRtc三重浮点版声学回音消除器失败。返回值：" + p_TmpInt32 );
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用SpeexWebRtc三重浮点版声学回音消除器失败。" );
                                 }
                                 break;
+                            }
                         }
 
-                        //使用什么噪音抑制器。
+                        //使用噪音抑制器。
                         switch( m_UseWhatNs )
                         {
                             case 0: //如果不使用噪音抑制器。
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.i( m_CurClsNameStrPt, "音频处理线程：不使用噪音抑制器。" );
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：不使用噪音抑制器。" );
                                 break;
                             }
                             case 1: //如果使用Speex预处理器的噪音抑制。
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.i( m_CurClsNameStrPt, "音频处理线程：稍后在使用Speex预处理器时一起使用噪音抑制。" );
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：稍后在使用Speex预处理器时一起使用噪音抑制。" );
                                 break;
                             }
                             case 2: //如果使用WebRtc定点版噪音抑制器。
                             {
-                                p_TmpInt32 = m_WebRtcNsxPt.Proc( p_PcmResultFramePt, p_PcmTmpFramePt );
-                                if( p_TmpInt32 == 0 )
+                                if( m_WebRtcNsxPt.Proc( p_PcmResultFramePt, p_PcmTmpFramePt ) == 0 )
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：使用WebRtc定点版噪音抑制器成功。返回值：" + p_TmpInt32 );
-
-                                    p_PcmSwapFramePt = p_PcmResultFramePt;
-                                    p_PcmResultFramePt = p_PcmTmpFramePt;
-                                    p_PcmTmpFramePt = p_PcmSwapFramePt;
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用WebRtc定点版噪音抑制器成功。" );
+                                    p_PcmSwapFramePt = p_PcmResultFramePt;p_PcmResultFramePt = p_PcmTmpFramePt;p_PcmTmpFramePt = p_PcmSwapFramePt; //交换结果帧和临时帧。
                                 }
                                 else
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：使用WebRtc定点版噪音抑制器失败。返回值：" + p_TmpInt32 );
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用WebRtc定点版噪音抑制器失败。" );
                                 }
                                 break;
                             }
                             case 3: //如果使用WebRtc浮点版噪音抑制器。
                             {
-                                p_TmpInt32 = m_WebRtcNsPt.Proc( p_PcmResultFramePt, p_PcmTmpFramePt );
-                                if( p_TmpInt32 == 0 )
+                                if( m_WebRtcNsPt.Proc( p_PcmResultFramePt, p_PcmTmpFramePt ) == 0 )
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：使用WebRtc浮点版噪音抑制器成功。返回值：" + p_TmpInt32 );
-
-                                    p_PcmSwapFramePt = p_PcmResultFramePt;
-                                    p_PcmResultFramePt = p_PcmTmpFramePt;
-                                    p_PcmTmpFramePt = p_PcmSwapFramePt;
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用WebRtc浮点版噪音抑制器成功。" );
+                                    p_PcmSwapFramePt = p_PcmResultFramePt;p_PcmResultFramePt = p_PcmTmpFramePt;p_PcmTmpFramePt = p_PcmSwapFramePt; //交换结果帧和临时帧。
                                 }
                                 else
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：使用WebRtc浮点版噪音抑制器失败。返回值：" + p_TmpInt32 );
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用WebRtc浮点版噪音抑制器失败。" );
                                 }
                                 break;
                             }
                             case 4: //如果使用RNNoise噪音抑制器。
                             {
-                                p_TmpInt32 = m_RNNoisePt.Proc( p_PcmResultFramePt, p_PcmTmpFramePt );
-                                if( p_TmpInt32 == 0 )
+                                if( m_RNNoisePt.Proc( p_PcmResultFramePt, p_PcmTmpFramePt ) == 0 )
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：使用RNNoise噪音抑制器成功。返回值：" + p_TmpInt32 );
-
-                                    p_PcmSwapFramePt = p_PcmResultFramePt;
-                                    p_PcmResultFramePt = p_PcmTmpFramePt;
-                                    p_PcmTmpFramePt = p_PcmSwapFramePt;
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用RNNoise噪音抑制器成功。" );
+                                    p_PcmSwapFramePt = p_PcmResultFramePt;p_PcmResultFramePt = p_PcmTmpFramePt;p_PcmTmpFramePt = p_PcmSwapFramePt; //交换结果帧和临时帧。
                                 }
                                 else
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：使用RNNoise噪音抑制器失败。返回值：" + p_TmpInt32 );
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用RNNoise噪音抑制器失败。" );
                                 }
                                 break;
                             }
@@ -1710,114 +1206,82 @@ public abstract class AudioProcThread extends Thread
                         //使用Speex预处理器。
                         if( ( m_UseWhatNs == 1 ) || ( m_IsUseSpeexPprocOther != 0 ) )
                         {
-                            p_TmpInt32 = m_SpeexPprocPt.Proc( p_PcmResultFramePt, p_PcmTmpFramePt, p_VoiceActStsPt );
-                            if( p_TmpInt32 == 0 )
+                            if( m_SpeexPprocPt.Proc( p_PcmResultFramePt, p_PcmTmpFramePt, p_VoiceActStsPt ) == 0 )
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.i( m_CurClsNameStrPt, "音频处理线程：使用Speex预处理器成功。语音活动状态：" + p_VoiceActStsPt.m_Val + "，返回值：" + p_TmpInt32 );
-
-                                p_PcmSwapFramePt = p_PcmResultFramePt;
-                                p_PcmResultFramePt = p_PcmTmpFramePt;
-                                p_PcmTmpFramePt = p_PcmSwapFramePt;
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用Speex预处理器成功。语音活动状态：" + p_VoiceActStsPt.m_Val );
+                                p_PcmSwapFramePt = p_PcmResultFramePt;p_PcmResultFramePt = p_PcmTmpFramePt;p_PcmTmpFramePt = p_PcmSwapFramePt; //交换结果帧和临时帧。
                             }
                             else
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.e( m_CurClsNameStrPt, "音频处理线程：使用Speex预处理器失败。返回值：" + p_TmpInt32 );
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用Speex预处理器失败。" );
                             }
                         }
 
-                        //递增有语音活动帧总数。
-                        m_HasVoiceActFrameTotal += p_VoiceActStsPt.m_Val;
-
-                        //使用什么编码器。
+                        //使用编码器。
                         switch( m_UseWhatCodec )
                         {
                             case 0: //如果使用PCM原始数据。
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.i( m_CurClsNameStrPt, "音频处理线程：使用PCM原始数据。" );
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用PCM原始数据。" );
                                 break;
                             }
                             case 1: //如果使用Speex编码器。
                             {
-                                p_TmpInt32 = m_SpeexEncoderPt.Proc( p_PcmResultFramePt, p_SpeexInputFramePt, p_SpeexInputFramePt.length, p_SpeexInputFrameLenPt, p_SpeexInputFrameIsNeedTransPt );
-                                if( p_TmpInt32 == 0 )
+                                if( m_SpeexEncoderPt.Proc( p_PcmResultFramePt, p_SpeexInputFramePt, p_SpeexInputFramePt.length, p_SpeexInputFrameLenPt, p_SpeexInputFrameIsNeedTransPt ) == 0 )
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.i( m_CurClsNameStrPt, "音频处理线程：使用Speex编码器成功。Speex格式输入帧的内存长度：" + p_SpeexInputFrameLenPt.m_Val + "，Speex格式输入帧是否需要传输：" + p_SpeexInputFrameIsNeedTransPt.m_Val + "，返回值：" + p_TmpInt32 );
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用Speex编码器成功。Speex格式输入帧的内存长度：" + p_SpeexInputFrameLenPt.m_Val + "，Speex格式输入帧是否需要传输：" + p_SpeexInputFrameIsNeedTransPt.m_Val );
                                 }
                                 else
                                 {
-                                    if( m_IsPrintLogcat != 0 )
-                                        Log.e( m_CurClsNameStrPt, "音频处理线程：使用Speex编码器失败。返回值：" + p_TmpInt32 );
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用Speex编码器失败。" );
                                 }
                                 break;
                             }
                             case 2: //如果使用Opus编码器。
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.e( m_CurClsNameStrPt, "音频处理线程：暂不支持使用Opus编码器。" );
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：暂不支持使用Opus编码器。" );
                                 break out;
                             }
                         }
 
-                        //用音频输入Wave文件写入器写入输入帧数据。
-                        if( m_AudioInputWaveFileWriterPt != null )
+                        //使用音频输入Wave文件写入器写入输入帧数据、音频输出Wave文件写入器写入输出帧数据、音频结果Wave文件写入器写入结果帧数据。
+                        if( m_IsSaveAudioToFile != 0 )
                         {
                             if( m_AudioInputWaveFileWriterPt.WriteData( p_PcmInputFramePt, m_FrameLen ) == 0 )
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.i( m_CurClsNameStrPt, "音频处理线程：用音频输入Wave文件写入器写入输入帧数据成功。" );
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用音频输入Wave文件写入器写入输入帧数据成功。" );
                             }
                             else
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.e( m_CurClsNameStrPt, "音频处理线程：用音频输入Wave文件写入器写入输入帧数据失败。" );
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用音频输入Wave文件写入器写入输入帧数据失败。" );
                             }
-                        }
-
-                        //用音频输出Wave文件写入器写入输出帧数据。
-                        if( m_AudioOutputWaveFileWriterPt != null )
-                        {
                             if( m_AudioOutputWaveFileWriterPt.WriteData( p_PcmOutputFramePt, m_FrameLen ) == 0 )
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.i( m_CurClsNameStrPt, "音频处理线程：用音频输出Wave文件写入器写入输出帧数据成功。" );
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用音频输入Wave文件写入器写入输出帧数据成功。" );
                             }
                             else
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.e( m_CurClsNameStrPt, "音频处理线程：用音频输出Wave文件写入器写入输出帧数据失败。" );
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用音频输出Wave文件写入器写入输出帧数据失败。" );
                             }
-                        }
-
-                        //用音频结果Wave文件写入器写入结果帧数据。
-                        if( m_AudioResultWaveFileWriterPt != null )
-                        {
                             if( m_AudioResultWaveFileWriterPt.WriteData( p_PcmResultFramePt, m_FrameLen ) == 0 )
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.i( m_CurClsNameStrPt, "音频处理线程：用音频结果Wave文件写入器写入结果帧数据成功。" );
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用音频输入Wave文件写入器写入结果帧数据成功。" );
                             }
                             else
                             {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.e( m_CurClsNameStrPt, "音频处理线程：用音频结果Wave文件写入器写入结果帧数据失败。" );
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用音频结果Wave文件写入器写入结果帧数据失败。" );
                             }
                         }
 
                         //调用用户定义的读取输入帧函数。
-                        p_TmpInt32 = UserReadInputFrame( p_PcmInputFramePt, p_PcmResultFramePt, p_VoiceActStsPt.m_Val, p_SpeexInputFramePt, p_SpeexInputFrameLenPt.m_Val, p_SpeexInputFrameIsNeedTransPt.m_Val );
+                        p_TmpInt32 = UserReadInputFrame( p_PcmInputFramePt, p_PcmResultFramePt, p_VoiceActStsPt.m_Val, p_SpeexInputFramePt, p_SpeexInputFrameLenPt, p_SpeexInputFrameIsNeedTransPt );
                         if( p_TmpInt32 == 0 )
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：音频处理线程：调用用户定义的读取输入帧函数成功。返回值：" + p_TmpInt32 );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：调用用户定义的读取输入帧函数成功。返回值：" + p_TmpInt32 );
                         }
                         else
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：调用用户定义的读取输入帧函数失败。返回值：" + p_TmpInt32 );
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：调用用户定义的读取输入帧函数失败。返回值：" + p_TmpInt32 );
                             break out;
                         }
 
@@ -1825,16 +1289,14 @@ public abstract class AudioProcThread extends Thread
                         {
                             p_NowDatePt = new Date();
                             Log.i( m_CurClsNameStrPt, "音频处理线程：本音频帧处理完毕，耗时：" + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒。" );
-                            p_LastDatePt = p_NowDatePt;
                         }
+                    }
 
-                        if( m_ExitFlag != 0 ) //如果本线程退出标记为请求退出。
-                        {
-                            m_ExitCode = 0; //处理已经成功了，再将本线程退出代码设置为正常退出。
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：接收到退出请求，开始准备退出。" );
-                            break out;
-                        }
+                    if( m_ExitFlag != 0 ) //如果本线程退出标记为请求退出。
+                    {
+                        m_ExitCode = 0; //处理已经成功了，再将本线程退出代码设置为正常退出。
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：接收到退出请求，开始准备退出。" );
+                        break out;
                     }
 
                     SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
@@ -1843,838 +1305,365 @@ public abstract class AudioProcThread extends Thread
 
             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：本线程开始退出。" );
 
-            //请求音频输入线程退出。
-            if( m_AudioInputThreadPt != null )
+            //销毁音频输入线程类对象、音频输出线程类对、音频输入类对象、音频输出类对象。
             {
-                m_AudioInputThreadPt.RequireExit();
-            }
-
-            //请求音频输出线程退出。
-            if( m_AudioOutputThreadPt != null )
-            {
-                m_AudioOutputThreadPt.RequireExit();
-            }
-
-            //等待音频输入线程退出。
-            if( m_AudioInputThreadPt != null )
-            {
-                try
-                {
-                    m_AudioInputThreadPt.join();
-                    m_AudioInputThreadPt = null;
-                }
-                catch( InterruptedException e )
-                {
-
-                }
-            }
-
-            //等待音频输出线程退出。
-            if( m_AudioOutputThreadPt != null )
-            {
-                try
-                {
-                    m_AudioOutputThreadPt.join();
-                    m_AudioOutputThreadPt = null;
-                }
-                catch( InterruptedException e )
-                {
-
-                }
-            }
-
-            //销毁音频输入Wave文件写入器对象。
-            if( m_AudioInputWaveFileWriterPt != null )
-            {
-                p_TmpInt32 = m_AudioInputWaveFileWriterPt.Destroy();
-                if( p_TmpInt32 == 0 )
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁音频输入Wave文件写入器对象成功。返回值：" + p_TmpInt32 );
-                }
-                else
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁音频输入Wave文件写入器对象失败。返回值：" + p_TmpInt32 );
-                }
-            }
-
-            //销毁音频输出Wave文件写入器对象。
-            if( m_AudioOutputWaveFileWriterPt != null )
-            {
-                p_TmpInt32 = m_AudioOutputWaveFileWriterPt.Destroy();
-                if( p_TmpInt32 == 0 )
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁音频输出Wave文件写入器对象成功。返回值：" + p_TmpInt32 );
-                }
-                else
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁音频输出Wave文件写入器对象失败。返回值：" + p_TmpInt32 );
-                }
-            }
-
-            //销毁音频结果Wave文件写入器对象。
-            if( m_AudioResultWaveFileWriterPt != null )
-            {
-                p_TmpInt32 = m_AudioResultWaveFileWriterPt.Destroy();
-                if( p_TmpInt32 == 0 )
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁音频结果Wave文件写入器对象成功。返回值：" + p_TmpInt32 );
-                }
-                else
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁音频结果Wave文件写入器对象失败。返回值：" + p_TmpInt32 );
-                }
-            }
-
-            //销毁输入帧链表类对象。
-            if( m_InputFrameLnkLstPt != null )
-            {
-                m_InputFrameLnkLstPt.clear();
-                m_InputFrameLnkLstPt = null;
-
-                if( m_IsPrintLogcat != 0 )
-                    Log.i( m_CurClsNameStrPt, "音频处理线程：销毁输入帧链表类对象成功。" );
-            }
-
-            //销毁输出帧链表类对象。
-            if( m_OutputFrameLnkLstPt != null )
-            {
-                m_OutputFrameLnkLstPt.clear();
-                m_OutputFrameLnkLstPt = null;
-
-                if( m_IsPrintLogcat != 0 )
-                    Log.i( m_CurClsNameStrPt, "音频处理线程：销毁输出帧链表类对象成功。" );
-            }
-
-            //销毁Speex声学回音消除器类对象。
-            if( m_SpeexAecPt != null )
-            {
-                //保存Speex声学回音消除器的内存块到文件。
-                if( m_SpeexAecIsSaveMemFile != 0 )
-                {
-                    File file = new File( m_SpeexAecMemFileFullPathStrPt );
-                    FileInputStream p_SpeexAecMemFileInputStreamPt = null;
-                    FileOutputStream p_SpeexAecMemFileOutputStreamPt = null;
-                    long p_i64SpeexAecMemoryFileVoiceActivityStatusTotal = 0;
-                    byte p_SpeexAecMemPt[];
-                    HTLong p_SpeexAecMemLen = new HTLong();
-
-                    ReadSpeexAecMemoryFile:
-                    if( file.exists() )
+                {//必须在销毁音频输入类对象、音频输出类对象前销毁音频输入线程类对象、音频输出线程类对象，因为音频输入线程类对象、音频输出线程类对象会使用音频输入类对象、音频输出类对象。
+                    if( m_AudioInputThreadPt != null ) m_AudioInputThreadPt.RequireExit(); //请求音频输入线程退出。
+                    if( m_AudioOutputThreadPt != null ) m_AudioOutputThreadPt.RequireExit(); //请求音频输出线程退出。
+                    if( m_AudioInputThreadPt != null )
                     {
                         try
                         {
-                            p_SpeexAecMemFileInputStreamPt = new FileInputStream( m_SpeexAecMemFileFullPathStrPt );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：创建Speex声学回音消除器的内存块文件 " + m_AudioInputFileFullPathStrPt + " 的文件输入流对象成功。" );
+                            m_AudioInputThreadPt.join(); //等待音频输入线程退出。
+                            m_AudioInputThreadPt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁音频输入线程类对象成功。" );
                         }
-                        catch( FileNotFoundException e )
+                        catch( InterruptedException e )
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：创建Speex声学回音消除器的内存块文件 " + m_AudioInputFileFullPathStrPt + " 的文件输入流对象失败。原因：" + e.toString() );
-                            break ReadSpeexAecMemoryFile;
-                        }
-
-                        p_SpeexAecMemPt = new byte[8];
-
-                        //跳过Speex声学回音消除器内存块文件的采样频率、帧的数据长度、过滤器的数据长度。
-                        try
-                        {
-                            if( p_SpeexAecMemFileInputStreamPt.skip( 16 ) != 16 )
-                            {
-                                throw new IOException( "文件中没有有语音活动帧总数。" );
-                            }
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：跳过Speex声学回音消除器内存块文件的采样频率、帧的数据长度、过滤器的数据长度成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：跳过Speex声学回音消除器内存块文件的采样频率、帧的数据长度、过滤器的数据长度失败。原因：" + e.toString() );
-                            break ReadSpeexAecMemoryFile;
-                        }
-
-                        try
-                        {
-                            if( p_SpeexAecMemFileInputStreamPt.read( p_SpeexAecMemPt, 0, 8 ) != 8 )
-                            {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.e( m_CurClsNameStrPt, "音频处理线程：Speex声学回音消除器的内存块文件中没有有语音活动帧总数。" );
-                                break ReadSpeexAecMemoryFile;
-                            }
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：读取Speex声学回音消除器的内存块文件中的有语音活动帧总数失败。原因：" + e.toString() );
-                            break ReadSpeexAecMemoryFile;
-                        }
-
-                        p_i64SpeexAecMemoryFileVoiceActivityStatusTotal = ( ( long ) p_SpeexAecMemPt[0] & 0xFF ) + ( ( ( long ) p_SpeexAecMemPt[1] & 0xFF ) << 8 ) + ( ( ( long ) p_SpeexAecMemPt[2] & 0xFF ) << 16 ) + ( ( ( long ) p_SpeexAecMemPt[3] & 0xFF ) << 24 ) + ( ( ( long ) p_SpeexAecMemPt[4] & 0xFF ) << 32 ) + ( ( ( long ) p_SpeexAecMemPt[5] & 0xFF ) << 40 ) + ( ( ( long ) p_SpeexAecMemPt[6] & 0xFF ) << 48 ) + ( ( ( long ) p_SpeexAecMemPt[7] & 0xFF ) << 56 );
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：Speex声学回音消除器的内存块文件中的有语音活动帧总数为：" + p_i64SpeexAecMemoryFileVoiceActivityStatusTotal + "，本次的：" + m_HasVoiceActFrameTotal + "。" );
-                    }
-
-                    if( p_SpeexAecMemFileInputStreamPt != null )
-                    {
-                        try
-                        {
-                            p_SpeexAecMemFileInputStreamPt.close();
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：销毁Speex声学回音消除器的内存块文件的文件输入流对象成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：销毁Speex声学回音消除器的内存块文件的文件输入流对象失败。原因：" + e.toString() );
                         }
                     }
-
-                    WriteSpeexAecMemoryFile:
-                    if( ( m_HasVoiceActFrameTotal >= 1500 ) || ( m_HasVoiceActFrameTotal > p_i64SpeexAecMemoryFileVoiceActivityStatusTotal ) ) //如果本次有语音活动帧总数超过30秒，或本次的有语音活动帧总数比Speex声学回音消除器的内存块文件中的大。
+                    if( m_AudioOutputThreadPt != null )
                     {
-                        if( m_SpeexAecPt.GetMemLen( p_SpeexAecMemLen ) != 0 )
-                        {
-                            break WriteSpeexAecMemoryFile;
-                        }
-
                         try
                         {
-                            p_SpeexAecMemFileOutputStreamPt = new FileOutputStream( m_SpeexAecMemFileFullPathStrPt );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：创建Speex声学回音消除器的内存块文件 " + m_SpeexAecMemFileFullPathStrPt + " 的文件输出流对象成功。" );
+                            m_AudioOutputThreadPt.join(); //等待音频输出线程退出。
+                            m_AudioOutputThreadPt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁音频输出线程类对象成功。" );
                         }
-                        catch( FileNotFoundException e )
+                        catch( InterruptedException e )
                         {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：创建Speex声学回音消除器的内存块文件 " + m_SpeexAecMemFileFullPathStrPt + " 的文件输出流对象失败。原因：" + e.toString() );
-                            break WriteSpeexAecMemoryFile;
                         }
+                    }
+                }
+                if( m_AudioRecordPt != null )
+                {
+                    if( m_AudioRecordPt.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING ) m_AudioRecordPt.stop();
+                    m_AudioRecordPt.release();
+                    m_AudioRecordPt = null;
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁音频输入类对象成功。" );
+                }
+                if( m_AudioTrackPt != null )
+                {
+                    if( m_AudioTrackPt.getPlayState() != AudioTrack.PLAYSTATE_STOPPED ) m_AudioTrackPt.stop();
+                    m_AudioTrackPt.release();
+                    m_AudioTrackPt = null;
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁音频输出类对象成功。" );
+                }
+            }
 
-                        p_SpeexAecMemPt = new byte[( int ) p_SpeexAecMemLen.m_Val];
-
-                        //写入采样频率到Speex声学回音消除器的内存块文件。
-                        p_SpeexAecMemPt[0] = ( byte ) ( m_SamplingRate & 0xFF );
-                        p_SpeexAecMemPt[1] = ( byte ) ( m_SamplingRate >> 8 & 0xFF );
-                        p_SpeexAecMemPt[2] = ( byte ) ( m_SamplingRate >> 16 & 0xFF );
-                        p_SpeexAecMemPt[3] = ( byte ) ( m_SamplingRate >> 24 & 0xFF );
-
-                        try
-                        {
-                            p_SpeexAecMemFileOutputStreamPt.write( p_SpeexAecMemPt, 0, 4 );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入采样频率到Speex声学回音消除器的内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入采样频率到Speex声学回音消除器的内存块文件失败。原因：" + e.toString() );
-                            break WriteSpeexAecMemoryFile;
-                        }
-
-                        //写入帧的数据长度到Speex声学回音消除器的内存块文件。
-                        p_SpeexAecMemPt[0] = ( byte ) ( m_FrameLen & 0xFF );
-                        p_SpeexAecMemPt[1] = ( byte ) ( m_FrameLen >> 8 & 0xFF );
-                        p_SpeexAecMemPt[2] = ( byte ) ( m_FrameLen >> 16 & 0xFF );
-                        p_SpeexAecMemPt[3] = ( byte ) ( m_FrameLen >> 24 & 0xFF );
-
-                        try
-                        {
-                            p_SpeexAecMemFileOutputStreamPt.write( p_SpeexAecMemPt, 0, 4 );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入帧的数据长度到Speex声学回音消除器的内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入帧的数据长度到Speex声学回音消除器的内存块文件失败。原因：" + e.toString() );
-                            break WriteSpeexAecMemoryFile;
-                        }
-
-                        //写入滤波器的数据长度到Speex声学回音消除器的内存块文件。
-                        p_SpeexAecMemPt[0] = ( byte ) ( m_SpeexAecFilterLen & 0xFF );
-                        p_SpeexAecMemPt[1] = ( byte ) ( m_SpeexAecFilterLen >> 8 & 0xFF );
-                        p_SpeexAecMemPt[2] = ( byte ) ( m_SpeexAecFilterLen >> 16 & 0xFF );
-                        p_SpeexAecMemPt[3] = ( byte ) ( m_SpeexAecFilterLen >> 24 & 0xFF );
-
-                        try
-                        {
-                            p_SpeexAecMemFileOutputStreamPt.write( p_SpeexAecMemPt, 0, 4 );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入滤波器的数据长度到Speex声学回音消除器的内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入滤波器的数据长度到Speex声学回音消除器的内存块文件失败。原因：" + e.toString() );
-                            break WriteSpeexAecMemoryFile;
-                        }
-
-                        //写入有语音活动帧总数到Speex声学回音消除器的内存块文件。
-                        p_SpeexAecMemPt[0] = ( byte ) ( m_HasVoiceActFrameTotal & 0xFF );
-                        p_SpeexAecMemPt[1] = ( byte ) ( m_HasVoiceActFrameTotal >> 8 & 0xFF );
-                        p_SpeexAecMemPt[2] = ( byte ) ( m_HasVoiceActFrameTotal >> 16 & 0xFF );
-                        p_SpeexAecMemPt[3] = ( byte ) ( m_HasVoiceActFrameTotal >> 24 & 0xFF );
-                        p_SpeexAecMemPt[4] = ( byte ) ( m_HasVoiceActFrameTotal >> 32 & 0xFF );
-                        p_SpeexAecMemPt[5] = ( byte ) ( m_HasVoiceActFrameTotal >> 40 & 0xFF );
-                        p_SpeexAecMemPt[6] = ( byte ) ( m_HasVoiceActFrameTotal >> 48 & 0xFF );
-                        p_SpeexAecMemPt[7] = ( byte ) ( m_HasVoiceActFrameTotal >> 56 & 0xFF );
-
-                        try
-                        {
-                            p_SpeexAecMemFileOutputStreamPt.write( p_SpeexAecMemPt, 0, 8 );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入有语音活动帧总数到Speex声学回音消除器的内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入有语音活动帧总数到Speex声学回音消除器的内存块文件失败。原因：" + e.toString() );
-                            break WriteSpeexAecMemoryFile;
-                        }
-
-                        //写入内存块到Speex声学回音消除器内存块文件。
-                        if( m_SpeexAecPt.GetMem( p_SpeexAecMemPt, p_SpeexAecMemLen.m_Val ) != 0 )
-                        {
-                            break WriteSpeexAecMemoryFile;
-                        }
-
-                        try
-                        {
-                            p_SpeexAecMemFileOutputStreamPt.write( p_SpeexAecMemPt, 0, ( int ) p_SpeexAecMemLen.m_Val );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入内存块到Speex声学回音消除器内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入内存块到Speex声学回音消除器内存块文件失败。原因：" + e.toString() );
-                            break WriteSpeexAecMemoryFile;
-                        }
+            //销毁音频输入Wave文件写入器类对象、音频输出Wave文件写入器类对象、音频结果Wave文件写入器类对象。
+            if( m_IsSaveAudioToFile != 0 )
+            {
+                if( m_AudioInputWaveFileWriterPt != null )
+                {
+                    if( m_AudioInputWaveFileWriterPt.Destroy() == 0 )
+                    {
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁音频输入Wave文件写入器类对象成功。" );
                     }
                     else
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：因为本次有语音活动帧总数没有超过30秒，或本次的有语音活动帧总数比Speex声学回音消除器内存块文件中的小，所以本次不保存Speex声学回音消除器内存块到文件。" );
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁音频输入Wave文件写入器类对象失败。" );
                     }
-
-                    if( p_SpeexAecMemFileOutputStreamPt != null )
+                    m_AudioInputWaveFileWriterPt = null;
+                }
+                if( m_AudioOutputWaveFileWriterPt != null )
+                {
+                    if( m_AudioOutputWaveFileWriterPt.Destroy() == 0 )
                     {
-                        try
-                        {
-                            p_SpeexAecMemFileOutputStreamPt.close();
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：销毁Speex声学回音消除器的内存块文件的文件输出流对象成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：销毁Speex声学回音消除器的内存块文件的文件输出流对象失败。原因：" + e.toString() );
-                        }
-                    }
-                }
-
-                p_TmpInt32 = m_SpeexAecPt.Destroy();
-                if( p_TmpInt32 == 0 )
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁Speex声学回音消除器类对象成功。返回值：" + p_TmpInt32 );
-                }
-                else
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁Speex声学回音消除器类对象失败。返回值：" + p_TmpInt32 );
-                }
-                m_SpeexAecPt = null;
-            }
-
-            //销毁WebRtc定点版声学回音消除器类对象。
-            if( m_WebRtcAecmPt != null )
-            {
-                p_TmpInt32 = m_WebRtcAecmPt.Destroy();
-                if( p_TmpInt32 == 0 )
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc定点版声学回音消除器类对象成功。返回值：" + p_TmpInt32 );
-                }
-                else
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc定点版声学回音消除器类对象失败。返回值：" + p_TmpInt32 );
-                }
-                m_WebRtcAecmPt = null;
-            }
-
-            //销毁WebRtc浮点版声学回音消除器类对象。
-            if( m_WebRtcAecPt != null )
-            {
-                //保存WebRtc浮点版声学回音消除器的内存块到文件。
-                if( m_WebRtcAecIsSaveMemFile != 0 )
-                {
-                    File file = new File( m_WebRtcAecMemFileFullPathStrPt );
-                    FileInputStream p_WebRtcAecMemFileInputStreamPt = null;
-                    FileOutputStream p_WebRtcAecMemFileOutputStreamPt = null;
-                    long p_i64WebRtcAecMemoryFileVoiceActivityStatusTotal = 0;
-                    byte p_WebRtcAecMemPt[];
-                    HTLong p_WebRtcAecMemLen = new HTLong( 0 );
-
-                    ReadWebRtcAecMemoryFile:
-                    if( file.exists() )
-                    {
-                        try
-                        {
-                            p_WebRtcAecMemFileInputStreamPt = new FileInputStream( m_WebRtcAecMemFileFullPathStrPt );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：创建WebRtc浮点版声学回音消除器的内存块文件 " + m_AudioInputFileFullPathStrPt + " 的文件输入流对象成功。" );
-                        }
-                        catch( FileNotFoundException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：创建WebRtc浮点版声学回音消除器的内存块文件 " + m_AudioInputFileFullPathStrPt + " 的文件输入流对象失败。原因：" + e.toString() );
-                            break ReadWebRtcAecMemoryFile;
-                        }
-
-                        p_WebRtcAecMemPt = new byte[8];
-
-                        //跳过WebRtc浮点版声学回音消除器内存块文件的前8个参数。
-                        try
-                        {
-                            if( p_WebRtcAecMemFileInputStreamPt.skip( 36 ) != 36 )
-                            {
-                                throw new IOException( "文件中没有有语音活动帧总数。" );
-                            }
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：跳过WebRtc浮点版声学回音消除器内存块文件的采样频率、帧的数据长度、过滤器的数据长度成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：跳过WebRtc浮点版声学回音消除器内存块文件的采样频率、帧的数据长度、过滤器的数据长度失败。原因：" + e.toString() );
-                            break ReadWebRtcAecMemoryFile;
-                        }
-
-                        try
-                        {
-                            if( p_WebRtcAecMemFileInputStreamPt.read( p_WebRtcAecMemPt, 0, 8 ) != 8 )
-                            {
-                                if( m_IsPrintLogcat != 0 )
-                                    Log.e( m_CurClsNameStrPt, "音频处理线程：WebRtc浮点版声学回音消除器的内存块文件中没有有语音活动帧总数。" );
-                                break ReadWebRtcAecMemoryFile;
-                            }
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：读取WebRtc浮点版声学回音消除器的内存块文件中的有语音活动帧总数失败。原因：" + e.toString() );
-                            break ReadWebRtcAecMemoryFile;
-                        }
-
-                        p_i64WebRtcAecMemoryFileVoiceActivityStatusTotal = ( ( long ) p_WebRtcAecMemPt[0] & 0xFF ) + ( ( ( long ) p_WebRtcAecMemPt[1] & 0xFF ) << 8 ) + ( ( ( long ) p_WebRtcAecMemPt[2] & 0xFF ) << 16 ) + ( ( ( long ) p_WebRtcAecMemPt[3] & 0xFF ) << 24 ) + ( ( ( long ) p_WebRtcAecMemPt[4] & 0xFF ) << 32 ) + ( ( ( long ) p_WebRtcAecMemPt[5] & 0xFF ) << 40 ) + ( ( ( long ) p_WebRtcAecMemPt[6] & 0xFF ) << 48 ) + ( ( ( long ) p_WebRtcAecMemPt[7] & 0xFF ) << 56 );
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：WebRtc浮点版声学回音消除器的内存块文件中的有语音活动帧总数为：" + p_i64WebRtcAecMemoryFileVoiceActivityStatusTotal + "，本次的：" + m_HasVoiceActFrameTotal + "。" );
-                    }
-
-                    if( p_WebRtcAecMemFileInputStreamPt != null )
-                    {
-                        try
-                        {
-                            p_WebRtcAecMemFileInputStreamPt.close();
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版声学回音消除器的内存块文件的文件输入流对象成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版声学回音消除器的内存块文件的文件输入流对象失败。原因：" + e.toString() );
-                        }
-                    }
-
-                    WriteWebRtcAecMemoryFile:
-                    if( ( m_HasVoiceActFrameTotal >= 1500 ) || ( m_HasVoiceActFrameTotal > p_i64WebRtcAecMemoryFileVoiceActivityStatusTotal ) ) //如果本次有语音活动帧总数超过30秒，或本次的有语音活动帧总数比WebRtc浮点版声学回音消除器的内存块文件中的大。
-                    {
-                        if( m_WebRtcAecPt.GetMemLen( p_WebRtcAecMemLen ) != 0 )
-                        {
-                            break WriteWebRtcAecMemoryFile;
-                        }
-
-                        try
-                        {
-                            p_WebRtcAecMemFileOutputStreamPt = new FileOutputStream( m_WebRtcAecMemFileFullPathStrPt );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：创建WebRtc浮点版声学回音消除器的内存块文件 " + m_WebRtcAecMemFileFullPathStrPt + " 的文件输出流对象成功。" );
-                        }
-                        catch( FileNotFoundException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：创建WebRtc浮点版声学回音消除器的内存块文件 " + m_WebRtcAecMemFileFullPathStrPt + " 的文件输出流对象失败。原因：" + e.toString() );
-                            break WriteWebRtcAecMemoryFile;
-                        }
-
-                        p_WebRtcAecMemPt = new byte[( int ) p_WebRtcAecMemLen.m_Val];
-
-                        //写入采样频率到WebRtc浮点版声学回音消除器的内存块文件。
-                        p_WebRtcAecMemPt[0] = ( byte ) ( m_SamplingRate & 0xFF );
-                        p_WebRtcAecMemPt[1] = ( byte ) ( m_SamplingRate >> 8 & 0xFF );
-                        p_WebRtcAecMemPt[2] = ( byte ) ( m_SamplingRate >> 16 & 0xFF );
-                        p_WebRtcAecMemPt[3] = ( byte ) ( m_SamplingRate >> 24 & 0xFF );
-
-                        try
-                        {
-                            p_WebRtcAecMemFileOutputStreamPt.write( p_WebRtcAecMemPt, 0, 4 );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入采样频率到WebRtc浮点版声学回音消除器的内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入采样频率到WebRtc浮点版声学回音消除器的内存块文件失败。原因：" + e.toString() );
-                            break WriteWebRtcAecMemoryFile;
-                        }
-
-                        //写入帧的数据长度到WebRtc浮点版声学回音消除器的内存块文件。
-                        p_WebRtcAecMemPt[0] = ( byte ) ( m_FrameLen & 0xFF );
-                        p_WebRtcAecMemPt[1] = ( byte ) ( m_FrameLen >> 8 & 0xFF );
-                        p_WebRtcAecMemPt[2] = ( byte ) ( m_FrameLen >> 16 & 0xFF );
-                        p_WebRtcAecMemPt[3] = ( byte ) ( m_FrameLen >> 24 & 0xFF );
-
-                        try
-                        {
-                            p_WebRtcAecMemFileOutputStreamPt.write( p_WebRtcAecMemPt, 0, 4 );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入帧的数据长度到WebRtc浮点版声学回音消除器的内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入帧的数据长度到WebRtc浮点版声学回音消除器的内存块文件失败。原因：" + e.toString() );
-                            break WriteWebRtcAecMemoryFile;
-                        }
-
-                        //写入消除模式到WebRtc浮点版声学回音消除器的内存块文件。
-                        p_WebRtcAecMemPt[0] = ( byte ) ( m_WebRtcAecEchoMode & 0xFF );
-                        p_WebRtcAecMemPt[1] = ( byte ) ( m_WebRtcAecEchoMode >> 8 & 0xFF );
-                        p_WebRtcAecMemPt[2] = ( byte ) ( m_WebRtcAecEchoMode >> 16 & 0xFF );
-                        p_WebRtcAecMemPt[3] = ( byte ) ( m_WebRtcAecEchoMode >> 24 & 0xFF );
-
-                        try
-                        {
-                            p_WebRtcAecMemFileOutputStreamPt.write( p_WebRtcAecMemPt, 0, 4 );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入消除模式到WebRtc浮点版声学回音消除器的内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入消除模式到WebRtc浮点版声学回音消除器的内存块文件失败。原因：" + e.toString() );
-                            break WriteWebRtcAecMemoryFile;
-                        }
-
-                        //写入回音的延迟到WebRtc浮点版声学回音消除器的内存块文件。
-                        p_WebRtcAecMemPt[0] = ( byte ) ( m_WebRtcAecDelay & 0xFF );
-                        p_WebRtcAecMemPt[1] = ( byte ) ( m_WebRtcAecDelay >> 8 & 0xFF );
-                        p_WebRtcAecMemPt[2] = ( byte ) ( m_WebRtcAecDelay >> 16 & 0xFF );
-                        p_WebRtcAecMemPt[3] = ( byte ) ( m_WebRtcAecDelay >> 24 & 0xFF );
-
-                        try
-                        {
-                            p_WebRtcAecMemFileOutputStreamPt.write( p_WebRtcAecMemPt, 0, 4 );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入回音的延迟到WebRtc浮点版声学回音消除器的内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入回音的延迟到WebRtc浮点版声学回音消除器的内存块文件失败。原因：" + e.toString() );
-                            break WriteWebRtcAecMemoryFile;
-                        }
-
-                        //写入是否使用回音延迟不可知模式到WebRtc浮点版声学回音消除器的内存块文件。
-                        p_WebRtcAecMemPt[0] = ( byte ) ( m_WebRtcAecIsUseDelayAgnosticMode & 0xFF );
-                        p_WebRtcAecMemPt[1] = ( byte ) ( m_WebRtcAecIsUseDelayAgnosticMode >> 8 & 0xFF );
-                        p_WebRtcAecMemPt[2] = ( byte ) ( m_WebRtcAecIsUseDelayAgnosticMode >> 16 & 0xFF );
-                        p_WebRtcAecMemPt[3] = ( byte ) ( m_WebRtcAecIsUseDelayAgnosticMode >> 24 & 0xFF );
-
-                        try
-                        {
-                            p_WebRtcAecMemFileOutputStreamPt.write( p_WebRtcAecMemPt, 0, 4 );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入是否使用回音延迟不可知模式到WebRtc浮点版声学回音消除器的内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入是否使用回音延迟不可知模式到WebRtc浮点版声学回音消除器的内存块文件失败。原因：" + e.toString() );
-                            break WriteWebRtcAecMemoryFile;
-                        }
-
-                        //写入是否使用自适应调节回音的延迟到WebRtc浮点版声学回音消除器的内存块文件。
-                        p_WebRtcAecMemPt[0] = ( byte ) ( m_WebRtcAecIsUseAdaptAdjDelay & 0xFF );
-                        p_WebRtcAecMemPt[1] = ( byte ) ( m_WebRtcAecIsUseAdaptAdjDelay >> 8 & 0xFF );
-                        p_WebRtcAecMemPt[2] = ( byte ) ( m_WebRtcAecIsUseAdaptAdjDelay >> 16 & 0xFF );
-                        p_WebRtcAecMemPt[3] = ( byte ) ( m_WebRtcAecIsUseAdaptAdjDelay >> 24 & 0xFF );
-
-                        try
-                        {
-                            p_WebRtcAecMemFileOutputStreamPt.write( p_WebRtcAecMemPt, 0, 4 );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入是否使用自适应调节回音的延迟到WebRtc浮点版声学回音消除器的内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入是否使用自适应调节回音的延迟到WebRtc浮点版声学回音消除器的内存块文件失败。原因：" + e.toString() );
-                            break WriteWebRtcAecMemoryFile;
-                        }
-
-                        //写入有语音活动帧总数到WebRtc浮点版声学回音消除器的内存块文件。
-                        p_WebRtcAecMemPt[0] = ( byte ) ( m_HasVoiceActFrameTotal & 0xFF );
-                        p_WebRtcAecMemPt[1] = ( byte ) ( m_HasVoiceActFrameTotal >> 8 & 0xFF );
-                        p_WebRtcAecMemPt[2] = ( byte ) ( m_HasVoiceActFrameTotal >> 16 & 0xFF );
-                        p_WebRtcAecMemPt[3] = ( byte ) ( m_HasVoiceActFrameTotal >> 24 & 0xFF );
-                        p_WebRtcAecMemPt[4] = ( byte ) ( m_HasVoiceActFrameTotal >> 32 & 0xFF );
-                        p_WebRtcAecMemPt[5] = ( byte ) ( m_HasVoiceActFrameTotal >> 40 & 0xFF );
-                        p_WebRtcAecMemPt[6] = ( byte ) ( m_HasVoiceActFrameTotal >> 48 & 0xFF );
-                        p_WebRtcAecMemPt[7] = ( byte ) ( m_HasVoiceActFrameTotal >> 56 & 0xFF );
-
-                        try
-                        {
-                            p_WebRtcAecMemFileOutputStreamPt.write( p_WebRtcAecMemPt, 0, 8 );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入有语音活动帧总数到WebRtc浮点版声学回音消除器的内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入有语音活动帧总数到WebRtc浮点版声学回音消除器的内存块文件失败。原因：" + e.toString() );
-                            break WriteWebRtcAecMemoryFile;
-                        }
-
-                        //写入内存块到WebRtc浮点版声学回音消除器内存块文件。
-                        if( m_WebRtcAecPt.GetMem( p_WebRtcAecMemPt, p_WebRtcAecMemLen.m_Val ) != 0 )
-                        {
-                            break WriteWebRtcAecMemoryFile;
-                        }
-
-                        try
-                        {
-                            p_WebRtcAecMemFileOutputStreamPt.write( p_WebRtcAecMemPt, 0, ( int ) p_WebRtcAecMemLen.m_Val );
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：写入内存块到WebRtc浮点版声学回音消除器内存块文件成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：写入内存块到WebRtc浮点版声学回音消除器内存块文件失败。原因：" + e.toString() );
-                            break WriteWebRtcAecMemoryFile;
-                        }
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁音频输出Wave文件写入器类对象成功。" );
                     }
                     else
                     {
-                        if( m_IsPrintLogcat != 0 )
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：因为本次有语音活动帧总数没有超过30秒，或本次的有语音活动帧总数比WebRtc浮点版声学回音消除器内存块文件中的小，所以本次不保存WebRtc浮点版声学回音消除器内存块到文件。" );
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁音频输出Wave文件写入器类对象失败。" );
                     }
-
-                    if( p_WebRtcAecMemFileOutputStreamPt != null )
+                    m_AudioOutputWaveFileWriterPt = null;
+                }
+                if( m_AudioResultWaveFileWriterPt != null )
+                {
+                    if( m_AudioResultWaveFileWriterPt.Destroy() == 0 )
                     {
-                        try
-                        {
-                            p_WebRtcAecMemFileOutputStreamPt.close();
-                            if( m_IsPrintLogcat != 0 )
-                                Log.i( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版声学回音消除器的内存块文件的文件输出流对象成功。" );
-                        }
-                        catch( IOException e )
-                        {
-                            if( m_IsPrintLogcat != 0 )
-                                Log.e( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版声学回音消除器的内存块文件的文件输出流对象失败。原因：" + e.toString() );
-                        }
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁音频结果Wave文件写入器类对象成功。" );
                     }
+                    else
+                    {
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁音频结果Wave文件写入器类对象失败。" );
+                    }
+                    m_AudioResultWaveFileWriterPt = null;
                 }
-
-                p_TmpInt32 = m_WebRtcAecPt.Destroy();
-                if( p_TmpInt32 == 0 )
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版声学回音消除器类对象成功。返回值：" + p_TmpInt32 );
-                }
-                else
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版声学回音消除器类对象失败。返回值：" + p_TmpInt32 );
-                }
-                m_WebRtcAecPt = null;
             }
 
-            //销毁SpeexWebRtc三重声学回音消除器类对象。
-            if( m_SpeexWebRtcAecPt != null )
+            //销毁编解码器类对象。
+            switch( m_UseWhatCodec )
             {
-                p_TmpInt32 = m_SpeexWebRtcAecPt.Destroy();
-                if( p_TmpInt32 == 0 )
+                case 0: //如果使用PCM原始数据。
                 {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁SpeexWebRtc三重声学回音消除器类对象成功。返回值：" + p_TmpInt32 );
+                    break;
                 }
-                else
+                case 1: //如果使用Speex编码器。
                 {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁SpeexWebRtc三重声学回音消除器类对象失败。返回值：" + p_TmpInt32 );
+                    if( m_SpeexEncoderPt != null )
+                    {
+                        if( m_SpeexEncoderPt.Destroy() == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁Speex编码器类对象成功。" );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁Speex编码器类对象失败。" );
+                        }
+                        m_SpeexEncoderPt = null;
+                    }
+                    if( m_SpeexDecoderPt != null )
+                    {
+                        if( m_SpeexDecoderPt.Destroy() == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁Speex解码器类对象成功。" );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁Speex解码器类对象失败。" );
+                        }
+                        m_SpeexDecoderPt = null;
+                    }
+                    break;
                 }
-                m_SpeexWebRtcAecPt = null;
-            }
-
-            //销毁WebRtc定点版噪音抑制器类对象。
-            if( m_WebRtcNsxPt != null )
-            {
-                p_TmpInt32 = m_WebRtcNsxPt.Destroy();
-                if( p_TmpInt32 == 0 )
+                case 2: //如果使用Opus编码器。
                 {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc定点版噪音抑制器类对象成功。返回值：" + p_TmpInt32 );
+                    break;
                 }
-                else
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc定点版噪音抑制器类对象失败。返回值：" + p_TmpInt32 );
-                }
-                m_WebRtcNsxPt = null;
-            }
-
-            //销毁WebRtc浮点版噪音抑制器类对象。
-            if( m_WebRtcNsPt != null )
-            {
-                p_TmpInt32 = m_WebRtcNsPt.Destroy();
-                if( p_TmpInt32 == 0 )
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版噪音抑制器类对象成功。返回值：" + p_TmpInt32 );
-                }
-                else
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版噪音抑制器类对象失败。返回值：" + p_TmpInt32 );
-                }
-                m_WebRtcNsPt = null;
-            }
-
-            //销毁RNNoise噪音抑制器类对象。
-            if( m_RNNoisePt != null )
-            {
-                p_TmpInt32 = m_RNNoisePt.Destroy();
-                if( p_TmpInt32 == 0 )
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁RNNoise噪音抑制器类对象成功。返回值：" + p_TmpInt32 );
-                }
-                else
-                {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁RNNoise噪音抑制器类对象失败。返回值：" + p_TmpInt32 );
-                }
-                m_RNNoisePt = null;
             }
 
             //销毁Speex预处理器类对象。
             if( m_SpeexPprocPt != null )
             {
-                p_TmpInt32 = m_SpeexPprocPt.Destroy();
-                if( p_TmpInt32 == 0 )
+                if( m_SpeexPprocPt.Destroy() == 0 )
                 {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.i( m_CurClsNameStrPt, "音频处理线程：销毁Speex预处理器类对象成功。返回值：" + p_TmpInt32 );
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁Speex预处理器类对象成功。" );
                 }
                 else
                 {
-                    if( m_IsPrintLogcat != 0 )
-                        Log.e( m_CurClsNameStrPt, "音频处理线程：销毁Speex预处理器类对象失败。返回值：" + p_TmpInt32 );
+                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁Speex预处理器类对象失败。" );
                 }
                 m_SpeexPprocPt = null;
             }
 
-            //销毁Speex编码器类对象。
-            if( m_SpeexEncoderPt != null )
+            //销毁噪音抑制器。
+            switch( m_UseWhatNs )
             {
-                m_SpeexEncoderPt.Destroy();
-                m_SpeexEncoderPt = null;
-
-                if( m_IsPrintLogcat != 0 )
-                    Log.i( m_CurClsNameStrPt, "音频处理线程：销毁Speex编码器类对象成功。" );
-            }
-
-            //销毁Speex解码器类对象。
-            if( m_SpeexDecoderPt != null )
-            {
-                m_SpeexDecoderPt.Destroy();
-                m_SpeexDecoderPt = null;
-
-                if( m_IsPrintLogcat != 0 )
-                    Log.i( m_CurClsNameStrPt, "音频处理线程：销毁Speex解码器类对象成功。" );
-            }
-
-            //销毁音频输入类对象。
-            if( m_AudioRecordPt != null )
-            {
-                if( m_AudioRecordPt.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING )
+                case 0: //如果不使用噪音抑制器。
                 {
-                    m_AudioRecordPt.stop();
+                    break;
                 }
-                m_AudioRecordPt.release();
-                m_AudioRecordPt = null;
-
-                if( m_IsPrintLogcat != 0 )
-                    Log.i( m_CurClsNameStrPt, "音频处理线程：销毁音频输入类对象成功。" );
+                case 1: //如果使用Speex预处理器的噪音抑制。
+                {
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：之前在销毁Speex预处理器时一起销毁Speex预处理器的噪音抑制。" );
+                    break;
+                }
+                case 2: //如果使用WebRtc定点版噪音抑制器。
+                {
+                    if( m_WebRtcNsxPt != null )
+                    {
+                        if( m_WebRtcNsxPt.Destroy() == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc定点版噪音抑制器类对象成功。" );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc定点版噪音抑制器类对象失败。" );
+                        }
+                        m_WebRtcNsxPt = null;
+                    }
+                    break;
+                }
+                case 3: //如果使用WebRtc浮点版噪音抑制器类对象。
+                {
+                    if( m_WebRtcNsPt != null )
+                    {
+                        if( m_WebRtcNsPt.Destroy() == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版噪音抑制器类对象成功。" );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版噪音抑制器类对象失败。" );
+                        }
+                        m_WebRtcNsPt = null;
+                    }
+                    break;
+                }
+                case 4: //如果使用RNNoise噪音抑制器类对象。
+                {
+                    if( m_RNNoisePt != null )
+                    {
+                        if( m_RNNoisePt.Destroy() == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁RNNoise噪音抑制器类对象成功。" );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁RNNoise噪音抑制器类对象失败。" );
+                        }
+                        m_RNNoisePt = null;
+                    }
+                    break;
+                }
             }
 
-            //销毁音频输出类对象。
-            if( m_AudioTrackPt != null )
+            //销毁声学回音消除器。
+            switch( m_UseWhatAec )
             {
-                if( m_AudioTrackPt.getPlayState() != AudioTrack.PLAYSTATE_STOPPED )
+                case 0: //如果不使用声学回音消除器。
                 {
-                    m_AudioTrackPt.stop();
+                    break;
                 }
-                m_AudioTrackPt.release();
-                m_AudioTrackPt = null;
+                case 1: //如果使用Speex声学回音消除器。
+                {
+                    if( m_SpeexAecPt != null )
+                    {
+                        if( m_SpeexAecIsSaveMemFile != 0 )
+                        {
+                            if( m_SpeexAecPt.SaveMemFile( m_SamplingRate, m_FrameLen, m_SpeexAecFilterLen, ( m_SpeexAecMemFileFullPathStrPt + "\0" ).getBytes() ) == 0 )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：将Speex声学回音消除器内存块保存到指定的文件 " + m_SpeexAecMemFileFullPathStrPt + " 成功。" );
+                            }
+                            else
+                            {
+                                m_SpeexAecPt = null;
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：将Speex声学回音消除器内存块保存到指定的文件 " + m_SpeexAecMemFileFullPathStrPt + " 失败。" );
+                            }
+                        }
+                        if( m_SpeexAecPt.Destroy() == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁Speex声学回音消除器类对象成功。" );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁Speex声学回音消除器类对象失败。" );
+                        }
+                        m_SpeexAecPt = null;
+                    }
+                    break;
+                }
+                case 2: //如果使用WebRtc定点版声学回音消除器。
+                {
+                    if( m_WebRtcAecmPt != null )
+                    {
+                        if( m_WebRtcAecmPt.Destroy() == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc定点版声学回音消除器类对象成功。" );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc定点版声学回音消除器类对象失败。" );
+                        }
+                        m_WebRtcAecmPt = null;
+                    }
+                    break;
+                }
+                case 3: //如果使用WebRtc浮点版声学回音消除器。
+                {
+                    if( m_WebRtcAecPt != null )
+                    {
+                        if( m_WebRtcAecIsSaveMemFile != 0 )
+                        {
+                            if( m_WebRtcAecPt.SaveMemFile( m_SamplingRate, m_FrameLen, m_WebRtcAecEchoMode, m_WebRtcAecDelay, m_WebRtcAecIsUseDelayAgnosticMode, m_WebRtcAecIsUseExtdFilterMode, m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_WebRtcAecIsUseAdaptAdjDelay, ( m_WebRtcAecMemFileFullPathStrPt + "\0" ).getBytes() ) == 0 )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：将WebRtc浮点版声学回音消除器内存块保存到指定的文件 " + m_WebRtcAecMemFileFullPathStrPt + " 成功。" );
+                            }
+                            else
+                            {
+                                m_WebRtcAecPt = null;
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：将WebRtc浮点版声学回音消除器内存块保存到指定的文件 " + m_WebRtcAecMemFileFullPathStrPt + " 失败。" );
+                            }
+                        }
+                        if( m_WebRtcAecPt.Destroy() == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版声学回音消除器类对象成功。" );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁WebRtc浮点版声学回音消除器类对象失败。" );
+                        }
+                        m_WebRtcAecPt = null;
+                    }
+                    break;
+                }
+                case 4: //如果使用SpeexWebRtc三重声学回音消除器。
+                {
+                    if( m_SpeexWebRtcAecPt != null )
+                    {
+                        if( m_SpeexWebRtcAecPt.Destroy() == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁SpeexWebRtc三重声学回音消除器类对象成功。" );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：销毁SpeexWebRtc三重声学回音消除器类对象失败。" );
+                        }
+                        m_SpeexWebRtcAecPt = null;
+                    }
+                    break;
+                }
+            }
 
-                if( m_IsPrintLogcat != 0 )
-                    Log.i( m_CurClsNameStrPt, "音频处理线程：销毁音频输出类对象成功。" );
+            //销毁输入帧链表类对象、输出帧链表类对象。
+            {
+                if( m_InputFrameLnkLstPt != null )
+                {
+                    m_InputFrameLnkLstPt.clear();
+                    m_InputFrameLnkLstPt = null;
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁输入帧链表类对象成功。" );
+                }
+                if( m_OutputFrameLnkLstPt != null )
+                {
+                    m_OutputFrameLnkLstPt.clear();
+                    m_OutputFrameLnkLstPt = null;
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁输出帧链表类对象成功。" );
+                }
+            }
+
+            //销毁PCM格式输入帧、PCM格式输出帧、PCM格式结果帧、PCM格式临时帧、PCM格式交换帧、语音活动状态、Speex格式输入帧、Speex格式输入帧的数据长度、Speex格式输入帧是否需要传输。
+            {
+                p_PcmInputFramePt = null; //PCM格式输入帧。
+                p_PcmOutputFramePt = null; //PCM格式输出帧。
+                p_PcmResultFramePt = null; //PCM格式结果帧。
+                p_PcmTmpFramePt = null; //PCM格式临时帧。
+                p_PcmSwapFramePt = null; //PCM格式交换帧。
+                p_VoiceActStsPt = null; //语音活动状态，1表示有语音活动，0表示无语音活动，预设为1，为了让在没有使用语音活动检测的情况下永远都是有语音活动。
+                p_SpeexInputFramePt = null; //Speex格式输入帧。
+                p_SpeexInputFrameLenPt = null; //Speex格式输入帧的数据长度，单位字节。
+                p_SpeexInputFrameIsNeedTransPt = null; //Speex格式输入帧是否需要传输，1表示需要传输，0表示不需要传输，预设为1为了让在没有使用非连续传输的情况下永远都是需要传输。
+                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁PCM格式输入帧、PCM格式输出帧、PCM格式结果帧、PCM格式临时帧、PCM格式交换帧、语音活动状态、Speex格式输入帧、Speex格式输入帧的数据长度、Speex格式输入帧是否需要传输成功。" );
             }
 
             //调用用户定义的销毁函数。
             p_TmpInt32 = UserDestroy();
 
-            //销毁接近息屏唤醒锁类对象。
-            if( m_ProximityScreenOffWakeLockPt != null )
+            //销毁接近息屏唤醒锁类对象、屏幕键盘全亮唤醒锁类对象。
+            if( m_IsUseWakeLock != 0 )
             {
-                m_ProximityScreenOffWakeLockPt.release();
-                m_ProximityScreenOffWakeLockPt = null;
-
-                if( m_IsPrintLogcat != 0 )
-                    Log.i( m_CurClsNameStrPt, "音频处理线程：销毁接近息屏唤醒锁类对象成功。" );
-            }
-
-            //销毁屏幕键盘全亮唤醒锁类对象。
-            if( m_FullWakeLockPt != null )
-            {
-                m_FullWakeLockPt.release();
-                m_FullWakeLockPt = null;
-
-                if( m_IsPrintLogcat != 0 )
-                    Log.i( m_CurClsNameStrPt, "音频处理线程：销毁屏幕键盘全亮唤醒锁类对象成功。" );
+                if( m_ProximityScreenOffWakeLockPt != null )
+                {
+                    m_ProximityScreenOffWakeLockPt.release();
+                    m_ProximityScreenOffWakeLockPt = null;
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁接近息屏唤醒锁类对象成功。" );
+                }
+                if( m_FullWakeLockPt != null )
+                {
+                    m_FullWakeLockPt.release();
+                    m_FullWakeLockPt = null;
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁屏幕键盘全亮唤醒锁类对象成功。" );
+                }
             }
 
             if( p_TmpInt32 == 0 ) //如果用户需要直接退出。
             {
-                if( m_IsPrintLogcat != 0 )
-                    Log.i( m_CurClsNameStrPt, "音频处理线程：本线程已退出。" );
+                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：本线程已退出。" );
                 break ReInit;
             }
             else //如果用户需用重新初始化。
             {
-                if( m_IsPrintLogcat != 0 )
-                    Log.i( m_CurClsNameStrPt, "音频处理线程：本线程重新初始化。" );
+                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：本线程重新初始化。" );
             }
         }
     }

@@ -71,6 +71,32 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="注意"
+            android:textSize="24sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="    1、不要在64位操作系统下使用32位动态库，或在32位操作系统下使用64位动态库，不要对HeavenTao.Audio包和HeavenTao.Data包进行代码混淆，否则会导致意想不到的问题。"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="    2、如果在使用Speex声学回音消除器时，最好也使用Speex预处理器的噪音抑制，这样可以达到最佳的消除效果。"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="    3、如果要使用8000Hz采样频率时，最好不要使用RNNoise噪音抑制，因为它对8000Hz的声音抑制非常强烈。"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="    4、本程序不支持音乐，尤其是RNNoise噪音抑制器对音乐的抑制非常强烈。"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="其他"
             android:textSize="24sp"/>
 

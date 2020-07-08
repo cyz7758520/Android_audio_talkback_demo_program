@@ -7,7 +7,7 @@ android {
         minSdkVersion 9
         targetSdkVersion 29
         versionCode 1
-        versionName "2020.04.24"
+        versionName "2020.06.09"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -16,7 +16,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    buildToolsVersion = '30.0.0 rc2'
+    buildToolsVersion = '30.0.0 rc4'
 }
 
 dependencies {

@@ -35,13 +35,19 @@ public class SpeexAec
     public native int Init( int SamplingRate, int FrameLen, int FilterLen );
 
     //根据Speex声学回音消除器内存块来创建并初始化Speex声学回音消除器。
-    public native int InitFromMem( byte SpeexAecMemPt[], long SpeexAecMemLen );
+    public native int InitByMem( int SamplingRate, int FrameLen, int FilterLen, byte SpeexAecMemPt[], long SpeexAecMemLen );
+
+    //根据Speex声学回音消除器内存块文件来创建并初始化Speex声学回音消除器。
+    public native int InitByMemFile( int SamplingRate, int FrameLen, int FilterLen, byte SpeexAecMemFileFullPathStrPt[] );
 
     //获取Speex声学回音消除器内存块的数据长度。
     public native int GetMemLen( HTLong SpeexAecMemLenPt );
 
     //获取Speex声学回音消除器的内存块。
     public native int GetMem( byte SpeexAecMemPt[], long SpeexAecMemSz );
+
+    //将Speex声学回音消除器内存块保存到指定的文件。
+    public native int SaveMemFile( int SamplingRate, int FrameLen, int FilterLen, byte SpeexAecMemFileFullPathStrPt[] );
 
     //用Speex声学回音消除器对单声道16位有符号整型PCM格式输入帧进行Speex声学回音消除。
     public native int Proc( short InputFramePt[], short OutputFramePt[], short ResultFramePt[] );
