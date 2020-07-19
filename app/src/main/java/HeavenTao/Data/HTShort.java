@@ -1,5 +1,6 @@
 package HeavenTao.Data;
 
+//短整型类。
 public class HTShort
 {
     public short m_Val;

@@ -134,7 +134,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="numberDecimal"
-                android:text="0.6" />
+                android:text="0.65" />
 
         </LinearLayout>
 

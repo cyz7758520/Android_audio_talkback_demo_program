@@ -1,5 +1,6 @@
 package HeavenTao.Data;
 
+//长整型类。
 public class HTLong
 {
     public long m_Val;

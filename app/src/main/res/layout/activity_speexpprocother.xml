@@ -123,7 +123,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number"
-                android:text="32768" />
+                android:text="10" />
 
         </LinearLayout>
 
@@ -167,7 +167,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number"
-                android:text="32768" />
+                android:text="25" />
 
         </LinearLayout>
 

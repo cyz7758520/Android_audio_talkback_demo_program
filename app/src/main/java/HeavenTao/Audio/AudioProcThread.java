@@ -1229,7 +1229,7 @@ public abstract class AudioProcThread extends Thread
                             {
                                 if( m_SpeexEncoderPt.Proc( p_PcmResultFramePt, p_SpeexInputFramePt, p_SpeexInputFramePt.length, p_SpeexInputFrameLenPt, p_SpeexInputFrameIsNeedTransPt ) == 0 )
                                 {
-                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用Speex编码器成功。Speex格式输入帧的内存长度：" + p_SpeexInputFrameLenPt.m_Val + "，Speex格式输入帧是否需要传输：" + p_SpeexInputFrameIsNeedTransPt.m_Val );
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：使用Speex编码器成功。Speex格式输入帧的数据长度：" + p_SpeexInputFrameLenPt.m_Val + "，Speex格式输入帧是否需要传输：" + p_SpeexInputFrameIsNeedTransPt.m_Val );
                                 }
                                 else
                                 {
