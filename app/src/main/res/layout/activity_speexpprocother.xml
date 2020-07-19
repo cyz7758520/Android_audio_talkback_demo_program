@@ -101,7 +101,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number"
-                android:text="32768" />
+                android:text="30000" />
 
         </LinearLayout>
 
@@ -145,7 +145,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number"
-                android:text="-32768" />
+                android:text="-30000" />
 
         </LinearLayout>
 
