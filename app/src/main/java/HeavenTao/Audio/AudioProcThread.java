@@ -156,8 +156,8 @@ public abstract class AudioProcThread extends Thread
             Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级。
 
             short p_TmpInputFramePt[];
-            Date p_LastDatePt;
-            Date p_NowDatePt;
+            long p_LastMsec = 0;
+            long p_NowMsec = 0;
 
             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：开始准备音频输入。" );
 
@@ -169,18 +169,18 @@ public abstract class AudioProcThread extends Thread
                 //计算音频输出的延迟。
                 m_AudioTrackPt.play(); //让音频输出类对象开始播放。
                 p_TmpInputFramePt = new short[m_FrameLen]; //创建一个空输出帧。
-                p_LastDatePt = new Date();
+                p_LastMsec = System.currentTimeMillis();
                 skip:
                 while( true )
                 {
                     m_AudioTrackPt.write( p_TmpInputFramePt, 0, p_TmpInputFramePt.length ); //播放一个空输出帧。
-                    p_NowDatePt = new Date();
+                    p_NowMsec = System.currentTimeMillis();
                     p_IntDelay += m_FrameLen; //递增音频输出的延迟。
-                    if( p_NowDatePt.getTime() - p_LastDatePt.getTime() >= 10 ) //如果播放耗时较长，就表示音频输出类对象的缓冲区已经写满，结束计算。
+                    if( p_NowMsec - p_LastMsec >= 10 ) //如果播放耗时较长，就表示音频输出类对象的缓冲区已经写满，结束计算。
                     {
                         break skip;
                     }
-                    p_LastDatePt = p_NowDatePt;
+                    p_LastMsec = p_NowMsec;
                 }
                 p_IntDelay = p_IntDelay * 1000 / m_SamplingRate; //将音频输出的延迟转换为毫秒。
                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "音频输出延迟：" + p_IntDelay + " 毫秒。" );
@@ -188,14 +188,14 @@ public abstract class AudioProcThread extends Thread
                 //计算音频输入的延迟。
                 m_AudioRecordPt.startRecording(); //让音频输入类对象开始录音。
                 p_TmpInputFramePt = new short[m_FrameLen];
-                p_LastDatePt = new Date();
+                p_LastMsec = System.currentTimeMillis();
                 m_AudioRecordPt.read( p_TmpInputFramePt, 0, p_TmpInputFramePt.length );
-                p_NowDatePt = new Date();
-                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "音频输入延迟：" + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒，现在启动音频输出线程，并开始音频输入循环，为了保证音频输入线程走在输出数据线程的前面。" );
+                p_NowMsec = System.currentTimeMillis();
+                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "音频输入延迟：" + ( p_NowMsec - p_LastMsec ) + " 毫秒，现在启动音频输出线程，并开始音频输入循环，为了保证音频输入线程走在输出数据线程的前面。" );
 
                 m_AudioOutputThreadPt.start(); //启动音频输出线程。
 
-                p_IntDelay = ( int ) ( p_IntDelay + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) );
+                p_IntDelay = ( int ) ( p_IntDelay + ( p_NowMsec - p_LastMsec ) );
                 if( ( m_WebRtcAecmPt != null ) && ( m_WebRtcAecmPt.GetDelay( p_HTIntDelay ) == 0 ) && ( p_HTIntDelay.m_Val == 0 ) ) //如果使用了WebRtc定点版声学回音消除器，且需要自适应设置回音的延迟。
                 {
                     m_WebRtcAecmPt.SetDelay( p_IntDelay / 2 );
@@ -237,7 +237,7 @@ public abstract class AudioProcThread extends Thread
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：自适应设置SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器的回音延迟为 " + p_HTIntDelay.m_Val + " 毫秒。" );
                 }
 
-                p_LastDatePt = p_NowDatePt;
+                p_LastMsec = p_NowMsec;
             }
 
             //开始音频输入循环。
@@ -251,9 +251,9 @@ public abstract class AudioProcThread extends Thread
 
                 if( m_IsPrintLogcat != 0 )
                 {
-                    p_NowDatePt = new Date();
-                    Log.i( m_CurClsNameStrPt, "音频输入线程：读取耗时 " + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒，" + "输入帧链表元素个数：" + m_InputFrameLnkLstPt.size() + "。" );
-                    p_LastDatePt = p_NowDatePt;
+                    p_NowMsec = System.currentTimeMillis();
+                    Log.i( m_CurClsNameStrPt, "音频输入线程：读取耗时 " + ( p_NowMsec - p_LastMsec ) + " 毫秒，" + "输入帧链表元素个数：" + m_InputFrameLnkLstPt.size() + "。" );
+                    p_LastMsec = p_NowMsec;
                 }
 
                 //追加本次输入帧到输入帧链表。
@@ -290,12 +290,12 @@ public abstract class AudioProcThread extends Thread
             Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级。
 
             short p_TmpOutputFramePt[];
-            Date p_LastDatePt = null;
-            Date p_NowDatePt;
+            long p_LastMsec = 0;
+            long p_NowMsec = 0;
 
             if( m_IsPrintLogcat != 0 )
             {
-                p_LastDatePt = new Date();
+                p_LastMsec = System.currentTimeMillis();
                 Log.i( m_CurClsNameStrPt, "音频输出线程：开始准备音频输出。" );
             }
 
@@ -347,9 +347,9 @@ public abstract class AudioProcThread extends Thread
 
                 if( m_IsPrintLogcat != 0 )
                 {
-                    p_NowDatePt = new Date();
-                    Log.i( m_CurClsNameStrPt, "音频输出线程：写入耗时 " + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒，输出帧链表元素个数：" + m_OutputFrameLnkLstPt.size() + "。" );
-                    p_LastDatePt = p_NowDatePt;
+                    p_NowMsec = System.currentTimeMillis();
+                    Log.i( m_CurClsNameStrPt, "音频输出线程：写入耗时 " + ( p_NowMsec - p_LastMsec ) + " 毫秒，输出帧链表元素个数：" + m_OutputFrameLnkLstPt.size() + "。" );
+                    p_LastMsec = p_NowMsec;
                 }
 
                 //追加本次输出帧到输出帧链表。
@@ -577,8 +577,8 @@ public abstract class AudioProcThread extends Thread
         Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级。
 
         int p_TmpInt32;
-        Date p_LastDatePt = null;
-        Date p_NowDatePt = null;
+        long p_LastMsec = 0;
+        long p_NowMsec = 0;
 
         short p_PcmInputFramePt[] = null; //PCM格式输入帧。
         short p_PcmOutputFramePt[] = null; //PCM格式输出帧。
@@ -595,7 +595,7 @@ public abstract class AudioProcThread extends Thread
         {
             out:
             {
-                if( m_IsPrintLogcat != 0 ) p_LastDatePt = new Date(); //记录初始化开始的时间。
+                if( m_IsPrintLogcat != 0 ) p_LastMsec = System.currentTimeMillis(); //记录初始化开始的时间。
 
                 m_ExitFlag = 0; //设置本线程退出标记为保持运行。
 
@@ -1036,13 +1036,13 @@ public abstract class AudioProcThread extends Thread
 
                 if( m_IsPrintLogcat != 0 )
                 {
-                    p_NowDatePt = new Date();
-                    Log.i( m_CurClsNameStrPt, "音频处理线程：音频处理线程初始化完毕，耗时：" + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒，正式开始处理音频。" );
+                    p_NowMsec = System.currentTimeMillis();
+                    Log.i( m_CurClsNameStrPt, "音频处理线程：音频处理线程初始化完毕，耗时：" + ( p_NowMsec - p_LastMsec ) + " 毫秒，正式开始处理音频。" );
                 }
 
                 while( true )
                 {
-                    if( m_IsPrintLogcat != 0 ) p_LastDatePt = new Date();
+                    if( m_IsPrintLogcat != 0 ) p_LastMsec = System.currentTimeMillis();
 
                     //调用用户定义的处理函数。
                     p_TmpInt32 = UserProcess();
@@ -1287,8 +1287,8 @@ public abstract class AudioProcThread extends Thread
 
                         if( m_IsPrintLogcat != 0 )
                         {
-                            p_NowDatePt = new Date();
-                            Log.i( m_CurClsNameStrPt, "音频处理线程：本音频帧处理完毕，耗时：" + ( p_NowDatePt.getTime() - p_LastDatePt.getTime() ) + " 毫秒。" );
+                            p_NowMsec = System.currentTimeMillis();
+                            Log.i( m_CurClsNameStrPt, "音频处理线程：本音频帧处理完毕，耗时：" + ( p_NowMsec - p_LastMsec ) + " 毫秒。" );
                         }
                     }
 
