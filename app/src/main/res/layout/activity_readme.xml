@@ -102,7 +102,17 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="        不要在64位操作系统下使用32位动态库，或在32位操作系统下使用64位动态库，不要对HeavenTao.Audio包和HeavenTao.Data包进行代码混淆，否则会导致意想不到的问题。"/>
+            android:text="        不要在64位操作系统下使用32位动态库，或在32位操作系统下使用64位动态库，否则会导致意想不到的问题。"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="        不要对HeavenTao.Audio包、HeavenTao.Data包、HeavenTao.Sokt包进行代码混淆，否则会导致意想不到的问题。"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="        从老版本更新到新版本时，类文件和库文件全部都要更新，不能只更新类文件或库文件，否则会导致意想不到的问题。"/>
 
         <TextView
             android:layout_width="wrap_content"

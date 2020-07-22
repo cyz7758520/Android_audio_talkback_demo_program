@@ -86,7 +86,7 @@ class MainActivityHandler extends Handler
         {
             LinearLayout clLogLinearLayout = m_MainActivityPt.m_LyotActivityMainViewPt.findViewById( R.id.LogLinearLyot );
             TextView clTempTextView = new TextView( m_MainActivityPt );
-            clTempTextView.setText( ( new SimpleDateFormat( "HH:mm:ss" ) ).format( new Date() ) + "：" + MessagePt.obj );
+            clTempTextView.setText( ( new SimpleDateFormat( "HH:mm:ss.SSS" ) ).format( new Date() ) + "：" + MessagePt.obj );
             clLogLinearLayout.addView( clTempTextView );
         }
     }
@@ -102,6 +102,7 @@ class MyAudioProcThread extends AudioProcThread
     byte m_IsCreateSrvrOrClnt; //存放创建服务端或者客户端标记，为1表示创建服务端，为0表示创建客户端。
     TcpSrvrSokt m_TcpSrvrSoktPt; //存放本端TCP协议服务端套接字类对象的内存指针。
     TcpClntSokt m_TcpClntSoktPt; //存放本端TCP协议客户端套接字类对象的内存指针。
+    int m_TcpClntSoktReInitTimes; //存放本端TCP协议客户端套接字类对象重新初始化的次数。
     long m_LastPktSendTime; //存放最后一个数据包的发送时间，用于判断连接是否中断。
     long m_LastPktRecvTime; //存放最后一个数据包的接收时间，用于判断连接是否中断。
 
@@ -111,17 +112,17 @@ class MyAudioProcThread extends AudioProcThread
     byte m_IsRecvExitPkt; //存放是否接收到退出包，为0表示否，为1表示是。
 
     int m_UseWhatRecvOutputFrame; //存放使用什么接收输出帧，为0表示链表，为1表示自适应抖动缓冲器。
+
     LinkedList< byte[] > m_RecvOutputFrameLnkLstPt; //存放接收输出帧链表类对象的内存指针。
+
     Ajb m_AjbPt; //存放自适应抖动缓冲器类对象的内存指针。
     int m_AjbMinNeedBufFrameCnt; //存放自适应抖动缓冲器的最小需缓冲帧数量，单位个。
     int m_AjbMaxNeedBufFrameCnt; //存放自适应抖动缓冲器的最大需缓冲帧数量，单位个。
     byte m_AjbAdaptSensitivity; //存放自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0,127]。
 
-    VarStr m_ErrInfoVarStrPt; //存放错误信息动态字符串类对象的内存指针，可以为NULL。
-
     byte m_TmpBytePt[]; //存放临时数据。
-    int m_TmpInt32;
-    HTLong p_TmpHTLong = new HTLong(  );
+
+    VarStr m_ErrInfoVarStrPt; //存放错误信息动态字符串类对象的内存指针，可以为NULL。
 
     //用户定义的初始化函数，在本线程刚启动时调用一次，返回值表示是否成功，为0表示成功，为非0表示失败。
     public int UserInit()
@@ -130,6 +131,10 @@ class MyAudioProcThread extends AudioProcThread
 
         out:
         {
+            {Message p_MessagePt = new Message();p_MessagePt.what = 1;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送音频处理线程启动的消息。
+
+            m_IsRecvExitPkt = 0; //设置没有接收到退出包。
+            if( m_TmpBytePt == null ) m_TmpBytePt = new byte[m_FrameLen * 2 + 6]; //初始化存放临时数据的数组。
             if( m_ErrInfoVarStrPt == null ) //创建并初始化错误信息动态字符串类对象。
             {
                 m_ErrInfoVarStrPt = new VarStr();
@@ -139,14 +144,11 @@ class MyAudioProcThread extends AudioProcThread
                 }
             }
 
-            {Message p_MessagePt = new Message();p_MessagePt.what = 1;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送音频处理线程启动的消息。
-
             if( m_IsCreateSrvrOrClnt == 1 ) //如果是创建本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接。
             {
                 if( m_TcpSrvrSoktPt == null ) //如果还没有创建TCP协议服务端套接字。
                 {
                     m_TcpSrvrSoktPt = new TcpSrvrSokt();
-                    m_TcpClntSoktPt = new TcpClntSokt();
 
                     if( m_TcpSrvrSoktPt.Init( m_IPAddrStrPt, m_PortStrPt, 1, 1, m_ErrInfoVarStrPt ) == 0 ) //如果创建并初始化已监听的本端TCP协议服务端套接字成功。
                     {
@@ -167,12 +169,14 @@ class MyAudioProcThread extends AudioProcThread
                     }
                     else //如果创建并初始化已监听的本端TCP协议服务端套接字失败。
                     {
-                        String p_InfoStrPt = "创建本端TCP协议服务端套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                        String p_InfoStrPt = "创建并初始化已监听的本端TCP协议服务端套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                         Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                         break out;
                     }
                 }
+
+                m_TcpClntSoktPt = new TcpClntSokt();
 
                 while( true )
                 {
@@ -184,7 +188,7 @@ class MyAudioProcThread extends AudioProcThread
                     {
                         if( m_TcpClntSoktPt.GetTcpClntSoktPt() != 0 ) //如果用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接成功。
                         {
-                            m_TcpSrvrSoktPt.Destroy( null ); //关闭本端TCP协议服务端套接字，防止还有其他远端TCP协议客户端套接字继续连接。
+                            m_TcpSrvrSoktPt.Destroy( null ); //关闭并销毁已创建的本端TCP协议服务端套接字，防止还有其他远端TCP协议客户端套接字继续连接。
                             m_TcpSrvrSoktPt = null;
 
                             String p_InfoStrPt = "用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]的连接成功。";
@@ -199,6 +203,8 @@ class MyAudioProcThread extends AudioProcThread
                     }
                     else
                     {
+                        m_TcpClntSoktPt = null;
+
                         String p_InfoStrPt = "用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                         Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
@@ -207,6 +213,8 @@ class MyAudioProcThread extends AudioProcThread
 
                     if( m_ExitFlag != 0 ) //如果本线程接收到退出请求。
                     {
+                        m_TcpClntSoktPt = null;
+
                         Log.i( m_CurClsNameStrPt, "本线程接收到退出请求，开始准备退出。" );
                         break out;
                     }
@@ -217,6 +225,11 @@ class MyAudioProcThread extends AudioProcThread
             else if( m_IsCreateSrvrOrClnt == 0 ) //如果是创建本端TCP协议客户端套接字连接远端TCP协议服务端套接字。
             {
                 m_TcpClntSoktPt = new TcpClntSokt();
+
+                if( m_TcpClntSoktReInitTimes != 0 ) //如果本次初始化是重连远端TCP协议服务端套接字。
+                {
+                    SystemClock.sleep( 500 ); //暂停一下，避免CPU使用率过高。
+                }
 
                 if( m_TcpClntSoktPt.Init( m_IPAddrStrPt, m_PortStrPt, null, null, ( short ) 5, m_ErrInfoVarStrPt ) == 0 ) //创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字成功。
                 {
@@ -243,9 +256,13 @@ class MyAudioProcThread extends AudioProcThread
                     String p_InfoStrPt = "创建并初始化本端TCP协议客户端套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]，并连接已监听的远端TCP协议服务端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]成功。";
                     Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                     Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+
+                    m_TcpClntSoktReInitTimes = 0; //清空本端TCP协议客户端套接字类对象重新初始化的次数。
                 }
                 else
                 {
+                    m_TcpClntSoktPt = null;
+
                     String p_InfoStrPt = "创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                     Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                     Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
@@ -267,36 +284,34 @@ class MyAudioProcThread extends AudioProcThread
                 {
                     m_RecvOutputFrameLnkLstPt = new LinkedList< byte[] >(); //创建接收输出帧链表类对象。
 
-                    Log.i( m_CurClsNameStrPt, "创建接收输出帧链表类对象成功。" );
-
+                    Log.i( m_CurClsNameStrPt, "创建并初始化接收输出帧链表类对象成功。" );
                     break;
                 }
                 case 1: //如果使用自适应抖动缓冲器。
                 {
                     //初始化自适应抖动缓冲器类对象。
                     m_AjbPt = new Ajb();
-                    m_TmpInt32 = m_AjbPt.Init( m_SamplingRate, m_FrameLen, ( byte ) 1, ( byte ) 0, m_AjbMinNeedBufFrameCnt, m_AjbMaxNeedBufFrameCnt, m_AjbAdaptSensitivity );
-                    if( m_TmpInt32 == 0 )
+                    if( m_AjbPt.Init( m_SamplingRate, m_FrameLen, ( byte ) 1, ( byte ) 0, m_AjbMinNeedBufFrameCnt, m_AjbMaxNeedBufFrameCnt, m_AjbAdaptSensitivity ) == 0 )
                     {
-                        Log.i( m_CurClsNameStrPt, "初始化自适应抖动缓冲器类对象成功。返回值：" + m_TmpInt32 );
+                        Log.i( m_CurClsNameStrPt, "创建并初始化自适应抖动缓冲器类对象成功。" );
                     }
                     else
                     {
-                        Log.e( m_CurClsNameStrPt, "初始化自适应抖动缓冲器类对象失败。返回值：" + m_TmpInt32 );
+                        String p_InfoStrPt = "创建并初始化自适应抖动缓冲器类对象失败。";
+                        Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                         break out;
                     }
-
                     break;
                 }
             }
 
-            m_LastPktRecvTime = m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间和接收时间为当前时间。
+            m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间为当前时间。
+            m_LastPktRecvTime = m_LastPktSendTime; //设置最后一个数据包的接收时间为当前时间。
 
             m_LastSendInputFrameIsAct = 0; //设置最后发送的一个音频帧为无语音活动。
-            m_SendInputFrameTimeStamp = 0; //设置发送音频数据的时间戳为0。
-            m_RecvOutputFrameTimeStamp = 0; //设置接收音频数据的时间戳为0。
-            m_IsRecvExitPkt = 0; //设置没有接收到退出包。
-            if( m_TmpBytePt == null ) m_TmpBytePt = new byte[m_FrameLen * 2 + 6]; //初始化存放临时数据的数组。
+            m_SendInputFrameTimeStamp = 0; //设置发送输入帧的时间戳为0。
+            m_RecvOutputFrameTimeStamp = 0; //设置接收输出帧的时间戳为0。
 
             String p_InfoStrPt = "开始进行音频对讲。";
             Log.i( m_CurClsNameStrPt, p_InfoStrPt );
@@ -312,6 +327,7 @@ class MyAudioProcThread extends AudioProcThread
     public int UserProcess()
     {
         int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        HTLong p_TmpHTLong = new HTLong(  );
 
         out:
         {
@@ -342,57 +358,55 @@ class MyAudioProcThread extends AudioProcThread
 
                             String p_InfoStrPt = "接收到一个退出包。";
                             Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                            Message p_MessagePt = new Message();
-                            p_MessagePt.what = 3;
-                            p_MessagePt.obj = p_InfoStrPt;
-                            m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 
-                            break out;
+                            RequireExit(); //请求退出。
                         }
-
-                        if( ( p_TmpHTLong.m_Val > 4 ) && ( m_UseWhatCodec == 0 ) && ( p_TmpHTLong.m_Val - 4 != m_FrameLen * 2 ) ) //如果该输出帧为有语音活动，且使用了PCM原始数据，但接收到的PCM格式输出帧的数据长度与帧的数据长度不同。
+                        else //如果是输出帧包。
                         {
-                            Log.e( m_CurClsNameStrPt, "接收到的PCM格式输出帧的数据长度与帧的数据长度不同。" );
-                            break out;
-                        }
-
-                        //将输出帧放入链表或自适应抖动缓冲器。
-                        switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
-                        {
-                            case 0: //如果使用链表。
+                            if( ( p_TmpHTLong.m_Val > 4 ) && ( m_UseWhatCodec == 0 ) && ( p_TmpHTLong.m_Val - 4 != m_FrameLen * 2 ) ) //如果该输出帧为有语音活动，且使用了PCM原始数据，但接收到的PCM格式输出帧的数据长度与帧的数据长度不同。
                             {
-                                if( p_TmpHTLong.m_Val > 4 ) //如果该输出帧为有语音活动。
-                                {
-                                    synchronized( m_RecvOutputFrameLnkLstPt )
-                                    {
-                                        m_RecvOutputFrameLnkLstPt.addLast( Arrays.copyOfRange( m_TmpBytePt, 4, ( int )( p_TmpHTLong.m_Val ) ) );
-                                    }
-                                }
-
-                                Log.i( m_CurClsNameStrPt, "接收一个输出帧并放入链表成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
-
-                                break;
+                                Log.e( m_CurClsNameStrPt, "接收到的PCM格式输出帧的数据长度与帧的数据长度不同。" );
+                                break out;
                             }
-                            case 1: //如果使用自适应抖动缓冲器。
+
+                            //将输出帧放入链表或自适应抖动缓冲器。
+                            switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
                             {
-                                if( p_TmpHTLong.m_Val == 4 ) //如果该输出帧为无语音活动。
+                                case 0: //如果使用链表。
                                 {
-                                    synchronized( m_AjbPt )
+                                    if( p_TmpHTLong.m_Val > 4 ) //如果该输出帧为有语音活动。
                                     {
-                                        m_AjbPt.PutOneByteFrame( m_RecvOutputFrameTimeStamp, null, 0 );
+                                        synchronized( m_RecvOutputFrameLnkLstPt )
+                                        {
+                                            m_RecvOutputFrameLnkLstPt.addLast( Arrays.copyOfRange( m_TmpBytePt, 4, ( int ) ( p_TmpHTLong.m_Val ) ) );
+                                        }
                                     }
+
+                                    Log.i( m_CurClsNameStrPt, "接收一个输出帧并放入链表成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
+
+                                    break;
                                 }
-                                else //如果该输出帧为有语音活动。
+                                case 1: //如果使用自适应抖动缓冲器。
                                 {
-                                    synchronized( m_AjbPt )
+                                    if( p_TmpHTLong.m_Val == 4 ) //如果该输出帧为无语音活动。
                                     {
-                                        m_AjbPt.PutOneByteFrame( m_RecvOutputFrameTimeStamp, Arrays.copyOfRange( m_TmpBytePt, 4, ( int )( p_TmpHTLong.m_Val ) ), p_TmpHTLong.m_Val - 4 );
+                                        synchronized( m_AjbPt )
+                                        {
+                                            m_AjbPt.PutOneByteFrame( m_RecvOutputFrameTimeStamp, null, 0 );
+                                        }
                                     }
+                                    else //如果该输出帧为有语音活动。
+                                    {
+                                        synchronized( m_AjbPt )
+                                        {
+                                            m_AjbPt.PutOneByteFrame( m_RecvOutputFrameTimeStamp, Arrays.copyOfRange( m_TmpBytePt, 4, ( int ) ( p_TmpHTLong.m_Val ) ), p_TmpHTLong.m_Val - 4 );
+                                        }
+                                    }
+
+                                    Log.i( m_CurClsNameStrPt, "接收一个输出帧并放入自适应抖动缓冲器成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
+                                    break;
                                 }
-
-                                Log.i( m_CurClsNameStrPt, "接收一个输出帧并放入自适应抖动缓冲器成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
-
-                                break;
                             }
                         }
                     }
@@ -402,7 +416,7 @@ class MyAudioProcThread extends AudioProcThread
 
                 }
             }
-            else if( m_TmpInt32 == -1 ) //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包失败。
+            else //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包失败。
             {
                 String p_InfoStrPt = "用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -415,15 +429,14 @@ class MyAudioProcThread extends AudioProcThread
             {
                 if( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 0, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
                 {
-                    Log.i( m_CurClsNameStrPt, "发送一个心跳包成功。" );
                     m_LastPktSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间。
+                    Log.i( m_CurClsNameStrPt, "发送一个心跳包成功。" );
                 }
                 else
                 {
                     String p_InfoStrPt = "发送一个心跳包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                     Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                     Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-
                     break out;
                 }
             }
@@ -434,7 +447,6 @@ class MyAudioProcThread extends AudioProcThread
                 String p_InfoStrPt = "超过2000毫秒没有接收任何数据包，判定TCP协议连接已经断开了。";
                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                 Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-
                 break out;
             }
 
@@ -447,13 +459,9 @@ class MyAudioProcThread extends AudioProcThread
     //用户定义的销毁函数，在本线程退出时调用一次，返回值表示是否重新初始化，为0表示直接退出，为非0表示重新初始化。
     public int UserDestroy()
     {
-        if( ( m_ExitFlag == 1 ) && ( m_TcpClntSoktPt != null ) && ( m_IsRecvExitPkt == 0 ) ) //如果本线程接收到退出请求，且TCP协议客户端套接字类对象不为空，且没有接收到退出包。
+        if( ( m_ExitFlag == 1 ) && ( m_TcpClntSoktPt != null ) ) //如果本线程接收到退出请求，且本端TCP协议客户端套接字类对象不为空。
         {
-            //设置退出包。
-            if( m_TmpBytePt == null )
-            {
-                m_TmpBytePt = new byte[4];
-            }
+            //发送退出包。
             m_TmpBytePt[0] = ( byte ) 0xFF;
             m_TmpBytePt[1] = ( byte ) 0xFF;
             m_TmpBytePt[2] = ( byte ) 0xFF;
@@ -471,6 +479,48 @@ class MyAudioProcThread extends AudioProcThread
                 String p_InfoStrPt = "发送一个退出包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                 Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+            }
+
+            //接收退出包。
+            if( m_IsRecvExitPkt == 0 ) //如果没有接收到退出包。
+            {
+                while( true )
+                {
+                    HTLong p_TmpHTLong = new HTLong(  );
+
+                    if( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 5, m_ErrInfoVarStrPt ) == 0 )
+                    {
+                        if( p_TmpHTLong.m_Val != -1 ) //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包成功。
+                        {
+                            m_LastPktRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间。
+
+                            if( p_TmpHTLong.m_Val == 4 )
+                            {
+                                //读取时间戳。
+                                m_RecvOutputFrameTimeStamp = ( m_TmpBytePt[0] & 0xFF ) + ( ( m_TmpBytePt[1] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[2] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 24 );
+
+                                if( m_RecvOutputFrameTimeStamp == -1 ) //如果时间戳为0xFFFFFFFF，表示是一个退出包。
+                                {
+                                    String p_InfoStrPt = "接收到一个退出包。";
+                                    Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                    break;
+                                }
+                            }
+                        }
+                        else //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包超时。
+                        {
+                            break;
+                        }
+                    }
+                    else //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包失败。
+                    {
+                        String p_InfoStrPt = "用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        break;
+                    }
+                }
             }
         }
 
@@ -501,6 +551,8 @@ class MyAudioProcThread extends AudioProcThread
         {
             m_RecvOutputFrameLnkLstPt.clear();
             m_RecvOutputFrameLnkLstPt = null;
+
+            Log.i( m_CurClsNameStrPt, "销毁接收输出帧链表类对象成功。" );
         }
 
         //销毁自适应抖动缓冲器类对象。
@@ -508,20 +560,40 @@ class MyAudioProcThread extends AudioProcThread
         {
             m_AjbPt.Destroy();
             m_AjbPt = null;
+
+            Log.i( m_CurClsNameStrPt, "销毁自适应抖动缓冲器类对象成功。" );
         }
 
-        if( ( m_IsCreateSrvrOrClnt == 1 ) && ( m_ExitCode == -2 ) && ( m_ExitFlag == 0 ) ) //如果当前是创建服务端，且退出代码为处理失败，且本线程未接收到退出请求。
+        if( m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
         {
-            Log.i( m_CurClsNameStrPt, "由于当前是创建服务端，且退出代码为处理失败，且本线程未接收到退出请求，本线程重新初始化来继续保持监听。" );
-            return 1;
+            if( ( m_ExitFlag == 1 ) && ( m_IsRecvExitPkt == 1 ) ) //如果本线程接收到退出请求，且接收到了退出包。
+            {
+                String p_InfoStrPt = "由于是创建服务端，且本线程接收到退出请求，且接收到了退出包，表示是远端TCP协议客户端套接字主动退出，本线程重新初始化来继续保持监听。";
+                Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                return 1;
+            }
+            else if( ( m_ExitFlag == 0 ) && ( m_ExitCode == -2 ) ) //如果本线程没收到退出请求，且退出代码为处理失败。
+            {
+                String p_InfoStrPt = "由于是创建服务端，且本线程没收到退出请求，且退出码为处理失败，表示是处理失败，本线程重新初始化来继续保持监听。";
+                Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                return 1;
+            }
         }
-        else if( ( m_IsCreateSrvrOrClnt == 0 ) && ( m_ExitFlag == 0 ) && ( m_IsRecvExitPkt == 0 ) ) //如果当前是创建客户端，且本线程未接收到退出请求，且没有接收到退出包。
+        else if( m_IsCreateSrvrOrClnt == 0 ) //如果是创建客户端。
         {
-            Log.i( m_CurClsNameStrPt, "由于当前是创建客户端，且本线程未接收到退出请求，且没有接收到退出包，本线程在500毫秒后重新初始化来重连。" );
-            SystemClock.sleep( 500 ); //暂停500毫秒。
-            return 1;
+            if( ( m_ExitFlag == 0 ) && ( m_TcpClntSoktReInitTimes < 5 ) ) //如果本线程没收到退出请求，且本端TCP协议客户端套接字类对象重新初始化的次数低于5次。
+            {
+                m_TcpClntSoktReInitTimes++; //递增本端TCP协议客户端套接字类对象重新初始化的次数。
+                String p_InfoStrPt = "由于是创建客户端，且本线程没收到退出请求，且本端TCP协议客户端套接字类对象重新初始化的次数低于5次，表示是连接异常断开，本线程重新初始化来重连服务端，当前第" + m_TcpClntSoktReInitTimes + "次。";
+                Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                return 1;
+            }
         }
-        else //其他情况，本线程直接退出。
+
+        //其他情况，本线程直接退出。
         {
             Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage ); //向主界面发送音频处理线程退出的消息。
             return 0;
@@ -532,6 +604,7 @@ class MyAudioProcThread extends AudioProcThread
     public int UserReadInputFrame( short PcmInputFramePt[], short PcmResultFramePt[], int VoiceActSts, byte SpeexInputFramePt[], HTLong SpeexInputFrameLen, HTInt SpeexInputFrameIsNeedTrans )
     {
         int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int m_TmpInt32 = 0;
 
         out:
         {
@@ -549,7 +622,7 @@ class MyAudioProcThread extends AudioProcThread
                                 m_TmpBytePt[4 + m_TmpInt32 * 2 + 1] = ( byte ) ( ( PcmResultFramePt[m_TmpInt32] & 0xFF00 ) >> 8 );
                             }
 
-                            m_TmpInt32 = PcmResultFramePt.length * 2 + 4; //预读长度 = PCM格式音频输入数据帧长度 + 时间戳长度。
+                            m_TmpInt32 = 4 + PcmResultFramePt.length * 2; //数据包长度 = 时间戳长度 + PCM格式输入帧长度。
 
                             break;
                         }
@@ -559,11 +632,11 @@ class MyAudioProcThread extends AudioProcThread
                             {
                                 System.arraycopy( SpeexInputFramePt, 0, m_TmpBytePt, 4, ( int ) SpeexInputFrameLen.m_Val );
 
-                                m_TmpInt32 = ( int ) SpeexInputFrameLen.m_Val + 4; //预读长度 = Speex格式音频输入数据帧长度 + 时间戳长度。
+                                m_TmpInt32 = 4 + ( int ) SpeexInputFrameLen.m_Val; //数据包长度 = 时间戳长度 + Speex格式输入帧长度。
                             }
                             else //如果本Speex格式音频输入数据帧不需要传输。
                             {
-                                m_TmpInt32 = 4; //预读长度 = 时间戳长度。
+                                m_TmpInt32 = 4; //数据包长度 = 时间戳长度。
                             }
 
                             break;
@@ -572,11 +645,11 @@ class MyAudioProcThread extends AudioProcThread
                 }
                 else //如果本音频输入数据帧为无语音活动。
                 {
-                    m_TmpInt32 = 4; //预读长度 = 时间戳长度。
+                    m_TmpInt32 = 4; //数据包长度 = 时间戳长度。
                 }
 
                 if( ( m_TmpInt32 != 4 ) || //如果本音频输入数据帧为有语音活动，就发送。
-                    ( ( m_TmpInt32 == 4 ) && ( m_LastSendInputFrameIsAct != 0 ) ) ) //如果本音频输入数据帧为无语音活动，但最后发送的一个音频数据帧为有语音活动，就发送。
+                    ( ( m_TmpInt32 == 4 ) && ( m_LastSendInputFrameIsAct != 0 ) ) ) //如果本音频输入数据帧为无语音活动，但最后一个发送的输入帧为有语音活动，就发送。
                 {
                     //设置时间戳。
                     m_TmpBytePt[0] = ( byte ) ( m_SendInputFrameTimeStamp & 0xFF );
@@ -586,8 +659,8 @@ class MyAudioProcThread extends AudioProcThread
 
                     if( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, m_TmpInt32, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
                     {
-                        m_LastPktSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间。
-
+                        m_SendInputFrameTimeStamp += m_FrameLen; //时间戳递增一个帧的数据长度。
+                        m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
                         Log.i( m_CurClsNameStrPt, "发送一个输入帧成功。时间戳：" + m_SendInputFrameTimeStamp + "，总长度：" + m_TmpInt32 + "。" );
                     }
                     else
@@ -597,15 +670,13 @@ class MyAudioProcThread extends AudioProcThread
                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                         break out;
                     }
-
-                    m_SendInputFrameTimeStamp += m_FrameLen; //时间戳递增一个帧的数据长度。
                 }
                 else
                 {
                     Log.i( m_CurClsNameStrPt, "本输入帧为无语音活动，且最后发送的一个输入帧为无语音活动，无需发送。" );
                 }
 
-                //设置最后发送的一个音频数据帧有无语音活动。
+                //设置最后一个发送的输入帧有无语音活动。
                 if( m_TmpInt32 != 4 ) m_LastSendInputFrameIsAct = 1;
                 else m_LastSendInputFrameIsAct = 0;
             }
@@ -706,10 +777,7 @@ class MyAudioProcThread extends AudioProcThread
                         }
                         else //如果输出帧为无语音活动。
                         {
-                            for( m_TmpInt32 = 0; m_TmpInt32 < m_FrameLen; m_TmpInt32++ )
-                            {
-                                PcmOutputFramePt[m_TmpInt32] = 0;
-                            }
+                            Arrays.fill( PcmOutputFramePt, ( short ) 0 );
 
                             Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个无语音活动的PCM格式输出帧。" );
                         }
@@ -747,11 +815,11 @@ class MyAudioProcThread extends AudioProcThread
                 Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中当前已缓冲帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
 
                 m_AjbPt.GetMaxNeedBufFrameCnt( p_AjbFrameCnt );
-                Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中最大需缓冲音频数据帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
+                Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中最大需缓冲帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
                 m_AjbPt.GetMinNeedBufFrameCnt( p_AjbFrameCnt );
-                Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中最小需缓冲音频数据帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
+                Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中最小需缓冲帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
                 m_AjbPt.GetCurNeedBufFrameCnt( p_AjbFrameCnt );
-                Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中当前需缓冲音频数据帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
+                Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中当前需缓冲帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
 
                 break;
             }
@@ -1031,6 +1099,19 @@ public class MainActivity extends AppCompatActivity
         if( m_LyotActivityCurViewPt == m_LyotActivityMainViewPt )
         {
             Log.i( m_CurClsNameStrPt, "用户在主界面按下返回键，本软件退出。" );
+            if( m_MyAudioProcThreadPt != null )
+            {
+                m_MyAudioProcThreadPt.RequireExit(); //请求音频处理线程退出。
+                try
+                {
+                    Log.i( m_CurClsNameStrPt, "开始等待音频处理线程退出。" );
+                    m_MyAudioProcThreadPt.join(); //等待音频处理线程退出。
+                    Log.i( m_CurClsNameStrPt, "结束等待音频处理线程退出。" );
+                }
+                catch( InterruptedException e )
+                {
+                }
+            }
             finish();
         }
         else if( m_LyotActivityCurViewPt == m_LyotActivitySettingViewPt )
@@ -1078,7 +1159,7 @@ public class MainActivity extends AppCompatActivity
                     m_MyAudioProcThreadPt.m_IsCreateSrvrOrClnt = 0; //标记创建客户端连接服务端。
                 }
 
-                m_MyAudioProcThreadPt.m_MainActivityHandlerPt = m_MainActivityHandlerPt;
+                m_MyAudioProcThreadPt.m_MainActivityHandlerPt = m_MainActivityHandlerPt; //设置主界面消息处理类对象的内存指针。
 
                 //设置IP地址字符串、端口。
                 m_MyAudioProcThreadPt.m_IPAddrStrPt = ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.IPAddrEdit ) ).getText().toString();
@@ -1375,6 +1456,10 @@ public class MainActivity extends AppCompatActivity
                             m_ExternalDirFullPathStrPt + "/AudioOutput.wav",
                             m_ExternalDirFullPathStrPt + "/AudioResult.wav"
                     );
+
+                    String p_InfoStrPt = "音频文件保存路径：" + m_ExternalDirFullPathStrPt;
+                    Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                 }
 
                 m_MyAudioProcThreadPt.start();

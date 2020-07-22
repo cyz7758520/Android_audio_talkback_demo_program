@@ -532,7 +532,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:checked="true"
-            android:text="将音频输入帧、音频输出帧、音频结果帧分别替换保存到内部存储根目录（/mnt/sdcard）下的AudioInput.wav、AudioOutput.wav、AudioResult.wav文件中" />
+            android:text="将音频输入帧、音频输出帧、音频结果帧分别替换保存到应用程序目录下的AudioInput.wav、AudioOutput.wav、AudioResult.wav文件中" />
 
         <Button
             android:layout_width="match_parent"
