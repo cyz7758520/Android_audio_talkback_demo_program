@@ -856,7 +856,7 @@ public class MainActivity extends AppCompatActivity
     MyAudioProcThread m_MyAudioProcThreadPt; //存放音频处理线程类对象的内存指针。
     MainActivityHandler m_MainActivityHandlerPt; //存放主界面消息处理类对象的内存指针。
 
-    String m_ExternalDirFullPathStrPt; //存放扩展目录绝对路径字符串的内存指针。
+    String m_ExternalDirFullAbsPathStrPt; //存放扩展目录完整绝对路径字符串的内存指针。
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -938,22 +938,26 @@ public class MainActivity extends AppCompatActivity
         //设置端口控件的内容。
         ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.PortEdit ) ).setText( "12345" );
 
-        //获取扩展目录绝对路径字符串。
+        //获取扩展目录完整绝对路径字符串。
         if( getExternalFilesDir( null ) != null )
         {
-            m_ExternalDirFullPathStrPt = getExternalFilesDir( null ).getPath();
+            m_ExternalDirFullAbsPathStrPt = getExternalFilesDir( null ).getPath();
         }
         else
         {
-            m_ExternalDirFullPathStrPt = Environment.getExternalStorageDirectory().getPath() + "/Android/data/" + getApplicationContext().getPackageName();
+            m_ExternalDirFullAbsPathStrPt = Environment.getExternalStorageDirectory().getPath() + "/Android/data/" + getApplicationContext().getPackageName();
         }
+
+        String p_InfoStrPt = "扩展目录完整绝对路径：" + m_ExternalDirFullAbsPathStrPt;
+        Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 
         //测试代码。
         /*m_MyAudioProcThreadPt.m_AppContextPt = getApplicationContext();
 
-        String p_AudioInputFileFullPathStrPt = m_ExternalDirFullPathStrPt + "/AudioInput.wav";
-        String p_AudioOutputFileFullPathStrPt = m_ExternalDirFullPathStrPt + "/AudioOutput.wav";
-        String p_AudioResultFileFullPathStrPt = m_ExternalDirFullPathStrPt + "/AudioResult.wav";
+        String p_AudioInputFileFullPathStrPt = m_ExternalDirFullAbsPathStrPt + "/AudioInput.wav";
+        String p_AudioOutputFileFullPathStrPt = m_ExternalDirFullAbsPathStrPt + "/AudioOutput.wav";
+        String p_AudioResultFileFullPathStrPt = m_ExternalDirFullAbsPathStrPt + "/AudioResult.wav";
         int p_SamplingRate = 16000;
         int p_FrameLen = 480;
 
@@ -986,9 +990,9 @@ public class MainActivity extends AppCompatActivity
         HTInt IsNeedTransObj = new HTInt();
         long p_FrameTotal; //帧总数。
 
-        p_Result = p_AudioInputWaveFileReaderPt.Init( ( p_AudioInputFileFullPathStrPt + "\0" ).getBytes(), NumChanlPt, SamplingRatePt, SamplingBitPt );
-        p_Result = p_AudioOutputWaveFileReaderPt.Init( ( p_AudioOutputFileFullPathStrPt + "\0" ).getBytes(), NumChanlPt, SamplingRatePt, SamplingBitPt );
-        p_Result = p_AudioResultWaveFileWriterPt.Init( ( p_AudioResultFileFullPathStrPt + "\0" ).getBytes(), NumChanlPt.m_Val, SamplingRatePt.m_Val, SamplingBitPt.m_Val );
+        p_Result = p_AudioInputWaveFileReaderPt.Init( p_AudioInputFileFullPathStrPt, NumChanlPt, SamplingRatePt, SamplingBitPt );
+        p_Result = p_AudioOutputWaveFileReaderPt.Init( p_AudioOutputFileFullPathStrPt, NumChanlPt, SamplingRatePt, SamplingBitPt );
+        p_Result = p_AudioResultWaveFileWriterPt.Init( p_AudioResultFileFullPathStrPt, NumChanlPt.m_Val, SamplingRatePt.m_Val, SamplingBitPt.m_Val );
 
         p_Result = p_SpeexAecPt.Init( p_SamplingRate, p_FrameLen, 500 );
         p_Result = p_SpeexPprocPt.Init( p_SamplingRate, p_FrameLen,
@@ -1175,6 +1179,16 @@ public class MainActivity extends AppCompatActivity
                                 ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseFrame20msLenRadioBtn ) ).isChecked() ) ? 20 :
                                         ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseFrame30msLenRadioBtn ) ).isChecked() ) ? 30 : 0 );
 
+                //判断是否保存设置到文件。
+                if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveSettingToFileCheckBox ) ).isChecked() )
+                {
+                    m_MyAudioProcThreadPt.SetSaveSettingToFile( 1, m_ExternalDirFullAbsPathStrPt + "/Setting.txt" );
+                }
+                else
+                {
+                    m_MyAudioProcThreadPt.SetSaveSettingToFile( 0, null );
+                }
+
                 //判断是否打印Logcat日志。
                 if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsPrintLogcatCheckBox ) ).isChecked() )
                 {
@@ -1209,7 +1223,7 @@ public class MainActivity extends AppCompatActivity
                         m_MyAudioProcThreadPt.SetUseSpeexAec(
                                 Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).getText().toString() ),
                                 ( ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsSaveMemFileCheckBox ) ).isChecked() ) ? 1 : 0,
-                                m_ExternalDirFullPathStrPt + "/SpeexAecMemory"
+                                m_ExternalDirFullAbsPathStrPt + "/SpeexAecMemory"
                         );
                     }
                     catch( NumberFormatException e )
@@ -1250,7 +1264,7 @@ public class MainActivity extends AppCompatActivity
                                 ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).isChecked() ) ? 1 : 0,
                                 ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCheckBox ) ).isChecked() ) ? 1 : 0,
                                 ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCheckBox ) ).isChecked() ) ? 1 : 0,
-                                m_ExternalDirFullPathStrPt + "/WebRtcAecMemory"
+                                m_ExternalDirFullAbsPathStrPt + "/WebRtcAecMemory"
                         );
                     }
                     catch( NumberFormatException e )
@@ -1452,14 +1466,10 @@ public class MainActivity extends AppCompatActivity
                 {
                     m_MyAudioProcThreadPt.SetSaveAudioToFile(
                             1,
-                            m_ExternalDirFullPathStrPt + "/AudioInput.wav",
-                            m_ExternalDirFullPathStrPt + "/AudioOutput.wav",
-                            m_ExternalDirFullPathStrPt + "/AudioResult.wav"
+                            m_ExternalDirFullAbsPathStrPt + "/AudioInput.wav",
+                            m_ExternalDirFullAbsPathStrPt + "/AudioOutput.wav",
+                            m_ExternalDirFullAbsPathStrPt + "/AudioResult.wav"
                     );
-
-                    String p_InfoStrPt = "音频文件保存路径：" + m_ExternalDirFullPathStrPt;
-                    Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                 }
 
                 m_MyAudioProcThreadPt.start();
@@ -1536,7 +1546,7 @@ public class MainActivity extends AppCompatActivity
     //Speex声学回音消除器设置界面的删除内存块文件按钮。
     public void OnClickSpeexAecDelMemFile( View BtnPt )
     {
-        String p_pclSpeexAecMemoryFullPath = m_ExternalDirFullPathStrPt + "/SpeexAecMemory";
+        String p_pclSpeexAecMemoryFullPath = m_ExternalDirFullAbsPathStrPt + "/SpeexAecMemory";
         File file = new File( p_pclSpeexAecMemoryFullPath );
         if( file.exists() )
         {
@@ -1586,7 +1596,7 @@ public class MainActivity extends AppCompatActivity
     //WebRtc浮点版声学回音消除器设置界面的删除内存块文件按钮。
     public void OnClickWebRtcAecDelMemFile( View BtnPt )
     {
-        String p_pclWebRtcAecMemoryFullPath = m_ExternalDirFullPathStrPt + "/WebRtcAecMemory";
+        String p_pclWebRtcAecMemoryFullPath = m_ExternalDirFullAbsPathStrPt + "/WebRtcAecMemory";
         File file = new File( p_pclWebRtcAecMemoryFullPath );
         if( file.exists() )
         {

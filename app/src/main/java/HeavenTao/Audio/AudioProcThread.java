@@ -13,11 +13,8 @@ import android.os.Process;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Date;
 import java.util.LinkedList;
 
 import HeavenTao.Data.*;
@@ -33,6 +30,9 @@ public abstract class AudioProcThread extends Thread
     public static Context m_AppContextPt; //存放应用程序上下文类对象的内存指针。
     public int m_SamplingRate = 16000; //存放采样频率，取值只能为8000、16000、32000。
     public int m_FrameLen = 320; //存放帧的数据长度，单位采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960。
+
+    int m_IsSaveSettingToFile = 0; //存放是否保存设置到文件，为非0表示要保存，为0表示不保存。
+    String m_SettingFileFullPathStrPt; //存放设置文件的完整路径字符串。
 
     public int m_IsPrintLogcat = 0; //存放是否打印Logcat日志，为非0表示要打印，为0表示不打印。
 
@@ -122,7 +122,7 @@ public abstract class AudioProcThread extends Thread
     int m_SpeexCodecEncoderPlcExpectedLossRate; //存放Speex编码器在数据包丢失隐藏时，数据包的预计丢失概率，预计丢失概率越高抗网络抖动越强、压缩率越低，取值区间为[0,100]。
     int m_SpeexCodecDecoderIsUsePerceptualEnhancement; //存放Speex解码器是否使用知觉增强，为非0表示要使用，为0表示不使用。
 
-    public int m_IsSaveAudioToFile = 0; //存放是否保存音频到文件，非0表示要使用，0表示不使用。
+    public int m_IsSaveAudioToFile = 0; //存放是否保存音频到文件，为非0表示要保存，为0表示不保存。
     WaveFileWriter m_AudioInputWaveFileWriterPt; //存放音频输入Wave文件写入器对象的内存指针。
     WaveFileWriter m_AudioOutputWaveFileWriterPt; //存放音频输出Wave文件写入器对象的内存指针。
     WaveFileWriter m_AudioResultWaveFileWriterPt; //存放音频结果Wave文件写入器对象的内存指针。
@@ -175,6 +175,13 @@ public abstract class AudioProcThread extends Thread
         }
 
         return p_Result;
+    }
+
+    //设置保存设置到文件。
+    public void SetSaveSettingToFile( int IsSaveSettingToFile, String SettingFileFullPathStrPt )
+    {
+        m_IsSaveSettingToFile = IsSaveSettingToFile;
+        m_SettingFileFullPathStrPt = SettingFileFullPathStrPt;
     }
 
     //设置打印日志。
@@ -643,6 +650,113 @@ public abstract class AudioProcThread extends Thread
                     }
                 }
 
+                //保存设置到文件。
+                if( m_IsSaveSettingToFile != 0 )
+                {
+                    File p_SettingFilePt = new File( m_SettingFileFullPathStrPt );
+                    try
+                    {
+                        if( !p_SettingFilePt.exists() )
+                        {
+                            p_SettingFilePt.createNewFile();
+                        }
+                        FileWriter p_SettingFileWriterPt = new FileWriter( p_SettingFilePt );
+                        p_SettingFileWriterPt.write(
+                            "m_AppContextPt：" + m_AppContextPt +
+                                    "\nm_SamplingRate：" + m_SamplingRate +
+                                    "\nm_FrameLen：" +  m_FrameLen +
+                                    "\n" +
+                                    "\nm_IsSaveSettingToFile：" + m_IsSaveSettingToFile +
+                                    "\nm_SettingFileFullPathStrPt：" + m_SettingFileFullPathStrPt +
+                                    "\n" +
+                                    "\nm_IsPrintLogcat：" + m_IsPrintLogcat +
+                                    "\n" +
+                                    "\nm_IsUseWakeLock：" + m_IsUseWakeLock +
+                                    "\n" +
+                                    "\nm_UseWhatAec：" + m_UseWhatAec +
+                                    "\n" +
+                                    "\nm_SpeexAecFilterLen：" + m_SpeexAecFilterLen +
+                                    "\nm_SpeexAecIsSaveMemFile：" + m_SpeexAecIsSaveMemFile +
+                                    "\nm_SpeexAecMemFileFullPathStrPt：" + m_SpeexAecMemFileFullPathStrPt +
+                                    "\n" +
+                                    "\nm_WebRtcAecmIsUseCNGMode：" + m_WebRtcAecmIsUseCNGMode +
+                                    "\nm_WebRtcAecmEchoMode：" + m_WebRtcAecmEchoMode +
+                                    "\nm_WebRtcAecmDelay：" + m_WebRtcAecmDelay +
+                                    "\n" +
+                                    "\nm_WebRtcAecEchoMode：" + m_WebRtcAecEchoMode +
+                                    "\nm_WebRtcAecDelay：" + m_WebRtcAecDelay +
+                                    "\nm_WebRtcAecIsUseDelayAgnosticMode：" + m_WebRtcAecIsUseDelayAgnosticMode +
+                                    "\nm_WebRtcAecIsUseExtdFilterMode：" + m_WebRtcAecIsUseExtdFilterMode +
+                                    "\nm_WebRtcAecIsUseRefinedFilterAdaptAecMode：" + m_WebRtcAecIsUseRefinedFilterAdaptAecMode +
+                                    "\nm_WebRtcAecIsUseAdaptAdjDelay：" + m_WebRtcAecIsUseAdaptAdjDelay +
+                                    "\nm_WebRtcAecIsSaveMemFile：" + m_WebRtcAecIsSaveMemFile +
+                                    "\nm_WebRtcAecMemFileFullPathStrPt：" + m_WebRtcAecMemFileFullPathStrPt +
+                                    "\n" +
+                                    "\nm_SpeexWebRtcAecWorkMode：" + m_SpeexWebRtcAecWorkMode +
+                                    "\nm_SpeexWebRtcAecSpeexAecFilterLen：" + m_SpeexWebRtcAecSpeexAecFilterLen +
+                                    "\nm_SpeexWebRtcAecSpeexAecEchoMultiple：" + m_SpeexWebRtcAecSpeexAecEchoMultiple +
+                                    "\nm_SpeexWebRtcAecSpeexAecEchoCont：" + m_SpeexWebRtcAecSpeexAecEchoCont +
+                                    "\nm_SpeexWebRtcAecSpeexAecEchoSupes：" + m_SpeexWebRtcAecSpeexAecEchoSupes +
+                                    "\nm_SpeexWebRtcAecSpeexAecEchoSupesAct：" + m_SpeexWebRtcAecSpeexAecEchoSupesAct +
+                                    "\nm_SpeexWebRtcAecWebRtcAecmIsUseCNGMode：" + m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode +
+                                    "\nm_SpeexWebRtcAecWebRtcAecmEchoMode：" + m_SpeexWebRtcAecWebRtcAecmEchoMode +
+                                    "\nm_SpeexWebRtcAecWebRtcAecmDelay：" + m_SpeexWebRtcAecWebRtcAecmDelay +
+                                    "\nm_SpeexWebRtcAecWebRtcAecEchoMode：" + m_SpeexWebRtcAecWebRtcAecEchoMode +
+                                    "\nm_SpeexWebRtcAecWebRtcAecDelay：" + m_SpeexWebRtcAecWebRtcAecDelay +
+                                    "\nm_SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode：" + m_SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode +
+                                    "\nm_SpeexWebRtcAecWebRtcAecIsUseExtdFilterMode：" + m_SpeexWebRtcAecWebRtcAecIsUseExtdFilterMode +
+                                    "\nm_SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecMode：" + m_SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecMode +
+                                    "\nm_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay：" + m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay +
+                                    "\n" +
+                                    "\nm_UseWhatNs：" + m_UseWhatNs +
+                                    "\n" +
+                                    "\nm_SpeexPprocIsUseNs：" + m_SpeexPprocIsUseNs +
+                                    "\nm_SpeexPprocNoiseSupes：" + m_SpeexPprocNoiseSupes +
+                                    "\nm_SpeexPprocIsUseDereverb：" + m_SpeexPprocIsUseDereverb +
+                                    "\nm_SpeexPprocIsUseRec：" + m_SpeexPprocIsUseRec +
+                                    "\nm_SpeexPprocEchoMultiple：" + m_SpeexPprocEchoMultiple +
+                                    "\nm_SpeexPprocEchoCont：" + m_SpeexPprocEchoCont +
+                                    "\nm_SpeexPprocEchoSupes：" + m_SpeexPprocEchoSupes +
+                                    "\nm_SpeexPprocEchoSupesAct：" + m_SpeexPprocEchoSupesAct +
+                                    "\n" +
+                                    "\nm_WebRtcNsxPolicyMode：" + m_WebRtcNsxPolicyMode +
+                                    "\n" +
+                                    "\nm_WebRtcNsPolicyMode：" + m_WebRtcNsPolicyMode +
+                                    "\n" +
+                                    "\nm_IsUseSpeexPprocOther：" + m_IsUseSpeexPprocOther +
+                                    "\nm_SpeexPprocIsUseVad：" + m_SpeexPprocIsUseVad +
+                                    "\nm_SpeexPprocVadProbStart：" + m_SpeexPprocVadProbStart +
+                                    "\nm_SpeexPprocVadProbCont：" + m_SpeexPprocVadProbCont +
+                                    "\nm_SpeexPprocIsUseAgc：" + m_SpeexPprocIsUseAgc +
+                                    "\nm_SpeexPprocAgcLevel：" + m_SpeexPprocAgcLevel +
+                                    "\nm_SpeexPprocAgcIncrement：" + m_SpeexPprocAgcIncrement +
+                                    "\nm_SpeexPprocAgcDecrement：" + m_SpeexPprocAgcDecrement +
+                                    "\nm_SpeexPprocAgcMaxGain：" + m_SpeexPprocAgcMaxGain +
+                                    "\n" +
+                                    "\nm_UseWhatCodec：" + m_UseWhatCodec +
+                                    "\n" +
+                                    "\nm_SpeexCodecEncoderUseCbrOrVbr：" + m_SpeexCodecEncoderUseCbrOrVbr +
+                                    "\nm_SpeexCodecEncoderQuality：" + m_SpeexCodecEncoderQuality +
+                                    "\nm_SpeexCodecEncoderComplexity：" + m_SpeexCodecEncoderComplexity +
+                                    "\nm_SpeexCodecEncoderPlcExpectedLossRate：" + m_SpeexCodecEncoderPlcExpectedLossRate +
+                                    "\nm_SpeexCodecDecoderIsUsePerceptualEnhancement：" + m_SpeexCodecDecoderIsUsePerceptualEnhancement +
+                                    "\n" +
+                                    "\nm_IsSaveAudioToFile：" + m_IsSaveAudioToFile +
+                                    "\nm_AudioInputFileFullPathStrPt：" + m_AudioInputFileFullPathStrPt +
+                                    "\nm_AudioOutputFileFullPathStrPt：" + m_AudioOutputFileFullPathStrPt +
+                                    "\nm_AudioResultFileFullPathStrPt：" + m_AudioResultFileFullPathStrPt
+                        );
+                        p_SettingFileWriterPt.flush();
+                        p_SettingFileWriterPt.close();
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：保存设置到文件 " + m_SettingFileFullPathStrPt + " 成功。" );
+                    }
+                    catch( IOException e )
+                    {
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：保存设置到文件 " + m_SettingFileFullPathStrPt + " 失败。原因：" + e.getMessage() );
+                        break out;
+                    }
+                }
+
                 //创建PCM格式输入帧、PCM格式输出帧、PCM格式结果帧、PCM格式临时帧、PCM格式交换帧、语音活动状态、Speex格式输入帧、Speex格式输入帧的数据长度、Speex格式输入帧是否需要传输。
                 {
                     p_PcmInputFramePt = null;
@@ -678,7 +792,7 @@ public abstract class AudioProcThread extends Thread
                         if( m_SpeexAecIsSaveMemFile != 0 )
                         {
                             m_SpeexAecPt = new SpeexAec();
-                            if( m_SpeexAecPt.InitByMemFile( m_SamplingRate, m_FrameLen, m_SpeexAecFilterLen, ( m_SpeexAecMemFileFullPathStrPt + "\0" ).getBytes() ) == 0 )
+                            if( m_SpeexAecPt.InitByMemFile( m_SamplingRate, m_FrameLen, m_SpeexAecFilterLen, m_SpeexAecMemFileFullPathStrPt ) == 0 )
                             {
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：根据Speex声学回音消除器内存块文件 " + m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器类对象成功。" );
                             }
@@ -724,7 +838,7 @@ public abstract class AudioProcThread extends Thread
                         if( m_WebRtcAecIsSaveMemFile != 0 )
                         {
                             m_WebRtcAecPt = new WebRtcAec();
-                            if( m_WebRtcAecPt.InitByMemFile( m_SamplingRate, m_FrameLen, m_WebRtcAecEchoMode, m_WebRtcAecDelay, m_WebRtcAecIsUseDelayAgnosticMode, m_WebRtcAecIsUseExtdFilterMode, m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_WebRtcAecIsUseAdaptAdjDelay, ( m_WebRtcAecMemFileFullPathStrPt + "\0" ).getBytes() ) == 0 )
+                            if( m_WebRtcAecPt.InitByMemFile( m_SamplingRate, m_FrameLen, m_WebRtcAecEchoMode, m_WebRtcAecDelay, m_WebRtcAecIsUseDelayAgnosticMode, m_WebRtcAecIsUseExtdFilterMode, m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_WebRtcAecIsUseAdaptAdjDelay, m_WebRtcAecMemFileFullPathStrPt ) == 0 )
                             {
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器类对象成功。" );
                             }
@@ -904,7 +1018,7 @@ public abstract class AudioProcThread extends Thread
                 if( m_IsSaveAudioToFile != 0 )
                 {
                     m_AudioInputWaveFileWriterPt = new WaveFileWriter();
-                    if( m_AudioInputWaveFileWriterPt.Init( ( m_AudioInputFileFullPathStrPt + "\0" ).getBytes(), ( short ) 1, m_SamplingRate, 16 ) == 0 )
+                    if( m_AudioInputWaveFileWriterPt.Init( m_AudioInputFileFullPathStrPt, ( short ) 1, m_SamplingRate, 16 ) == 0 )
                     {
                         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：创建并初始化音频输入文件 " + m_AudioInputFileFullPathStrPt + " 的Wave文件写入器类对象成功。" );
                     }
@@ -915,7 +1029,7 @@ public abstract class AudioProcThread extends Thread
                         break out;
                     }
                     m_AudioOutputWaveFileWriterPt = new WaveFileWriter();
-                    if( m_AudioOutputWaveFileWriterPt.Init( ( m_AudioOutputFileFullPathStrPt + "\0" ).getBytes(), ( short ) 1, m_SamplingRate, 16 ) == 0 )
+                    if( m_AudioOutputWaveFileWriterPt.Init( m_AudioOutputFileFullPathStrPt, ( short ) 1, m_SamplingRate, 16 ) == 0 )
                     {
                         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：创建并初始化音频输出文件 " + m_AudioInputFileFullPathStrPt + " 的Wave文件写入器类类对象成功。" );
                     }
@@ -926,7 +1040,7 @@ public abstract class AudioProcThread extends Thread
                         break out;
                     }
                     m_AudioResultWaveFileWriterPt = new WaveFileWriter();
-                    if( m_AudioResultWaveFileWriterPt.Init( ( m_AudioResultFileFullPathStrPt + "\0" ).getBytes(), ( short ) 1, m_SamplingRate, 16 ) == 0 )
+                    if( m_AudioResultWaveFileWriterPt.Init( m_AudioResultFileFullPathStrPt, ( short ) 1, m_SamplingRate, 16 ) == 0 )
                     {
                         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：创建并初始化音频结果文件 " + m_AudioInputFileFullPathStrPt + " 的Wave文件写入器类对象成功。" );
                     }
@@ -1521,7 +1635,7 @@ public abstract class AudioProcThread extends Thread
                     {
                         if( m_SpeexAecIsSaveMemFile != 0 )
                         {
-                            if( m_SpeexAecPt.SaveMemFile( m_SamplingRate, m_FrameLen, m_SpeexAecFilterLen, ( m_SpeexAecMemFileFullPathStrPt + "\0" ).getBytes() ) == 0 )
+                            if( m_SpeexAecPt.SaveMemFile( m_SamplingRate, m_FrameLen, m_SpeexAecFilterLen, m_SpeexAecMemFileFullPathStrPt ) == 0 )
                             {
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：将Speex声学回音消除器内存块保存到指定的文件 " + m_SpeexAecMemFileFullPathStrPt + " 成功。" );
                             }
@@ -1564,7 +1678,7 @@ public abstract class AudioProcThread extends Thread
                     {
                         if( m_WebRtcAecIsSaveMemFile != 0 )
                         {
-                            if( m_WebRtcAecPt.SaveMemFile( m_SamplingRate, m_FrameLen, m_WebRtcAecEchoMode, m_WebRtcAecDelay, m_WebRtcAecIsUseDelayAgnosticMode, m_WebRtcAecIsUseExtdFilterMode, m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_WebRtcAecIsUseAdaptAdjDelay, ( m_WebRtcAecMemFileFullPathStrPt + "\0" ).getBytes() ) == 0 )
+                            if( m_WebRtcAecPt.SaveMemFile( m_SamplingRate, m_FrameLen, m_WebRtcAecEchoMode, m_WebRtcAecDelay, m_WebRtcAecIsUseDelayAgnosticMode, m_WebRtcAecIsUseExtdFilterMode, m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_WebRtcAecIsUseAdaptAdjDelay, m_WebRtcAecMemFileFullPathStrPt ) == 0 )
                             {
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：将WebRtc浮点版声学回音消除器内存块保存到指定的文件 " + m_WebRtcAecMemFileFullPathStrPt + " 成功。" );
                             }

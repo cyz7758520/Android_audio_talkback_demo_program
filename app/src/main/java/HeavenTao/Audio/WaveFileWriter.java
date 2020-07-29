@@ -32,7 +32,7 @@ public class WaveFileWriter
     }
 
     //创建并初始化Wave文件写入器。
-    public native int Init( byte WaveFileFullPathStrPt[], short NumChanl, int SamplingRate, int SamplingBit );
+    public native int Init( String WaveFileFullPathStrPt, short NumChanl, int SamplingRate, int SamplingBit );
 
     //用Wave文件写入器写入数据。
     public native int WriteData( short DataPt[], long DataLen );

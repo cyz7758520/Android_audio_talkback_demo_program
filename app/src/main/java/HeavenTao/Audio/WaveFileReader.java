@@ -32,7 +32,7 @@ public class WaveFileReader
     }
 
     //创建并初始化Wave文件读取器。
-    public native int Init( byte WaveFileFullPathStrPt[], HTShort NumChanlPt, HTInt SamplingRatePt, HTInt SamplingBitPt );
+    public native int Init( String WaveFileFullPathStrPt, HTShort NumChanlPt, HTInt SamplingRatePt, HTInt SamplingBitPt );
 
     //用Wave文件读取器读取数据。
     public native int ReadData( short DataPt[], long DataSz, HTLong DataLenPt );

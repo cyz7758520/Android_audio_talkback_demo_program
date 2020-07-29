@@ -155,6 +155,13 @@
         </LinearLayout>
 
         <CheckBox
+            android:id="@+id/IsSaveSettingToFileCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="保存设置到扩展目录下的Setting.txt文件中"/>
+
+        <CheckBox
             android:id="@+id/IsPrintLogcatCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -532,7 +539,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:checked="true"
-            android:text="将音频输入帧、音频输出帧、音频结果帧分别替换保存到应用程序目录下的AudioInput.wav、AudioOutput.wav、AudioResult.wav文件中" />
+            android:text="将音频输入帧、音频输出帧、音频结果帧分别替换保存到扩展目录下的AudioInput.wav、AudioOutput.wav、AudioResult.wav文件中" />
 
         <Button
             android:layout_width="match_parent"

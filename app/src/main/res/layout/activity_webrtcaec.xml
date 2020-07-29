@@ -111,7 +111,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="4"
                 android:checked="false"
-                android:text="将WebRtc浮点版声学回音消除器的内存块保存到内部存储根目录（/mnt/sdcard）下的WebRtcAecMemory文件中，以便缩短下一次初始化时的收敛时间"/>
+                android:text="将WebRtc浮点版声学回音消除器的内存块保存到扩展目录下的WebRtcAecMemory文件中，以便缩短下一次初始化时的收敛时间"/>
 
             <Button
                 android:layout_weight="1"
