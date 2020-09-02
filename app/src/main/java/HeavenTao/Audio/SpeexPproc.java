@@ -32,7 +32,7 @@ public class SpeexPproc
     }
 
     //创建并初始化Speex预处理器。
-    public native int Init( int SamplingRate, int FrameLen, int IsUseNs, int NoiseSupes, int IsUseDereverb, int IsUseVad, int VadProbStart, int VadProbCont, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain, int IsUseRec, long SpeexAecPt, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct );
+    public native int Init( int SamplingRate, int FrameLen, int IsUseNs, int NoiseSupes, int IsUseDereverb, int IsUseVad, int VadProbStart, int VadProbCont, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain );
 
     //用Speex预处理器对单声道16位有符号整型PCM格式帧进行Speex预处理。
     public native int Proc( short FramePt[], short ResultFramePt[], HTInt VoiceActStsPt );

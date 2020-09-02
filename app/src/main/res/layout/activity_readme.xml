@@ -76,7 +76,12 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="        如果需要在自己的软件中使用本软件的音频功能，只需要将HeavenTao.Audio包、HeavenTao.Data包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Audio.AudioProcThread类即可。"/>
+            android:text="        如果需要在自己的软件中使用本软件的音频功能，只需要将HeavenTao.Audio包、HeavenTao.Data包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Audio.AudioProcThread类，实现UserInit、UserProcess、UserDestroy、UserReadInputFrame、UserWriteOutputFrame、UserGetPcmOutputFrame这六个函数即可。"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="        如果用户要在JNI层处理音频帧，则可以将那六个函数继承为native函数，然后在JNI层实现即可。" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -86,7 +91,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="        普通免费版功能包括：WebRtc定点版声学回音消除器、Speex预处理器的噪音抑制、WebRtc定点版噪音抑制器、WebRtc浮点版噪音抑制器、Speex预处理器的其他功能、Speex编解码器、自己设计的自适应抖动缓冲器。"/>
+            android:text="        普通免费版功能包括：WebRtc定点版声学回音消除器、Speex预处理器的噪音抑制、WebRtc定点版噪音抑制器、WebRtc浮点版噪音抑制器、Speex预处理器的其他功能、Speex编解码器、自己设计的自适应抖动缓冲器、本端TCP协议服务端套接字、本端TCP协议客户端套接字。"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -117,11 +122,6 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="        如果在使用Speex声学回音消除器时，最好也使用Speex预处理器的噪音抑制，这样可以达到最佳的消除效果。"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:text="        如果要使用8000Hz采样频率时，最好不要使用RNNoise噪音抑制，因为它对8000Hz的声音抑制非常强烈。"/>
 
         <TextView
@@ -139,6 +139,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="        本软件采用了Speex的1.2.0版本、SpeexDsp的1.2.0版本、WebRtc的2019年7月份版本为基础，并进行了一系列优化，还并加入了本人自己设计的音频输入输出数据帧同步方法、自适应设置WebRtc声学回音消除器的回音延迟、自适应抖动缓冲器。声学回音可以消除到99%以上，且收敛时间很短，网络流量的比特率也很低。"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="        声学回音消除器效果对比："/>
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="fitXY"
+            android:src="@drawable/aeccmp" />
 
         <TextView
             android:layout_width="wrap_content"

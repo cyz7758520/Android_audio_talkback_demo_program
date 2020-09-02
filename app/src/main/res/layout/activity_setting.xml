@@ -175,6 +175,13 @@
             android:checked="true"
             android:text="使用唤醒锁"/>
 
+        <CheckBox
+            android:id="@+id/IsUseSystemAecNsAgcCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带）"/>
+
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
