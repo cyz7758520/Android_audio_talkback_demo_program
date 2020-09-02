@@ -127,7 +127,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="        本软件不支持音乐，尤其是RNNoise噪音抑制器对音乐的抑制非常强烈。"/>
+            android:text="        本软件不支持音乐，尤其是系统自带的噪音抑制器和RNNoise噪音抑制器可能对音乐的抑制非常强烈。"/>
 
         <TextView
             android:layout_width="wrap_content"
