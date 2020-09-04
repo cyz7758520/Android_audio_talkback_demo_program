@@ -130,7 +130,6 @@ public abstract class AudioProcThread extends Thread
 
     AudioRecord m_AudioRecordPt; //存放音频输入类对象的内存指针。
     int m_AudioRecordBufSz; //存放音频输入类对象的缓冲区大小，单位字节。
-
     public int m_UseWhatAudioOutputDevice = 0; //存放使用什么音频输出设备，为0表示扬声器，为非0表示听筒。
     AudioTrack m_AudioTrackPt; //存放音频输出类对象的内存指针。
     int m_AudioTrackBufSz; //存放音频输出类对象的缓冲区大小，单位字节。
@@ -198,7 +197,7 @@ public abstract class AudioProcThread extends Thread
 
             if( m_InputFrameLnkLstPt != null ) //如果音频处理线程已经启动。
             {
-                m_SwitchAudioDeviceFlag = 1; //设置准备切换音频输出设备。
+                m_SwitchAudioDeviceFlag = 1; //设置准备切换音频设备。
 
                 //等待切换完毕。
                 do
@@ -214,7 +213,7 @@ public abstract class AudioProcThread extends Thread
 
             if( m_InputFrameLnkLstPt != null ) //如果音频处理线程已经启动。
             {
-                m_SwitchAudioDeviceFlag = 1; //设置准备切换音频输出设备。
+                m_SwitchAudioDeviceFlag = 1; //设置准备切换音频设备。
 
                 //等待切换完毕。
                 do

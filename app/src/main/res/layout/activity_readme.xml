@@ -165,7 +165,12 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="        源代码下载地址：https://github.com/cyz7758520/Android_audio_talkback_demo_program"/>
+            android:text="        本人博客：http://www.cnblogs.com/gaoyaguo"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="        本程序源代码下载地址：https://github.com/cyz7758520/Android_audio_talkback_demo_program"/>
 
         <TextView
             android:layout_width="wrap_content"

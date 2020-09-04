@@ -3,8 +3,6 @@ package com.example.Android_audio_talkback_demo_program;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.media.AudioManager;
-import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
