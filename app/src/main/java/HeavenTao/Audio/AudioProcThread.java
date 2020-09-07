@@ -225,7 +225,7 @@ public abstract class AudioProcThread extends Thread
         }
     }
 
-    //设置使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器。
+    //设置使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带）。
     public void SetUseSystemAecNsAgc( int IsUseSystemAecNsAgc )
     {
         m_IsUseSystemAecNsAgc = IsUseSystemAecNsAgc;
