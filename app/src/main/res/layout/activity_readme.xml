@@ -76,7 +76,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="        如果需要在自己的软件中使用本软件的音频功能，只需要将HeavenTao.Audio包、HeavenTao.Data包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Audio.AudioProcThread类，实现UserInit、UserProcess、UserDestroy、UserReadInputFrame、UserWriteOutputFrame、UserGetPcmOutputFrame这六个函数即可。"/>
+            android:text="        如果需要在自己的软件中使用本软件的音频功能，只需要将HeavenTao.Audio包、HeavenTao.Data包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Audio.AudioProcThread类，实现UserInit、UserProcess、UserDestroy、UserReadInputFrame、UserWriteOutputFrame、UserGetPcmOutputFrame这六个函数，再在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO和android.permission.MODIFY_AUDIO_SETTINGS权限即可。"/>
 
         <TextView
             android:layout_width="wrap_content"
