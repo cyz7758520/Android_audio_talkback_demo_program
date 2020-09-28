@@ -22,9 +22,8 @@ public abstract class AudioProcThread extends Thread
 {
     public String m_CurClsNameStrPt = this.getClass().getSimpleName(); //存放当前类名称字符串。
 
-    public int m_ExitFlag = 0; //存放本线程退出标记，为0表示保持运行，为1表示请求退出。
+    public int m_ExitFlag = 0; //存放本线程退出标记，为0表示保持运行，为1表示请求退出，为2表示请求重启，为3表示请求重启但不执行用户定义的UserInit初始化函数和UserDestroy销毁函数。
     public int m_ExitCode = 0; //存放本线程退出代码，为0表示正常退出，为-1表示初始化失败，为-2表示处理失败。
-    public int m_SwitchAudioDeviceFlag = 0; //存放切换音频设备标记，为0表示不切换或切换完毕，为非0表示请求切换。
 
     public static Context m_AppContextPt; //存放应用程序上下文类对象的内存指针。
     public int m_SamplingRate = 16000; //存放采样频率，取值只能为8000、16000、32000。
@@ -131,6 +130,7 @@ public abstract class AudioProcThread extends Thread
     AudioRecord m_AudioRecordPt; //存放音频输入类对象的内存指针。
     int m_AudioRecordBufSz; //存放音频输入类对象的缓冲区大小，单位字节。
     public int m_UseWhatAudioOutputDevice = 0; //存放使用什么音频输出设备，为0表示扬声器，为非0表示听筒。
+    public int m_UseWhatAudioOutputStreamType = 0; //存放使用什么音频输出流类型，为0表示通话类型，为非0表示媒体类型。
     AudioTrack m_AudioTrackPt; //存放音频输出类对象的内存指针。
     int m_AudioTrackBufSz; //存放音频输出类对象的缓冲区大小，单位字节。
 
@@ -142,7 +142,7 @@ public abstract class AudioProcThread extends Thread
 
     public abstract int UserProcess(); //用户定义的处理函数，在本线程运行时每隔1毫秒就调用一次，返回值表示是否成功，为0表示成功，为非0表示失败。
 
-    public abstract int UserDestroy(); //用户定义的销毁函数，在本线程退出时调用一次，返回值表示是否重新初始化，为0表示直接退出，为非0表示重新初始化。
+    public abstract void UserDestroy(); //用户定义的销毁函数，在本线程退出时调用一次。
 
     public abstract int UserReadInputFrame( short PcmInputFramePt[], short PcmResultFramePt[], int VoiceActSts, byte SpeexInputFramePt[], HTLong SpeexInputFrameLen, HTInt SpeexInputFrameIsNeedTrans ); //用户定义的读取输入帧函数，在读取到一个输入帧并处理完后回调一次，为0表示成功，为非0表示失败。
 
@@ -151,23 +151,23 @@ public abstract class AudioProcThread extends Thread
     public abstract void UserGetPcmOutputFrame( short PcmOutputFramePt[] ); //用户定义的获取PCM格式输出帧函数，在解码完一个输出帧时回调一次。注意：本函数不是在音频处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致回音消除失败。
 
     //初始化音频处理线程类对象。
-    public int Init( Context AppContextPt, int SamplingRate, int FrameMsLen )
+    public int Init( Context AppContextPt, int SamplingRate, int FrameLenMsec )
     {
-        int p_Result = -1; //存放本函数执行结果的值，0表示成功，非0表示失败。
+        int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
 
         out:
         {
             //判断各个变量是否正确。
             if( ( AppContextPt == null ) || //如果上下文类对象不正确。
-                    ( ( SamplingRate != 8000 ) && ( SamplingRate != 16000 ) && ( SamplingRate != 32000 ) ) || //如果采样频率不正确。
-                    ( ( FrameMsLen == 0 ) || ( FrameMsLen % 10 != 0 ) ) ) //如果帧的毫秒长度不正确。
+                ( ( SamplingRate != 8000 ) && ( SamplingRate != 16000 ) && ( SamplingRate != 32000 ) ) || //如果采样频率不正确。
+                ( ( FrameLenMsec == 0 ) || ( FrameLenMsec % 10 != 0 ) ) ) //如果帧的毫秒长度不正确。
             {
                 break out;
             }
 
             m_AppContextPt = AppContextPt; //设置应用程序上下文类对象的内存指针。
             m_SamplingRate = SamplingRate; //设置采样频率。
-            m_FrameLen = FrameMsLen * SamplingRate / 1000; //设置帧的数据长度。
+            m_FrameLen = FrameLenMsec * SamplingRate / 1000; //设置帧的数据长度。
 
             p_Result = 0;
         }
@@ -189,40 +189,25 @@ public abstract class AudioProcThread extends Thread
     }
 
     //设置使用的音频输出设备。
-    public void SetUseDevice( int UseSpeakerOrEarpiece )
+    public int SetUseDevice( int UseSpeakerOrEarpiece, int UseVoiceCallOrMusic )
     {
-        if( ( m_UseWhatAudioOutputDevice == 0 ) && ( UseSpeakerOrEarpiece != 0 ) ) //如果要将扬声器切换到听筒。
+        int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+
+        out:
         {
-            m_UseWhatAudioOutputDevice = 1;
-
-            if( m_InputFrameLnkLstPt != null ) //如果音频处理线程已经启动。
+            //判断各个变量是否正确。
+            if( ( UseSpeakerOrEarpiece != 0 ) && ( UseVoiceCallOrMusic != 0 ) ) //如果使用听筒时不能使用媒体类型音频输出流。
             {
-                m_SwitchAudioDeviceFlag = 1; //设置准备切换音频设备。
-
-                //等待切换完毕。
-                do
-                {
-                    SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
-                }
-                while( m_SwitchAudioDeviceFlag != 0 );
+                break out;
             }
-        }
-        else if( ( m_UseWhatAudioOutputDevice != 0 ) && ( UseSpeakerOrEarpiece == 0 ) ) //如果要将听筒切换到扬声器。
-        {
-            m_UseWhatAudioOutputDevice = 0;
 
-            if( m_InputFrameLnkLstPt != null ) //如果音频处理线程已经启动。
-            {
-                m_SwitchAudioDeviceFlag = 1; //设置准备切换音频设备。
+            m_UseWhatAudioOutputDevice = UseSpeakerOrEarpiece; //设置音频输出设备。
+            m_UseWhatAudioOutputStreamType = UseVoiceCallOrMusic; //设置音频输出流类型。
 
-                //等待切换完毕。
-                do
-                {
-                    SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
-                }
-                while( m_SwitchAudioDeviceFlag != 0 );
-            }
+            p_Result = 0;
         }
+
+        return p_Result;
     }
 
     //设置使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带）。
@@ -378,9 +363,48 @@ public abstract class AudioProcThread extends Thread
     }
 
     //请求本线程退出。
-    public void RequireExit()
+    public int RequireExit( int ExitFlag, int IsBlockWait )
     {
-        m_ExitFlag = 1;
+        int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+
+        out:
+        {
+            //判断各个变量是否正确。
+            if( ( ExitFlag < 0 ) || ( ExitFlag > 3 ) ) //如果退出标记不正确。
+            {
+                break out;
+            }
+
+            m_ExitFlag = ExitFlag;
+
+            if( IsBlockWait != 0 )
+            {
+                if( ExitFlag == 1 ) //如果是请求退出。
+                {
+                    try
+                    {
+                        this.join();
+                    }
+                    catch( InterruptedException e )
+                    {
+
+                    }
+                }
+                else //如果是请求重启。
+                {
+                    //等待重启完毕。
+                    do
+                    {
+                        SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
+                    }
+                    while( m_ExitFlag != 0 );
+                }
+            }
+
+            p_Result = 0;
+        }
+
+        return p_Result;
     }
 
     //音频输入线程类。
@@ -644,14 +668,14 @@ public abstract class AudioProcThread extends Thread
             {
                 if( m_IsPrintLogcat != 0 ) p_LastMsec = System.currentTimeMillis(); //记录初始化开始的时间。
 
-                m_ExitFlag = 0; //设置本线程退出标记为保持运行。
-                m_ExitCode = -1; //先将本线程退出代码预设为初始化失败，如果初始化失败，这个退出代码就不用再设置了，如果初始化成功，再设置为成功的退出代码。
-
                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：本地代码的指令集名称（CPU类型+ ABI约定）为" + android.os.Build.CPU_ABI + "。手机型号为" + android.os.Build.MODEL + "。" );
 
-                //调用用户定义的初始化函数。
-                if( m_SwitchAudioDeviceFlag == 0 ) //如果切换音频设备标记为不切换。
+                if( m_ExitFlag != 3 ) //如果需要执行用户定义的初始化函数。
                 {
+                    m_ExitFlag = 0; //设置本线程退出标记为保持运行。
+                    m_ExitCode = -1; //先将本线程退出代码预设为初始化失败，如果初始化失败，这个退出代码就不用再设置了，如果初始化成功，再设置为成功的退出代码。
+
+                    //调用用户定义的初始化函数。
                     p_TmpInt32 = UserInit();
                     if( p_TmpInt32 == 0 )
                     {
@@ -663,9 +687,10 @@ public abstract class AudioProcThread extends Thread
                         break out;
                     }
                 }
-                else
+                else //如果不要执行用户定义的初始化函数。
                 {
-                    m_SwitchAudioDeviceFlag = 0; //设置切换音频设备标记为切换完毕。
+                    m_ExitFlag = 0; //设置本线程退出标记为保持运行。
+                    m_ExitCode = -1; //先将本线程退出代码预设为初始化失败，如果初始化失败，这个退出代码就不用再设置了，如果初始化成功，再设置为成功的退出代码。
                 }
 
                 //保存设置到文件。
@@ -1113,7 +1138,7 @@ public abstract class AudioProcThread extends Thread
                     try
                     {
                         m_AudioTrackBufSz = m_FrameLen * 2;
-                        m_AudioTrackPt = new AudioTrack( AudioManager.STREAM_VOICE_CALL,
+                        m_AudioTrackPt = new AudioTrack( ( m_UseWhatAudioOutputStreamType == 0 ) ? AudioManager.STREAM_VOICE_CALL : AudioManager.STREAM_MUSIC,
                                 m_SamplingRate,
                                 AudioFormat.CHANNEL_CONFIGURATION_MONO,
                                 AudioFormat.ENCODING_PCM_16BIT,
@@ -1141,7 +1166,7 @@ public abstract class AudioProcThread extends Thread
                         try
                         {
                             m_AudioTrackBufSz = AudioTrack.getMinBufferSize( m_SamplingRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT );
-                            m_AudioTrackPt = new AudioTrack( AudioManager.STREAM_VOICE_CALL,
+                            m_AudioTrackPt = new AudioTrack( ( m_UseWhatAudioOutputStreamType == 0 ) ? AudioManager.STREAM_VOICE_CALL : AudioManager.STREAM_MUSIC,
                                     m_SamplingRate,
                                     AudioFormat.CHANNEL_CONFIGURATION_MONO,
                                     AudioFormat.ENCODING_PCM_16BIT,
@@ -1430,13 +1455,6 @@ public abstract class AudioProcThread extends Thread
                             p_NowMsec = System.currentTimeMillis();
                             Log.i( m_CurClsNameStrPt, "音频处理线程：本音频帧处理完毕，耗时：" + ( p_NowMsec - p_LastMsec ) + " 毫秒。" );
                         }
-                    }
-
-                    if( m_SwitchAudioDeviceFlag != 0 ) //如果本线程切换音频设备标记为请求切换。
-                    {
-                        m_ExitCode = 0; //处理已经成功了，再将本线程退出代码设置为正常退出。
-                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：接收到切换音频设备请求，开始准备切换。" );
-                        break out;
                     }
 
                     if( m_ExitFlag != 0 ) //如果本线程退出标记为请求退出。
@@ -1781,18 +1799,14 @@ public abstract class AudioProcThread extends Thread
                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：销毁PCM格式输入帧、PCM格式输出帧、PCM格式结果帧、PCM格式临时帧、PCM格式交换帧、语音活动状态、Speex格式输入帧、Speex格式输入帧的数据长度、Speex格式输入帧是否需要传输成功。" );
             }
 
-            //调用用户定义的销毁函数。
-            if( ( m_ExitCode == 0 ) && ( m_SwitchAudioDeviceFlag != 0 ) ) //如果本线程退出代码为正常退出，且本线程切换音频设备标记为请求切换。
+            if( m_ExitFlag != 3 ) //如果需要调用用户定义的销毁函数。
             {
-                p_TmpInt32 = 1; //不调用用户定义的销毁函数，直接设置本线程重新初始化。
+                UserDestroy(); //调用用户定义的销毁函数。
+                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：调用用户定义的销毁函数成功。" );
             }
-            else
+
+            if( ( m_ExitFlag == 0 ) || ( m_ExitFlag == 1 ) ) //如果用户需要直接退出。
             {
-                p_TmpInt32 = UserDestroy(); //调用用户定义的销毁函数。
-            }
-            if( p_TmpInt32 == 0 ) //如果用户需要直接退出。
-            {
-                m_SwitchAudioDeviceFlag = 0; //设置切换音频设备标记为切换完毕，防止SetUseDevice函数无限等待。
                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频处理线程：本线程已退出。" );
                 break ReInit;
             }

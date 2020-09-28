@@ -98,6 +98,7 @@ class MainActivityHandler extends Handler
     }
 }
 
+//数据包类型：0x00表示连接请求或心跳，0x01表示输入输出帧，0x02表示连接应答或输入输出帧应答，0x03表示退出。
 //我的音频处理线程类。
 class MyAudioProcThread extends AudioProcThread
 {
@@ -105,14 +106,16 @@ class MyAudioProcThread extends AudioProcThread
     String m_PortStrPt; //存放端口字符串类对象的内存指针。
     Handler m_MainActivityHandlerPt; //存放主界面消息处理类对象的内存指针。
 
-    byte m_IsCreateSrvrOrClnt; //存放创建服务端或者客户端标记，为1表示创建服务端，为0表示创建客户端。
+    int m_UseWhatXfrPrtcl; //存放使用什么传输协议，为0表示TCP协议，为1表示UDP协议。
+    int m_IsCreateSrvrOrClnt; //存放创建服务端或者客户端标记，为1表示创建服务端，为0表示创建客户端。
     TcpSrvrSokt m_TcpSrvrSoktPt; //存放本端TCP协议服务端套接字类对象的内存指针。
     TcpClntSokt m_TcpClntSoktPt; //存放本端TCP协议客户端套接字类对象的内存指针。
-    int m_TcpClntSoktReInitTimes; //存放本端TCP协议客户端套接字类对象重新初始化的次数。
+    UdpSokt m_UdpSoktPt; //存放本端UDP协议套接字类对象的内存指针。
     long m_LastPktSendTime; //存放最后一个数据包的发送时间，用于判断连接是否中断。
     long m_LastPktRecvTime; //存放最后一个数据包的接收时间，用于判断连接是否中断。
 
     int m_LastSendInputFrameIsAct; //存放最后一个发送的输入帧有无语音活动，为1表示有语音活动，为0表示无语音活动。
+    int m_LastSendInputFrameIsRecv; //存放最后一个发送的输入帧远端是否接收到，为0表示没有收到，为非0表示已经收到。
     int m_SendInputFrameTimeStamp; //存放发送输入帧的时间戳。
     int m_RecvOutputFrameTimeStamp; //存放接收输出帧的时间戳。
     byte m_IsRecvExitPkt; //存放是否接收到退出包，为0表示否，为1表示是。
@@ -140,7 +143,7 @@ class MyAudioProcThread extends AudioProcThread
             {Message p_MessagePt = new Message();p_MessagePt.what = 1;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送音频处理线程启动的消息。
 
             m_IsRecvExitPkt = 0; //设置没有接收到退出包。
-            if( m_TmpBytePt == null ) m_TmpBytePt = new byte[m_FrameLen * 2 + 4]; //初始化存放临时数据的数组。
+            if( m_TmpBytePt == null ) m_TmpBytePt = new byte[1 + 4 + m_FrameLen * 2]; //初始化存放临时数据的数组。
             if( m_ErrInfoVarStrPt == null ) //创建并初始化错误信息动态字符串类对象。
             {
                 m_ErrInfoVarStrPt = new VarStr();
@@ -150,13 +153,13 @@ class MyAudioProcThread extends AudioProcThread
                 }
             }
 
-            if( m_IsCreateSrvrOrClnt == 1 ) //如果是创建本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接。
+            if( m_UseWhatXfrPrtcl == 0 ) //如果使用TCP协议。
             {
-                if( m_TcpSrvrSoktPt == null ) //如果还没有创建TCP协议服务端套接字。
+                if( m_IsCreateSrvrOrClnt == 1 ) //如果是创建本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接。
                 {
                     m_TcpSrvrSoktPt = new TcpSrvrSokt();
 
-                    if( m_TcpSrvrSoktPt.Init( m_IPAddrStrPt, m_PortStrPt, 1, 1, m_ErrInfoVarStrPt ) == 0 ) //如果创建并初始化已监听的本端TCP协议服务端套接字成功。
+                    if( m_TcpSrvrSoktPt.Init( 4, m_IPAddrStrPt, m_PortStrPt, 1, 1, m_ErrInfoVarStrPt ) == 0 ) //如果创建并初始化已监听的本端TCP协议服务端套接字成功。
                     {
                         HTString p_LclNodeAddrPt = new HTString();
                         HTString p_LclNodePortPt = new HTString();
@@ -180,108 +183,369 @@ class MyAudioProcThread extends AudioProcThread
                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                         break out;
                     }
-                }
 
-                m_TcpClntSoktPt = new TcpClntSokt();
+                    m_TcpClntSoktPt = new TcpClntSokt();
 
-                while( true )
-                {
-                    //接受远端TCP协议客户端套接字的连接。
-                    HTString p_RmtNodeAddrPt = new HTString();
-                    HTString p_RmtNodePortPt = new HTString();
-
-                    if( m_TcpSrvrSoktPt.Accept( null, p_RmtNodeAddrPt, p_RmtNodePortPt, ( short ) 0, m_TcpClntSoktPt, m_ErrInfoVarStrPt ) == 0 )
+                    while( true ) //循环接受远端TCP协议客户端套接字的连接。
                     {
-                        if( m_TcpClntSoktPt.GetTcpClntSoktPt() != 0 ) //如果用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接成功。
-                        {
-                            m_TcpSrvrSoktPt.Destroy( null ); //关闭并销毁已创建的本端TCP协议服务端套接字，防止还有其他远端TCP协议客户端套接字继续连接。
-                            m_TcpSrvrSoktPt = null;
+                        HTString p_RmtNodeAddrPt = new HTString();
+                        HTString p_RmtNodePortPt = new HTString();
 
-                            String p_InfoStrPt = "用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]的连接成功。";
+                        if( m_TcpSrvrSoktPt.Accept( null, p_RmtNodeAddrPt, p_RmtNodePortPt, ( short ) 1, m_TcpClntSoktPt, m_ErrInfoVarStrPt ) == 0 )
+                        {
+                            if( m_TcpClntSoktPt.GetTcpClntSoktPt() != 0 ) //如果用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接成功。
+                            {
+                                m_TcpSrvrSoktPt.Destroy( null ); //关闭并销毁已创建的本端TCP协议服务端套接字，防止还有其他远端TCP协议客户端套接字继续连接。
+                                m_TcpSrvrSoktPt = null;
+
+                                String p_InfoStrPt = "用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]的连接成功。";
+                                Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                break;
+                            }
+                            else //如果用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接超时，就重新接受。
+                            {
+
+                            }
+                        }
+                        else
+                        {
+                            m_TcpClntSoktPt = null;
+
+                            String p_InfoStrPt = "用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                            Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                            break out;
+                        }
+
+                        if( m_ExitFlag != 0 ) //如果本线程接收到退出请求。
+                        {
+                            m_TcpClntSoktPt = null;
+
+                            Log.i( m_CurClsNameStrPt, "本线程接收到退出请求，开始准备退出。" );
+                            break out;
+                        }
+                    }
+                }
+                else if( m_IsCreateSrvrOrClnt == 0 ) //如果是创建本端TCP协议客户端套接字连接远端TCP协议服务端套接字。
+                {
+                    m_TcpClntSoktPt = new TcpClntSokt();
+
+                    int p_ReInitTimes = 1;
+                    while( true ) //循环连接已监听的远端TCP协议服务端套接字。
+                    {
+                        if( m_TcpClntSoktPt.Init( 4, m_IPAddrStrPt, m_PortStrPt, null, null, ( short ) 5000, m_ErrInfoVarStrPt ) == 0 ) //创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字成功。
+                        {
+                            HTString p_LclNodeAddrPt = new HTString();
+                            HTString p_LclNodePortPt = new HTString();
+                            HTString p_RmtNodeAddrPt = new HTString();
+                            HTString p_RmtNodePortPt = new HTString();
+
+                            if( m_TcpClntSoktPt.GetLclAddr( null, p_LclNodeAddrPt, p_LclNodePortPt, m_ErrInfoVarStrPt ) != 0 )
+                            {
+                                String p_InfoStrPt = "获取已连接的本端TCP协议客户端套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                                Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                break out;
+                            }
+                            if( m_TcpClntSoktPt.GetRmtAddr( null, p_RmtNodeAddrPt, p_RmtNodePortPt, m_ErrInfoVarStrPt ) != 0 )
+                            {
+                                String p_InfoStrPt = "获取已连接的本端TCP协议客户端套接字连接的远端TCP协议客户端套接字绑定的远程节点地址和端口失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                                Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                break out;
+                            }
+
+                            String p_InfoStrPt = "创建并初始化本端TCP协议客户端套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]，并连接已监听的远端TCP协议服务端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]成功。";
                             Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                             Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                            break;
+                            break; //跳出重连。
                         }
-                        else //如果用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接超时。
+                        else
                         {
+                            {String p_InfoStrPt = "创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                            Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
+                            if( p_ReInitTimes <= 5 ) //如果还需要进行重连。
+                            {
+                                String p_InfoStrPt = "开始第 " + p_ReInitTimes + " 次重连。";
+                                Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                p_ReInitTimes++;
+                                SystemClock.sleep( 500 ); //暂停一下，避免CPU使用率过高。
+                            }
+                            else //如果不需要重连了。
+                            {
+                                m_TcpClntSoktPt = null;
+                                break out;
+                            }
                         }
                     }
-                    else
-                    {
-                        m_TcpClntSoktPt = null;
-
-                        String p_InfoStrPt = "用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                        break out;
-                    }
-
-                    if( m_ExitFlag != 0 ) //如果本线程接收到退出请求。
-                    {
-                        m_TcpClntSoktPt = null;
-
-                        Log.i( m_CurClsNameStrPt, "本线程接收到退出请求，开始准备退出。" );
-                        break out;
-                    }
-
-                    SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
-                }
-            }
-            else if( m_IsCreateSrvrOrClnt == 0 ) //如果是创建本端TCP协议客户端套接字连接远端TCP协议服务端套接字。
-            {
-                m_TcpClntSoktPt = new TcpClntSokt();
-
-                if( m_TcpClntSoktReInitTimes != 0 ) //如果本次初始化是重连远端TCP协议服务端套接字。
-                {
-                    SystemClock.sleep( 500 ); //暂停一下，避免CPU使用率过高。
                 }
 
-                if( m_TcpClntSoktPt.Init( m_IPAddrStrPt, m_PortStrPt, null, null, ( short ) 5, m_ErrInfoVarStrPt ) == 0 ) //创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字成功。
+                if( m_TcpClntSoktPt.SetNoDelay( 1, m_ErrInfoVarStrPt ) != 0 ) //如果设置已连接的本端TCP协议客户端套接字的Nagle延迟算法状态为禁用失败。
                 {
-                    HTString p_LclNodeAddrPt = new HTString();
-                    HTString p_LclNodePortPt = new HTString();
-                    HTString p_RmtNodeAddrPt = new HTString();
-                    HTString p_RmtNodePortPt = new HTString();
-
-                    if( m_TcpClntSoktPt.GetLclAddr( null, p_LclNodeAddrPt, p_LclNodePortPt, m_ErrInfoVarStrPt ) != 0 )
-                    {
-                        String p_InfoStrPt = "获取已连接的本端TCP协议客户端套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                        break out;
-                    }
-                    if( m_TcpClntSoktPt.GetRmtAddr( null, p_RmtNodeAddrPt, p_RmtNodePortPt, m_ErrInfoVarStrPt ) != 0 )
-                    {
-                        String p_InfoStrPt = "获取已连接的本端TCP协议客户端套接字连接的远端TCP协议客户端套接字绑定的远程节点地址和端口失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                        break out;
-                    }
-
-                    String p_InfoStrPt = "创建并初始化本端TCP协议客户端套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]，并连接已监听的远端TCP协议服务端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]成功。";
+                    String p_InfoStrPt = "设置已连接的本端TCP协议客户端套接字的Nagle延迟算法状态为禁用失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                     Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-
-                    m_TcpClntSoktReInitTimes = 0; //清空本端TCP协议客户端套接字类对象重新初始化的次数。
-                }
-                else
-                {
-                    m_TcpClntSoktPt = null;
-
-                    String p_InfoStrPt = "创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-                    Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                     Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                     break out;
                 }
             }
-
-            if( m_TcpClntSoktPt.SetNoDelay( 1, m_ErrInfoVarStrPt ) != 0 ) //如果设置已连接的本端TCP协议客户端套接字的Nagle延迟算法状态为禁用失败。
+            else //如果使用UDP协议。
             {
-                String p_InfoStrPt = "设置已连接的本端TCP协议客户端套接字的Nagle延迟算法状态为禁用失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-                Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                break out;
+                m_UdpSoktPt = new UdpSokt();
+
+                if( m_IsCreateSrvrOrClnt == 1 ) //如果是创建本端UDP协议套接字接受远端UDP协议套接字的连接。
+                {
+                    if( m_UdpSoktPt.Init( 4, m_IPAddrStrPt, m_PortStrPt, m_ErrInfoVarStrPt ) == 0 ) //如果创建并初始化已监听的本端UDP协议套接字成功。
+                    {
+                        HTString p_LclNodeAddrPt = new HTString();
+                        HTString p_LclNodePortPt = new HTString();
+
+                        if( m_UdpSoktPt.GetLclAddr( null, p_LclNodeAddrPt, p_LclNodePortPt, m_ErrInfoVarStrPt ) != 0 ) //如果获取已监听的本端UDP协议套接字绑定的本地节点地址和端口失败。
+                        {
+                            String p_InfoStrPt = "获取已监听的本端UDP协议套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                            Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                            break out;
+                        }
+
+                        String p_InfoStrPt = "创建并初始化已监听的本端UDP协议套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]成功。";
+                        Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                    }
+                    else //如果创建并初始化已监听的本端UDP协议套接字失败。
+                    {
+                        String p_InfoStrPt = "创建并初始化已监听的本端UDP协议套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        break out;
+                    }
+
+                    HTString p_RmtNodeAddrPt = new HTString();
+                    HTString p_RmtNodePortPt = new HTString();
+                    HTLong p_TmpHTLong = new HTLong(  );
+
+                    ReAccept:
+                    while( true ) //循环接受远端UDP协议套接字的连接。
+                    {
+                        if( m_UdpSoktPt.RecvPkt( null, p_RmtNodeAddrPt, p_RmtNodePortPt, m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 1, m_ErrInfoVarStrPt ) == 0 )
+                        {
+                            if( p_TmpHTLong.m_Val != -1 ) //如果用已监听的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包成功。
+                            {
+                                if( ( p_TmpHTLong.m_Val == 1 ) && ( m_TmpBytePt[0] == 0x00 ) ) //如果是连接请求包。
+                                {
+                                    m_UdpSoktPt.Connect( 4, p_RmtNodeAddrPt.m_Val, p_RmtNodePortPt.m_Val, m_ErrInfoVarStrPt ); //用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字，已连接的本端UDP协议套接字只能接收连接的远端UDP协议套接字发送的数据包。
+
+                                    int p_ReSendTimes = 1;
+                                    ReSend:
+                                    while( true ) //循环发送连接请求包，并接收连接应答包。
+                                    {
+                                        m_TmpBytePt[0] = 0x00; //设置连接请求包。
+                                        if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) != 0 )
+                                        {
+                                            String p_InfoStrPt = "用已监听的本端UDP协议套接字接受远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]的连接失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                                            Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                            break out;
+                                        }
+
+                                        ReRecv:
+                                        while( true ) //循环接收连接应答包。
+                                        {
+                                            if( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 1000, m_ErrInfoVarStrPt ) == 0 )
+                                            {
+                                                if( p_TmpHTLong.m_Val != -1 ) //如果用已监听的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包成功。
+                                                {
+                                                    if( ( p_TmpHTLong.m_Val >= 1 ) && ( m_TmpBytePt[0] != 0x00 ) ) //如果不是连接请求包。
+                                                    {
+                                                        String p_InfoStrPt = "用已监听的本端UDP协议套接字接受远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]的连接成功。";
+                                                        Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                                                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                                        break ReAccept; //跳出连接循环。
+                                                    }
+                                                    else //如果是连接请求包，就不管，重新接收连接应答包。
+                                                    {
+
+                                                    }
+                                                }
+                                                else //如果用已监听的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包超时。
+                                                {
+                                                    if( p_ReSendTimes <= 5 ) //如果还需要进行重发。
+                                                    {
+                                                        p_ReSendTimes++;
+                                                        break ReRecv; //重发连接请求包。
+                                                    }
+                                                    else //如果不需要重连了。
+                                                    {
+                                                        String p_InfoStrPt = "用已监听的本端UDP协议套接字接受远端UDP协议套接字的连接失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                                                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                                        break ReSend; //重新接受连接。
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                String p_InfoStrPt = "用已监听的本端UDP协议套接字接受远端UDP协议套接字的连接失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                                                Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                                break ReSend; //重新接受连接。
+                                            }
+                                        }
+                                    }
+
+                                    m_UdpSoktPt.Disconnect( m_ErrInfoVarStrPt ); //将已连接的本端UDP协议套接字断开连接的远端UDP协议套接字，已连接的本端UDP协议套接字将变成已监听的本端UDP协议套接字。
+
+                                    String p_InfoStrPt = "本端UDP协议套接字继续保持监听来接受连接。";
+                                    Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                }
+                                else //如果是其他包，就不管。
+                                {
+
+                                }
+                            }
+                            else //如果用已监听的本端UDP协议套接字接受到远端UDP协议套接字的连接请求超时。
+                            {
+
+                            }
+                        }
+                        else
+                        {
+                            String p_InfoStrPt = "用已监听的本端UDP协议套接字接受远端UDP协议套接字的连接失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                            Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                            break out;
+                        }
+
+                        if( m_ExitFlag != 0 ) //如果本线程接收到退出请求。
+                        {
+                            Log.i( m_CurClsNameStrPt, "本线程接收到退出请求，开始准备退出。" );
+                            break out;
+                        }
+                    }
+                }
+                else if( m_IsCreateSrvrOrClnt == 0 ) //如果是创建本端UDP协议套接字连接远端UDP协议套接字。
+                {
+                    if( m_UdpSoktPt.Init( 4, null, null, m_ErrInfoVarStrPt ) == 0 ) //如果创建并初始化已监听的本端UDP协议套接字成功。
+                    {
+                        HTString p_LclNodeAddrPt = new HTString();
+                        HTString p_LclNodePortPt = new HTString();
+
+                        if( m_UdpSoktPt.GetLclAddr( null, p_LclNodeAddrPt, p_LclNodePortPt, m_ErrInfoVarStrPt ) != 0 ) //如果获取已监听的本端UDP协议套接字绑定的本地节点地址和端口失败。
+                        {
+                            String p_InfoStrPt = "获取已监听的本端UDP协议套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                            Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                            break out;
+                        }
+
+                        String p_InfoStrPt = "创建并初始化已监听的本端UDP协议套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]成功。";
+                        Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                    }
+                    else //如果创建并初始化已监听的本端UDP协议套接字失败。
+                    {
+                        String p_InfoStrPt = "创建并初始化已监听的本端UDP协议套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        break out;
+                    }
+
+                    HTString p_RmtNodeAddrPt = new HTString();
+                    HTString p_RmtNodePortPt = new HTString();
+                    HTLong p_TmpHTLong = new HTLong(  );
+
+                    if( m_UdpSoktPt.Connect( 4, m_IPAddrStrPt, m_PortStrPt, m_ErrInfoVarStrPt ) != 0 )
+                    {
+                        String p_InfoStrPt = "用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                        Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        break out;
+                    }
+
+                    if( m_UdpSoktPt.GetRmtAddr( null, p_RmtNodeAddrPt, p_RmtNodePortPt, m_ErrInfoVarStrPt ) != 0 )
+                    {
+                        m_UdpSoktPt.Disconnect( m_ErrInfoVarStrPt );
+                        String p_InfoStrPt = "获取已连接的本端UDP协议套接字连接的远端UDP协议套接字绑定的远程节点地址和端口失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        break out;
+                    }
+
+                    int p_ReSendTimes = 1;
+                    ReSend:
+                    while( true ) //循环连接已监听的远端UDP协议套接字。
+                    {
+                        m_TmpBytePt[0] = 0x00; //设置连接请求包。
+                        if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) != 0 )
+                        {
+                            m_UdpSoktPt.Disconnect( m_ErrInfoVarStrPt );
+                            String p_InfoStrPt = "用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                            Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                            break out;
+                        }
+
+                        ReRecv:
+                        while( true ) //循环接收连接请求包。
+                        {
+                            if( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 1000, m_ErrInfoVarStrPt ) == 0 )
+                            {
+                                if( p_TmpHTLong.m_Val != -1 ) //如果用已连接的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包成功。
+                                {
+                                    if( ( p_TmpHTLong.m_Val == 1 ) && ( m_TmpBytePt[0] == 0x00 ) ) //如果是连接请求包。
+                                    {
+                                        m_TmpBytePt[0] = 0x02; //设置连接应答包。
+                                        if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) != 0 )
+                                        {
+                                            m_UdpSoktPt.Disconnect( m_ErrInfoVarStrPt );
+                                            String p_InfoStrPt = "用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                                            Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                            break out;
+                                        }
+
+                                        String p_InfoStrPt = "用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]成功。";
+                                        Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                        break ReSend; //跳出连接循环。
+                                    }
+                                    else //如果不是连接请求包，就不管，重新接收连接请求包。
+                                    {
+
+                                    }
+                                }
+                                else //如果用已连接的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包超时。
+                                {
+                                    if( p_ReSendTimes <= 5 ) //如果还需要进行重发。
+                                    {
+                                        p_ReSendTimes++;
+                                        break ReRecv; //重发连接请求包。
+                                    }
+                                    else //如果不需要重连了。
+                                    {
+                                        m_UdpSoktPt.Disconnect( m_ErrInfoVarStrPt );
+                                        String p_InfoStrPt = "用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                        break out;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                m_UdpSoktPt.Disconnect( m_ErrInfoVarStrPt );
+                                String p_InfoStrPt = "用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                                Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                break out;
+                            }
+                        }
+                    }
+                }
             }
 
             switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
@@ -315,8 +579,9 @@ class MyAudioProcThread extends AudioProcThread
             m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间为当前时间。
             m_LastPktRecvTime = m_LastPktSendTime; //设置最后一个数据包的接收时间为当前时间。
 
-            m_LastSendInputFrameIsAct = 0; //设置最后发送的一个音频帧为无语音活动。
-            m_SendInputFrameTimeStamp = 0; //设置发送输入帧的时间戳为0。
+            m_LastSendInputFrameIsAct = 0; //设置最后发送的一个输入帧为无语音活动。
+            m_LastSendInputFrameIsRecv = 1; //设置最后一个发送的输入帧远端已经接收到。
+            m_SendInputFrameTimeStamp = 0 - m_FrameLen; //设置发送输入帧的时间戳为0的前一个。
             m_RecvOutputFrameTimeStamp = 0; //设置接收输出帧的时间戳为0。
 
             String p_InfoStrPt = "开始进行音频对讲。";
@@ -337,84 +602,146 @@ class MyAudioProcThread extends AudioProcThread
 
         out:
         {
-            //接收远端发送过来的一个音频输出帧，并放入链表或自适应抖动缓冲器。
-            if( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
+            //接收远端发送过来的一个数据包。
+            if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
+                ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
             {
                 if( p_TmpHTLong.m_Val != -1 ) //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包成功。
                 {
                     m_LastPktRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间。
 
-                    if( p_TmpHTLong.m_Val == 0 )
+                    if( p_TmpHTLong.m_Val == 0 ) //如果数据包的数据长度为0。
                     {
-                        Log.i( m_CurClsNameStrPt, "接收到一个心跳包。" );
-                    }
-                    else if( p_TmpHTLong.m_Val < 4 ) //如果数据的数据长度小于4，表示没有时间戳。
-                    {
-                        Log.e( m_CurClsNameStrPt, "接收到数据的数据长度为" + p_TmpHTLong.m_Val + "小于4，表示没有时间戳，无法继续接收。" );
+                        Log.e( m_CurClsNameStrPt, "接收到数据包的数据长度为" + p_TmpHTLong.m_Val + "，表示没有数据，无法继续接收。" );
                         break out;
                     }
-                    else
+                    else if( m_TmpBytePt[0] == 0x00 ) //如果是心跳包。
                     {
-                        //读取时间戳。
-                        m_RecvOutputFrameTimeStamp = ( m_TmpBytePt[0] & 0xFF ) + ( ( m_TmpBytePt[1] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[2] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 24 );
-
-                        if( m_RecvOutputFrameTimeStamp == -1 ) //如果时间戳为0xFFFFFFFF，表示是一个退出包。
+                        if( p_TmpHTLong.m_Val > 1 ) //如果心跳包的数据长度大于1。
                         {
-                            m_IsRecvExitPkt = 1; //设置已经接收到退出包。
-
-                            String p_InfoStrPt = "接收到一个退出包。";
-                            Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-
-                            RequireExit(); //请求退出。
+                            Log.e( m_CurClsNameStrPt, "接收到心跳包的数据长度为" + p_TmpHTLong.m_Val + "大于1，表示还有其他数据，无法继续接收。" );
+                            break out;
                         }
-                        else //如果是输出帧包。
+
+                        Log.i( m_CurClsNameStrPt, "接收到一个心跳包。" );
+                    }
+                    else if( m_TmpBytePt[0] == 0x01 ) //如果是输出帧包。
+                    {
+                        if( p_TmpHTLong.m_Val < 1 + 4 ) //如果输出帧包的数据长度小于1 + 4，表示没有时间戳。
                         {
-                            if( ( p_TmpHTLong.m_Val > 4 ) && ( m_UseWhatCodec == 0 ) && ( p_TmpHTLong.m_Val - 4 != m_FrameLen * 2 ) ) //如果该输出帧为有语音活动，且使用了PCM原始数据，但接收到的PCM格式输出帧的数据长度与帧的数据长度不同。
+                            Log.e( m_CurClsNameStrPt, "接收到输出帧包的数据长度为" + p_TmpHTLong.m_Val + "小于1 + 4，表示没有时间戳，无法继续接收。" );
+                            break out;
+                        }
+
+                        if( ( p_TmpHTLong.m_Val > 1 + 4 ) && ( m_UseWhatCodec == 0 ) && ( p_TmpHTLong.m_Val != 1 + 4 + m_FrameLen * 2 ) ) //如果该输出帧为有语音活动，且使用了PCM原始数据，但接收到的PCM格式输出帧的数据长度与帧的数据长度不同。
+                        {
+                            Log.e( m_CurClsNameStrPt, "接收到的PCM格式输出帧的数据长度与帧的数据长度不同，无法继续接收。" );
+                            break out;
+                        }
+
+                        //读取时间戳。
+                        m_RecvOutputFrameTimeStamp = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
+
+                        //将输出帧放入链表或自适应抖动缓冲器。
+                        switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
+                        {
+                            case 0: //如果使用链表。
                             {
-                                Log.e( m_CurClsNameStrPt, "接收到的PCM格式输出帧的数据长度与帧的数据长度不同。" );
+                                if( p_TmpHTLong.m_Val > 1 + 4 ) //如果该输出帧为有语音活动。
+                                {
+                                    synchronized( m_RecvOutputFrameLnkLstPt )
+                                    {
+                                        m_RecvOutputFrameLnkLstPt.addLast( Arrays.copyOfRange( m_TmpBytePt, 1 + 4, ( int ) ( p_TmpHTLong.m_Val ) ) );
+                                    }
+                                }
+
+                                Log.i( m_CurClsNameStrPt, "接收到一个输出帧包，并放入链表成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
+
+                                break;
+                            }
+                            case 1: //如果使用自适应抖动缓冲器。
+                            {
+                                if( p_TmpHTLong.m_Val == 1 + 4 ) //如果该输出帧为无语音活动。
+                                {
+                                    synchronized( m_AjbPt )
+                                    {
+                                        m_AjbPt.PutOneByteFrame( m_RecvOutputFrameTimeStamp, null, 0 );
+                                    }
+                                }
+                                else //如果该输出帧为有语音活动。
+                                {
+                                    synchronized( m_AjbPt )
+                                    {
+                                        m_AjbPt.PutOneByteFrame( m_RecvOutputFrameTimeStamp, Arrays.copyOfRange( m_TmpBytePt, 1 + 4, ( int ) ( p_TmpHTLong.m_Val ) ), p_TmpHTLong.m_Val - 1 - 4 );
+                                    }
+                                }
+
+                                Log.i( m_CurClsNameStrPt, "接收一个到输出帧包，并放入自适应抖动缓冲器成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
+                                break;
+                            }
+                        }
+
+                        if( ( m_UseWhatXfrPrtcl == 1 ) && ( p_TmpHTLong.m_Val == 1 + 4 ) ) //如果是使用UDP协议，且本输出帧为无语音活动。
+                        {
+                            //设置输出帧应答包。
+                            m_TmpBytePt[0] = 0x02;
+                            //设置时间戳。
+                            m_TmpBytePt[1] = ( byte ) ( m_RecvOutputFrameTimeStamp & 0xFF );
+                            m_TmpBytePt[2] = ( byte ) ( ( m_RecvOutputFrameTimeStamp & 0xFF00 ) >> 8 );
+                            m_TmpBytePt[3] = ( byte ) ( ( m_RecvOutputFrameTimeStamp & 0xFF0000 ) >> 16 );
+                            m_TmpBytePt[4] = ( byte ) ( ( m_RecvOutputFrameTimeStamp & 0xFF000000 ) >> 24 );
+
+                            if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1 + 4, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
+                            {
+                                m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
+                                Log.i( m_CurClsNameStrPt, "发送一个输出帧应答包成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + 1 + 4 + "。" );
+                            }
+                            else
+                            {
+                                String p_InfoStrPt = "发送一个输出帧应答包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                                Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                break out;
+                            }
+                        }
+                    }
+                    else if( m_TmpBytePt[0] == 0x02 ) //如果是连接应答包或输入输出帧应答包。
+                    {
+                        if( p_TmpHTLong.m_Val == 1 ) //如果退出包的数据长度等于1，表示是连接应答包，就不管。
+                        {
+
+                        }
+                        else //如果退出包的数据长度大于1，表示是输入输出帧应答包。
+                        {
+                            if( p_TmpHTLong.m_Val != 1 + 4 )
+                            {
+                                Log.e( m_CurClsNameStrPt, "接收到输入输出帧应答包的数据长度为" + p_TmpHTLong.m_Val + "不等于1 + 4，表示格式不正确，无法继续接收。" );
                                 break out;
                             }
 
-                            //将输出帧放入链表或自适应抖动缓冲器。
-                            switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
-                            {
-                                case 0: //如果使用链表。
-                                {
-                                    if( p_TmpHTLong.m_Val > 4 ) //如果该输出帧为有语音活动。
-                                    {
-                                        synchronized( m_RecvOutputFrameLnkLstPt )
-                                        {
-                                            m_RecvOutputFrameLnkLstPt.addLast( Arrays.copyOfRange( m_TmpBytePt, 4, ( int ) ( p_TmpHTLong.m_Val ) ) );
-                                        }
-                                    }
+                            //读取时间戳。
+                            m_RecvOutputFrameTimeStamp = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
 
-                                    Log.i( m_CurClsNameStrPt, "接收一个输出帧并放入链表成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
+                            Log.i( m_CurClsNameStrPt, "接收到一个输入输出帧应答包。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
 
-                                    break;
-                                }
-                                case 1: //如果使用自适应抖动缓冲器。
-                                {
-                                    if( p_TmpHTLong.m_Val == 4 ) //如果该输出帧为无语音活动。
-                                    {
-                                        synchronized( m_AjbPt )
-                                        {
-                                            m_AjbPt.PutOneByteFrame( m_RecvOutputFrameTimeStamp, null, 0 );
-                                        }
-                                    }
-                                    else //如果该输出帧为有语音活动。
-                                    {
-                                        synchronized( m_AjbPt )
-                                        {
-                                            m_AjbPt.PutOneByteFrame( m_RecvOutputFrameTimeStamp, Arrays.copyOfRange( m_TmpBytePt, 4, ( int ) ( p_TmpHTLong.m_Val ) ), p_TmpHTLong.m_Val - 4 );
-                                        }
-                                    }
-
-                                    Log.i( m_CurClsNameStrPt, "接收一个输出帧并放入自适应抖动缓冲器成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
-                                    break;
-                                }
-                            }
+                            //设置最后一个发送的输入帧远端是否接收到。
+                            if( m_SendInputFrameTimeStamp == m_RecvOutputFrameTimeStamp ) m_LastSendInputFrameIsRecv = 1;
                         }
+                    }
+                    else if( m_TmpBytePt[0] == 0x03 ) //如果是退出包。
+                    {
+                        if( p_TmpHTLong.m_Val > 1 ) //如果退出包的数据长度大于1。
+                        {
+                            Log.e( m_CurClsNameStrPt, "接收到退出包的数据长度为" + p_TmpHTLong.m_Val + "大于1，表示还有其他数据，无法继续接收。" );
+                            break out;
+                        }
+
+                        m_IsRecvExitPkt = 1; //设置已经接收到退出包。
+                        RequireExit( 1, 0 ); //请求退出。
+
+                        String p_InfoStrPt = "接收到一个退出包。";
+                        Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                     }
                 }
                 else //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包超时。
@@ -431,9 +758,11 @@ class MyAudioProcThread extends AudioProcThread
             }
 
             //发送心跳包。
-            if( System.currentTimeMillis() - m_LastPktSendTime >= 500 ) //如果超过500毫秒没有发送任何数据包，就发送一个心跳包。
+            if( System.currentTimeMillis() - m_LastPktSendTime >= 100 ) //如果超过100毫秒没有发送任何数据包，就发送一个心跳包。
             {
-                if( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 0, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
+                m_TmpBytePt[0] = 0x00; //设置心跳包。
+                if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
+                    ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
                 {
                     m_LastPktSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间。
                     Log.i( m_CurClsNameStrPt, "发送一个心跳包成功。" );
@@ -447,10 +776,10 @@ class MyAudioProcThread extends AudioProcThread
                 }
             }
 
-            //判断TCP协议套接字连接是否中断。
+            //判断套接字连接是否中断。
             if( System.currentTimeMillis() - m_LastPktRecvTime > 2000 ) //如果超过2000毫秒没有接收任何数据包，就判定连接已经断开了。
             {
-                String p_InfoStrPt = "超过2000毫秒没有接收任何数据包，判定TCP协议连接已经断开了。";
+                String p_InfoStrPt = "超过2000毫秒没有接收任何数据包，判定套接字连接已经断开了。";
                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                 Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                 break out;
@@ -462,69 +791,71 @@ class MyAudioProcThread extends AudioProcThread
         return p_Result;
     }
 
-    //用户定义的销毁函数，在本线程退出时调用一次，返回值表示是否重新初始化，为0表示直接退出，为非0表示重新初始化。
-    public int UserDestroy()
+    //用户定义的销毁函数，在本线程退出时调用一次。
+    public void UserDestroy()
     {
-        if( ( m_ExitFlag == 1 ) && ( m_TcpClntSoktPt != null ) ) //如果本线程接收到退出请求，且本端TCP协议客户端套接字类对象不为空。
+        SendExitPkt:
+        if( ( m_ExitFlag == 1 ) && ( ( m_TcpClntSoktPt != null ) || ( ( m_UdpSoktPt != null ) && ( m_UdpSoktPt.GetRmtAddr( null, null, null, null ) == 0 ) ) ) ) //如果本线程接收到退出请求，且本端TCP协议客户端套接字类对象不为空或本端UDP协议套接字类对象不为空且已连接远端。
         {
-            //发送退出包。
-            m_TmpBytePt[0] = ( byte ) 0xFF;
-            m_TmpBytePt[1] = ( byte ) 0xFF;
-            m_TmpBytePt[2] = ( byte ) 0xFF;
-            m_TmpBytePt[3] = ( byte ) 0xFF;
-            if( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 4, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
+            //循环发送退出包。
+            m_TmpBytePt[0] = 0x03; //设置退出包。
+            for( int p_SendTimes = ( m_UseWhatXfrPrtcl == 0 ) ? 1 : 5; p_SendTimes > 0; p_SendTimes-- )
             {
-                m_LastPktSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间。
-
-                String p_InfoStrPt = "发送一个退出包成功。";
-                Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-            }
-            else
-            {
-                String p_InfoStrPt = "发送一个退出包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-                Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) != 0 ) ) ||
+                    ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) != 0 ) ) )
+                {
+                    String p_InfoStrPt = "发送一个退出包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                    Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                    break SendExitPkt;
+                }
             }
 
-            //接收退出包。
+            m_LastPktSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间。
+
+            {String p_InfoStrPt = "发送一个退出包成功。";
+            Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
+
             if( m_IsRecvExitPkt == 0 ) //如果没有接收到退出包。
             {
-                while( true )
+                while( true ) //循环接收退出包。
                 {
                     HTLong p_TmpHTLong = new HTLong(  );
 
-                    if( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 5, m_ErrInfoVarStrPt ) == 0 )
+                    if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 5000, m_ErrInfoVarStrPt ) == 0 ) ) ||
+                        ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 5000, m_ErrInfoVarStrPt ) == 0 ) ) )
                     {
-                        if( p_TmpHTLong.m_Val != -1 ) //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包成功。
+                        if( p_TmpHTLong.m_Val != -1 ) //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包成功。
                         {
                             m_LastPktRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间。
 
-                            if( p_TmpHTLong.m_Val == 4 )
+                            if( ( p_TmpHTLong.m_Val == 1 ) && ( m_TmpBytePt[0] == 0x03 ) ) //如果是退出包。
                             {
-                                //读取时间戳。
-                                m_RecvOutputFrameTimeStamp = ( m_TmpBytePt[0] & 0xFF ) + ( ( m_TmpBytePt[1] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[2] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 24 );
+                                String p_InfoStrPt = "接收到一个退出包。";
+                                Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                break SendExitPkt;
+                            }
+                            else //如果是其他包，继续接收。
+                            {
 
-                                if( m_RecvOutputFrameTimeStamp == -1 ) //如果时间戳为0xFFFFFFFF，表示是一个退出包。
-                                {
-                                    String p_InfoStrPt = "接收到一个退出包。";
-                                    Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                                    break;
-                                }
                             }
                         }
-                        else //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包超时。
+                        else //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包超时。
                         {
-                            break;
+                            String p_InfoStrPt = "用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                            Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                            break SendExitPkt;
                         }
                     }
-                    else //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包失败。
+                    else //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包失败。
                     {
-                        String p_InfoStrPt = "用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                        String p_InfoStrPt = "用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                         Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                        break;
+                        break SendExitPkt;
                     }
                 }
             }
@@ -548,6 +879,17 @@ class MyAudioProcThread extends AudioProcThread
             m_TcpClntSoktPt = null;
 
             String p_InfoStrPt = "关闭并销毁已创建的本端TCP协议客户端套接字成功。";
+            Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+        }
+
+        //销毁本端UDP协议套接字。
+        if( m_UdpSoktPt != null )
+        {
+            m_UdpSoktPt.Destroy( null ); //关闭并销毁已创建的本端UDP协议套接字。
+            m_UdpSoktPt = null;
+
+            String p_InfoStrPt = "关闭并销毁已创建的本端UDP协议套接字成功。";
             Log.i( m_CurClsNameStrPt, p_InfoStrPt );
             Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
         }
@@ -577,32 +919,36 @@ class MyAudioProcThread extends AudioProcThread
                 String p_InfoStrPt = "由于是创建服务端，且本线程接收到退出请求，且接收到了退出包，表示是远端TCP协议客户端套接字主动退出，本线程重新初始化来继续保持监听。";
                 Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                 Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                return 1;
+
+                RequireExit( 2, 0 ); //请求重启。
             }
             else if( ( m_ExitFlag == 0 ) && ( m_ExitCode == -2 ) ) //如果本线程没收到退出请求，且退出代码为处理失败。
             {
-                String p_InfoStrPt = "由于是创建服务端，且本线程没收到退出请求，且退出码为处理失败，表示是处理失败，本线程重新初始化来继续保持监听。";
+                String p_InfoStrPt = "由于是创建服务端，且本线程没收到退出请求，且退出码为处理失败，表示是处理失败或连接异常断开，本线程重新初始化来继续保持监听。";
                 Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                 Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                return 1;
+
+                RequireExit( 2, 0 ); //请求重启。
+            }
+            else //其他情况，本线程直接退出。
+            {
+                Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage ); //向主界面发送音频处理线程退出的消息。
             }
         }
         else if( m_IsCreateSrvrOrClnt == 0 ) //如果是创建客户端。
         {
-            if( ( m_ExitFlag == 0 ) && ( m_TcpClntSoktReInitTimes < 5 ) ) //如果本线程没收到退出请求，且本端TCP协议客户端套接字类对象重新初始化的次数低于5次。
+            if( ( m_ExitFlag == 0 ) && ( m_ExitCode == -2 ) ) //如果本线程没收到退出请求，且退出代码为处理失败。
             {
-                m_TcpClntSoktReInitTimes++; //递增本端TCP协议客户端套接字类对象重新初始化的次数。
-                String p_InfoStrPt = "由于是创建客户端，且本线程没收到退出请求，且本端TCP协议客户端套接字类对象重新初始化的次数低于5次，表示是连接异常断开，本线程重新初始化来重连服务端，当前第" + m_TcpClntSoktReInitTimes + "次。";
+                String p_InfoStrPt = "由于是创建客户端，且本线程没收到退出请求，且退出码为处理失败，表示是处理失败或连接异常断开，本线程重新初始化来重连服务端。";
                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                 Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                return 1;
-            }
-        }
 
-        //其他情况，本线程直接退出。
-        {
-            Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage ); //向主界面发送音频处理线程退出的消息。
-            return 0;
+                RequireExit( 2, 0 ); //请求重启。
+            }
+            else //其他情况，本线程直接退出。
+            {
+                Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage ); //向主界面发送音频处理线程退出的消息。
+            }
         }
     }
 
@@ -610,7 +956,7 @@ class MyAudioProcThread extends AudioProcThread
     public int UserReadInputFrame( short PcmInputFramePt[], short PcmResultFramePt[], int VoiceActSts, byte SpeexInputFramePt[], HTLong SpeexInputFrameLen, HTInt SpeexInputFrameIsNeedTrans )
     {
         int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
-        int m_TmpInt32 = 0;
+        int p_TmpInt32 = 0;
 
         out:
         {
@@ -622,13 +968,13 @@ class MyAudioProcThread extends AudioProcThread
                     {
                         case 0: //如果使用PCM原始数据。
                         {
-                            for( m_TmpInt32 = 0; m_TmpInt32 < PcmResultFramePt.length; m_TmpInt32++ )
+                            for( p_TmpInt32 = 0; p_TmpInt32 < PcmResultFramePt.length; p_TmpInt32++ )
                             {
-                                m_TmpBytePt[4 + m_TmpInt32 * 2] = ( byte ) ( PcmResultFramePt[m_TmpInt32] & 0xFF );
-                                m_TmpBytePt[4 + m_TmpInt32 * 2 + 1] = ( byte ) ( ( PcmResultFramePt[m_TmpInt32] & 0xFF00 ) >> 8 );
+                                m_TmpBytePt[1 + 4 + p_TmpInt32 * 2] = ( byte ) ( PcmResultFramePt[p_TmpInt32] & 0xFF );
+                                m_TmpBytePt[1 + 4 + p_TmpInt32 * 2 + 1] = ( byte ) ( ( PcmResultFramePt[p_TmpInt32] & 0xFF00 ) >> 8 );
                             }
 
-                            m_TmpInt32 = 4 + PcmResultFramePt.length * 2; //数据包长度 = 时间戳长度 + PCM格式输入帧长度。
+                            p_TmpInt32 = 1 + 4 + PcmResultFramePt.length * 2; //数据包长度 = 格式标记 + 时间戳长度 + PCM格式输入帧长度。
 
                             break;
                         }
@@ -636,13 +982,13 @@ class MyAudioProcThread extends AudioProcThread
                         {
                             if( SpeexInputFrameIsNeedTrans.m_Val == 1 ) //如果本Speex格式音频输入数据帧需要传输。
                             {
-                                System.arraycopy( SpeexInputFramePt, 0, m_TmpBytePt, 4, ( int ) SpeexInputFrameLen.m_Val );
+                                System.arraycopy( SpeexInputFramePt, 0, m_TmpBytePt, 1 + 4, ( int ) SpeexInputFrameLen.m_Val );
 
-                                m_TmpInt32 = 4 + ( int ) SpeexInputFrameLen.m_Val; //数据包长度 = 时间戳长度 + Speex格式输入帧长度。
+                                p_TmpInt32 = 1 + 4 + ( int ) SpeexInputFrameLen.m_Val; //数据包长度 = 格式标记 + 时间戳长度 + Speex格式输入帧长度。
                             }
                             else //如果本Speex格式音频输入数据帧不需要传输。
                             {
-                                m_TmpInt32 = 4; //数据包长度 = 时间戳长度。
+                                p_TmpInt32 = 1 + 4; //数据包长度 = 格式标记 + 时间戳长度。
                             }
 
                             break;
@@ -651,40 +997,75 @@ class MyAudioProcThread extends AudioProcThread
                 }
                 else //如果本音频输入数据帧为无语音活动。
                 {
-                    m_TmpInt32 = 4; //数据包长度 = 时间戳长度。
+                    p_TmpInt32 = 1 + 4; //数据包长度 = 格式标记 + 时间戳长度。
                 }
 
-                if( ( m_TmpInt32 != 4 ) || //如果本音频输入数据帧为有语音活动，就发送。
-                    ( ( m_TmpInt32 == 4 ) && ( m_LastSendInputFrameIsAct != 0 ) ) ) //如果本音频输入数据帧为无语音活动，但最后一个发送的输入帧为有语音活动，就发送。
+                if( ( p_TmpInt32 != 1 + 4 ) || //如果本音频输入数据帧为有语音活动，就发送。
+                    ( ( p_TmpInt32 == 1 + 4 ) && ( m_LastSendInputFrameIsAct != 0 ) ) ) //如果本音频输入数据帧为无语音活动，但最后一个发送的输入帧为有语音活动，就发送。
                 {
-                    //设置时间戳。
-                    m_TmpBytePt[0] = ( byte ) ( m_SendInputFrameTimeStamp & 0xFF );
-                    m_TmpBytePt[1] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF00 ) >> 8 );
-                    m_TmpBytePt[2] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF0000 ) >> 16 );
-                    m_TmpBytePt[3] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF000000 ) >> 24 );
+                    m_SendInputFrameTimeStamp += m_FrameLen; //时间戳递增一个帧的数据长度。
 
-                    if( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, m_TmpInt32, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
+                    //设置输入帧包。
+                    m_TmpBytePt[0] = 0x01;
+                    //设置时间戳。
+                    m_TmpBytePt[1] = ( byte ) ( m_SendInputFrameTimeStamp & 0xFF );
+                    m_TmpBytePt[2] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF00 ) >> 8 );
+                    m_TmpBytePt[3] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF0000 ) >> 16 );
+                    m_TmpBytePt[4] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF000000 ) >> 24 );
+
+                    if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_TmpInt32, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
+                        ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_TmpInt32, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
                     {
-                        m_SendInputFrameTimeStamp += m_FrameLen; //时间戳递增一个帧的数据长度。
                         m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
-                        Log.i( m_CurClsNameStrPt, "发送一个输入帧成功。时间戳：" + m_SendInputFrameTimeStamp + "，总长度：" + m_TmpInt32 + "。" );
+                        Log.i( m_CurClsNameStrPt, "发送一个输入帧包成功。时间戳：" + m_SendInputFrameTimeStamp + "，总长度：" + p_TmpInt32 + "。" );
                     }
                     else
                     {
-                        String p_InfoStrPt = "发送一个输入帧失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                        String p_InfoStrPt = "发送一个输入帧包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                         Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                         break out;
+                    }
+
+                    if( p_TmpInt32 != 1 + 4 ) //如果本音频输入数据帧为有语音活动。
+                    {
+                        m_LastSendInputFrameIsAct = 1; //设置最后一个发送的输入帧有语音活动。
+                        m_LastSendInputFrameIsRecv = 1; //设置最后一个发送的输入帧远端已经接收到。
+                    }
+                    else if( ( ( p_TmpInt32 == 1 + 4 ) && ( m_LastSendInputFrameIsAct != 0 ) ) ) //如果本音频输入数据帧为无语音活动，但最后一个发送的输入帧为有语音活动。
+                    {
+                        m_LastSendInputFrameIsAct = 0; //设置最后一个发送的输入帧无语音活动。
+                        m_LastSendInputFrameIsRecv = 0; //设置最后一个发送的输入帧远端没有接收到。
                     }
                 }
                 else
                 {
                     Log.i( m_CurClsNameStrPt, "本输入帧为无语音活动，且最后发送的一个输入帧为无语音活动，无需发送。" );
-                }
 
-                //设置最后一个发送的输入帧有无语音活动。
-                if( m_TmpInt32 != 4 ) m_LastSendInputFrameIsAct = 1;
-                else m_LastSendInputFrameIsAct = 0;
+                    if( ( m_UseWhatXfrPrtcl == 1 ) && ( m_LastSendInputFrameIsAct == 0 ) && ( m_LastSendInputFrameIsRecv == 0 ) ) //如果是使用UDP协议，且最后一个发送的输入帧为无语音活动，且最后一个发送的输入帧远端没有接收到。
+                    {
+                        //设置输入帧包。
+                        m_TmpBytePt[0] = 0x01;
+                        //设置时间戳。
+                        m_TmpBytePt[1] = ( byte ) ( m_SendInputFrameTimeStamp & 0xFF );
+                        m_TmpBytePt[2] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF00 ) >> 8 );
+                        m_TmpBytePt[3] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF0000 ) >> 16 );
+                        m_TmpBytePt[4] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF000000 ) >> 24 );
+
+                        if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1 + 4, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
+                        {
+                            m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
+                            Log.i( m_CurClsNameStrPt, "重新发送一个无语音活动输入帧包成功。时间戳：" + m_SendInputFrameTimeStamp + "，总长度：" + 1 + 4 + "。" );
+                        }
+                        else
+                        {
+                            String p_InfoStrPt = "重新发送一个无语音活动输入帧包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                            Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                            break out;
+                        }
+                    }
+                }
             }
 
             p_Result = 0; //设置本函数执行成功。
@@ -696,7 +1077,7 @@ class MyAudioProcThread extends AudioProcThread
     //用户定义的写入输出帧函数，在需要写入一个输出帧时回调一次。注意：本函数不是在音频处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致回音消除失败。
     public void UserWriteOutputFrame( short PcmOutputFramePt[], byte SpeexOutputFramePt[], HTLong SpeexOutputFrameLenPt )
     {
-        int m_TmpInt32;
+        int p_TmpInt32;
 
         //从链表或自适应抖动缓冲器取出一个输出帧。
         switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
@@ -720,18 +1101,18 @@ class MyAudioProcThread extends AudioProcThread
                     {
                         if( ( p_TmpOutputFramePt != null ) && ( p_TmpOutputFramePt.length > 0 ) ) //如果接收输出帧链表的第一个输出帧为有语音活动。
                         {
-                            for( m_TmpInt32 = 0; m_TmpInt32 < m_FrameLen; m_TmpInt32++ )
+                            for( p_TmpInt32 = 0; p_TmpInt32 < m_FrameLen; p_TmpInt32++ )
                             {
-                                PcmOutputFramePt[m_TmpInt32] = ( short ) ( ( p_TmpOutputFramePt[m_TmpInt32 * 2] & 0xFF ) | ( p_TmpOutputFramePt[m_TmpInt32 * 2 + 1] << 8 ) );
+                                PcmOutputFramePt[p_TmpInt32] = ( short ) ( ( p_TmpOutputFramePt[p_TmpInt32 * 2] & 0xFF ) | ( p_TmpOutputFramePt[p_TmpInt32 * 2 + 1] << 8 ) );
                             }
 
                             Log.i( m_CurClsNameStrPt, "从接收输出帧链表取出一个有语音活动的PCM格式输出帧，帧的数据长度：" + p_TmpOutputFramePt.length + "。" );
                         }
                         else //如果接收音频输出数据帧的链表为空，或第一个音频输出数据帧为无语音活动。
                         {
-                            for( m_TmpInt32 = 0; m_TmpInt32 < m_FrameLen; m_TmpInt32++ )
+                            for( p_TmpInt32 = 0; p_TmpInt32 < m_FrameLen; p_TmpInt32++ )
                             {
-                                PcmOutputFramePt[m_TmpInt32] = 0;
+                                PcmOutputFramePt[p_TmpInt32] = 0;
                             }
 
                             Log.i( m_CurClsNameStrPt, "从接收输出帧链表取出一个无语音活动的PCM格式输出帧。" );
@@ -895,6 +1276,10 @@ public class MainActivity extends AppCompatActivity
         if( ContextCompat.checkSelfPermission( this, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED )
             ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.RECORD_AUDIO}, 1 );
 
+        //检测并请求修改音频设置权限。
+        if( ContextCompat.checkSelfPermission( this, Manifest.permission.MODIFY_AUDIO_SETTINGS ) != PackageManager.PERMISSION_GRANTED )
+            ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.MODIFY_AUDIO_SETTINGS}, 1 );
+
         //检测并请求网络权限。
         if( ContextCompat.checkSelfPermission( this, Manifest.permission.INTERNET ) != PackageManager.PERMISSION_GRANTED )
             ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.INTERNET}, 1 );
@@ -972,16 +1357,9 @@ public class MainActivity extends AppCompatActivity
             Log.i( m_CurClsNameStrPt, "用户在主界面按下返回键，本软件退出。" );
             if( m_MyAudioProcThreadPt != null )
             {
-                m_MyAudioProcThreadPt.RequireExit(); //请求音频处理线程退出。
-                try
-                {
-                    Log.i( m_CurClsNameStrPt, "开始等待音频处理线程退出。" );
-                    m_MyAudioProcThreadPt.join(); //等待音频处理线程退出。
-                    Log.i( m_CurClsNameStrPt, "结束等待音频处理线程退出。" );
-                }
-                catch( InterruptedException e )
-                {
-                }
+                Log.i( m_CurClsNameStrPt, "开始请求并等待音频处理线程退出。" );
+                m_MyAudioProcThreadPt.RequireExit( 1, 1 );
+                Log.i( m_CurClsNameStrPt, "结束请求并等待音频处理线程退出。" );
             }
             System.exit(0);
         }
@@ -1011,14 +1389,31 @@ public class MainActivity extends AppCompatActivity
     //使用扬声器按钮。
     public void OnUseSpeaker( View BtnPt )
     {
-        if( m_MyAudioProcThreadPt != null ) m_MyAudioProcThreadPt.SetUseDevice( 0 );
+        if( m_MyAudioProcThreadPt != null )
+        {
+            m_MyAudioProcThreadPt.SetUseDevice( 0, 0 );
+
+            if( m_MyAudioProcThreadPt.m_InputFrameLnkLstPt != null ) //如果音频处理线程已经启动。
+            {
+                m_MyAudioProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+            }
+        }
+
         SetUseWakeLock( m_IsUseWakeLock );
     }
 
     //使用听筒按钮。
     public void OnUseHeadset( View BtnPt )
     {
-        if( m_MyAudioProcThreadPt != null ) m_MyAudioProcThreadPt.SetUseDevice( 1 );
+        if( m_MyAudioProcThreadPt != null )
+        {
+            m_MyAudioProcThreadPt.SetUseDevice( 1, 0 );
+
+            if( m_MyAudioProcThreadPt.m_InputFrameLnkLstPt != null ) //如果音频处理线程已经启动。
+            {
+                m_MyAudioProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+            }
+        }
         SetUseWakeLock( m_IsUseWakeLock );
     }
 
@@ -1062,6 +1457,16 @@ public class MainActivity extends AppCompatActivity
                                     ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseFrame20msLenRadioBtn ) ).isChecked() ) ? 20 :
                                             ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseFrame30msLenRadioBtn ) ).isChecked() ) ? 30 : 0 );
 
+                    //判断是否使用什么传输协议。
+                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseTcpPrtclRadioBtn ) ).isChecked() )
+                    {
+                        m_MyAudioProcThreadPt.m_UseWhatXfrPrtcl = 0;
+                    }
+                    else
+                    {
+                        m_MyAudioProcThreadPt.m_UseWhatXfrPrtcl = 1;
+                    }
+
                     //判断是否保存设置到文件。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveSettingToFileCheckBox ) ).isChecked() )
                     {
@@ -1085,11 +1490,11 @@ public class MainActivity extends AppCompatActivity
                     //判断使用的音频输出设备。
                     if( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseSpeakerRadioBtn ) ).isChecked() )
                     {
-                        m_MyAudioProcThreadPt.SetUseDevice( 0 );
+                        m_MyAudioProcThreadPt.SetUseDevice( 0, 0 );
                     }
                     else
                     {
-                        m_MyAudioProcThreadPt.SetUseDevice( 1 );
+                        m_MyAudioProcThreadPt.SetUseDevice( 1, 0 );
                     }
 
                     //判断是否使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器。
@@ -1373,16 +1778,9 @@ public class MainActivity extends AppCompatActivity
             }
             else
             {
-                m_MyAudioProcThreadPt.RequireExit(); //请求音频处理线程退出。
-                try
-                {
-                    Log.i( m_CurClsNameStrPt, "开始等待音频处理线程退出。" );
-                    m_MyAudioProcThreadPt.join(); //等待音频处理线程退出。
-                    Log.i( m_CurClsNameStrPt, "结束等待音频处理线程退出。" );
-                }
-                catch( InterruptedException e )
-                {
-                }
+                Log.i( m_CurClsNameStrPt, "开始请求并等待音频处理线程退出。" );
+                m_MyAudioProcThreadPt.RequireExit( 1, 1 );
+                Log.i( m_CurClsNameStrPt, "结束请求并等待音频处理线程退出。" );
             }
 
             p_Result = 0;

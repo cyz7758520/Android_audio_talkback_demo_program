@@ -44,19 +44,19 @@
 
                 <RadioButton
                     android:text="TCP协议"
-                    android:id="@+id/UseTcpProtocolRadioBtn"
+                    android:id="@+id/UseTcpPrtclRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:checked="true"/>
+                    />
 
                 <RadioButton
                     android:text="UDP协议"
-                    android:id="@+id/UseUdpProtocolRadioBtn"
+                    android:id="@+id/UseUdpPrtclRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:enabled="false"/>
+                    android:checked="true" />
 
             </RadioGroup>
 

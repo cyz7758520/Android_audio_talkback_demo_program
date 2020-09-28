@@ -32,7 +32,7 @@ public class TcpClntSokt
     }
 
     //创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字。
-    public native int Init( String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, short TimeOut, VarStr ErrInfoVarStrPt );
+    public native int Init( int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, short TimeOutMsec, VarStr ErrInfoVarStrPt );
 
     //获取已连接的本端TCP协议客户端套接字绑定的本地节点地址和端口。
     public native int GetLclAddr( HTInt LclNodeAddrFmlyPt, HTString LclNodeAddrPt, HTString LclNodePortPt, VarStr ErrInfoVarStrPt );
@@ -40,9 +40,9 @@ public class TcpClntSokt
     public native int GetRmtAddr( HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, VarStr ErrInfoVarStrPt );
 
     //用已连接的本端TCP协议客户端套接字发送一个数据包到连接的远端TCP协议客户端套接字。
-    public native int SendPkt( byte DataBufPt[], long DataBufLen, short TimeOut, VarStr ErrInfoVarStrPt );
+    public native int SendPkt( byte DataBufPt[], long DataBufLen, short TimeOutMsec, VarStr ErrInfoVarStrPt );
     //用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包。
-    public native int RecvPkt( byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TimeOut, VarStr ErrInfoVarStrPt );
+    public native int RecvPkt( byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TimeOutMsec, VarStr ErrInfoVarStrPt );
 
     //设置已连接的本端TCP协议客户端套接字的多线程操作状态。
     public native int SetMultiThread( int IsMultiThread, VarStr ErrInfoVarStrPt );
@@ -67,5 +67,5 @@ public class TcpClntSokt
     public native int GetRecvBufLen( HTLong RecvBufLenPt, VarStr ErrInfoVarStrPt );
 
     //关闭并销毁已创建的本端TCP协议客户端套接字。
-    public native int Destroy( short TimeOut, VarStr ErrInfoVarStrPt );
+    public native int Destroy( short TimeOutSec, VarStr ErrInfoVarStrPt );
 }

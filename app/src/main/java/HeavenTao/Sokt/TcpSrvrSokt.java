@@ -32,13 +32,13 @@ public class TcpSrvrSokt
     }
 
     //创建并初始化已监听的本端TCP协议服务端套接字。
-    public native int Init( String LclNodeNamePt, String LclNodeSrvcPt, int MaxWait, int IsReuseAddr, VarStr ErrInfoVarStrPt );
+    public native int Init( int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, int MaxWait, int IsReuseAddr, VarStr ErrInfoVarStrPt );
 
     //获取已监听的本端TCP协议服务端套接字绑定的本地节点地址和端口。
     public native int GetLclAddr( HTInt LclNodeAddrFmlyPt, HTString LclNodeAddrPt, HTString LclNodePortPt, VarStr ErrInfoVarStrPt );
 
     //用已监听的本端TCP协议服务端套接字开始接受远端TCP协议客户端套接字的连接。
-    public native int Accept( HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, short TimeOut, TcpClntSokt TcpClntSoktPt, VarStr ErrInfoVarStrPt );
+    public native int Accept( HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, short TimeOutMsec, TcpClntSokt TcpClntSoktPt, VarStr ErrInfoVarStrPt );
 
     //关闭并销毁已创建的本端TCP协议服务端套接字。
     public native int Destroy( VarStr ErrInfoVarStrPt );
