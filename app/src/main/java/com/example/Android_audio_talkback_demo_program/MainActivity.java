@@ -185,12 +185,11 @@ class MyAudioProcThread extends AudioProcThread
                     }
 
                     m_TcpClntSoktPt = new TcpClntSokt();
+                    HTString p_RmtNodeAddrPt = new HTString();
+                    HTString p_RmtNodePortPt = new HTString();
 
                     while( true ) //循环接受远端TCP协议客户端套接字的连接。
                     {
-                        HTString p_RmtNodeAddrPt = new HTString();
-                        HTString p_RmtNodePortPt = new HTString();
-
                         if( m_TcpSrvrSoktPt.Accept( null, p_RmtNodeAddrPt, p_RmtNodePortPt, ( short ) 1, m_TcpClntSoktPt, m_ErrInfoVarStrPt ) == 0 )
                         {
                             if( m_TcpClntSoktPt.GetTcpClntSoktPt() != 0 ) //如果用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接成功。
@@ -234,7 +233,7 @@ class MyAudioProcThread extends AudioProcThread
                     int p_ReInitTimes = 1;
                     while( true ) //循环连接已监听的远端TCP协议服务端套接字。
                     {
-                        if( m_TcpClntSoktPt.Init( 4, m_IPAddrStrPt, m_PortStrPt, null, null, ( short ) 5000, m_ErrInfoVarStrPt ) == 0 ) //创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字成功。
+                        if( m_TcpClntSoktPt.Init( 4, m_IPAddrStrPt, m_PortStrPt, null, null, ( short ) 5000, m_ErrInfoVarStrPt ) == 0 ) //如果创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字成功。
                         {
                             HTString p_LclNodeAddrPt = new HTString();
                             HTString p_LclNodePortPt = new HTString();
@@ -327,7 +326,7 @@ class MyAudioProcThread extends AudioProcThread
                     HTString p_RmtNodePortPt = new HTString();
                     HTLong p_TmpHTLong = new HTLong(  );
 
-                    ReAccept:
+                    UdpSrvrReAccept:
                     while( true ) //循环接受远端UDP协议套接字的连接。
                     {
                         if( m_UdpSoktPt.RecvPkt( null, p_RmtNodeAddrPt, p_RmtNodePortPt, m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 1, m_ErrInfoVarStrPt ) == 0 )
@@ -336,10 +335,10 @@ class MyAudioProcThread extends AudioProcThread
                             {
                                 if( ( p_TmpHTLong.m_Val == 1 ) && ( m_TmpBytePt[0] == 0x00 ) ) //如果是连接请求包。
                                 {
-                                    m_UdpSoktPt.Connect( 4, p_RmtNodeAddrPt.m_Val, p_RmtNodePortPt.m_Val, m_ErrInfoVarStrPt ); //用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字，已连接的本端UDP协议套接字只能接收连接的远端UDP协议套接字发送的数据包。
+                                    m_UdpSoktPt.Connect( 4, p_RmtNodeAddrPt.m_Val, p_RmtNodePortPt.m_Val, null ); //用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字，已连接的本端UDP协议套接字只能接收连接的远端UDP协议套接字发送的数据包。
 
                                     int p_ReSendTimes = 1;
-                                    ReSend:
+                                    UdpSrvrReSend:
                                     while( true ) //循环发送连接请求包，并接收连接应答包。
                                     {
                                         m_TmpBytePt[0] = 0x00; //设置连接请求包。
@@ -351,7 +350,7 @@ class MyAudioProcThread extends AudioProcThread
                                             break out;
                                         }
 
-                                        ReRecv:
+                                        UdpSrvrReRecv:
                                         while( true ) //循环接收连接应答包。
                                         {
                                             if( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 1000, m_ErrInfoVarStrPt ) == 0 )
@@ -363,7 +362,7 @@ class MyAudioProcThread extends AudioProcThread
                                                         String p_InfoStrPt = "用已监听的本端UDP协议套接字接受远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]的连接成功。";
                                                         Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                                                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                                                        break ReAccept; //跳出连接循环。
+                                                        break UdpSrvrReAccept; //跳出连接循环。
                                                     }
                                                     else //如果是连接请求包，就不管，重新接收连接应答包。
                                                     {
@@ -375,14 +374,14 @@ class MyAudioProcThread extends AudioProcThread
                                                     if( p_ReSendTimes <= 5 ) //如果还需要进行重发。
                                                     {
                                                         p_ReSendTimes++;
-                                                        break ReRecv; //重发连接请求包。
+                                                        break UdpSrvrReRecv; //重发连接请求包。
                                                     }
                                                     else //如果不需要重连了。
                                                     {
                                                         String p_InfoStrPt = "用已监听的本端UDP协议套接字接受远端UDP协议套接字的连接失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                                                         Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                                                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                                                        break ReSend; //重新接受连接。
+                                                        break UdpSrvrReSend; //重新接受连接。
                                                     }
                                                 }
                                             }
@@ -391,12 +390,12 @@ class MyAudioProcThread extends AudioProcThread
                                                 String p_InfoStrPt = "用已监听的本端UDP协议套接字接受远端UDP协议套接字的连接失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                                                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                                                 Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                                                break ReSend; //重新接受连接。
+                                                break UdpSrvrReSend; //重新接受连接。
                                             }
                                         }
                                     }
 
-                                    m_UdpSoktPt.Disconnect( m_ErrInfoVarStrPt ); //将已连接的本端UDP协议套接字断开连接的远端UDP协议套接字，已连接的本端UDP协议套接字将变成已监听的本端UDP协议套接字。
+                                    m_UdpSoktPt.Disconnect( null ); //将已连接的本端UDP协议套接字断开连接的远端UDP协议套接字，已连接的本端UDP协议套接字将变成已监听的本端UDP协议套接字。
 
                                     String p_InfoStrPt = "本端UDP协议套接字继续保持监听来接受连接。";
                                     Log.i( m_CurClsNameStrPt, p_InfoStrPt );
@@ -448,7 +447,7 @@ class MyAudioProcThread extends AudioProcThread
                     }
                     else //如果创建并初始化已监听的本端UDP协议套接字失败。
                     {
-                        String p_InfoStrPt = "创建并初始化已监听的本端UDP协议套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                        String p_InfoStrPt = "创建并初始化已监听的本端UDP协议套接字失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                         Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                         break out;
@@ -468,7 +467,7 @@ class MyAudioProcThread extends AudioProcThread
 
                     if( m_UdpSoktPt.GetRmtAddr( null, p_RmtNodeAddrPt, p_RmtNodePortPt, m_ErrInfoVarStrPt ) != 0 )
                     {
-                        m_UdpSoktPt.Disconnect( m_ErrInfoVarStrPt );
+                        m_UdpSoktPt.Disconnect( null );
                         String p_InfoStrPt = "获取已连接的本端UDP协议套接字连接的远端UDP协议套接字绑定的远程节点地址和端口失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                         Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
@@ -476,7 +475,7 @@ class MyAudioProcThread extends AudioProcThread
                     }
 
                     int p_ReSendTimes = 1;
-                    ReSend:
+                    UdpClntReSend:
                     while( true ) //循环连接已监听的远端UDP协议套接字。
                     {
                         m_TmpBytePt[0] = 0x00; //设置连接请求包。
@@ -489,7 +488,7 @@ class MyAudioProcThread extends AudioProcThread
                             break out;
                         }
 
-                        ReRecv:
+                        UdpClntReRecv:
                         while( true ) //循环接收连接请求包。
                         {
                             if( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 1000, m_ErrInfoVarStrPt ) == 0 )
@@ -511,7 +510,7 @@ class MyAudioProcThread extends AudioProcThread
                                         String p_InfoStrPt = "用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]成功。";
                                         Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                                        break ReSend; //跳出连接循环。
+                                        break UdpClntReSend; //跳出连接循环。
                                     }
                                     else //如果不是连接请求包，就不管，重新接收连接请求包。
                                     {
@@ -523,12 +522,12 @@ class MyAudioProcThread extends AudioProcThread
                                     if( p_ReSendTimes <= 5 ) //如果还需要进行重发。
                                     {
                                         p_ReSendTimes++;
-                                        break ReRecv; //重发连接请求包。
+                                        break UdpClntReRecv; //重发连接请求包。
                                     }
                                     else //如果不需要重连了。
                                     {
                                         m_UdpSoktPt.Disconnect( m_ErrInfoVarStrPt );
-                                        String p_InfoStrPt = "用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                                        String p_InfoStrPt = "用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                                         Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                                         break out;

@@ -375,29 +375,39 @@ public abstract class AudioProcThread extends Thread
                 break out;
             }
 
-            m_ExitFlag = ExitFlag;
+            m_ExitFlag = ExitFlag; //设置音频处理线程的退出标记。
 
-            if( IsBlockWait != 0 )
+            if( IsBlockWait != 0 ) //如果需要阻塞等待。
             {
                 if( ExitFlag == 1 ) //如果是请求退出。
                 {
-                    try
+                    do
                     {
-                        this.join();
-                    }
-                    catch( InterruptedException e )
-                    {
+                        if( this.isAlive() != true ) //如果音频处理线程已经退出。
+                        {
+                            break;
+                        }
 
-                    }
+                        SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
+                    }while( true );
                 }
                 else //如果是请求重启。
                 {
                     //等待重启完毕。
                     do
                     {
+                        if( this.isAlive() != true ) //如果音频处理线程已经退出。
+                        {
+                            break;
+                        }
+                        if( m_ExitFlag == 0 ) //如果退出标记为0保持运行，表示重启完毕。
+                        {
+                            break;
+                        }
+
                         SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
                     }
-                    while( m_ExitFlag != 0 );
+                    while( true );
                 }
             }
 
