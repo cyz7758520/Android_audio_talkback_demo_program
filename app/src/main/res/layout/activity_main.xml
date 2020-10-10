@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="Android下音频对讲演示程序\n版本：2020年09月28日\n"
+            android:text="Android下音频对讲演示程序\n版本：2020年10月10日\n"
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="normal|bold" />

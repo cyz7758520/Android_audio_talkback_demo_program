@@ -4,10 +4,17 @@ android {
     compileSdkVersion 29
     defaultConfig {
         applicationId "com.example.android_audio_talkback_demo_program"
+        //applicationId "cn.ubia.ubox"
+        //applicationId "cn.ubia.icamplus"
+        //applicationId "cn.yfc.ybox"
+        //applicationId "cn.ubia.soliomplus"
+        //applicationId "tideen.talkback"
+        //applicationId "com.lj.ctk"
+        //applicationId "com.lj.ns"
         minSdkVersion 9
         targetSdkVersion 29
         versionCode 1
-        versionName "2020.09.28"
+        versionName "2020.10.10"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
