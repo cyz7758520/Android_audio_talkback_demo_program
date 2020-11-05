@@ -24,7 +24,6 @@
             android:textStyle="normal|bold"
             android:textSize="20sp" />
 
-
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -41,14 +40,14 @@
             android:orientation="vertical"
             android:layout_weight="8"
             android:layout_width="0dp"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
             <RadioButton
                 android:text="Speex声学回音消除器+WebRtc定点版声学回音消除器"
                 android:id="@+id/SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRadioBtn"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:checked="false"/>
 
             <RadioButton
@@ -56,7 +55,7 @@
                 android:id="@+id/SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRadioBtn"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:checked="false"/>
 
             <RadioButton
@@ -64,13 +63,12 @@
                 android:id="@+id/SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRadioBtn"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:checked="true"/>
 
         </RadioGroup>
 
     </LinearLayout>
-
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -315,6 +313,36 @@
             android:checked="true"
             android:gravity="center_vertical"
             android:text="WebRtc浮点版声学回音消除器使用自适应调节回音的延迟" />
+
+        <CheckBox
+            android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:gravity="center_vertical"
+            android:text="使用同一房间声学回音消除" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
+                android:gravity="center_vertical"
+                android:text="同一房间回音最小延迟，单位毫秒，取值区间为[1,2147483647]：" />
+
+            <EditText
+                android:id="@+id/SpeexWebRtcAecSameRoomEchoMinDelayEdit"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="number|numberSigned"
+                android:text="420" />
+
+        </LinearLayout>
 
         <Button
             android:layout_width="match_parent"

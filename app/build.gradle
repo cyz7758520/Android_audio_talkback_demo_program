@@ -4,13 +4,6 @@ android {
     compileSdkVersion 29
     defaultConfig {
         applicationId "com.example.android_audio_talkback_demo_program"
-        //applicationId "cn.ubia.ubox"
-        //applicationId "cn.ubia.icamplus"
-        //applicationId "cn.yfc.ybox"
-        //applicationId "cn.ubia.soliomplus"
-        //applicationId "tideen.talkback"
-        //applicationId "com.lj.ctk"
-        //applicationId "com.lj.ns"
         minSdkVersion 9
         targetSdkVersion 29
         versionCode 1
@@ -30,5 +23,5 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:25.4.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    testImplementation 'junit:junit:4.13'
+    testImplementation 'junit:junit:4.13.1'
 }

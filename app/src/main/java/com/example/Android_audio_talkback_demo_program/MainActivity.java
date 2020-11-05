@@ -1525,7 +1525,7 @@ public class MainActivity extends AppCompatActivity
                                     Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoSupesEdit ) ).getText().toString() ),
                                     Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoSupesActEdit ) ).getText().toString() ),
                                     ( ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsSaveMemFileCheckBox ) ).isChecked() ) ? 1 : 0,
-                                    m_ExternalDirFullAbsPathStrPt + "/SpeexAecMemory"
+                                    m_ExternalDirFullAbsPathStrPt + "/SpeexAecMem"
                             );
                         }
                         catch( NumberFormatException e )
@@ -1566,7 +1566,7 @@ public class MainActivity extends AppCompatActivity
                                     ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).isChecked() ) ? 1 : 0,
                                     ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCheckBox ) ).isChecked() ) ? 1 : 0,
                                     ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCheckBox ) ).isChecked() ) ? 1 : 0,
-                                    m_ExternalDirFullAbsPathStrPt + "/WebRtcAecMemory"
+                                    m_ExternalDirFullAbsPathStrPt + "/WebRtcAecMem"
                             );
                         }
                         catch( NumberFormatException e )
@@ -1599,7 +1599,9 @@ public class MainActivity extends AppCompatActivity
                                     ( ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticModeCheckBox ) ).isChecked() ) ? 1 : 0,
                                     ( ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCheckBox ) ).isChecked() ) ? 1 : 0,
                                     ( ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).isChecked() ) ? 1 : 0,
-                                    ( ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox ) ).isChecked() ) ? 1 : 0
+                                    ( ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox ) ).isChecked() ) ? 1 : 0,
+                                    ( ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).isChecked() ) ? 1 : 0,
+                                    Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).getText().toString() )
                             );
                         }
                         catch( NumberFormatException e )
@@ -1702,6 +1704,10 @@ public class MainActivity extends AppCompatActivity
                             break out;
                         }
                     }
+                    else
+                    {
+                        m_MyAudioProcThreadPt.SetSpeexPprocOther( 0, 0, 0, 0, 0, 0, 0, 0, 0 );
+                    }
 
                     //判断是否使用PCM原始数据。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UsePcmRadioBtn ) ).isChecked() )
@@ -1768,6 +1774,10 @@ public class MainActivity extends AppCompatActivity
                                 m_ExternalDirFullAbsPathStrPt + "/AudioOutput.wav",
                                 m_ExternalDirFullAbsPathStrPt + "/AudioResult.wav"
                         );
+                    }
+                    else
+                    {
+                        m_MyAudioProcThreadPt.SetSaveAudioToFile( 0, null, null, null );
                     }
                 }
 

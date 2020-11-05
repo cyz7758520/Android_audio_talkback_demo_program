@@ -32,7 +32,7 @@
             <TextView
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
-                android:layout_weight="2"
+                android:layout_weight="3"
                 android:gravity="center_vertical"
                 android:text="滤波器的数据长度，单位毫秒：" />
 
@@ -150,10 +150,10 @@
                 android:id="@+id/SpeexAecIsSaveMemFileCheckBox"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="4"
+                android:layout_weight="3"
                 android:gravity="center_vertical"
                 android:checked="false"
-                android:text="将Speex声学回音消除器的内存块保存到扩展目录下的SpeexAecMemory文件中，以便缩短下一次初始化时的收敛时间"/>
+                android:text="将Speex声学回音消除器的内存块保存到扩展目录下的SpeexAecMem文件中，以便缩短下一次初始化时的收敛时间"/>
 
             <Button
                 android:layout_weight="1"
