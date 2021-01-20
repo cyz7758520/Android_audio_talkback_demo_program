@@ -50,7 +50,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number"
-                android:text="98" />
+                android:text="95" />
 
         </LinearLayout>
 
@@ -72,7 +72,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number"
-                android:text="98" />
+                android:text="95" />
 
         </LinearLayout>
 

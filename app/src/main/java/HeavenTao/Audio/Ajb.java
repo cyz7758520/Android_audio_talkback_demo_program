@@ -42,28 +42,13 @@ public class Ajb
     public native int PutOneShortFrame( int TimeStamp, short ShortFramePt[], long FrameLen );
 
     //从自适应抖动缓冲器取出一个字节型帧。
-    public native int GetOneByteFrame( byte ByteFramePt[], long FrameSz, HTLong FrameLenPt );
+    public native int GetOneByteFrame( HTInt TimeStampPt, byte ByteFramePt[], long FrameSz, HTLong FrameLenPt );
 
     //从自适应抖动缓冲器取出一个短整型帧。
-    public native int GetOneShortFrame( short ShortFramePt[], long FrameSz, HTLong FrameLenPt );
+    public native int GetOneShortFrame( HTInt TimeStampPt, short ShortFramePt[], long FrameSz, HTLong FrameLenPt );
 
-    //获取当前已缓冲有活动帧的数量。
-    public native int GetCurHaveBufActFrameCnt( HTInt FrameCntPt );
-
-    //获取当前已缓冲无活动帧的数量。
-    public native int GetCurHaveBufInactFrameCnt( HTInt FrameCntPt );
-
-    //获取当前已缓冲帧的数量。
-    public native int GetCurHaveBufFrameCnt( HTInt FrameCntPt );
-
-    //获取最大需缓冲帧的数量。
-    public native int GetMaxNeedBufFrameCnt( HTInt FrameCntPt );
-
-    //获取最小需缓冲帧的数量。
-    public native int GetMinNeedBufFrameCnt( HTInt FrameCntPt );
-
-    //获取当前需缓冲帧的数量。
-    public native int GetCurNeedBufFrameCnt( HTInt FrameCntPt );
+    //获取缓冲帧的数量。
+    public native int GetBufFrameCnt( HTInt CurHaveBufActFrameCntPt, HTInt CurHaveBufInactFrameCntPt, HTInt CurHaveBufFrameCntPt, HTInt MinNeedBufFrameCntPt, HTInt MaxNeedBufFrameCntPt, HTInt CurNeedBufFrameCntPt );
 
     //清空自适应抖动缓冲器。
     public native int Clear();

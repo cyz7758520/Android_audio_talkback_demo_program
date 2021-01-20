@@ -605,7 +605,7 @@ class MyAudioProcThread extends AudioProcThread
             if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
                 ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
             {
-                if( p_TmpHTLong.m_Val != -1 ) //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包成功。
+                if( p_TmpHTLong.m_Val != -1 ) //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包成功。
                 {
                     m_LastPktRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间。
 
@@ -660,22 +660,28 @@ class MyAudioProcThread extends AudioProcThread
                             }
                             case 1: //如果使用自适应抖动缓冲器。
                             {
-                                if( p_TmpHTLong.m_Val == 1 + 4 ) //如果该输出帧为无语音活动。
+                                synchronized( m_AjbPt )
                                 {
-                                    synchronized( m_AjbPt )
-                                    {
-                                        m_AjbPt.PutOneByteFrame( m_RecvOutputFrameTimeStamp, null, 0 );
-                                    }
-                                }
-                                else //如果该输出帧为有语音活动。
-                                {
-                                    synchronized( m_AjbPt )
-                                    {
-                                        m_AjbPt.PutOneByteFrame( m_RecvOutputFrameTimeStamp, Arrays.copyOfRange( m_TmpBytePt, 1 + 4, ( int ) ( p_TmpHTLong.m_Val ) ), p_TmpHTLong.m_Val - 1 - 4 );
-                                    }
+                                    m_AjbPt.PutOneByteFrame( m_RecvOutputFrameTimeStamp, Arrays.copyOfRange( m_TmpBytePt, 1 + 4, ( int ) ( p_TmpHTLong.m_Val ) ), p_TmpHTLong.m_Val - 1 - 4 );
+
+                                    Log.i( m_CurClsNameStrPt, "接收一个到输出帧包，并放入自适应抖动缓冲器成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
+
+                                    HTInt p_CurHaveBufActFrameCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
+                                    HTInt p_CurHaveBufInactFrameCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
+                                    HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
+                                    HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
+                                    HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+                                    HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
+                                    m_AjbPt.GetBufFrameCnt( p_CurHaveBufActFrameCntPt, p_CurHaveBufInactFrameCntPt, p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
+                                    Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val +
+                                            "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val +
+                                            "，帧：" + p_CurHaveBufFrameCntPt.m_Val +
+                                            "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val +
+                                            "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val +
+                                            "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val +
+                                            "。" );
                                 }
 
-                                Log.i( m_CurClsNameStrPt, "接收一个到输出帧包，并放入自适应抖动缓冲器成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
                                 break;
                             }
                         }
@@ -743,14 +749,14 @@ class MyAudioProcThread extends AudioProcThread
                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                     }
                 }
-                else //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包超时。
+                else //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包超时。
                 {
 
                 }
             }
-            else //如果用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包失败。
+            else //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包失败。
             {
-                String p_InfoStrPt = "用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                String p_InfoStrPt = "用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                 Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                 break out;
@@ -1050,11 +1056,13 @@ class MyAudioProcThread extends AudioProcThread
                         m_TmpBytePt[2] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF00 ) >> 8 );
                         m_TmpBytePt[3] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF0000 ) >> 16 );
                         m_TmpBytePt[4] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF000000 ) >> 24 );
+                        //设置总长度。
+                        p_TmpInt32 = 1 + 4;
 
-                        if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1 + 4, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
+                        if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_TmpInt32, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
                         {
                             m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
-                            Log.i( m_CurClsNameStrPt, "重新发送一个无语音活动输入帧包成功。时间戳：" + m_SendInputFrameTimeStamp + "，总长度：" + 1 + 4 + "。" );
+                            Log.i( m_CurClsNameStrPt, "重新发送一个无语音活动输入帧包成功。时间戳：" + m_SendInputFrameTimeStamp + "，总长度：" + p_TmpInt32 + "。" );
                         }
                         else
                         {
@@ -1109,10 +1117,7 @@ class MyAudioProcThread extends AudioProcThread
                         }
                         else //如果接收音频输出数据帧的链表为空，或第一个音频输出数据帧为无语音活动。
                         {
-                            for( p_TmpInt32 = 0; p_TmpInt32 < m_FrameLen; p_TmpInt32++ )
-                            {
-                                PcmOutputFramePt[p_TmpInt32] = 0;
-                            }
+                            Arrays.fill( PcmOutputFramePt, ( short ) 0 );
 
                             Log.i( m_CurClsNameStrPt, "从接收输出帧链表取出一个无语音活动的PCM格式输出帧。" );
                         }
@@ -1144,68 +1149,76 @@ class MyAudioProcThread extends AudioProcThread
             }
             case 1: //如果使用自适应抖动缓冲器。
             {
-                HTLong p_OutputFrameLenPt = new HTLong(); //从自适应抖动缓冲器中取出的输出帧的数据长度。
-                HTInt p_AjbFrameCnt = new HTInt(); //自适应抖动缓冲器中帧的数量。
+                HTInt p_OutputFrameTimeStamp = new HTInt(); //存放输出帧的时间戳。
+                HTLong p_OutputFrameLenPt = new HTLong(); //存放从自适应抖动缓冲器中取出的输出帧的数据长度。
 
-                switch( m_UseWhatCodec ) //使用什么编解码器。
+                synchronized( m_AjbPt )
                 {
-                    case 0: //如果使用PCM原始数据。
+                    switch( m_UseWhatCodec ) //使用什么编解码器。
                     {
-                        //从自适应抖动缓冲器取出一个输出帧。
-                        synchronized( m_AjbPt )
+                        case 0: //如果使用PCM原始数据。
                         {
-                            m_AjbPt.GetOneShortFrame( PcmOutputFramePt, PcmOutputFramePt.length, p_OutputFrameLenPt );
-                        }
+                            //从自适应抖动缓冲器取出一个输出帧。
+                            m_AjbPt.GetOneShortFrame( p_OutputFrameTimeStamp, PcmOutputFramePt, PcmOutputFramePt.length, p_OutputFrameLenPt );
 
-                        if( p_OutputFrameLenPt.m_Val != 0 ) //如果输出帧为有语音活动。
+                            if( p_OutputFrameLenPt.m_Val == 0 ) //如果输出帧为无语音活动。
+                            {
+                                Arrays.fill( PcmOutputFramePt, ( short ) 0 );
+
+                                Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个无语音活动的PCM格式输出帧。时间戳：" + p_OutputFrameTimeStamp.m_Val + "，数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
+                            }
+                            else if( p_OutputFrameLenPt.m_Val == -1 ) //如果输出帧为丢失。
+                            {
+                                Arrays.fill( PcmOutputFramePt, ( short ) 0 );
+
+                                Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个丢失的PCM格式输出帧。时间戳：" + p_OutputFrameTimeStamp.m_Val + "，数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
+                            }
+                            else //如果输出帧为有语音活动。
+                            {
+                                Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个有语音活动的PCM格式输出帧。时间戳：" + p_OutputFrameTimeStamp.m_Val + "，数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
+                            }
+
+                            break;
+                        }
+                        case 1: //如果使用Speex编解码器。
                         {
-                            Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个有语音活动的PCM格式输出帧，帧的数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
-                        }
-                        else //如果输出帧为无语音活动。
-                        {
-                            Arrays.fill( PcmOutputFramePt, ( short ) 0 );
+                            //从自适应抖动缓冲器取出一个输出帧。
+                            m_AjbPt.GetOneByteFrame( p_OutputFrameTimeStamp, SpeexOutputFramePt, SpeexOutputFramePt.length, p_OutputFrameLenPt );
 
-                            Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个无语音活动的PCM格式输出帧。" );
-                        }
+                            SpeexOutputFrameLenPt.m_Val = p_OutputFrameLenPt.m_Val;
 
-                        break;
+                            if( p_OutputFrameLenPt.m_Val == 0 ) //如果输出帧为无语音活动。
+                            {
+                                Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个无语音活动的Speex格式输出帧。时间戳：" + p_OutputFrameTimeStamp.m_Val + "，数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
+                            }
+                            else if( p_OutputFrameLenPt.m_Val == -1 ) //如果输出帧为丢失。
+                            {
+                                Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个丢失的Speex格式输出帧。时间戳：" + p_OutputFrameTimeStamp.m_Val + "，数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
+                            }
+                            else //如果输出帧为有语音活动。
+                            {
+                                Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个有语音活动的Speex格式输出帧。时间戳：" + p_OutputFrameTimeStamp.m_Val + "，数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
+                            }
+
+                            break;
+                        }
                     }
-                    case 1: //如果使用Speex编解码器。
-                    {
-                        //从自适应抖动缓冲器取出一个音频输出数据帧。
-                        synchronized( m_AjbPt )
-                        {
-                            m_AjbPt.GetOneByteFrame( SpeexOutputFramePt, SpeexOutputFramePt.length, p_OutputFrameLenPt );
-                        }
 
-                        SpeexOutputFrameLenPt.m_Val = p_OutputFrameLenPt.m_Val;
-
-                        if( p_OutputFrameLenPt.m_Val != 0 ) //如果输出帧为有语音活动。
-                        {
-                            Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个有语音活动的Speex格式输出帧，帧的数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
-                        }
-                        else //如果输出帧为无语音活动。
-                        {
-                            Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个无语音活动的Speex格式输出帧。" );
-                        }
-
-                        break;
-                    }
+                    HTInt p_CurHaveBufActFrameCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
+                    HTInt p_CurHaveBufInactFrameCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
+                    HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
+                    HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
+                    HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+                    HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
+                    m_AjbPt.GetBufFrameCnt( p_CurHaveBufActFrameCntPt, p_CurHaveBufInactFrameCntPt, p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
+                    Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val +
+                                                                    "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val +
+                                                                    "，帧：" + p_CurHaveBufFrameCntPt.m_Val +
+                                                                    "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val +
+                                                                    "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val +
+                                                                    "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val +
+                                                                    "。" );
                 }
-
-                m_AjbPt.GetCurHaveBufActFrameCnt( p_AjbFrameCnt );
-                Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中当前已缓冲有活动帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
-                m_AjbPt.GetCurHaveBufInactFrameCnt( p_AjbFrameCnt );
-                Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中当前已缓冲无活动帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
-                m_AjbPt.GetCurHaveBufFrameCnt( p_AjbFrameCnt );
-                Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中当前已缓冲帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
-
-                m_AjbPt.GetMaxNeedBufFrameCnt( p_AjbFrameCnt );
-                Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中最大需缓冲帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
-                m_AjbPt.GetMinNeedBufFrameCnt( p_AjbFrameCnt );
-                Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中最小需缓冲帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
-                m_AjbPt.GetCurNeedBufFrameCnt( p_AjbFrameCnt );
-                Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器中当前需缓冲帧的数量为 " + p_AjbFrameCnt.m_Val + " 个。" );
 
                 break;
             }
@@ -1392,13 +1405,12 @@ public class MainActivity extends AppCompatActivity
         {
             m_MyAudioProcThreadPt.SetUseDevice( 0, 0 );
 
-            if( m_MyAudioProcThreadPt.m_InputFrameLnkLstPt != null ) //如果音频处理线程已经启动。
+            if( m_MyAudioProcThreadPt.m_InputFrameLnkLstPt != null ) //如果音频处理线程已经启动并初始化完毕。
             {
                 m_MyAudioProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
             }
         }
-
-        SetUseWakeLock( m_IsUseWakeLock );
+        SetUseWakeLock( m_IsUseWakeLock ); //切换唤醒锁。
     }
 
     //使用听筒按钮。
@@ -1408,12 +1420,30 @@ public class MainActivity extends AppCompatActivity
         {
             m_MyAudioProcThreadPt.SetUseDevice( 1, 0 );
 
-            if( m_MyAudioProcThreadPt.m_InputFrameLnkLstPt != null ) //如果音频处理线程已经启动。
+            if( m_MyAudioProcThreadPt.m_InputFrameLnkLstPt != null ) //如果音频处理线程已经启动并初始化完毕。
             {
                 m_MyAudioProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
             }
         }
-        SetUseWakeLock( m_IsUseWakeLock );
+        SetUseWakeLock( m_IsUseWakeLock ); //切换唤醒锁。
+    }
+
+    //音频输入设备静音按钮。
+    public void OnAudioInputDeviceIsMute( View BtnPt )
+    {
+        if( m_MyAudioProcThreadPt != null )
+        {
+            m_MyAudioProcThreadPt.SetAudioInputDeviceMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+        }
+    }
+
+    //音频输出设备静音按钮。
+    public void OnAudioOutputDeviceIsMute( View BtnPt )
+    {
+        if( m_MyAudioProcThreadPt != null )
+        {
+            m_MyAudioProcThreadPt.SetAudioOutputDeviceMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+        }
     }
 
     //创建服务器或连接服务器按钮。
@@ -1495,6 +1525,12 @@ public class MainActivity extends AppCompatActivity
                     {
                         m_MyAudioProcThreadPt.SetUseDevice( 1, 0 );
                     }
+
+                    //判断音频输入设备是否静音。
+                    m_MyAudioProcThreadPt.SetAudioInputDeviceMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+
+                    //判断音频输出设备是否静音。
+                    m_MyAudioProcThreadPt.SetAudioOutputDeviceMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
 
                     //判断是否使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).isChecked() )

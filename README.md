@@ -2,7 +2,15 @@
 # 必读说明
 
 # 简介
-#### 本软件根据《道德经》为核心思想而设计，实现了两个设备之间通过网络进行全双工实时音频对讲。为了增强对讲质量，还做了声学回音消除、噪音抑制、语音活动检测、自动增益控制、自适应抖动缓冲、等处理。
+#### 本软件根据《道德经》为核心思想而设计，实现了两个设备之间通过网络进行全双工实时音频对讲，并做了以下增强处理：
+#### 支持声学回音消除，通过本人自己设计的音频输入输出帧同步方法、自适应设置回音延迟方法、三重声学回音消除器，声学回音可以消除到99%以上，还可以消除同一房间回音，且收敛时间很短，无论网络如何抖动都可以消除。
+#### 支持噪音抑制，对常见的底噪音、嘈杂的街道音、风吹音、等都有抑制效果。
+#### 支持语音活动检测，只有在人说话时才发送网络数据，无人说话时不产生网络数据，从而降低噪音、降低网络流量。
+#### 支持自动增益控制，当人说话声音较小时会自动增大音量，当人说话声音较大时会自动减小音量。
+#### 支持编解码，对音频数据的压缩率在1~20%之间，且支持动态比特率，从而大幅度降低网络流量，还支持数据包丢失隐藏，当网络丢包率高达30%时，仍然可以进行对讲。
+#### 支持自适应抖动缓冲，当网络存在丢包、乱序、延时等抖动情况时，通过自适应调节缓冲深度来应对这些抖动。
+#### 声学回音消除器效果对比：
+#### ![image](https://img2020.cnblogs.com/blog/249784/202010/249784-20201010213322248-1350298865.png)
 
 # 准备
 #### 准备两台安装了Android 2.3及以上系统的设备（已适配到Android 10），其中一台设备作为客户端可以连接到另一台作为服务端的设备（可以用Ping工具测试，建议两台手机在同一WIFI下），且两台设备都安装相同版本的本软件。
@@ -13,11 +21,11 @@
 #### 特别注意：如果把两台设备放在同一房间里测试，有可能会出现啸叫、声音不完整、等问题，这是因为现在手机的麦克风都很灵敏了，一点小小的声音都会被录进去，导致软件无法正确识别回音，所以建议放在不同的房间里测试。
 
 # 移植
-#### 如果需要在自己的软件中使用本软件的音频功能，只需要将HeavenTao.Audio包、HeavenTao.Data包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Audio.AudioProcThread类，实现UserInit、UserProcess、UserDestroy、UserReadInputFrame、UserWriteOutputFrame、UserGetPcmOutputFrame这六个函数即可。
+#### 如果需要在自己的软件中使用本软件的音频功能，只需要将HeavenTao.Audio包、HeavenTao.Data包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Audio.AudioProcThread类，实现UserInit、UserProcess、UserDestroy、UserReadInputFrame、UserWriteOutputFrame、UserGetPcmOutputFrame这六个函数，再在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO和android.permission.MODIFY_AUDIO_SETTINGS权限即可。
 #### 如果用户要在JNI层处理音频帧，则可以将那六个函数继承为native函数，然后在JNI层实现即可。
 #### 如果有不需要的部分功能，则只需要删除该功能对应类文件和动态库文件，然后修改HeavenTao.Audio.AudioProcThread类文件即可。
-#### 普通免费版功能包括：WebRtc定点版声学回音消除器、Speex预处理器的噪音抑制、WebRtc定点版噪音抑制器、WebRtc浮点版噪音抑制器、Speex预处理器的其他功能、Speex编解码器、自己设计的自适应抖动缓冲器、本端TCP协议服务端套接字、本端TCP协议客户端套接字。
-#### 高级收费版功能包括：Speex声学回音消除器、WebRtc浮点版声学回音消除器、SpeexWebRtc三重声学回音消除器、RNNoise噪音抑制器。
+#### 普通免费版功能包括：WebRtc定点版声学回音消除器、Speex预处理器的噪音抑制、WebRtc定点版噪音抑制器、WebRtc浮点版噪音抑制器、Speex预处理器的其他功能、Speex编解码器、本端TCP协议服务端套接字、本端TCP协议客户端套接字。
+#### 高级收费版功能包括：Speex声学回音消除器、WebRtc浮点版声学回音消除器、SpeexWebRtc三重声学回音消除器、RNNoise噪音抑制器、自己设计的自适应抖动缓冲器。
 
 # 注意
 #### 不要在64位操作系统下使用32位动态库，或在32位操作系统下使用64位动态库，否则会导致意想不到的问题。
@@ -27,13 +35,12 @@
 #### 本软件不支持音乐，尤其是系统自带的噪音抑制器和RNNoise噪音抑制器可能对音乐的抑制非常强烈。
 
 # 其他
-#### 本软件采用了Speex的1.2.0版本、SpeexDsp的1.2.0版本、WebRtc的2019年7月份版本为基础，并进行了一系列优化，还并加入了本人自己设计的音频输入输出数据帧同步方法、自适应设置WebRtc声学回音消除器的回音延迟、自适应抖动缓冲器。声学回音可以消除到99%以上，还可以消除同一房间回音，且收敛时间很短，网络流量的比特率也很低。
-#### 声学回音消除器效果对比：
-#### ![image](https://img2020.cnblogs.com/blog/249784/202010/249784-20201010213322248-1350298865.png)
+#### 本软件采用了Speex的1.2.0版本、SpeexDsp的1.2.0版本、WebRtc的2019年7月份版本为基础，并进行了大量优化。
 #### 讨论QQ群：511046632    欢迎大家参与测试和讨论！
 #### 本人QQ号：280604597    赤勇玄心行天道
 #### 本人博客：http://www.cnblogs.com/gaoyaguo
-#### 源代码下载地址：https://github.com/cyz7758520/Android_audio_talkback_demo_program
+#### Windows版源代码：https://github.com/cyz7758520/Windows_audio_talkback_demo_program
+#### Android版源代码：https://github.com/cyz7758520/Android_audio_talkback_demo_program
 
 # 感谢
-#### 感谢 WELEN、善书 对WebRTC的指点！
+#### 感谢 WELEN、善书、陈国福 对 Speex、WebRTC 的指点！

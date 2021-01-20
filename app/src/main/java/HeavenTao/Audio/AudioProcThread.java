@@ -13,6 +13,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import HeavenTao.Data.*;
@@ -131,8 +132,10 @@ public abstract class AudioProcThread extends Thread
 
     AudioRecord m_AudioRecordPt; //存放音频输入类对象的内存指针。
     int m_AudioRecordBufSz; //存放音频输入类对象的缓冲区大小，单位字节。
+    int m_AudioInputDeviceIsMute = 0; //存放音频输入设备是否静音，为0表示有声音，为非0表示静音。
     public int m_UseWhatAudioOutputDevice = 0; //存放使用什么音频输出设备，为0表示扬声器，为非0表示听筒。
     public int m_UseWhatAudioOutputStreamType = 0; //存放使用什么音频输出流类型，为0表示通话类型，为非0表示媒体类型。
+    int m_AudioOutputDeviceIsMute = 0; //存放音频输出设备是否静音，为0表示有声音，为非0表示静音。
     AudioTrack m_AudioTrackPt; //存放音频输出类对象的内存指针。
     int m_AudioTrackBufSz; //存放音频输出类对象的缓冲区大小，单位字节。
 
@@ -210,6 +213,18 @@ public abstract class AudioProcThread extends Thread
         }
 
         return p_Result;
+    }
+
+    //设置音频输入设备是否静音。
+    public void SetAudioInputDeviceMute( int IsMute )
+    {
+        m_AudioInputDeviceIsMute = IsMute;
+    }
+
+    //设置音频输出设备是否静音。
+    public void SetAudioOutputDeviceMute( int IsMute )
+    {
+        m_AudioOutputDeviceIsMute = IsMute;
     }
 
     //设置使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带）。
@@ -609,7 +624,7 @@ public abstract class AudioProcThread extends Thread
                         UserWriteOutputFrame( null, p_SpeexOutputFramePt, p_SpeexOutputFrameLenPt );
 
                         //使用Speex解码器。
-                        if( m_SpeexDecoderPt.Proc( ( p_SpeexOutputFrameLenPt.m_Val != 0 ) ? p_SpeexOutputFramePt : null, p_SpeexOutputFrameLenPt.m_Val, p_TmpOutputFramePt ) == 0 ) //如果本次Speex格式输出帧接收到了或丢失了。
+                        if( m_SpeexDecoderPt.Proc( p_SpeexOutputFramePt, p_SpeexOutputFrameLenPt.m_Val, p_TmpOutputFramePt ) == 0 ) //如果本次Speex格式输出帧接收到了或丢失了。
                         {
                             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输出线程：使用Speex解码器成功。" );
                         }
@@ -623,6 +638,12 @@ public abstract class AudioProcThread extends Thread
                     {
                         if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频输出线程：暂不支持使用Opus解码器。" );
                     }
+                }
+
+                //判断音频输出设备是否静音。在音频处理完后再设置静音，这样可以保证音频处理器的连续性。
+                if( m_AudioOutputDeviceIsMute != 0 )
+                {
+                    Arrays.fill( p_TmpOutputFramePt, ( short ) 0 );
                 }
 
                 //写入本次输出帧。
@@ -1393,6 +1414,16 @@ public abstract class AudioProcThread extends Thread
                             else
                             {
                                 if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频处理线程：使用Speex预处理器失败。" );
+                            }
+                        }
+
+                        //判断音频输入设备是否静音。在音频处理完后再设置静音，这样可以保证音频处理器的连续性。
+                        if( m_AudioInputDeviceIsMute != 0 )
+                        {
+                            Arrays.fill( p_PcmResultFramePt, ( short ) 0 );
+                            if( ( m_IsUseSpeexPprocOther != 0 ) && ( m_SpeexPprocIsUseVad != 0 ) ) //如果Speex预处理器使用了其他功能，且使用了语音活动检测。
+                            {
+                                p_VoiceActStsPt.m_Val = 0;
                             }
                         }
 
