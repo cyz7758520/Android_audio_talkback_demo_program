@@ -2,9 +2,14 @@ package com.example.Android_audio_talkback_demo_program;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -42,7 +47,8 @@ class MainActivityHandler extends Handler
 {
     String m_CurClsNameStrPt = this.getClass().getSimpleName(); //当前类名称字符串类对象的内存指针。
 
-    MainActivity m_MainActivityPt;
+    MainActivity m_MainActivityPt; //存放主界面类对象的内存指针。
+    ServiceConnection m_ForegroundServiceConnectionPt; //存放前台服务连接器类对象的内存指针。
 
     public void handleMessage( Message MessagePt )
     {
@@ -64,6 +70,23 @@ class MainActivityHandler extends Handler
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.ConnectSrvrBtn ) ).setText( "中断" ); //设置连接服务端按钮的内容为“中断”。
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.SettingBtn ) ).setEnabled( false ); //设置设置按钮为不可用。
             }
+
+            //创建并绑定前台服务，从而确保本进程在转入后台或系统锁屏时不会被系统限制运行。
+            m_ForegroundServiceConnectionPt = new ServiceConnection() //创建存放前台服务连接器。
+            {
+                @Override
+                public void onServiceConnected( ComponentName name, IBinder service ) //前台服务绑定成功。
+                {
+                    ( ( ForegroundService.ForegroundServiceBinder )service ).SetForeground( m_MainActivityPt ); //将服务设置为前台服务。
+                }
+
+                @Override
+                public void onServiceDisconnected( ComponentName name ) //前台服务解除绑定。
+                {
+
+                }
+            };
+            m_MainActivityPt.bindService( new Intent(m_MainActivityPt, ForegroundService.class ), m_ForegroundServiceConnectionPt, Context.BIND_AUTO_CREATE ); //创建并绑定前台服务。
 
             //判断是否使用唤醒锁。
             if( ( ( CheckBox ) m_MainActivityPt.m_LyotActivitySettingViewPt.findViewById( R.id.IsUseWakeLockCheckBox ) ).isChecked() )
@@ -87,7 +110,12 @@ class MainActivityHandler extends Handler
             ( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtn ) ).setEnabled( true ); //设置创建服务端按钮为可用。
             ( ( Button ) m_MainActivityPt.findViewById( R.id.SettingBtn ) ).setEnabled( true ); //设置设置按钮为可用。
 
-            m_MainActivityPt.SetUseWakeLock( 0 );
+            m_MainActivityPt.SetUseWakeLock( 0 ); //销毁唤醒锁。
+            if( m_ForegroundServiceConnectionPt != null ) //如果已经创建并绑定了前台服务。
+            {
+                m_MainActivityPt.unbindService( m_ForegroundServiceConnectionPt ); //解除绑定前台服务。
+                m_ForegroundServiceConnectionPt = null;
+            }
         }
         else if( MessagePt.what == 3 ) //如果是显示日志的消息。
         {
@@ -560,7 +588,7 @@ class MyAudioProcThread extends AudioProcThread
                 {
                     //初始化自适应抖动缓冲器类对象。
                     m_AjbPt = new Ajb();
-                    if( m_AjbPt.Init( m_SamplingRate, m_FrameLen, ( byte ) 1, ( byte ) 0, m_AjbMinNeedBufFrameCnt, m_AjbMaxNeedBufFrameCnt, m_AjbAdaptSensitivity ) == 0 )
+                    if( m_AjbPt.Init( m_SamplingRate, m_FrameLen, ( byte ) 1, 1, ( byte ) 0, m_AjbMinNeedBufFrameCnt, m_AjbMaxNeedBufFrameCnt, m_AjbAdaptSensitivity ) == 0 )
                     {
                         Log.i( m_CurClsNameStrPt, "创建并初始化自适应抖动缓冲器类对象成功。" );
                     }
@@ -580,7 +608,7 @@ class MyAudioProcThread extends AudioProcThread
 
             m_LastSendInputFrameIsAct = 0; //设置最后发送的一个输入帧为无语音活动。
             m_LastSendInputFrameIsRecv = 1; //设置最后一个发送的输入帧远端已经接收到。
-            m_SendInputFrameTimeStamp = 0 - m_FrameLen; //设置发送输入帧的时间戳为0的前一个。
+            m_SendInputFrameTimeStamp = 0 - 1; //设置发送输入帧的时间戳为0的前一个，因为第一次发送输入帧时会递增一个步进。
             m_RecvOutputFrameTimeStamp = 0; //设置接收输出帧的时间戳为0。
 
             String p_InfoStrPt = "开始进行音频对讲。";
@@ -1008,7 +1036,7 @@ class MyAudioProcThread extends AudioProcThread
                 if( ( p_TmpInt32 != 1 + 4 ) || //如果本音频输入数据帧为有语音活动，就发送。
                     ( ( p_TmpInt32 == 1 + 4 ) && ( m_LastSendInputFrameIsAct != 0 ) ) ) //如果本音频输入数据帧为无语音活动，但最后一个发送的输入帧为有语音活动，就发送。
                 {
-                    m_SendInputFrameTimeStamp += m_FrameLen; //时间戳递增一个帧的数据长度。
+                    m_SendInputFrameTimeStamp += 1; //时间戳递增一个步进。
 
                     //设置输入帧包。
                     m_TmpBytePt[0] = 0x01;
@@ -1299,6 +1327,10 @@ public class MainActivity extends AppCompatActivity
         //检测并请求唤醒锁权限。
         if( ContextCompat.checkSelfPermission( this, Manifest.permission.WAKE_LOCK ) != PackageManager.PERMISSION_GRANTED )
             ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.WAKE_LOCK}, 1 );
+
+        //检测并请求前台服务权限。
+        if( ContextCompat.checkSelfPermission( this, Manifest.permission.FOREGROUND_SERVICE ) != PackageManager.PERMISSION_GRANTED )
+            ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.FOREGROUND_SERVICE}, 1 );
 
         //设置主界面类对象。
         m_MainActivityPt = this;

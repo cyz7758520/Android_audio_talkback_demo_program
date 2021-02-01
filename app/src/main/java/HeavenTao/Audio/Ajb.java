@@ -33,7 +33,7 @@ public class Ajb
     }
 
     //创建并初始化自适应抖动缓冲器。
-    public native int Init( int SamplingRate, int FrameLen, byte IsHaveTimeStamp, byte InactIsContPut, int MinNeedBufFrameCnt, int MaxNeedBufFrameCnt, byte AdaptSensitivity );
+    public native int Init( int SamplingRate, int FrameLen, byte IsHaveTimeStamp, int TimeStampStep, byte InactIsContPut, int MinNeedBufFrameCnt, int MaxNeedBufFrameCnt, byte AdaptSensitivity );
 
     //放入一个字节型帧到自适应抖动缓冲器。
     public native int PutOneByteFrame( int TimeStamp, byte ByteFramePt[], long FrameLen );
