@@ -71,7 +71,7 @@ class MainActivityHandler extends Handler
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.SettingBtn ) ).setEnabled( false ); //设置设置按钮为不可用。
             }
 
-            //创建并绑定前台服务，从而确保本进程在转入后台或系统锁屏时不会被系统限制运行。
+            //创建并绑定前台服务，从而确保本进程在转入后台或系统锁屏时不会被系统限制运行，且只能放在主线程中执行，因为要使用界面类对象。
             m_ForegroundServiceConnectionPt = new ServiceConnection() //创建存放前台服务连接器。
             {
                 @Override
