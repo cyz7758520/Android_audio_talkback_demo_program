@@ -48,7 +48,7 @@ class MainActivityHandler extends Handler
     String m_CurClsNameStrPt = this.getClass().getSimpleName(); //当前类名称字符串类对象的内存指针。
 
     MainActivity m_MainActivityPt; //存放主界面类对象的内存指针。
-    ServiceConnection m_ForegroundServiceConnectionPt; //存放前台服务连接器类对象的内存指针。
+    ServiceConnection m_FrgndSrvcCnctPt; //存放前台服务连接器类对象的内存指针。
 
     public void handleMessage( Message MessagePt )
     {
@@ -71,23 +71,6 @@ class MainActivityHandler extends Handler
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.SettingBtn ) ).setEnabled( false ); //设置设置按钮为不可用。
             }
 
-            //创建并绑定前台服务，从而确保本进程在转入后台或系统锁屏时不会被系统限制运行，且只能放在主线程中执行，因为要使用界面类对象。
-            m_ForegroundServiceConnectionPt = new ServiceConnection() //创建存放前台服务连接器。
-            {
-                @Override
-                public void onServiceConnected( ComponentName name, IBinder service ) //前台服务绑定成功。
-                {
-                    ( ( ForegroundService.ForegroundServiceBinder )service ).SetForeground( m_MainActivityPt ); //将服务设置为前台服务。
-                }
-
-                @Override
-                public void onServiceDisconnected( ComponentName name ) //前台服务解除绑定。
-                {
-
-                }
-            };
-            m_MainActivityPt.bindService( new Intent(m_MainActivityPt, ForegroundService.class ), m_ForegroundServiceConnectionPt, Context.BIND_AUTO_CREATE ); //创建并绑定前台服务。
-
             //判断是否使用唤醒锁。
             if( ( ( CheckBox ) m_MainActivityPt.m_LyotActivitySettingViewPt.findViewById( R.id.IsUseWakeLockCheckBox ) ).isChecked() )
             {
@@ -97,10 +80,38 @@ class MainActivityHandler extends Handler
             {
                 m_MainActivityPt.SetUseWakeLock( 0 );
             }
+
+            //创建并绑定前台服务，从而确保本进程在转入后台或系统锁屏时不会被系统限制运行，且只能放在主线程中执行，因为要使用界面类对象。
+            if( ( ( CheckBox ) m_MainActivityPt.m_LyotActivitySettingViewPt.findViewById( R.id.IsUseFrgndSrvcCheckBox ) ).isChecked() )
+            {
+                m_FrgndSrvcCnctPt = new ServiceConnection() //创建存放前台服务连接器。
+                {
+                    @Override
+                    public void onServiceConnected( ComponentName name, IBinder service ) //前台服务绑定成功。
+                    {
+                        ( ( FrgndSrvc.FrgndSrvcBinder ) service ).SetForeground( m_MainActivityPt ); //将服务设置为前台服务。
+                    }
+
+                    @Override
+                    public void onServiceDisconnected( ComponentName name ) //前台服务解除绑定。
+                    {
+
+                    }
+                };
+                m_MainActivityPt.bindService( new Intent( m_MainActivityPt, FrgndSrvc.class ), m_FrgndSrvcCnctPt, Context.BIND_AUTO_CREATE ); //创建并绑定前台服务。
+            }
         }
         else if( MessagePt.what == 2 ) //如果是音频处理线程退出的消息。
         {
             m_MainActivityPt.m_MyAudioProcThreadPt = null;
+
+            if( m_FrgndSrvcCnctPt != null ) //如果已经创建并绑定了前台服务。
+            {
+                m_MainActivityPt.unbindService( m_FrgndSrvcCnctPt ); //解除绑定并销毁前台服务。
+                m_FrgndSrvcCnctPt = null;
+            }
+
+            m_MainActivityPt.SetUseWakeLock( 0 ); //销毁唤醒锁。
 
             ( ( EditText ) m_MainActivityPt.findViewById( R.id.IPAddrEdit ) ).setEnabled( true ); //设置IP地址控件为可用。
             ( ( EditText ) m_MainActivityPt.findViewById( R.id.PortEdit ) ).setEnabled( true ); //设置端口控件为可用。
@@ -109,13 +120,6 @@ class MainActivityHandler extends Handler
             ( ( Button ) m_MainActivityPt.findViewById( R.id.ConnectSrvrBtn ) ).setText( "连接服务端" ); //设置连接服务端按钮的内容为“连接服务端”。
             ( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtn ) ).setEnabled( true ); //设置创建服务端按钮为可用。
             ( ( Button ) m_MainActivityPt.findViewById( R.id.SettingBtn ) ).setEnabled( true ); //设置设置按钮为可用。
-
-            m_MainActivityPt.SetUseWakeLock( 0 ); //销毁唤醒锁。
-            if( m_ForegroundServiceConnectionPt != null ) //如果已经创建并绑定了前台服务。
-            {
-                m_MainActivityPt.unbindService( m_ForegroundServiceConnectionPt ); //解除绑定前台服务。
-                m_ForegroundServiceConnectionPt = null;
-            }
         }
         else if( MessagePt.what == 3 ) //如果是显示日志的消息。
         {

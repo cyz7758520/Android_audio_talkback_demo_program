@@ -28,7 +28,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name=".ForegroundService" android:exported ="false" />
+        <service android:name=".FrgndSrvc" android:exported ="false" />
     </application>
 
 </manifest>

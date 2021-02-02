@@ -176,6 +176,13 @@
             android:text="使用唤醒锁"/>
 
         <CheckBox
+            android:id="@+id/IsUseFrgndSrvcCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="使用前台服务"/>
+
+        <CheckBox
             android:id="@+id/IsUseSystemAecNsAgcCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
