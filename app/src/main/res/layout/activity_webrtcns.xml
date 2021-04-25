@@ -37,12 +37,11 @@
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/WebRtcNsPolicyMode"
+                android:id="@+id/WebRtcNsPolicyModeEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="3" />
+                android:inputType="number" />
 
         </LinearLayout>
 

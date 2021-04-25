@@ -41,8 +41,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="2" />
+                android:inputType="number" />
 
         </LinearLayout>
 
@@ -63,8 +62,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number|numberSigned"
-                android:text="0" />
+                android:inputType="number|numberSigned" />
 
         </LinearLayout>
 
@@ -72,7 +70,6 @@
             android:id="@+id/WebRtcAecIsUseDelayAgnosticModeCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:checked="true"
             android:gravity="center_vertical"
             android:text="使用回音延迟不可知模式" />
 
@@ -80,7 +77,6 @@
             android:id="@+id/WebRtcAecIsUseExtdFilterModeCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:checked="true"
             android:gravity="center_vertical"
             android:text="使用扩展滤波器模式" />
 
@@ -88,7 +84,6 @@
             android:id="@+id/WebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:checked="false"
             android:gravity="center_vertical"
             android:text="使用精制滤波器自适应Aec模式" />
 
@@ -96,7 +91,6 @@
             android:id="@+id/WebRtcAecIsUseAdaptAdjDelayCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:checked="true"
             android:gravity="center_vertical"
             android:text="使用自适应调节回音的延迟" />
 
@@ -110,7 +104,6 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="4"
-                android:checked="false"
                 android:text="将WebRtc浮点版声学回音消除器的内存块保存到扩展目录下的WebRtcAecMem文件中，以便缩短下一次初始化时的收敛时间"/>
 
             <Button

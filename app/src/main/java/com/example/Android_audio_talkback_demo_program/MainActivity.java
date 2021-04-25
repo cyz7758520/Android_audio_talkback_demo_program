@@ -1,17 +1,16 @@
 package com.example.Android_audio_talkback_demo_program;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.PowerManager;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -19,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -39,6 +39,8 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 
 import HeavenTao.Audio.*;
+import HeavenTao.Video.*;
+import HeavenTao.Media.*;
 import HeavenTao.Data.*;
 import HeavenTao.Sokt.*;
 
@@ -54,10 +56,12 @@ class MainActivityHandler extends Handler
     {
         if( MessagePt.what == 1 ) //如果是音频处理线程启动的消息。
         {
-            if( m_MainActivityPt.m_MyAudioProcThreadPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
+            if( m_MainActivityPt.m_MyMediaProcThreadPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
             {
                 ( ( EditText ) m_MainActivityPt.findViewById( R.id.IPAddrEdit ) ).setEnabled( false ); //设置IP地址控件为不可用。
                 ( ( EditText ) m_MainActivityPt.findViewById( R.id.PortEdit ) ).setEnabled( false ); //设置端口控件为不可用。
+                ( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseTcpPrtclRadioBtn ) ).setEnabled( false ); //设置TCP协议按钮为不可用。
+                ( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseUdpPrtclRadioBtn ) ).setEnabled( false ); //设置UDP协议按钮为不可用。
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtn ) ).setText( "中断" ); //设置创建服务端按钮的内容为“中断”。
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.ConnectSrvrBtn ) ).setEnabled( false ); //设置连接服务端按钮为不可用。
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.SettingBtn ) ).setEnabled( false ); //设置设置按钮为不可用。
@@ -66,23 +70,15 @@ class MainActivityHandler extends Handler
             {
                 ( ( EditText ) m_MainActivityPt.findViewById( R.id.IPAddrEdit ) ).setEnabled( false ); //设置IP地址控件为不可用。
                 ( ( EditText ) m_MainActivityPt.findViewById( R.id.PortEdit ) ).setEnabled( false ); //设置端口控件为不可用。
+                ( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseTcpPrtclRadioBtn ) ).setEnabled( false ); //设置TCP协议按钮为不可用。
+                ( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseUdpPrtclRadioBtn ) ).setEnabled( false ); //设置UDP协议按钮为不可用。
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtn ) ).setEnabled( false ); //设置创建服务端按钮为不可用。
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.ConnectSrvrBtn ) ).setText( "中断" ); //设置连接服务端按钮的内容为“中断”。
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.SettingBtn ) ).setEnabled( false ); //设置设置按钮为不可用。
             }
 
-            //判断是否使用唤醒锁。
-            if( ( ( CheckBox ) m_MainActivityPt.m_LyotActivitySettingViewPt.findViewById( R.id.IsUseWakeLockCheckBox ) ).isChecked() )
-            {
-                m_MainActivityPt.SetUseWakeLock( 1 );
-            }
-            else
-            {
-                m_MainActivityPt.SetUseWakeLock( 0 );
-            }
-
             //创建并绑定前台服务，从而确保本进程在转入后台或系统锁屏时不会被系统限制运行，且只能放在主线程中执行，因为要使用界面类对象。
-            if( ( ( CheckBox ) m_MainActivityPt.m_LyotActivitySettingViewPt.findViewById( R.id.IsUseFrgndSrvcCheckBox ) ).isChecked() )
+            if( ( ( CheckBox ) m_MainActivityPt.m_LyotActivitySettingViewPt.findViewById( R.id.IsUseFrgndSrvcCheckBox ) ).isChecked() && m_FrgndSrvcCnctPt == null )
             {
                 m_FrgndSrvcCnctPt = new ServiceConnection() //创建存放前台服务连接器。
                 {
@@ -103,7 +99,7 @@ class MainActivityHandler extends Handler
         }
         else if( MessagePt.what == 2 ) //如果是音频处理线程退出的消息。
         {
-            m_MainActivityPt.m_MyAudioProcThreadPt = null;
+            m_MainActivityPt.m_MyMediaProcThreadPt = null;
 
             if( m_FrgndSrvcCnctPt != null ) //如果已经创建并绑定了前台服务。
             {
@@ -111,10 +107,10 @@ class MainActivityHandler extends Handler
                 m_FrgndSrvcCnctPt = null;
             }
 
-            m_MainActivityPt.SetUseWakeLock( 0 ); //销毁唤醒锁。
-
             ( ( EditText ) m_MainActivityPt.findViewById( R.id.IPAddrEdit ) ).setEnabled( true ); //设置IP地址控件为可用。
             ( ( EditText ) m_MainActivityPt.findViewById( R.id.PortEdit ) ).setEnabled( true ); //设置端口控件为可用。
+            ( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseTcpPrtclRadioBtn ) ).setEnabled( true ); //设置TCP协议按钮为可用。
+            ( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseUdpPrtclRadioBtn ) ).setEnabled( true ); //设置UDP协议按钮为可用。
             ( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtn ) ).setText( "创建服务端" ); //设置创建服务端按钮的内容为“创建服务端”。
             ( ( Button ) m_MainActivityPt.findViewById( R.id.ConnectSrvrBtn ) ).setEnabled( true ); //设置连接服务端按钮为可用。
             ( ( Button ) m_MainActivityPt.findViewById( R.id.ConnectSrvrBtn ) ).setText( "连接服务端" ); //设置连接服务端按钮的内容为“连接服务端”。
@@ -127,12 +123,18 @@ class MainActivityHandler extends Handler
             p_LogTextView.setText( ( new SimpleDateFormat( "HH:mm:ss SSS" ) ).format( new Date() ) + "：" + MessagePt.obj );
             ( ( LinearLayout ) m_MainActivityPt.m_LyotActivityMainViewPt.findViewById( R.id.LogLinearLyot ) ).addView( p_LogTextView );
         }
+        else if( MessagePt.what == 4 ) //如果是重建SurfaceView控件消息，用来清空残余画面。
+        {
+            m_MainActivityPt.m_VideoInputPreviewSurfaceViewPt.setVisibility( View.GONE ); //销毁视频输入预览SurfaceView控件。
+            m_MainActivityPt.m_VideoInputPreviewSurfaceViewPt.setVisibility( View.VISIBLE ); //创建视频输入预览SurfaceView控件。
+            m_MainActivityPt.m_VideoOutputDisplaySurfaceViewPt.setVisibility( View.GONE ); //销毁视频输出显示SurfaceView控件。
+            m_MainActivityPt.m_VideoOutputDisplaySurfaceViewPt.setVisibility( View.VISIBLE ); //创建视频输出显示SurfaceView控件。
+        }
     }
 }
 
-//数据包类型：0x00表示连接请求或心跳，0x01表示输入输出帧，0x02表示连接应答或输入输出帧应答，0x03表示退出。
 //我的音频处理线程类。
-class MyAudioProcThread extends AudioProcThread
+class MyMediaProcThread extends MediaProcThread
 {
     String m_IPAddrStrPt; //存放IP地址字符串类对象的内存指针。
     String m_PortStrPt; //存放端口字符串类对象的内存指针。
@@ -145,28 +147,51 @@ class MyAudioProcThread extends AudioProcThread
     UdpSokt m_UdpSoktPt; //存放本端UDP协议套接字类对象的内存指针。
     long m_LastPktSendTime; //存放最后一个数据包的发送时间，用于判断连接是否中断。
     long m_LastPktRecvTime; //存放最后一个数据包的接收时间，用于判断连接是否中断。
+    public static final byte PKT_TYP_CNCT_HTBT = 0x00; //数据包类型：连接请求包或心跳包。
+    public static final byte PKT_TYP_AFRAME = 0x01; //数据包类型：音频输入输出帧。
+    public static final byte PKT_TYP_VFRAME = 0x02; //数据包类型：视频输入输出帧。
+    public static final byte PKT_TYP_ACK = 0x03; //数据包类型：连接应答包或音频输入输出帧应答包。
+    public static final byte PKT_TYP_EXIT = 0x04; //数据包类型：退出包。
 
-    int m_LastSendInputFrameIsAct; //存放最后一个发送的输入帧有无语音活动，为1表示有语音活动，为0表示无语音活动。
-    int m_LastSendInputFrameIsRecv; //存放最后一个发送的输入帧远端是否接收到，为0表示没有收到，为非0表示已经收到。
-    int m_SendInputFrameTimeStamp; //存放发送输入帧的时间戳。
-    int m_RecvOutputFrameTimeStamp; //存放接收输出帧的时间戳。
+    int m_LastSendAudioInputFrameIsAct; //存放最后一个发送的音频输入帧有无语音活动，为1表示有语音活动，为0表示无语音活动。
+    int m_LastSendAudioInputFrameIsRecv; //存放最后一个发送的音频输入帧远端是否接收到，为0表示没有收到，为非0表示已经收到。
+    int m_LastSendAudioInputFrameTimeStamp; //存放最后一个发送音频输入帧的时间戳。
+    int m_LastSendVideoInputFrameTimeStamp; //存放最后一个发送视频输入帧的时间戳。
+    int m_LastRecvOutputFrameTimeStamp; //存放最后一个接收输出帧的时间戳。
     byte m_IsRecvExitPkt; //存放是否接收到退出包，为0表示否，为1表示是。
 
     int m_UseWhatRecvOutputFrame; //存放使用什么接收输出帧，为0表示链表，为1表示自适应抖动缓冲器。
+    int m_LastGetAudioOutputFrameIsAct; //存放最后一个取出的音频输出帧是否为有语音活动，为0表示否，为非0表示是。
+    int m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp; //存放最后一个取出的音频输出帧对应视频输出帧的时间戳。
 
-    LinkedList< byte[] > m_RecvOutputFrameLnkLstPt; //存放接收输出帧链表类对象的内存指针。
+    LinkedList< byte[] > m_RecvAudioOutputFrameLnkLstPt; //存放接收音频输出帧链表类对象的内存指针。
+    LinkedList< byte[] > m_RecvVideoOutputFrameLnkLstPt; //存放接收视频输出帧链表类对象的内存指针。
 
-    Ajb m_AjbPt; //存放自适应抖动缓冲器类对象的内存指针。
-    int m_AjbMinNeedBufFrameCnt; //存放自适应抖动缓冲器的最小需缓冲帧数量，单位个。
-    int m_AjbMaxNeedBufFrameCnt; //存放自适应抖动缓冲器的最大需缓冲帧数量，单位个。
-    byte m_AjbAdaptSensitivity; //存放自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0,127]。
+    AAjb m_AAjbPt; //存放音频自适应抖动缓冲器类对象的内存指针。
+    int m_AAjbMinNeedBufFrameCnt; //存放音频自适应抖动缓冲器的最小需缓冲帧数量，单位个。
+    int m_AAjbMaxNeedBufFrameCnt; //存放音频自适应抖动缓冲器的最大需缓冲帧数量，单位个。
+    float m_AAjbAdaptSensitivity; //存放音频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0,127]。
+    VAjb m_VAjbPt; //存放视频自适应抖动缓冲器类对象的内存指针。
+    int m_VAjbMinNeedBufFrameCnt; //存放视频自适应抖动缓冲器的最小需缓冲帧数量，单位个。
+    int m_VAjbMaxNeedBufFrameCnt; //存放视频自适应抖动缓冲器的最大需缓冲帧数量，单位个。
+    float m_VAjbAdaptSensitivity; //存放视频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0,127]。
 
     byte m_TmpBytePt[]; //存放临时数据。
+    byte m_TmpByte2Pt[]; //存放临时数据。
+    HTInt m_TmpHTIntPt; //存放临时数据。
+    HTInt m_TmpHTInt2Pt; //存放临时数据。
+    HTLong m_TmpHTLongPt; //存放临时数据。
+    HTLong m_TmpHTLong2Pt; //存放临时数据。
 
     VarStr m_ErrInfoVarStrPt; //存放错误信息动态字符串类对象的内存指针，可以为NULL。
 
-    //用户定义的初始化函数，在本线程刚启动时调用一次，返回值表示是否成功，为0表示成功，为非0表示失败。
-    public int UserInit()
+    MyMediaProcThread( Context AppContextPt )
+    {
+        super( AppContextPt );
+    }
+
+    //用户定义的初始化函数，在本线程刚启动时回调一次，返回值表示是否成功，为0表示成功，为非0表示失败。
+    @Override public int UserInit()
     {
         int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
 
@@ -175,7 +200,12 @@ class MyAudioProcThread extends AudioProcThread
             {Message p_MessagePt = new Message();p_MessagePt.what = 1;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送音频处理线程启动的消息。
 
             m_IsRecvExitPkt = 0; //设置没有接收到退出包。
-            if( m_TmpBytePt == null ) m_TmpBytePt = new byte[1 + 4 + m_FrameLen * 2]; //初始化存放临时数据的数组。
+            if( m_TmpBytePt == null ) m_TmpBytePt = new byte[1024 * 1024]; //初始化临时数据。
+            if( m_TmpByte2Pt == null ) m_TmpByte2Pt = new byte[1024 * 1024]; //初始化临时数据。
+            if( m_TmpHTIntPt == null ) m_TmpHTIntPt = new HTInt(); //初始化临时数据。
+            if( m_TmpHTInt2Pt == null ) m_TmpHTInt2Pt = new HTInt(); //初始化临时数据。
+            if( m_TmpHTLongPt == null ) m_TmpHTLongPt = new HTLong(); //初始化临时数据。
+            if( m_TmpHTLong2Pt == null ) m_TmpHTLong2Pt = new HTLong(); //初始化临时数据。
             if( m_ErrInfoVarStrPt == null ) //创建并初始化错误信息动态字符串类对象。
             {
                 m_ErrInfoVarStrPt = new VarStr();
@@ -260,8 +290,16 @@ class MyAudioProcThread extends AudioProcThread
                 }
                 else if( m_IsCreateSrvrOrClnt == 0 ) //如果是创建本端TCP协议客户端套接字连接远端TCP协议服务端套接字。
                 {
-                    m_TcpClntSoktPt = new TcpClntSokt();
+                    //Ping一下远程节点地址，这样可以快速获取ARP条目。
+                    try
+                    {
+                        Runtime.getRuntime().exec( "ping -c 1 -w 1 " + m_IPAddrStrPt );
+                    }
+                    catch( Exception ignored )
+                    {
+                    }
 
+                    m_TcpClntSoktPt = new TcpClntSokt();
                     int p_ReInitTimes = 1;
                     while( true ) //循环连接已监听的远端TCP协议服务端套接字。
                     {
@@ -365,7 +403,7 @@ class MyAudioProcThread extends AudioProcThread
                         {
                             if( p_TmpHTLong.m_Val != -1 ) //如果用已监听的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包成功。
                             {
-                                if( ( p_TmpHTLong.m_Val == 1 ) && ( m_TmpBytePt[0] == 0x00 ) ) //如果是连接请求包。
+                                if( ( p_TmpHTLong.m_Val == 1 ) && ( m_TmpBytePt[0] == PKT_TYP_CNCT_HTBT ) ) //如果是连接请求包。
                                 {
                                     m_UdpSoktPt.Connect( 4, p_RmtNodeAddrPt.m_Val, p_RmtNodePortPt.m_Val, null ); //用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字，已连接的本端UDP协议套接字只能接收连接的远端UDP协议套接字发送的数据包。
 
@@ -373,7 +411,7 @@ class MyAudioProcThread extends AudioProcThread
                                     UdpSrvrReSend:
                                     while( true ) //循环发送连接请求包，并接收连接应答包。
                                     {
-                                        m_TmpBytePt[0] = 0x00; //设置连接请求包。
+                                        m_TmpBytePt[0] = PKT_TYP_CNCT_HTBT; //设置连接请求包。
                                         if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) != 0 )
                                         {
                                             String p_InfoStrPt = "用已监听的本端UDP协议套接字接受远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]的连接失败。原因：" + m_ErrInfoVarStrPt.GetStr();
@@ -389,7 +427,7 @@ class MyAudioProcThread extends AudioProcThread
                                             {
                                                 if( p_TmpHTLong.m_Val != -1 ) //如果用已监听的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包成功。
                                                 {
-                                                    if( ( p_TmpHTLong.m_Val >= 1 ) && ( m_TmpBytePt[0] != 0x00 ) ) //如果不是连接请求包。
+                                                    if( ( p_TmpHTLong.m_Val >= 1 ) && ( m_TmpBytePt[0] != PKT_TYP_CNCT_HTBT ) ) //如果不是连接请求包。
                                                     {
                                                         String p_InfoStrPt = "用已监听的本端UDP协议套接字接受远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]的连接成功。";
                                                         Log.i( m_CurClsNameStrPt, p_InfoStrPt );
@@ -460,6 +498,15 @@ class MyAudioProcThread extends AudioProcThread
                 }
                 else if( m_IsCreateSrvrOrClnt == 0 ) //如果是创建本端UDP协议套接字连接远端UDP协议套接字。
                 {
+                    //Ping一下远程节点地址，这样可以快速获取ARP条目。
+                    try
+                    {
+                        Runtime.getRuntime().exec( "ping -c 1 -w 1 " + m_IPAddrStrPt );
+                    }
+                    catch( Exception ignored )
+                    {
+                    }
+
                     if( m_UdpSoktPt.Init( 4, null, null, m_ErrInfoVarStrPt ) == 0 ) //如果创建并初始化已监听的本端UDP协议套接字成功。
                     {
                         HTString p_LclNodeAddrPt = new HTString();
@@ -510,7 +557,7 @@ class MyAudioProcThread extends AudioProcThread
                     UdpClntReSend:
                     while( true ) //循环连接已监听的远端UDP协议套接字。
                     {
-                        m_TmpBytePt[0] = 0x00; //设置连接请求包。
+                        m_TmpBytePt[0] = PKT_TYP_CNCT_HTBT; //设置连接请求包。
                         if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) != 0 )
                         {
                             m_UdpSoktPt.Disconnect( m_ErrInfoVarStrPt );
@@ -527,9 +574,9 @@ class MyAudioProcThread extends AudioProcThread
                             {
                                 if( p_TmpHTLong.m_Val != -1 ) //如果用已连接的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包成功。
                                 {
-                                    if( ( p_TmpHTLong.m_Val == 1 ) && ( m_TmpBytePt[0] == 0x00 ) ) //如果是连接请求包。
+                                    if( ( p_TmpHTLong.m_Val == 1 ) && ( m_TmpBytePt[0] == PKT_TYP_CNCT_HTBT ) ) //如果是连接请求包。
                                     {
-                                        m_TmpBytePt[0] = 0x02; //设置连接应答包。
+                                        m_TmpBytePt[0] = PKT_TYP_ACK; //设置连接应答包。
                                         if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) != 0 )
                                         {
                                             m_UdpSoktPt.Disconnect( m_ErrInfoVarStrPt );
@@ -583,25 +630,55 @@ class MyAudioProcThread extends AudioProcThread
             {
                 case 0: //如果使用链表。
                 {
-                    m_RecvOutputFrameLnkLstPt = new LinkedList< byte[] >(); //创建接收输出帧链表类对象。
+                    //初始化接收音频输出帧链表类对象。
+                    if( m_AudioOutputPt != null )
+                    {
+                        m_RecvAudioOutputFrameLnkLstPt = new LinkedList< byte[] >(); //创建接收音频输出帧链表类对象。
+                        Log.i( m_CurClsNameStrPt, "创建并初始化接收音频输出帧链表对象成功。" );
+                    }
 
-                    Log.i( m_CurClsNameStrPt, "创建并初始化接收输出帧链表类对象成功。" );
+                    //初始化接收视频输出帧链表类对象。
+                    if( m_VideoOutputPt != null )
+                    {
+                        m_RecvVideoOutputFrameLnkLstPt = new LinkedList< byte[] >(); //创建接收视频输出帧链表类对象。
+                        Log.i( m_CurClsNameStrPt, "创建并初始化接收视频输出帧链表对象成功。" );
+                    }
                     break;
                 }
                 case 1: //如果使用自适应抖动缓冲器。
                 {
-                    //初始化自适应抖动缓冲器类对象。
-                    m_AjbPt = new Ajb();
-                    if( m_AjbPt.Init( m_SamplingRate, m_FrameLen, ( byte ) 1, 1, ( byte ) 0, m_AjbMinNeedBufFrameCnt, m_AjbMaxNeedBufFrameCnt, m_AjbAdaptSensitivity ) == 0 )
+                    //初始化音频自适应抖动缓冲器类对象。
+                    if( m_AudioOutputPt != null )
                     {
-                        Log.i( m_CurClsNameStrPt, "创建并初始化自适应抖动缓冲器类对象成功。" );
+                        m_AAjbPt = new AAjb();
+                        if( m_AAjbPt.Init( m_AudioOutputPt.m_SamplingRate, m_AudioOutputPt.m_FrameLen, ( byte ) 1, 1, ( byte ) 0, m_AAjbMinNeedBufFrameCnt, m_AAjbMaxNeedBufFrameCnt, m_AAjbAdaptSensitivity ) == 0 )
+                        {
+                            Log.i( m_CurClsNameStrPt, "创建并初始化音频自适应抖动缓冲器类对象成功。" );
+                        }
+                        else
+                        {
+                            String p_InfoStrPt = "创建并初始化音频自适应抖动缓冲器类对象失败。";
+                            Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                            break out;
+                        }
                     }
-                    else
+
+                    //初始化视频自适应抖动缓冲器类对象。
+                    if( m_VideoOutputPt != null )
                     {
-                        String p_InfoStrPt = "创建并初始化自适应抖动缓冲器类对象失败。";
-                        Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                        break out;
+                        m_VAjbPt = new VAjb();
+                        if( m_VAjbPt.Init( ( byte ) 1, m_VAjbMinNeedBufFrameCnt, m_VAjbMaxNeedBufFrameCnt, m_VAjbAdaptSensitivity ) == 0 )
+                        {
+                            Log.i( m_CurClsNameStrPt, "创建并初始化视频自适应抖动缓冲器类对象成功。" );
+                        }
+                        else
+                        {
+                            String p_InfoStrPt = "创建并初始化视频自适应抖动缓冲器类对象失败。";
+                            Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                            break out;
+                        }
                     }
                     break;
                 }
@@ -610,12 +687,16 @@ class MyAudioProcThread extends AudioProcThread
             m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间为当前时间。
             m_LastPktRecvTime = m_LastPktSendTime; //设置最后一个数据包的接收时间为当前时间。
 
-            m_LastSendInputFrameIsAct = 0; //设置最后发送的一个输入帧为无语音活动。
-            m_LastSendInputFrameIsRecv = 1; //设置最后一个发送的输入帧远端已经接收到。
-            m_SendInputFrameTimeStamp = 0 - 1; //设置发送输入帧的时间戳为0的前一个，因为第一次发送输入帧时会递增一个步进。
-            m_RecvOutputFrameTimeStamp = 0; //设置接收输出帧的时间戳为0。
+            m_LastSendAudioInputFrameIsAct = 0; //设置最后发送的一个输入帧为无语音活动。
+            m_LastSendAudioInputFrameIsRecv = 1; //设置最后一个发送的输入帧远端已经接收到。
+            m_LastSendAudioInputFrameTimeStamp = 0 - 1; //设置最后一个发送音频输入帧的时间戳为0的前一个，因为第一次发送音频输入帧时会递增一个步进。
+            m_LastSendVideoInputFrameTimeStamp = 0 - 1; //设置最后一个发送视频输入帧的时间戳为0的前一个，因为第一次发送视频输入帧时会递增一个步进。
+            m_LastRecvOutputFrameTimeStamp = 0; //设置接收输出帧的时间戳为0。
 
-            String p_InfoStrPt = "开始进行音频对讲。";
+            m_LastGetAudioOutputFrameIsAct = 0; //设置最后一个取出的音频输出帧为无语音活动，因为如果不使用音频输出，只使用视频输出时，可以保证视频正常输出。
+            m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp = 0; //设置最后一个取出的音频输出帧对应视频输出帧的时间戳为0。
+
+            String p_InfoStrPt = "开始进行对讲。";
             Log.i( m_CurClsNameStrPt, p_InfoStrPt );
             Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 
@@ -625,113 +706,130 @@ class MyAudioProcThread extends AudioProcThread
         return p_Result;
     }
 
-    //用户定义的处理函数，在本线程运行时每隔1毫秒就调用一次，返回值表示是否成功，为0表示成功，为非0表示失败。
-    public int UserProcess()
+    //用户定义的处理函数，在本线程运行时每隔1毫秒就回调一次，返回值表示是否成功，为0表示成功，为非0表示失败。
+    @Override public int UserProcess()
     {
         int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
-        HTLong p_TmpHTLong = new HTLong(  );
 
         out:
         {
             //接收远端发送过来的一个数据包。
-            if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
-                ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
+            if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
+                ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
             {
-                if( p_TmpHTLong.m_Val != -1 ) //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包成功。
+                if( m_TmpHTLongPt.m_Val != -1 ) //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包成功。
                 {
                     m_LastPktRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间。
 
-                    if( p_TmpHTLong.m_Val == 0 ) //如果数据包的数据长度为0。
+                    if( m_TmpHTLongPt.m_Val == 0 ) //如果数据包的数据长度为0。
                     {
-                        Log.e( m_CurClsNameStrPt, "接收到数据包的数据长度为" + p_TmpHTLong.m_Val + "，表示没有数据，无法继续接收。" );
+                        Log.e( m_CurClsNameStrPt, "接收一个数据包的数据长度为" + m_TmpHTLongPt.m_Val + "，表示没有数据，无法继续接收。" );
                         break out;
                     }
-                    else if( m_TmpBytePt[0] == 0x00 ) //如果是心跳包。
+                    else if( m_TmpBytePt[0] == PKT_TYP_CNCT_HTBT ) //如果是心跳包。
                     {
-                        if( p_TmpHTLong.m_Val > 1 ) //如果心跳包的数据长度大于1。
+                        if( m_TmpHTLongPt.m_Val > 1 ) //如果心跳包的数据长度大于1。
                         {
-                            Log.e( m_CurClsNameStrPt, "接收到心跳包的数据长度为" + p_TmpHTLong.m_Val + "大于1，表示还有其他数据，无法继续接收。" );
+                            Log.e( m_CurClsNameStrPt, "接收一个心跳包的数据长度为" + m_TmpHTLongPt.m_Val + "大于1，表示还有其他数据，无法继续接收。" );
                             break out;
                         }
 
-                        Log.i( m_CurClsNameStrPt, "接收到一个心跳包。" );
+                        Log.i( m_CurClsNameStrPt, "接收一个心跳包。" );
                     }
-                    else if( m_TmpBytePt[0] == 0x01 ) //如果是输出帧包。
+                    else if( m_TmpBytePt[0] == PKT_TYP_AFRAME ) //如果是音频输出帧包。
                     {
-                        if( p_TmpHTLong.m_Val < 1 + 4 ) //如果输出帧包的数据长度小于1 + 4，表示没有时间戳。
+                        if( m_TmpHTLongPt.m_Val < 1 + 4 ) //如果音频输出帧包的数据长度小于1 + 4，表示没有音频输出帧时间戳。
                         {
-                            Log.e( m_CurClsNameStrPt, "接收到输出帧包的数据长度为" + p_TmpHTLong.m_Val + "小于1 + 4，表示没有时间戳，无法继续接收。" );
+                            Log.e( m_CurClsNameStrPt, "接收一个音频输出帧包的数据长度为" + m_TmpHTLongPt.m_Val + "小于1 + 4，表示没有音频输出帧时间戳，无法继续接收。" );
                             break out;
                         }
 
-                        if( ( p_TmpHTLong.m_Val > 1 + 4 ) && ( m_UseWhatCodec == 0 ) && ( p_TmpHTLong.m_Val != 1 + 4 + m_FrameLen * 2 ) ) //如果该输出帧为有语音活动，且使用了PCM原始数据，但接收到的PCM格式输出帧的数据长度与帧的数据长度不同。
-                        {
-                            Log.e( m_CurClsNameStrPt, "接收到的PCM格式输出帧的数据长度与帧的数据长度不同，无法继续接收。" );
-                            break out;
-                        }
+                        //读取音频输出帧时间戳。
+                        m_LastRecvOutputFrameTimeStamp = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
 
-                        //读取时间戳。
-                        m_RecvOutputFrameTimeStamp = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
-
-                        //将输出帧放入链表或自适应抖动缓冲器。
-                        switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
+                        if( m_AudioOutputPt != null ) //如果要使用音频输出。
                         {
-                            case 0: //如果使用链表。
+                            //将音频输出帧放入链表或自适应抖动缓冲器。
+                            switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
                             {
-                                if( p_TmpHTLong.m_Val > 1 + 4 ) //如果该输出帧为有语音活动。
+                                case 0: //如果使用链表。
                                 {
-                                    synchronized( m_RecvOutputFrameLnkLstPt )
+                                    if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该音频输出帧为有语音活动。
                                     {
-                                        m_RecvOutputFrameLnkLstPt.addLast( Arrays.copyOfRange( m_TmpBytePt, 1 + 4, ( int ) ( p_TmpHTLong.m_Val ) ) );
+                                        synchronized( m_RecvAudioOutputFrameLnkLstPt )
+                                        {
+                                            m_RecvAudioOutputFrameLnkLstPt.addLast( Arrays.copyOfRange( m_TmpBytePt, 1 + 4, ( int ) ( m_TmpHTLongPt.m_Val ) ) );
+                                        }
+                                        Log.i( m_CurClsNameStrPt, "接收一个有语音活动的音频输出帧包，并放入接收音频输出帧链表成功。音频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                                     }
+                                    else //如果该音频输出帧为无语音活动。
+                                    {
+                                        Log.i( m_CurClsNameStrPt, "接收一个无语音活动的音频输出帧包，无需放入接收音频输出帧链表。音频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                    }
+
+                                    break;
                                 }
-
-                                Log.i( m_CurClsNameStrPt, "接收到一个输出帧包，并放入链表成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
-
-                                break;
-                            }
-                            case 1: //如果使用自适应抖动缓冲器。
-                            {
-                                synchronized( m_AjbPt )
+                                case 1: //如果使用自适应抖动缓冲器。
                                 {
-                                    m_AjbPt.PutOneByteFrame( m_RecvOutputFrameTimeStamp, Arrays.copyOfRange( m_TmpBytePt, 1 + 4, ( int ) ( p_TmpHTLong.m_Val ) ), p_TmpHTLong.m_Val - 1 - 4 );
+                                    synchronized( m_AAjbPt )
+                                    {
+                                        if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该音频输出帧为有语音活动。
+                                        {
+                                            m_AAjbPt.PutOneByteFrame( m_LastRecvOutputFrameTimeStamp, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4 );
+                                            Log.i( m_CurClsNameStrPt, "接收一个有语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                        }
+                                        else //如果该音频输出帧为无语音活动。
+                                        {
+                                            m_AAjbPt.PutOneByteFrame( m_LastRecvOutputFrameTimeStamp, m_TmpBytePt, 1 + 4, 0 );
+                                            Log.i( m_CurClsNameStrPt, "接收一个无语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                        }
 
-                                    Log.i( m_CurClsNameStrPt, "接收一个到输出帧包，并放入自适应抖动缓冲器成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
+                                        HTInt p_CurHaveBufActFrameCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
+                                        HTInt p_CurHaveBufInactFrameCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
+                                        HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
+                                        HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
+                                        HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+                                        HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
+                                        m_AAjbPt.GetBufFrameCnt( p_CurHaveBufActFrameCntPt, p_CurHaveBufInactFrameCntPt, p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
+                                        Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val +
+                                                                                            "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val +
+                                                                                            "，帧：" + p_CurHaveBufFrameCntPt.m_Val +
+                                                                                            "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val +
+                                                                                            "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val +
+                                                                                            "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val +
+                                                                                            "。" );
+                                    }
 
-                                    HTInt p_CurHaveBufActFrameCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
-                                    HTInt p_CurHaveBufInactFrameCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
-                                    HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
-                                    HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
-                                    HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
-                                    HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
-                                    m_AjbPt.GetBufFrameCnt( p_CurHaveBufActFrameCntPt, p_CurHaveBufInactFrameCntPt, p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
-                                    Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val +
-                                            "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val +
-                                            "，帧：" + p_CurHaveBufFrameCntPt.m_Val +
-                                            "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val +
-                                            "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val +
-                                            "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val +
-                                            "。" );
+                                    break;
                                 }
-
-                                break;
+                            }
+                        }
+                        else //如果不使用音频输出。
+                        {
+                            if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该音频输出帧为有语音活动。
+                            {
+                                Log.i( m_CurClsNameStrPt, "接收一个有语音活动的音频输出帧包成功，但不使用音频输出。音频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                            }
+                            else //如果该音频输出帧为无语音活动。
+                            {
+                                Log.i( m_CurClsNameStrPt, "接收一个无语音活动的音频输出帧包成功，但不使用音频输出。音频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                             }
                         }
 
-                        if( ( m_UseWhatXfrPrtcl == 1 ) && ( p_TmpHTLong.m_Val == 1 + 4 ) ) //如果是使用UDP协议，且本输出帧为无语音活动。
+                        if( ( m_UseWhatXfrPrtcl == 1 ) && ( m_TmpHTLongPt.m_Val == 1 + 4 ) ) //如果是使用UDP协议，且本音频输出帧为无语音活动。
                         {
-                            //设置输出帧应答包。
-                            m_TmpBytePt[0] = 0x02;
+                            //设置音频输出帧应答包。
+                            m_TmpBytePt[0] = PKT_TYP_ACK;
                             //设置时间戳。
-                            m_TmpBytePt[1] = ( byte ) ( m_RecvOutputFrameTimeStamp & 0xFF );
-                            m_TmpBytePt[2] = ( byte ) ( ( m_RecvOutputFrameTimeStamp & 0xFF00 ) >> 8 );
-                            m_TmpBytePt[3] = ( byte ) ( ( m_RecvOutputFrameTimeStamp & 0xFF0000 ) >> 16 );
-                            m_TmpBytePt[4] = ( byte ) ( ( m_RecvOutputFrameTimeStamp & 0xFF000000 ) >> 24 );
+                            m_TmpBytePt[1] = ( byte ) ( m_LastRecvOutputFrameTimeStamp & 0xFF );
+                            m_TmpBytePt[2] = ( byte ) ( ( m_LastRecvOutputFrameTimeStamp & 0xFF00 ) >> 8 );
+                            m_TmpBytePt[3] = ( byte ) ( ( m_LastRecvOutputFrameTimeStamp & 0xFF0000 ) >> 16 );
+                            m_TmpBytePt[4] = ( byte ) ( ( m_LastRecvOutputFrameTimeStamp & 0xFF000000 ) >> 24 );
 
                             if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1 + 4, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
                             {
                                 m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
-                                Log.i( m_CurClsNameStrPt, "发送一个输出帧应答包成功。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + 1 + 4 + "。" );
+                                Log.i( m_CurClsNameStrPt, "发送一个输出帧应答包成功。时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + 1 + 4 + "。" );
                             }
                             else
                             {
@@ -742,41 +840,116 @@ class MyAudioProcThread extends AudioProcThread
                             }
                         }
                     }
-                    else if( m_TmpBytePt[0] == 0x02 ) //如果是连接应答包或输入输出帧应答包。
+                    else if( m_TmpBytePt[0] == PKT_TYP_VFRAME ) //如果是视频输出帧包。
                     {
-                        if( p_TmpHTLong.m_Val == 1 ) //如果退出包的数据长度等于1，表示是连接应答包，就不管。
+                        if( m_TmpHTLongPt.m_Val < 1 + 4 ) //如果视频输出帧包的数据长度小于1 + 4，表示没有视频输出帧时间戳。
+                        {
+                            Log.e( m_CurClsNameStrPt, "接收一个视频输出帧包的数据长度为" + m_TmpHTLongPt.m_Val + "小于1 + 4，表示没有视频输出帧时间戳，无法继续接收。" );
+                            break out;
+                        }
+
+                        //读取视频输出帧时间戳。
+                        m_LastRecvOutputFrameTimeStamp = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
+
+                        if( m_VideoOutputPt != null ) //如果要使用视频输出。
+                        {
+                            //将视频输出帧放入链表或自适应抖动缓冲器。
+                            switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
+                            {
+                                case 0: //如果使用链表。
+                                {
+                                    if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
+                                    {
+                                        synchronized( m_RecvVideoOutputFrameLnkLstPt )
+                                        {
+                                            m_RecvVideoOutputFrameLnkLstPt.addLast( Arrays.copyOfRange( m_TmpBytePt, 1 + 4, ( int ) ( m_TmpHTLongPt.m_Val ) ) );
+                                        }
+                                        Log.i( m_CurClsNameStrPt, "接收一个有图像活动的视频输出帧包，并放入接收视频输出帧链表成功。视频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                    }
+                                    else //如果该视频输出帧为无图像活动。
+                                    {
+                                        Log.i( m_CurClsNameStrPt, "接收一个无图像活动的视频输出帧包，无需放入接收视频输出帧链表。视频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                    }
+
+                                    break;
+                                }
+                                case 1: //如果使用自适应抖动缓冲器。
+                                {
+                                    synchronized( m_VAjbPt )
+                                    {
+                                        if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
+                                        {
+                                            m_VAjbPt.PutOneByteFrame( System.currentTimeMillis(), m_LastRecvOutputFrameTimeStamp, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4 );
+                                            Log.i( m_CurClsNameStrPt, "接收一个有图像活动的视频输出帧包，并放入视频自适应抖动缓冲器成功。视频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。" );
+                                        }
+                                        else //如果该视频输出帧为无图像活动。
+                                        {
+                                            Log.i( m_CurClsNameStrPt, "接收一个无图像活动的视频输出帧包，无需放入视频自适应抖动缓冲器。视频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                        }
+
+                                        HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
+                                        HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
+                                        HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+                                        HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
+                                        m_VAjbPt.GetBufFrameCnt( p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
+                                        Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器：帧：" + p_CurHaveBufFrameCntPt.m_Val +
+                                                                                            "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val +
+                                                                                            "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val +
+                                                                                            "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val +
+                                                                                            "。" );
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
+                        else //如果不使用视频输出。
+                        {
+                            if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
+                            {
+                                Log.i( m_CurClsNameStrPt, "接收一个有图像活动的视频输出帧包成功，但不使用视频输出。视频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                            }
+                            else //如果该视频输出帧为无图像活动。
+                            {
+                                Log.i( m_CurClsNameStrPt, "接收一个无图像活动的视频输出帧包成功，但不使用视频输出。视频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                            }
+                        }
+                    }
+                    else if( m_TmpBytePt[0] == PKT_TYP_ACK ) //如果是连接应答包或输入输出帧应答包。
+                    {
+                        if( m_TmpHTLongPt.m_Val == 1 ) //如果退出包的数据长度等于1，表示是连接应答包，就不管。
                         {
 
                         }
                         else //如果退出包的数据长度大于1，表示是输入输出帧应答包。
                         {
-                            if( p_TmpHTLong.m_Val != 1 + 4 )
+                            if( m_TmpHTLongPt.m_Val != 1 + 4 )
                             {
-                                Log.e( m_CurClsNameStrPt, "接收到输入输出帧应答包的数据长度为" + p_TmpHTLong.m_Val + "不等于1 + 4，表示格式不正确，无法继续接收。" );
+                                Log.e( m_CurClsNameStrPt, "接收一个音频输入输出帧应答包的数据长度为" + m_TmpHTLongPt.m_Val + "不等于1 + 4，表示格式不正确，无法继续接收。" );
                                 break out;
                             }
 
                             //读取时间戳。
-                            m_RecvOutputFrameTimeStamp = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
+                            m_LastRecvOutputFrameTimeStamp = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
 
-                            Log.i( m_CurClsNameStrPt, "接收到一个输入输出帧应答包。时间戳：" + m_RecvOutputFrameTimeStamp + "，总长度：" + p_TmpHTLong.m_Val + "。" );
+                            Log.i( m_CurClsNameStrPt, "接收一个音频输入输出帧应答包。时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
 
                             //设置最后一个发送的输入帧远端是否接收到。
-                            if( m_SendInputFrameTimeStamp == m_RecvOutputFrameTimeStamp ) m_LastSendInputFrameIsRecv = 1;
+                            if( m_LastSendAudioInputFrameTimeStamp == m_LastRecvOutputFrameTimeStamp ) m_LastSendAudioInputFrameIsRecv = 1;
                         }
                     }
-                    else if( m_TmpBytePt[0] == 0x03 ) //如果是退出包。
+                    else if( m_TmpBytePt[0] == PKT_TYP_EXIT ) //如果是退出包。
                     {
-                        if( p_TmpHTLong.m_Val > 1 ) //如果退出包的数据长度大于1。
+                        if( m_TmpHTLongPt.m_Val > 1 ) //如果退出包的数据长度大于1。
                         {
-                            Log.e( m_CurClsNameStrPt, "接收到退出包的数据长度为" + p_TmpHTLong.m_Val + "大于1，表示还有其他数据，无法继续接收。" );
+                            Log.e( m_CurClsNameStrPt, "接收一个退出包的数据长度为" + m_TmpHTLongPt.m_Val + "大于1，表示还有其他数据，无法继续接收。" );
                             break out;
                         }
 
                         m_IsRecvExitPkt = 1; //设置已经接收到退出包。
                         RequireExit( 1, 0 ); //请求退出。
 
-                        String p_InfoStrPt = "接收到一个退出包。";
+                        String p_InfoStrPt = "接收一个退出包。";
                         Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                     }
@@ -797,7 +970,7 @@ class MyAudioProcThread extends AudioProcThread
             //发送心跳包。
             if( System.currentTimeMillis() - m_LastPktSendTime >= 100 ) //如果超过100毫秒没有发送任何数据包，就发送一个心跳包。
             {
-                m_TmpBytePt[0] = 0x00; //设置心跳包。
+                m_TmpBytePt[0] = PKT_TYP_CNCT_HTBT; //设置心跳包。
                 if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
                     ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
                 {
@@ -822,20 +995,23 @@ class MyAudioProcThread extends AudioProcThread
                 break out;
             }
 
+            //如果不使用音频输入，就取出并写入音频输出帧。
+            if( m_AudioInputPt.m_IsUseAudioInput == 0 ) GetAndWriteVideoOutputFrame( m_TmpBytePt, m_TmpHTIntPt, m_TmpHTLongPt );
+
             p_Result = 0; //设置本函数执行成功。
         }
 
         return p_Result;
     }
 
-    //用户定义的销毁函数，在本线程退出时调用一次。
-    public void UserDestroy()
+    //用户定义的销毁函数，在本线程退出时回调一次。
+    @Override public void UserDestroy()
     {
         SendExitPkt:
         if( ( m_ExitFlag == 1 ) && ( ( m_TcpClntSoktPt != null ) || ( ( m_UdpSoktPt != null ) && ( m_UdpSoktPt.GetRmtAddr( null, null, null, null ) == 0 ) ) ) ) //如果本线程接收到退出请求，且本端TCP协议客户端套接字类对象不为空或本端UDP协议套接字类对象不为空且已连接远端。
         {
             //循环发送退出包。
-            m_TmpBytePt[0] = 0x03; //设置退出包。
+            m_TmpBytePt[0] = PKT_TYP_EXIT; //设置退出包。
             for( int p_SendTimes = ( m_UseWhatXfrPrtcl == 0 ) ? 1 : 5; p_SendTimes > 0; p_SendTimes-- )
             {
                 if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, m_ErrInfoVarStrPt ) != 0 ) ) ||
@@ -858,16 +1034,14 @@ class MyAudioProcThread extends AudioProcThread
             {
                 while( true ) //循环接收退出包。
                 {
-                    HTLong p_TmpHTLong = new HTLong(  );
-
-                    if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 5000, m_ErrInfoVarStrPt ) == 0 ) ) ||
-                        ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, p_TmpHTLong, ( short ) 5000, m_ErrInfoVarStrPt ) == 0 ) ) )
+                    if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 5000, m_ErrInfoVarStrPt ) == 0 ) ) ||
+                        ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 5000, m_ErrInfoVarStrPt ) == 0 ) ) )
                     {
-                        if( p_TmpHTLong.m_Val != -1 ) //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包成功。
+                        if( m_TmpHTLongPt.m_Val != -1 ) //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包成功。
                         {
                             m_LastPktRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间。
 
-                            if( ( p_TmpHTLong.m_Val == 1 ) && ( m_TmpBytePt[0] == 0x03 ) ) //如果是退出包。
+                            if( ( m_TmpHTLongPt.m_Val == 1 ) && ( m_TmpBytePt[0] == PKT_TYP_EXIT ) ) //如果是退出包。
                             {
                                 String p_InfoStrPt = "接收到一个退出包。";
                                 Log.i( m_CurClsNameStrPt, p_InfoStrPt );
@@ -932,21 +1106,30 @@ class MyAudioProcThread extends AudioProcThread
         }
 
         //销毁接收音频输出帧的链表类对象。
-        if( m_RecvOutputFrameLnkLstPt != null )
+        if( m_RecvAudioOutputFrameLnkLstPt != null )
         {
-            m_RecvOutputFrameLnkLstPt.clear();
-            m_RecvOutputFrameLnkLstPt = null;
+            m_RecvAudioOutputFrameLnkLstPt.clear();
+            m_RecvAudioOutputFrameLnkLstPt = null;
 
             Log.i( m_CurClsNameStrPt, "销毁接收输出帧链表类对象成功。" );
         }
 
-        //销毁自适应抖动缓冲器类对象。
-        if( m_AjbPt != null )
+        //销毁视频自适应抖动缓冲器类对象。
+        if( m_VAjbPt != null )
         {
-            m_AjbPt.Destroy();
-            m_AjbPt = null;
+            m_VAjbPt.Destroy();
+            m_VAjbPt = null;
 
-            Log.i( m_CurClsNameStrPt, "销毁自适应抖动缓冲器类对象成功。" );
+            Log.i( m_CurClsNameStrPt, "销毁视频自适应抖动缓冲器类对象成功。" );
+        }
+
+        //销毁音频自适应抖动缓冲器类对象。
+        if( m_AAjbPt != null )
+        {
+            m_AAjbPt.Destroy();
+            m_AAjbPt = null;
+
+            Log.i( m_CurClsNameStrPt, "销毁音频自适应抖动缓冲器类对象成功。" );
         }
 
         if( m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
@@ -955,21 +1138,24 @@ class MyAudioProcThread extends AudioProcThread
             {
                 String p_InfoStrPt = "由于是创建服务端，且本线程接收到退出请求，且接收到了退出包，表示是远端TCP协议客户端套接字主动退出，本线程重新初始化来继续保持监听。";
                 Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                {Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
                 RequireExit( 2, 0 ); //请求重启。
+                {Message clMessage = new Message();clMessage.what = 4;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建SurfaceView控件消息。
             }
             else if( ( m_ExitFlag == 0 ) && ( m_ExitCode == -2 ) ) //如果本线程没收到退出请求，且退出代码为处理失败。
             {
                 String p_InfoStrPt = "由于是创建服务端，且本线程没收到退出请求，且退出码为处理失败，表示是处理失败或连接异常断开，本线程重新初始化来继续保持监听。";
                 Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                {Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
                 RequireExit( 2, 0 ); //请求重启。
+                {Message clMessage = new Message();clMessage.what = 4;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建SurfaceView控件消息。
             }
             else //其他情况，本线程直接退出。
             {
-                Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage ); //向主界面发送音频处理线程退出的消息。
+                {Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送音频处理线程退出的消息。
+                {Message clMessage = new Message();clMessage.what = 4;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建SurfaceView控件消息。
             }
         }
         else if( m_IsCreateSrvrOrClnt == 0 ) //如果是创建客户端。
@@ -978,132 +1164,209 @@ class MyAudioProcThread extends AudioProcThread
             {
                 String p_InfoStrPt = "由于是创建客户端，且本线程没收到退出请求，且退出码为处理失败，表示是处理失败或连接异常断开，本线程重新初始化来重连服务端。";
                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                {Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
                 RequireExit( 2, 0 ); //请求重启。
             }
             else //其他情况，本线程直接退出。
             {
-                Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage ); //向主界面发送音频处理线程退出的消息。
+                {Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送音频处理线程退出的消息。
+                {Message clMessage = new Message();clMessage.what = 4;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建SurfaceView控件消息。
             }
         }
     }
 
-    //用户定义的读取输入帧函数，在读取到一个输入帧并处理完后回调一次，为0表示成功，为非0表示失败。
-    public int UserReadInputFrame( short PcmInputFramePt[], short PcmResultFramePt[], int VoiceActSts, byte SpeexInputFramePt[], HTLong SpeexInputFrameLen, HTInt SpeexInputFrameIsNeedTrans )
+    //用户定义的读取音视频输入帧函数，在读取到一个音频输入帧或视频输入帧并处理完后回调一次，为0表示成功，为非0表示失败。
+    @Override public int UserReadAudioVideoInputFrame( short PcmAudioInputFramePt[], short PcmAudioResultFramePt[], HTInt VoiceActStsPt, byte EncoderAudioInputFramePt[], HTLong EncoderAudioInputFrameLenPt, HTInt EncoderAudioInputFrameIsNeedTransPt, byte YU12VideoInputFramePt[], HTInt YU12VideoInputFrameWidthPt, HTInt YU12VideoInputFrameHeigthPt, byte EncoderVideoInputFramePt[], HTLong EncoderVideoInputFrameLenPt )
     {
         int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_FramePktLen = 0; //存放输入输出帧数据包的数据长度，单位字节。
         int p_TmpInt32 = 0;
 
         out:
         {
-            //发送输入帧。
+            //发送音频输入帧。
+            if( PcmAudioInputFramePt != null ) //如果要使用音频输入。
             {
-                if( VoiceActSts == 1 ) //如果该输入帧为有语音活动。
+                if( EncoderAudioInputFramePt != null ) //如果要使用已编码格式音频输入帧。
                 {
-                    switch( m_UseWhatCodec ) //使用什么编解码器。
+                    if( VoiceActStsPt.m_Val != 0 && EncoderAudioInputFrameIsNeedTransPt.m_Val != 0 ) //如果本次音频输入帧为有语音活动，且需要传输。
                     {
-                        case 0: //如果使用PCM原始数据。
-                        {
-                            for( p_TmpInt32 = 0; p_TmpInt32 < PcmResultFramePt.length; p_TmpInt32++ )
-                            {
-                                m_TmpBytePt[1 + 4 + p_TmpInt32 * 2] = ( byte ) ( PcmResultFramePt[p_TmpInt32] & 0xFF );
-                                m_TmpBytePt[1 + 4 + p_TmpInt32 * 2 + 1] = ( byte ) ( ( PcmResultFramePt[p_TmpInt32] & 0xFF00 ) >> 8 );
-                            }
-
-                            p_TmpInt32 = 1 + 4 + PcmResultFramePt.length * 2; //数据包长度 = 格式标记 + 时间戳长度 + PCM格式输入帧长度。
-
-                            break;
-                        }
-                        case 1: //如果使用Speex编解码器。
-                        {
-                            if( SpeexInputFrameIsNeedTrans.m_Val == 1 ) //如果本Speex格式音频输入数据帧需要传输。
-                            {
-                                System.arraycopy( SpeexInputFramePt, 0, m_TmpBytePt, 1 + 4, ( int ) SpeexInputFrameLen.m_Val );
-
-                                p_TmpInt32 = 1 + 4 + ( int ) SpeexInputFrameLen.m_Val; //数据包长度 = 格式标记 + 时间戳长度 + Speex格式输入帧长度。
-                            }
-                            else //如果本Speex格式音频输入数据帧不需要传输。
-                            {
-                                p_TmpInt32 = 1 + 4; //数据包长度 = 格式标记 + 时间戳长度。
-                            }
-
-                            break;
-                        }
+                        System.arraycopy( EncoderAudioInputFramePt, 0, m_TmpBytePt, 1 + 4 + 4, ( int ) EncoderAudioInputFrameLenPt.m_Val ); //设置音频输入输出帧。
+                        p_FramePktLen = 1 + 4 + 4 + ( int )EncoderAudioInputFrameLenPt.m_Val; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 视频输入帧时间戳 + 已编码格式音频输入帧。
+                    }
+                    else //如果本次音频输入帧为无语音活动，或不需要传输。
+                    {
+                        p_FramePktLen = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
                     }
                 }
-                else //如果本音频输入数据帧为无语音活动。
+                else //如果要使用PCM格式音频输入帧。
                 {
-                    p_TmpInt32 = 1 + 4; //数据包长度 = 格式标记 + 时间戳长度。
+                    if( VoiceActStsPt.m_Val != 0 ) //如果本次音频输入帧为有语音活动。
+                    {
+                        for( p_TmpInt32 = 0; p_TmpInt32 < PcmAudioResultFramePt.length; p_TmpInt32++ ) //设置音频输入输出帧。
+                        {
+                            m_TmpBytePt[1 + 4 + 4 + p_TmpInt32 * 2] = ( byte ) ( PcmAudioResultFramePt[p_TmpInt32] & 0xFF );
+                            m_TmpBytePt[1 + 4 + 4 + p_TmpInt32 * 2 + 1] = ( byte ) ( ( PcmAudioResultFramePt[p_TmpInt32] & 0xFF00 ) >> 8 );
+                        }
+                        p_FramePktLen = 1 + 4 + 4 + PcmAudioResultFramePt.length * 2; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 视频输入帧时间戳 + PCM格式音频输入帧。
+                    }
+                    else //如果本次音频输入帧为无语音活动，或不需要传输。
+                    {
+                        p_FramePktLen = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
+                    }
                 }
 
-                if( ( p_TmpInt32 != 1 + 4 ) || //如果本音频输入数据帧为有语音活动，就发送。
-                    ( ( p_TmpInt32 == 1 + 4 ) && ( m_LastSendInputFrameIsAct != 0 ) ) ) //如果本音频输入数据帧为无语音活动，但最后一个发送的输入帧为有语音活动，就发送。
+                //发送音频输入帧数据包。
+                if( p_FramePktLen != 1 + 4 ) //如果本音频输入帧为有语音活动，就发送。
                 {
-                    m_SendInputFrameTimeStamp += 1; //时间戳递增一个步进。
+                    m_LastSendAudioInputFrameTimeStamp += 1; //音频输入帧的时间戳递增一个步进。
 
-                    //设置输入帧包。
-                    m_TmpBytePt[0] = 0x01;
-                    //设置时间戳。
-                    m_TmpBytePt[1] = ( byte ) ( m_SendInputFrameTimeStamp & 0xFF );
-                    m_TmpBytePt[2] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF00 ) >> 8 );
-                    m_TmpBytePt[3] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF0000 ) >> 16 );
-                    m_TmpBytePt[4] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF000000 ) >> 24 );
+                    //设置数据包类型为音频输入帧包。
+                    m_TmpBytePt[0] = PKT_TYP_AFRAME;
+                    //设置音频输入帧时间戳。
+                    m_TmpBytePt[1] = ( byte ) ( m_LastSendAudioInputFrameTimeStamp & 0xFF );
+                    m_TmpBytePt[2] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF00 ) >> 8 );
+                    m_TmpBytePt[3] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF0000 ) >> 16 );
+                    m_TmpBytePt[4] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF000000 ) >> 24 );
+                    //设置视频输入帧时间戳。
+                    m_TmpBytePt[5] = ( byte ) ( m_LastSendVideoInputFrameTimeStamp & 0xFF );
+                    m_TmpBytePt[6] = ( byte ) ( ( m_LastSendVideoInputFrameTimeStamp & 0xFF00 ) >> 8 );
+                    m_TmpBytePt[7] = ( byte ) ( ( m_LastSendVideoInputFrameTimeStamp & 0xFF0000 ) >> 16 );
+                    m_TmpBytePt[8] = ( byte ) ( ( m_LastSendVideoInputFrameTimeStamp & 0xFF000000 ) >> 24 );
 
-                    if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_TmpInt32, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
-                        ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_TmpInt32, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
+                    if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_FramePktLen, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
+                            ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_FramePktLen, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
                     {
                         m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
-                        Log.i( m_CurClsNameStrPt, "发送一个输入帧包成功。时间戳：" + m_SendInputFrameTimeStamp + "，总长度：" + p_TmpInt32 + "。" );
+                        Log.i( m_CurClsNameStrPt, "发送一个有语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAudioInputFrameTimeStamp + "，视频输入帧时间戳：" + m_LastSendVideoInputFrameTimeStamp + "，总长度：" + p_FramePktLen + "。" );
                     }
                     else
                     {
-                        String p_InfoStrPt = "发送一个输入帧包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                        String p_InfoStrPt = "发送一个有语音活动的音频输入帧包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                         Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                         break out;
                     }
 
-                    if( p_TmpInt32 != 1 + 4 ) //如果本音频输入数据帧为有语音活动。
-                    {
-                        m_LastSendInputFrameIsAct = 1; //设置最后一个发送的输入帧有语音活动。
-                        m_LastSendInputFrameIsRecv = 1; //设置最后一个发送的输入帧远端已经接收到。
-                    }
-                    else if( ( ( p_TmpInt32 == 1 + 4 ) && ( m_LastSendInputFrameIsAct != 0 ) ) ) //如果本音频输入数据帧为无语音活动，但最后一个发送的输入帧为有语音活动。
-                    {
-                        m_LastSendInputFrameIsAct = 0; //设置最后一个发送的输入帧无语音活动。
-                        m_LastSendInputFrameIsRecv = 0; //设置最后一个发送的输入帧远端没有接收到。
-                    }
+                    m_LastSendAudioInputFrameIsAct = 1; //设置最后一个发送的音频输入帧有语音活动。
+                    m_LastSendAudioInputFrameIsRecv = 1; //设置最后一个发送的音频输入帧远端已经接收到。
                 }
-                else
+                else if( ( p_FramePktLen == 1 + 4 ) && ( m_LastSendAudioInputFrameIsAct != 0 ) ) //如果本音频输入帧为无语音活动，但最后一个发送的音频输入帧为有语音活动，就发送。
                 {
-                    Log.i( m_CurClsNameStrPt, "本输入帧为无语音活动，且最后发送的一个输入帧为无语音活动，无需发送。" );
+                    m_LastSendAudioInputFrameTimeStamp += 1; //音频输入帧的时间戳递增一个步进。
 
-                    if( ( m_UseWhatXfrPrtcl == 1 ) && ( m_LastSendInputFrameIsAct == 0 ) && ( m_LastSendInputFrameIsRecv == 0 ) ) //如果是使用UDP协议，且最后一个发送的输入帧为无语音活动，且最后一个发送的输入帧远端没有接收到。
+                    //设置数据包类型为音频输入帧包。
+                    m_TmpBytePt[0] = PKT_TYP_AFRAME;
+                    //设置音频输入帧时间戳。
+                    m_TmpBytePt[1] = ( byte ) ( m_LastSendAudioInputFrameTimeStamp & 0xFF );
+                    m_TmpBytePt[2] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF00 ) >> 8 );
+                    m_TmpBytePt[3] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF0000 ) >> 16 );
+                    m_TmpBytePt[4] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF000000 ) >> 24 );
+
+                    if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_FramePktLen, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
+                        ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_FramePktLen, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
                     {
-                        //设置输入帧包。
-                        m_TmpBytePt[0] = 0x01;
-                        //设置时间戳。
-                        m_TmpBytePt[1] = ( byte ) ( m_SendInputFrameTimeStamp & 0xFF );
-                        m_TmpBytePt[2] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF00 ) >> 8 );
-                        m_TmpBytePt[3] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF0000 ) >> 16 );
-                        m_TmpBytePt[4] = ( byte ) ( ( m_SendInputFrameTimeStamp & 0xFF000000 ) >> 24 );
-                        //设置总长度。
-                        p_TmpInt32 = 1 + 4;
+                        m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
+                        Log.i( m_CurClsNameStrPt, "发送一个无语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAudioInputFrameTimeStamp + "，总长度：" + p_FramePktLen + "。" );
+                    }
+                    else
+                    {
+                        String p_InfoStrPt = "发送一个无语音活动的音频输入帧包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        break out;
+                    }
 
-                        if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_TmpInt32, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
+                    m_LastSendAudioInputFrameIsAct = 0; //设置最后一个发送的音频输入帧无语音活动。
+                    m_LastSendAudioInputFrameIsRecv = 0; //设置最后一个发送的音频输入帧远端没有接收到。
+                }
+                else //如果本音频输入帧为无语音活动，且最后一个发送的音频输入帧为无语音活动，无需发送。
+                {
+                    Log.i( m_CurClsNameStrPt, "本音频输入帧为无语音活动，且最后一个发送的音频输入帧为无语音活动，无需发送。" );
+
+                    if( ( m_UseWhatXfrPrtcl == 1 ) && ( m_LastSendAudioInputFrameIsRecv == 0 ) ) //如果是使用UDP协议，且本音频输入帧为无语音活动，且最后一个发送的音频输入帧为无语音活动，且最后一个发送的音频输入帧远端没有接收到。
+                    {
+                        //设置音频输入帧包。
+                        m_TmpBytePt[0] = PKT_TYP_AFRAME;
+                        //设置时间戳。
+                        m_TmpBytePt[1] = ( byte ) ( m_LastSendAudioInputFrameTimeStamp & 0xFF );
+                        m_TmpBytePt[2] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF00 ) >> 8 );
+                        m_TmpBytePt[3] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF0000 ) >> 16 );
+                        m_TmpBytePt[4] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF000000 ) >> 24 );
+
+                        if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_FramePktLen, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
                         {
                             m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
-                            Log.i( m_CurClsNameStrPt, "重新发送一个无语音活动输入帧包成功。时间戳：" + m_SendInputFrameTimeStamp + "，总长度：" + p_TmpInt32 + "。" );
+                            Log.i( m_CurClsNameStrPt, "重新发送最后一个无语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAudioInputFrameTimeStamp + "，总长度：" + p_FramePktLen + "。" );
                         }
                         else
                         {
-                            String p_InfoStrPt = "重新发送一个无语音活动输入帧包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                            String p_InfoStrPt = "重新发送最后一个无语音活动的音频输入帧包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                             Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                             Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                             break out;
                         }
                     }
+                }
+            }
+
+            //发送视频输入帧。
+            if( YU12VideoInputFramePt != null ) //如果要使用视频输入。
+            {
+                if( EncoderVideoInputFramePt != null ) //如果要使用已编码格式视频输入帧。
+                {
+                    if( EncoderVideoInputFrameLenPt.m_Val != 0 ) //如果本次视频输入帧为有图像活动。
+                    {
+                        System.arraycopy( EncoderVideoInputFramePt, 0, m_TmpBytePt, 1 + 4 + 4, ( int ) EncoderVideoInputFrameLenPt.m_Val ); //设置音频输入输出帧。
+                        p_FramePktLen = 1 + 4 + 4 + ( int ) EncoderVideoInputFrameLenPt.m_Val; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 音频输入帧时间戳 + 已编码格式视频输入帧。
+                    }
+                    else
+                    {
+                        p_FramePktLen = 1 + 4; //数据包长度 = 数据包类型 + 视频输入帧时间戳。
+                    }
+                }
+                else //如果要使用YU12格式视频输入帧。
+                {
+                    System.arraycopy( YU12VideoInputFramePt, 0, m_TmpBytePt, 1 + 4 + 4, YU12VideoInputFramePt.length ); //设置音频输入输出帧。
+                    p_FramePktLen = 1 + 4 + 4 + YU12VideoInputFramePt.length; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 音频输入帧时间戳 + YU12格式视频输入帧。
+                }
+
+                //发送视频输入帧数据包。
+                if( p_FramePktLen != 1 + 4 ) //如果本视频输入帧为有图像活动，就发送。
+                {
+                    m_LastSendVideoInputFrameTimeStamp += 1; //视频输入帧的时间戳递增一个步进。
+
+                    //设置数据包类型为视频输入帧包。
+                    m_TmpBytePt[0] = PKT_TYP_VFRAME;
+                    //设置视频输入帧时间戳。
+                    m_TmpBytePt[1] = ( byte ) ( m_LastSendVideoInputFrameTimeStamp & 0xFF );
+                    m_TmpBytePt[2] = ( byte ) ( ( m_LastSendVideoInputFrameTimeStamp & 0xFF00 ) >> 8 );
+                    m_TmpBytePt[3] = ( byte ) ( ( m_LastSendVideoInputFrameTimeStamp & 0xFF0000 ) >> 16 );
+                    m_TmpBytePt[4] = ( byte ) ( ( m_LastSendVideoInputFrameTimeStamp & 0xFF000000 ) >> 24 );
+                    //设置音频输入帧时间戳。
+                    m_TmpBytePt[5] = ( byte ) ( m_LastSendAudioInputFrameTimeStamp & 0xFF );
+                    m_TmpBytePt[6] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF00 ) >> 8 );
+                    m_TmpBytePt[7] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF0000 ) >> 16 );
+                    m_TmpBytePt[8] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF000000 ) >> 24 );
+
+                    if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_FramePktLen, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
+                        ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_FramePktLen, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
+                    {
+                        m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
+                        Log.i( m_CurClsNameStrPt, "发送一个有图像活动的视频输入帧包成功。视频输入帧时间戳：" + m_LastSendVideoInputFrameTimeStamp + "，音频输入帧时间戳：" + m_LastSendAudioInputFrameTimeStamp + "，总长度：" + p_FramePktLen + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。" );
+                    }
+                    else
+                    {
+                        String p_InfoStrPt = "发送一个有图像活动的视频输入帧包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        break out;
+                    }
+                }
+                else //如果本视频输入帧为无图像活动，无需发送。
+                {
+                    Log.i( m_CurClsNameStrPt, "本视频输入帧为无图像活动，无需发送。" );
                 }
             }
 
@@ -1113,154 +1376,246 @@ class MyAudioProcThread extends AudioProcThread
         return p_Result;
     }
 
-    //用户定义的写入输出帧函数，在需要写入一个输出帧时回调一次。注意：本函数不是在音频处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致回音消除失败。
-    public void UserWriteOutputFrame( short PcmOutputFramePt[], byte SpeexOutputFramePt[], HTLong SpeexOutputFrameLenPt )
+    //用户定义的写入音频输出帧函数，在需要写入一个音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
+    @Override public void UserWriteAudioOutputFrame( short PcmAudioOutputFramePt[], byte EncoderAudioOutputFramePt[], HTLong EncoderAudioOutputFrameLen )
     {
+        int p_AudioOutputFrameTimeStamp = 0;
+        byte p_AudioOutputFramePt[] = null;
+        long p_AudioOutputFrameLen = 0;
         int p_TmpInt32;
 
-        //从链表或自适应抖动缓冲器取出一个输出帧。
+        out:
+        {
+            //取出并写入音频输出帧。
+            {
+                //从链表或自适应抖动缓冲器取出一个音频输出帧。
+                switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
+                {
+                    case 0: //如果使用链表。
+                    {
+                        if( m_RecvAudioOutputFrameLnkLstPt.size() != 0 ) //如果接收音频输出帧链表不为空。
+                        {
+                            synchronized( m_RecvAudioOutputFrameLnkLstPt )
+                            {
+                                p_AudioOutputFramePt = m_RecvAudioOutputFrameLnkLstPt.getFirst(); //获取接收音频输出帧链表的第一个音频输出帧。
+                                m_RecvAudioOutputFrameLnkLstPt.removeFirst(); //删除接收音频输出帧链表的第一个音频输出帧。
+                            }
+                            p_AudioOutputFrameLen = p_AudioOutputFramePt.length;
+                        }
+
+                        if( p_AudioOutputFrameLen != 0 ) //如果音频输出帧为有语音活动。
+                        {
+                            Log.i( m_CurClsNameStrPt, "从接收音频输出帧链表取出一个有语音活动的音频输出帧。数据长度：" + p_AudioOutputFrameLen + "。" );
+                        }
+                        else //如果音频输出帧为无语音活动。
+                        {
+                            Log.i( m_CurClsNameStrPt, "从接收音频输出帧链表取出一个无语音活动的音频输出帧。数据长度：" + p_AudioOutputFrameLen + "。" );
+                        }
+
+                        break;
+                    }
+                    case 1: //如果使用自适应抖动缓冲器。
+                    {
+                        synchronized( m_AAjbPt )
+                        {
+                            //从音频自适应抖动缓冲器取出一个音频输出帧。
+                            m_AAjbPt.GetOneByteFrame( m_TmpHTInt2Pt, m_TmpByte2Pt, 0, m_TmpByte2Pt.length, m_TmpHTLong2Pt );
+                            p_AudioOutputFrameTimeStamp = m_TmpHTInt2Pt.m_Val;
+                            p_AudioOutputFramePt = m_TmpByte2Pt;
+                            p_AudioOutputFrameLen = m_TmpHTLong2Pt.m_Val;
+                            m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp = ( p_AudioOutputFramePt[0] & 0xFF ) + ( ( p_AudioOutputFramePt[1] & 0xFF ) << 8 ) + ( ( p_AudioOutputFramePt[2] & 0xFF ) << 16 ) + ( ( p_AudioOutputFramePt[3] & 0xFF ) << 24 ); //设置最后一个取出的音频输出帧对应视频输出帧的时间戳。
+
+                            if( p_AudioOutputFrameLen > 0 ) //如果音频输出帧为有语音活动。
+                            {
+                                m_LastGetAudioOutputFrameIsAct = 1; //设置最后一个取出的音频输出帧为有语音活动。
+                                Log.i( m_CurClsNameStrPt, "从音频自适应抖动缓冲器取出一个有语音活动的音频输出帧。音频输出帧时间戳：" + p_AudioOutputFrameTimeStamp + "，视频输出帧时间戳：" + m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp + "，数据长度：" + p_AudioOutputFrameLen + "。" );
+                            }
+                            else if( p_AudioOutputFrameLen == 0 ) //如果音频输出帧为无语音活动。
+                            {
+                                m_LastGetAudioOutputFrameIsAct = 0; //设置最后一个取出的音频输出帧为无语音活动。
+                                Log.i( m_CurClsNameStrPt, "从音频自适应抖动缓冲器取出一个无语音活动的音频输出帧。音频输出帧时间戳：" + p_AudioOutputFrameTimeStamp + "，视频输出帧时间戳：" + m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp + "，数据长度：" + p_AudioOutputFrameLen + "。" );
+                            }
+                            else //如果音频输出帧为丢失。
+                            {
+                                m_LastGetAudioOutputFrameIsAct = 1; //设置最后一个取出的音频输出帧为有语音活动。
+                                Log.i( m_CurClsNameStrPt, "从音频自适应抖动缓冲器取出一个丢失的音频输出帧。音频输出帧时间戳：" + p_AudioOutputFrameTimeStamp + "，视频输出帧时间戳：" + m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp + "，数据长度：" + p_AudioOutputFrameLen + "。" );
+                            }
+
+                            HTInt p_CurHaveBufActFrameCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
+                            HTInt p_CurHaveBufInactFrameCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
+                            HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
+                            HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
+                            HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+                            HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
+                            m_AAjbPt.GetBufFrameCnt( p_CurHaveBufActFrameCntPt, p_CurHaveBufInactFrameCntPt, p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
+                            Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val +
+                                                                                "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val +
+                                                                                "，帧：" + p_CurHaveBufFrameCntPt.m_Val +
+                                                                                "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val +
+                                                                                "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val +
+                                                                                "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val +
+                                                                                "。" );
+                        }
+
+                        break;
+                    }
+                }
+
+                //写入音频输出帧。
+                if( p_AudioOutputFrameLen > 0 ) //如果音频输出帧为有语音活动。
+                {
+                    if( PcmAudioOutputFramePt != null ) //如果要使用PCM格式音频输出帧。
+                    {
+                        if( p_AudioOutputFrameLen - 4 != PcmAudioOutputFramePt.length * 2 )
+                        {
+                            Arrays.fill( PcmAudioOutputFramePt, ( short ) 0 );
+                            Log.e( m_CurClsNameStrPt, "音频输出帧的数据长度不等于PCM格式的数据长度。音频输出帧：" + ( p_AudioOutputFrameLen - 4 ) + "，PCM格式：" + ( PcmAudioOutputFramePt.length * 2 ) + "。" );
+                            break out;
+                        }
+
+                        //写入PCM格式音频输出帧。
+                        for( p_TmpInt32 = 0; p_TmpInt32 < PcmAudioOutputFramePt.length; p_TmpInt32++ )
+                        {
+                            PcmAudioOutputFramePt[p_TmpInt32] = ( short ) ( ( p_AudioOutputFramePt[4 + p_TmpInt32 * 2] & 0xFF ) | ( p_AudioOutputFramePt[4 + p_TmpInt32 * 2 + 1] << 8 ) );
+                        }
+                    }
+                    else //如果要使用已编码格式音频输出帧。
+                    {
+                        if( p_AudioOutputFrameLen - 4 > EncoderAudioOutputFramePt.length )
+                        {
+                            EncoderAudioOutputFrameLen.m_Val = 0;
+                            Log.e( m_CurClsNameStrPt, "音频输出帧的数据长度已超过已编码格式的数据长度。音频输出帧：" + ( p_AudioOutputFrameLen - 4 ) + "，已编码格式：" + EncoderAudioOutputFramePt.length + "。" );
+                            break out;
+                        }
+
+                        //写入已编码格式音频输出帧。
+                        System.arraycopy( p_AudioOutputFramePt, 4, EncoderAudioOutputFramePt, 0, ( int ) ( p_AudioOutputFrameLen - 4 ) );
+                        EncoderAudioOutputFrameLen.m_Val = p_AudioOutputFrameLen - 4;
+                    }
+                }
+                else if( p_AudioOutputFrameLen == 0 ) //如果音频输出帧为无语音活动。
+                {
+                    if( PcmAudioOutputFramePt != null ) //如果要使用PCM格式音频输出帧。
+                    {
+                        Arrays.fill( PcmAudioOutputFramePt, ( short ) 0 );
+                    }
+                    else //如果要使用已编码格式音频输出帧。
+                    {
+                        EncoderAudioOutputFrameLen.m_Val = 0;
+                    }
+                }
+                else //如果音频输出帧为丢失。
+                {
+                    if( PcmAudioOutputFramePt != null ) //如果要使用PCM格式音频输出帧。
+                    {
+                        Arrays.fill( PcmAudioOutputFramePt, ( short ) 0 );
+                    }
+                    else //如果要使用已编码格式音频输出帧。
+                    {
+                        EncoderAudioOutputFrameLen.m_Val = p_AudioOutputFrameLen;
+                    }
+                }
+            }
+
+            //取出并写入音频输出帧。
+            GetAndWriteVideoOutputFrame( m_TmpByte2Pt, m_TmpHTInt2Pt, m_TmpHTLong2Pt );
+        }
+    }
+
+    //用户定义的获取PCM格式音频输出帧函数，在解码完一个已编码音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
+    @Override public void UserGetPcmAudioOutputFrame( short PcmOutputFramePt[] )
+    {
+
+    }
+
+    //取出并写入音频输出帧。
+    void GetAndWriteVideoOutputFrame( byte TmpBytePt[], HTInt TmpHTIntPt, HTLong TmpHTLongPt )
+    {
+        int p_VideoOutputFrameTimeStamp = 0;
+        int p_VideoOutputFrameAudioOutputFrameTimeStamp = 0;
+        byte p_VideoOutputFramePt[] = null;
+        long p_VideoOutputFrameLen = 0;
+
+        //从链表或自适应抖动缓冲器取出一个视频输出帧。
         switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
         {
             case 0: //如果使用链表。
             {
-                byte p_TmpOutputFramePt[] = null;
-
-                if( m_RecvOutputFrameLnkLstPt.size() != 0 ) //如果接收输出帧链表不为空。
+                if( m_RecvVideoOutputFrameLnkLstPt.size() != 0 ) //如果接收视频输出帧链表不为空。
                 {
-                    synchronized( m_RecvOutputFrameLnkLstPt )
+                    synchronized( m_RecvVideoOutputFrameLnkLstPt )
                     {
-                        p_TmpOutputFramePt = m_RecvOutputFrameLnkLstPt.getFirst(); //获取接收输出帧链表的第一个输出帧。
-                        m_RecvOutputFrameLnkLstPt.removeFirst(); //删除接收输出帧链表的第一个输出帧。
+                        p_VideoOutputFramePt = m_RecvVideoOutputFrameLnkLstPt.getFirst(); //获取接收视频输出帧链表的第一个视频输出帧。
+                        m_RecvVideoOutputFrameLnkLstPt.removeFirst(); //删除接收视频输出帧链表的第一个视频输出帧。
                     }
+                    p_VideoOutputFrameLen = p_VideoOutputFramePt.length;
                 }
 
-                switch( m_UseWhatCodec ) //使用什么编解码器。
+                if( p_VideoOutputFrameLen != 0 ) //如果视频输出帧为有图像活动。
                 {
-                    case 0: //如果使用PCM原始数据。
-                    {
-                        if( ( p_TmpOutputFramePt != null ) && ( p_TmpOutputFramePt.length > 0 ) ) //如果接收输出帧链表的第一个输出帧为有语音活动。
-                        {
-                            for( p_TmpInt32 = 0; p_TmpInt32 < m_FrameLen; p_TmpInt32++ )
-                            {
-                                PcmOutputFramePt[p_TmpInt32] = ( short ) ( ( p_TmpOutputFramePt[p_TmpInt32 * 2] & 0xFF ) | ( p_TmpOutputFramePt[p_TmpInt32 * 2 + 1] << 8 ) );
-                            }
-
-                            Log.i( m_CurClsNameStrPt, "从接收输出帧链表取出一个有语音活动的PCM格式输出帧，帧的数据长度：" + p_TmpOutputFramePt.length + "。" );
-                        }
-                        else //如果接收音频输出数据帧的链表为空，或第一个音频输出数据帧为无语音活动。
-                        {
-                            Arrays.fill( PcmOutputFramePt, ( short ) 0 );
-
-                            Log.i( m_CurClsNameStrPt, "从接收输出帧链表取出一个无语音活动的PCM格式输出帧。" );
-                        }
-
-                        break;
-                    }
-                    case 1: //如果使用Speex编解码器。
-                    {
-                        if( ( p_TmpOutputFramePt != null ) && ( p_TmpOutputFramePt.length > 0 ) ) //如果接收输出帧链表的第一个输出帧为有语音活动。
-                        {
-                            System.arraycopy( p_TmpOutputFramePt, 0, SpeexOutputFramePt, 0, p_TmpOutputFramePt.length );
-
-                            SpeexOutputFrameLenPt.m_Val = p_TmpOutputFramePt.length;
-
-                            Log.i( m_CurClsNameStrPt, "从接收输出帧链表取出一个有语音活动的Speex格式输出帧，帧的数据长度：" + p_TmpOutputFramePt.length + "。" );
-                        }
-                        else //如果接收音频输出数据帧的链表为空，或第一个音频输出数据帧为无语音活动。
-                        {
-                            SpeexOutputFrameLenPt.m_Val = 0;
-
-                            Log.i( m_CurClsNameStrPt, "从接收输出帧链表取出一个无语音活动的Speex格式输出帧。" );
-                        }
-
-                        break;
-                    }
+                    Log.i( m_CurClsNameStrPt, "从接收视频输出帧链表取出一个有图像活动的视频输出帧。数据长度：" + p_VideoOutputFrameLen + "。" );
+                }
+                else //如果视频输出帧为无图像活动。
+                {
+                    Log.i( m_CurClsNameStrPt, "从接收视频输出帧链表取出一个无图像活动的视频输出帧。数据长度：" + p_VideoOutputFrameLen + "。" );
                 }
 
                 break;
             }
             case 1: //如果使用自适应抖动缓冲器。
             {
-                HTInt p_OutputFrameTimeStamp = new HTInt(); //存放输出帧的时间戳。
-                HTLong p_OutputFrameLenPt = new HTLong(); //存放从自适应抖动缓冲器中取出的输出帧的数据长度。
-
-                synchronized( m_AjbPt )
+                synchronized( m_VAjbPt )
                 {
-                    switch( m_UseWhatCodec ) //使用什么编解码器。
+                    //从视频自适应抖动缓冲器取出一个视频输出帧。
+                    if( m_AudioOutputPt.m_IsUseAudioOutput != 0 && m_LastGetAudioOutputFrameIsAct != 0 ) //如果要使用音频输出，且最后一个取出的音频输出帧为有语音活动，就根据最后一个取出的音频输出帧对应视频输出帧的时间戳来取出。
                     {
-                        case 0: //如果使用PCM原始数据。
-                        {
-                            //从自适应抖动缓冲器取出一个输出帧。
-                            m_AjbPt.GetOneShortFrame( p_OutputFrameTimeStamp, PcmOutputFramePt, PcmOutputFramePt.length, p_OutputFrameLenPt );
+                        m_VAjbPt.GetOneByteFrameWantTimeStamp( System.currentTimeMillis(), m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp, TmpHTIntPt, TmpBytePt, 0, TmpBytePt.length, TmpHTLongPt );
+                    }
+                    else //如果最后一个取出的音频输出帧为无语音活动，就根据直接取出。
+                    {
+                        m_VAjbPt.GetOneByteFrame( System.currentTimeMillis(), TmpHTIntPt, TmpBytePt, 0, TmpBytePt.length, TmpHTLongPt );
+                    }
+                    p_VideoOutputFrameTimeStamp = TmpHTIntPt.m_Val;
+                    p_VideoOutputFramePt = TmpBytePt;
+                    p_VideoOutputFrameLen = TmpHTLongPt.m_Val;
 
-                            if( p_OutputFrameLenPt.m_Val == 0 ) //如果输出帧为无语音活动。
-                            {
-                                Arrays.fill( PcmOutputFramePt, ( short ) 0 );
-
-                                Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个无语音活动的PCM格式输出帧。时间戳：" + p_OutputFrameTimeStamp.m_Val + "，数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
-                            }
-                            else if( p_OutputFrameLenPt.m_Val == -1 ) //如果输出帧为丢失。
-                            {
-                                Arrays.fill( PcmOutputFramePt, ( short ) 0 );
-
-                                Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个丢失的PCM格式输出帧。时间戳：" + p_OutputFrameTimeStamp.m_Val + "，数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
-                            }
-                            else //如果输出帧为有语音活动。
-                            {
-                                Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个有语音活动的PCM格式输出帧。时间戳：" + p_OutputFrameTimeStamp.m_Val + "，数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
-                            }
-
-                            break;
-                        }
-                        case 1: //如果使用Speex编解码器。
-                        {
-                            //从自适应抖动缓冲器取出一个输出帧。
-                            m_AjbPt.GetOneByteFrame( p_OutputFrameTimeStamp, SpeexOutputFramePt, SpeexOutputFramePt.length, p_OutputFrameLenPt );
-
-                            SpeexOutputFrameLenPt.m_Val = p_OutputFrameLenPt.m_Val;
-
-                            if( p_OutputFrameLenPt.m_Val == 0 ) //如果输出帧为无语音活动。
-                            {
-                                Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个无语音活动的Speex格式输出帧。时间戳：" + p_OutputFrameTimeStamp.m_Val + "，数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
-                            }
-                            else if( p_OutputFrameLenPt.m_Val == -1 ) //如果输出帧为丢失。
-                            {
-                                Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个丢失的Speex格式输出帧。时间戳：" + p_OutputFrameTimeStamp.m_Val + "，数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
-                            }
-                            else //如果输出帧为有语音活动。
-                            {
-                                Log.i( m_CurClsNameStrPt, "从自适应抖动缓冲器取出一个有语音活动的Speex格式输出帧。时间戳：" + p_OutputFrameTimeStamp.m_Val + "，数据长度：" + p_OutputFrameLenPt.m_Val + "。" );
-                            }
-
-                            break;
-                        }
+                    if( p_VideoOutputFrameLen > 0 ) //如果视频输出帧为有图像活动。
+                    {
+                        Log.i( m_CurClsNameStrPt, "从视频自适应抖动缓冲器取出一个有图像活动的视频输出帧。时间戳：" + p_VideoOutputFrameTimeStamp + "，数据长度：" + p_VideoOutputFrameLen + "。" );
+                    }
+                    else //如果视频输出帧为无图像活动。
+                    {
+                        Log.i( m_CurClsNameStrPt, "从视频自适应抖动缓冲器取出一个无图像活动的视频输出帧。时间戳：" + p_VideoOutputFrameTimeStamp + "，数据长度：" + p_VideoOutputFrameLen + "。" );
                     }
 
-                    HTInt p_CurHaveBufActFrameCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
-                    HTInt p_CurHaveBufInactFrameCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
                     HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
                     HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
                     HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
                     HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
-                    m_AjbPt.GetBufFrameCnt( p_CurHaveBufActFrameCntPt, p_CurHaveBufInactFrameCntPt, p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
-                    Log.i( m_CurClsNameStrPt, "自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val +
-                                                                    "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val +
-                                                                    "，帧：" + p_CurHaveBufFrameCntPt.m_Val +
-                                                                    "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val +
-                                                                    "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val +
-                                                                    "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val +
-                                                                    "。" );
+                    m_VAjbPt.GetBufFrameCnt( p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
+                    Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器：帧：" + p_CurHaveBufFrameCntPt.m_Val +
+                            "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val +
+                            "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val +
+                            "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val +
+                            "。" );
                 }
 
                 break;
             }
         }
-    }
 
-    //用户定义的获取PCM格式输出帧函数，在解码完一个输出帧时回调一次。注意：本函数不是在音频处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致回音消除失败。
-    public void UserGetPcmOutputFrame( short PcmOutputFramePt[] )
-    {
+        //写入视频输出帧。
+        if( p_VideoOutputFrameLen > 0 ) //如果视频输出帧为有图像活动。
+        {
+            //读取视频输出帧对应音频输出帧的时间戳。
+            p_VideoOutputFrameAudioOutputFrameTimeStamp = ( p_VideoOutputFramePt[0] & 0xFF ) + ( ( p_VideoOutputFramePt[1] & 0xFF ) << 8 ) + ( ( p_VideoOutputFramePt[2] & 0xFF ) << 16 ) + ( ( p_VideoOutputFramePt[3] & 0xFF ) << 24 );
 
+            UserWriteVideoOutputFrame( p_VideoOutputFramePt, 4, p_VideoOutputFrameLen - 4 );
+        }
+        else if( p_VideoOutputFrameLen == 0 ) //如果视频输出帧为无图像活动。
+        {
+
+        }
     }
 }
 
@@ -1279,19 +1634,18 @@ public class MainActivity extends AppCompatActivity
     View m_LyotActivityWebRtcNsViewPt; //存放WebRtc浮点噪音抑制器设置布局控件的内存指针。
     View m_LyotActivitySpeexPprocOtherViewPt; //存放Speex预处理器的其他功能设置布局控件的内存指针。
     View m_LyotActivitySpeexCodecViewPt; //存放Speex编解码器设置布局控件的内存指针。
-    View m_LyotActivityAjbViewPt; //存放自适应抖动缓冲器设置布局控件的内存指针。
-    View m_LyotActivityReadMeViewPt; //存放说明界面布局控件的内存指针。
+    View m_LyotActivityOpenH264CodecViewPt; //存放OpenH264编解码器设置布局控件的内存指针。
+    View m_LyotActivityAjbViewPt; //存放音频自适应抖动缓冲器设置布局控件的内存指针。
     View m_LyotActivityCurViewPt; //存放当前界面布局控件的内存指针。
 
     MainActivity m_MainActivityPt; //存放主界面类对象的内存指针。
-    MyAudioProcThread m_MyAudioProcThreadPt; //存放音频处理线程类对象的内存指针。
+    MyMediaProcThread m_MyMediaProcThreadPt; //存放音频处理线程类对象的内存指针。
     MainActivityHandler m_MainActivityHandlerPt; //存放主界面消息处理类对象的内存指针。
 
-    String m_ExternalDirFullAbsPathStrPt; //存放扩展目录完整绝对路径字符串的内存指针。
+    HTSurfaceView m_VideoInputPreviewSurfaceViewPt; //存放视频输入预览SurfaceView控件的内存指针。
+    HTSurfaceView m_VideoOutputDisplaySurfaceViewPt; //存放视频输出显示SurfaceView控件的内存指针。
 
-    int m_IsUseWakeLock; //存放是否使用唤醒锁，非0表示要使用，0表示不使用。
-    PowerManager.WakeLock m_ProximityScreenOffWakeLockPt; //存放接近息屏唤醒锁类对象的内存指针。
-    PowerManager.WakeLock m_FullWakeLockPt; //存放屏幕键盘全亮唤醒锁类对象的内存指针。
+    String m_ExternalDirFullAbsPathStrPt; //存放扩展目录完整绝对路径字符串的内存指针。
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -1310,11 +1664,14 @@ public class MainActivity extends AppCompatActivity
         m_LyotActivityWebRtcNsViewPt = layoutInflater.inflate( R.layout.activity_webrtcns, null );
         m_LyotActivitySpeexPprocOtherViewPt = layoutInflater.inflate( R.layout.activity_speexpprocother, null );
         m_LyotActivitySpeexCodecViewPt = layoutInflater.inflate( R.layout.activity_speexcodec, null );
+        m_LyotActivityOpenH264CodecViewPt = layoutInflater.inflate( R.layout.activity_openh264codec, null );
         m_LyotActivityAjbViewPt = layoutInflater.inflate( R.layout.activity_ajb, null );
-        m_LyotActivityReadMeViewPt = layoutInflater.inflate( R.layout.activity_readme, null );
 
         setContentView( m_LyotActivityMainViewPt ); //设置界面的内容为主界面。
         m_LyotActivityCurViewPt = m_LyotActivityMainViewPt;
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseEffectSuperRadioBtn ) ).performClick(); //默认效果等级：超。
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseBitrateSuperRadioBtn ) ).performClick(); //默认比特率等级：超。
 
         //检测并请求录音权限。
         if( ContextCompat.checkSelfPermission( this, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED )
@@ -1323,6 +1680,10 @@ public class MainActivity extends AppCompatActivity
         //检测并请求修改音频设置权限。
         if( ContextCompat.checkSelfPermission( this, Manifest.permission.MODIFY_AUDIO_SETTINGS ) != PackageManager.PERMISSION_GRANTED )
             ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.MODIFY_AUDIO_SETTINGS}, 1 );
+
+        //检测并请求摄像头权限。
+        if( ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA ) != PackageManager.PERMISSION_GRANTED )
+            ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.CAMERA}, 1 );
 
         //检测并请求网络权限。
         if( ContextCompat.checkSelfPermission( this, Manifest.permission.INTERNET ) != PackageManager.PERMISSION_GRANTED )
@@ -1381,6 +1742,36 @@ public class MainActivity extends AppCompatActivity
         //设置端口控件的内容。
         ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.PortEdit ) ).setText( "12345" );
 
+        //添加视频输入预览SurfaceView的回调函数。
+        m_VideoInputPreviewSurfaceViewPt = ( ( HTSurfaceView )findViewById( R.id.VideoInputPreviewSurfaceView ) );
+        m_VideoInputPreviewSurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS );
+        m_VideoInputPreviewSurfaceViewPt.getHolder().addCallback( new SurfaceHolder.Callback()
+        {
+            @Override
+            public void surfaceCreated( SurfaceHolder holder )
+            {
+                Log.i( m_CurClsNameStrPt, "VideoInputPreviewSurfaceView Created" );
+                if( m_MyMediaProcThreadPt != null && m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaProcThreadPt.m_RunFlag == MediaProcThread.RUN_FLAG_PROC ) //如果SurfaceView已经重新创建，且媒体处理线程已经启动，且要使用视频输入，并处于初始化完毕正在循环处理帧。
+                {
+                    m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启媒体处理线程，来保证正常的视频输入，否则视频输入会中断。
+                }
+            }
+
+            @Override
+            public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
+            {
+                Log.i( m_CurClsNameStrPt, "VideoInputPreviewSurfaceView Changed" );
+            }
+
+            @Override
+            public void surfaceDestroyed( SurfaceHolder holder )
+            {
+                Log.i( m_CurClsNameStrPt, "VideoInputPreviewSurfaceView Destroyed" );
+            }
+        } );
+        m_VideoOutputDisplaySurfaceViewPt = ( ( HTSurfaceView )findViewById( R.id.VideoOutputDisplaySurfaceView ) );
+        m_VideoOutputDisplaySurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_NORMAL );
+
         //获取扩展目录完整绝对路径字符串。
         if( getExternalFilesDir( null ) != null )
         {
@@ -1403,10 +1794,10 @@ public class MainActivity extends AppCompatActivity
         if( m_LyotActivityCurViewPt == m_LyotActivityMainViewPt )
         {
             Log.i( m_CurClsNameStrPt, "用户在主界面按下返回键，本软件退出。" );
-            if( m_MyAudioProcThreadPt != null )
+            if( m_MyMediaProcThreadPt != null )
             {
                 Log.i( m_CurClsNameStrPt, "开始请求并等待音频处理线程退出。" );
-                m_MyAudioProcThreadPt.RequireExit( 1, 1 );
+                m_MyMediaProcThreadPt.RequireExit( 1, 1 );
                 Log.i( m_CurClsNameStrPt, "结束请求并等待音频处理线程退出。" );
             }
             System.exit(0);
@@ -1424,61 +1815,153 @@ public class MainActivity extends AppCompatActivity
                 ( m_LyotActivityCurViewPt == m_LyotActivityWebRtcNsViewPt ) ||
                 ( m_LyotActivityCurViewPt == m_LyotActivitySpeexPprocOtherViewPt ) ||
                 ( m_LyotActivityCurViewPt == m_LyotActivitySpeexCodecViewPt ) ||
+                ( m_LyotActivityCurViewPt == m_LyotActivityOpenH264CodecViewPt ) ||
                 ( m_LyotActivityCurViewPt == m_LyotActivityAjbViewPt ) )
         {
             this.OnClickWebRtcAecSettingOk( null );
         }
-        else if( m_LyotActivityCurViewPt == m_LyotActivityReadMeViewPt )
+    }
+
+    //使用音频按钮。
+    public void OnUseAudio( View BtnPt )
+    {
+        if( m_MyMediaProcThreadPt != null )
         {
-            this.OnClickReadMeOk( null );
+            m_MyMediaProcThreadPt.m_AudioInputPt.m_IsUseAudioInput = 1;
+            m_MyMediaProcThreadPt.m_AudioOutputPt.m_IsUseAudioOutput = 1;
+            m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput = 0;
+            m_MyMediaProcThreadPt.m_VideoOutputPt.m_IsUseVideoOutput = 0;
+
+            if( m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
+            {
+                m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+            }
+        }
+    }
+
+    //使用视频按钮。
+    public void OnUseVideo( View BtnPt )
+    {
+        if( m_MyMediaProcThreadPt != null )
+        {
+            m_MyMediaProcThreadPt.m_AudioInputPt.m_IsUseAudioInput = 0;
+            m_MyMediaProcThreadPt.m_AudioOutputPt.m_IsUseAudioOutput = 0;
+            m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput = 1;
+            m_MyMediaProcThreadPt.m_VideoOutputPt.m_IsUseVideoOutput = 1;
+
+            if( m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
+            {
+                m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+            }
+        }
+    }
+
+    //使用音视频按钮。
+    public void OnUseAudioVideo( View BtnPt )
+    {
+        if( m_MyMediaProcThreadPt != null )
+        {
+            m_MyMediaProcThreadPt.m_AudioInputPt.m_IsUseAudioInput = 1;
+            m_MyMediaProcThreadPt.m_AudioOutputPt.m_IsUseAudioOutput = 1;
+            m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput = 1;
+            m_MyMediaProcThreadPt.m_VideoOutputPt.m_IsUseVideoOutput = 1;
+
+            if( m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
+            {
+                m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+            }
         }
     }
 
     //使用扬声器按钮。
     public void OnUseSpeaker( View BtnPt )
     {
-        if( m_MyAudioProcThreadPt != null )
+        if( m_MyMediaProcThreadPt != null )
         {
-            m_MyAudioProcThreadPt.SetUseDevice( 0, 0 );
+            m_MyMediaProcThreadPt.SetAudioOutputUseDevice( 0, 0 );
 
-            if( m_MyAudioProcThreadPt.m_InputFrameLnkLstPt != null ) //如果音频处理线程已经启动并初始化完毕。
+            if( m_MyMediaProcThreadPt.m_AudioOutputPt.m_IsUseAudioOutput != 0 && m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
             {
-                m_MyAudioProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+                m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
             }
         }
-        SetUseWakeLock( m_IsUseWakeLock ); //切换唤醒锁。
     }
 
     //使用听筒按钮。
     public void OnUseHeadset( View BtnPt )
     {
-        if( m_MyAudioProcThreadPt != null )
+        if( m_MyMediaProcThreadPt != null )
         {
-            m_MyAudioProcThreadPt.SetUseDevice( 1, 0 );
+            m_MyMediaProcThreadPt.SetAudioOutputUseDevice( 1, 0 );
 
-            if( m_MyAudioProcThreadPt.m_InputFrameLnkLstPt != null ) //如果音频处理线程已经启动并初始化完毕。
+            if( m_MyMediaProcThreadPt.m_AudioOutputPt.m_IsUseAudioOutput != 0 && m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
             {
-                m_MyAudioProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+                m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
             }
         }
-        SetUseWakeLock( m_IsUseWakeLock ); //切换唤醒锁。
+    }
+
+    //使用前置摄像头按钮。
+    public void OnUseFrontCamere( View BtnPt )
+    {
+        if( m_MyMediaProcThreadPt != null )
+        {
+            m_MyMediaProcThreadPt.SetVideoInputUseDevice( 0 );
+
+            if( m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
+            {
+                m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+            }
+        }
+    }
+
+    //使用后置摄像头按钮。
+    public void OnUseBackCamere( View BtnPt )
+    {
+        if( m_MyMediaProcThreadPt != null )
+        {
+            m_MyMediaProcThreadPt.SetVideoInputUseDevice( 1 );
+
+            if( m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
+            {
+                m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+            }
+        }
     }
 
     //音频输入设备静音按钮。
     public void OnAudioInputDeviceIsMute( View BtnPt )
     {
-        if( m_MyAudioProcThreadPt != null )
+        if( m_MyMediaProcThreadPt != null )
         {
-            m_MyAudioProcThreadPt.SetAudioInputDeviceMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+            m_MyMediaProcThreadPt.SetAudioInputDeviceIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
         }
     }
 
     //音频输出设备静音按钮。
     public void OnAudioOutputDeviceIsMute( View BtnPt )
     {
-        if( m_MyAudioProcThreadPt != null )
+        if( m_MyMediaProcThreadPt != null )
         {
-            m_MyAudioProcThreadPt.SetAudioOutputDeviceMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+            m_MyMediaProcThreadPt.SetAudioOutputDeviceIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+        }
+    }
+
+    //视频输入设备黑屏按钮。
+    public void OnVideoInputDeviceIsBlack( View BtnPt )
+    {
+        if( m_MyMediaProcThreadPt != null )
+        {
+            m_MyMediaProcThreadPt.SetVideoInputDeviceIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoInputDeviceIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
+        }
+    }
+
+    //时频输出设备黑屏按钮。
+    public void OnVideoOutputDeviceIsBlack( View BtnPt )
+    {
+        if( m_MyMediaProcThreadPt != null )
+        {
+            m_MyMediaProcThreadPt.SetVideoOutputDeviceIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoOutputDeviceIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
         }
     }
 
@@ -1489,107 +1972,130 @@ public class MainActivity extends AppCompatActivity
 
         out:
         {
-            if( m_MyAudioProcThreadPt == null ) //如果音频处理线程还没有启动。
+            if( m_MyMediaProcThreadPt == null ) //如果音频处理线程还没有启动。
             {
                 Log.i( m_CurClsNameStrPt, "开始启动音频处理线程。" );
 
                 //创建并初始化音频处理线程类对象。
                 {
-                    m_MyAudioProcThreadPt = new MyAudioProcThread();
+                    m_MyMediaProcThreadPt = new MyMediaProcThread( getApplicationContext() ); //创建音频处理线程类对象。
 
                     if( BtnPt.getId() == R.id.CreateSrvrBtn )
                     {
-                        m_MyAudioProcThreadPt.m_IsCreateSrvrOrClnt = 1; //标记创建服务端接受客户端。
+                        m_MyMediaProcThreadPt.m_IsCreateSrvrOrClnt = 1; //标记创建服务端接受客户端。
                     }
                     else if( BtnPt.getId() == R.id.ConnectSrvrBtn )
                     {
-                        m_MyAudioProcThreadPt.m_IsCreateSrvrOrClnt = 0; //标记创建客户端连接服务端。
+                        m_MyMediaProcThreadPt.m_IsCreateSrvrOrClnt = 0; //标记创建客户端连接服务端。
                     }
 
-                    m_MyAudioProcThreadPt.m_MainActivityHandlerPt = m_MainActivityHandlerPt; //设置主界面消息处理类对象的内存指针。
+                    m_MyMediaProcThreadPt.m_MainActivityHandlerPt = m_MainActivityHandlerPt; //设置主界面消息处理类对象的内存指针。
 
                     //设置IP地址字符串、端口。
-                    m_MyAudioProcThreadPt.m_IPAddrStrPt = ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.IPAddrEdit ) ).getText().toString();
-                    m_MyAudioProcThreadPt.m_PortStrPt = ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.PortEdit ) ).getText().toString();
-
-                    //初始化音频处理线程类对象。
-                    m_MyAudioProcThreadPt.Init(
-                            getApplicationContext(),
-                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSamplingRate8000RadioBtn ) ).isChecked() ) ? 8000 :
-                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSamplingRate16000RadioBtn ) ).isChecked() ) ? 16000 :
-                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSamplingRate32000RadioBtn ) ).isChecked() ) ? 32000 : 0,
-                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseFrame10msLenRadioBtn ) ).isChecked() ) ? 10 :
-                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseFrame20msLenRadioBtn ) ).isChecked() ) ? 20 :
-                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseFrame30msLenRadioBtn ) ).isChecked() ) ? 30 : 0 );
+                    m_MyMediaProcThreadPt.m_IPAddrStrPt = ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.IPAddrEdit ) ).getText().toString();
+                    m_MyMediaProcThreadPt.m_PortStrPt = ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.PortEdit ) ).getText().toString();
 
                     //判断是否使用什么传输协议。
-                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseTcpPrtclRadioBtn ) ).isChecked() )
+                    if( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseTcpPrtclRadioBtn ) ).isChecked() )
                     {
-                        m_MyAudioProcThreadPt.m_UseWhatXfrPrtcl = 0;
+                        m_MyMediaProcThreadPt.m_UseWhatXfrPrtcl = 0;
                     }
                     else
                     {
-                        m_MyAudioProcThreadPt.m_UseWhatXfrPrtcl = 1;
+                        m_MyMediaProcThreadPt.m_UseWhatXfrPrtcl = 1;
+                    }
+
+                    //判断是否使用链表。
+                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseLnkLstRadioBtn ) ).isChecked() )
+                    {
+                        m_MyMediaProcThreadPt.m_UseWhatRecvOutputFrame = 0;
+                    }
+
+                    //判断是否使用自己设计的音频自适应抖动缓冲器。
+                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAjbRadioBtn ) ).isChecked() )
+                    {
+                        m_MyMediaProcThreadPt.m_UseWhatRecvOutputFrame = 1;
+
+                        try
+                        {
+                            m_MyMediaProcThreadPt.m_AAjbMinNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.AAjbMinNeedBufFrameCnt ) ).getText().toString() );
+                            m_MyMediaProcThreadPt.m_AAjbMaxNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.AAjbMaxNeedBufFrameCnt ) ).getText().toString() );
+                            m_MyMediaProcThreadPt.m_AAjbAdaptSensitivity = Float.parseFloat( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.AAjbAdaptSensitivity ) ).getText().toString() );
+
+                            m_MyMediaProcThreadPt.m_VAjbMinNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.VAjbMinNeedBufFrameCnt ) ).getText().toString() );
+                            m_MyMediaProcThreadPt.m_VAjbMaxNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.VAjbMaxNeedBufFrameCnt ) ).getText().toString() );
+                            m_MyMediaProcThreadPt.m_VAjbAdaptSensitivity = Float.parseFloat( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.VAjbAdaptSensitivity ) ).getText().toString() );
+                        }
+                        catch( NumberFormatException e )
+                        {
+                            Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
+                            break out;
+                        }
                     }
 
                     //判断是否保存设置到文件。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveSettingToFileCheckBox ) ).isChecked() )
                     {
-                        m_MyAudioProcThreadPt.SetSaveSettingToFile( 1, m_ExternalDirFullAbsPathStrPt + "/Setting.txt" );
+                        m_MyMediaProcThreadPt.SetSaveSettingToFile( 1, m_ExternalDirFullAbsPathStrPt + "/Setting.txt" );
                     }
                     else
                     {
-                        m_MyAudioProcThreadPt.SetSaveSettingToFile( 0, null );
+                        m_MyMediaProcThreadPt.SetSaveSettingToFile( 0, null );
                     }
 
                     //判断是否打印Logcat日志。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsPrintLogcatCheckBox ) ).isChecked() )
                     {
-                        m_MyAudioProcThreadPt.SetPrintLogcat( 1 );
+                        m_MyMediaProcThreadPt.SetPrintLogcat( 1 );
                     }
                     else
                     {
-                        m_MyAudioProcThreadPt.SetPrintLogcat( 0 );
+                        m_MyMediaProcThreadPt.SetPrintLogcat( 0 );
                     }
 
-                    //判断使用的音频输出设备。
-                    if( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseSpeakerRadioBtn ) ).isChecked() )
+                    //判断是否使用唤醒锁。
+                    if( ( ( CheckBox ) m_MainActivityPt.m_LyotActivitySettingViewPt.findViewById( R.id.IsUseWakeLockCheckBox ) ).isChecked() )
                     {
-                        m_MyAudioProcThreadPt.SetUseDevice( 0, 0 );
+                        m_MyMediaProcThreadPt.SetUseWakeLock( 1 );
                     }
                     else
                     {
-                        m_MyAudioProcThreadPt.SetUseDevice( 1, 0 );
+                        m_MyMediaProcThreadPt.SetUseWakeLock( 0 );
                     }
 
-                    //判断音频输入设备是否静音。
-                    m_MyAudioProcThreadPt.SetAudioInputDeviceMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+                    //判断是否使用音频输入。
+                    m_MyMediaProcThreadPt.SetUseAudioInput(
+                            ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioTalkbackRadioBtn ) ).isChecked() ) ? 1 :
+                                    ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate8000RadioBtn ) ).isChecked() ) ? 8000 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate16000RadioBtn ) ).isChecked() ) ? 16000 :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate32000RadioBtn ) ).isChecked() ) ? 32000 : 0,
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen10msRadioBtn ) ).isChecked() ) ? 10 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).isChecked() ) ? 20 :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen30msRadioBtn ) ).isChecked() ) ? 30 : 0 );
 
-                    //判断音频输出设备是否静音。
-                    m_MyAudioProcThreadPt.SetAudioOutputDeviceMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
-
-                    //判断是否使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器。
+                    //判断音频输入是否使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).isChecked() )
                     {
-                        m_MyAudioProcThreadPt.SetUseSystemAecNsAgc( 1 );
+                        m_MyMediaProcThreadPt.SetAudioInputUseSystemAecNsAgc( 1 );
                     }
                     else
                     {
-                        m_MyAudioProcThreadPt.SetUseSystemAecNsAgc( 0 );
+                        m_MyMediaProcThreadPt.SetAudioInputUseSystemAecNsAgc( 0 );
                     }
 
-                    //判断是否不使用声学回音消除器。
+                    //判断音频输入是否不使用声学回音消除器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseNoAecRadioBtn ) ).isChecked() )
                     {
-                        m_MyAudioProcThreadPt.SetUseNoAec();
+                        m_MyMediaProcThreadPt.SetAudioInputUseNoAec();
                     }
 
-                    //判断是否使用Speex声学回音消除器。
+                    //判断音频输入是否使用Speex声学回音消除器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexAecRadioBtn ) ).isChecked() )
                     {
                         try
                         {
-                            m_MyAudioProcThreadPt.SetUseSpeexAec(
+                            m_MyMediaProcThreadPt.SetAudioInputUseSpeexAec(
                                     Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).getText().toString() ),
                                     ( ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsUseRecCheckBox ) ).isChecked() ) ? 1 : 0,
                                     Float.parseFloat( ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoMultipleEdit ) ).getText().toString() ),
@@ -1607,15 +2113,15 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
-                    //判断是否使用WebRtc定点版声学回音消除器。
+                    //判断音频输入是否使用WebRtc定点版声学回音消除器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcAecmRadioBtn ) ).isChecked() )
                     {
                         try
                         {
-                            m_MyAudioProcThreadPt.SetUseWebRtcAecm(
-                                    ( ( ( CheckBox ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.CheckBoxWebRtcAecmIsUseCNGMode ) ).isChecked() ) ? 1 : 0,
-                                    Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmEchoMode ) ).getText().toString() ),
-                                    Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmDelay ) ).getText().toString() )
+                            m_MyMediaProcThreadPt.SetAudioInputUseWebRtcAecm(
+                                    ( ( ( CheckBox ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmIsUseCNGModeCheckBox ) ).isChecked() ) ? 1 : 0,
+                                    Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmEchoModeEdit ) ).getText().toString() ),
+                                    Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmDelayEdit ) ).getText().toString() )
                             );
                         }
                         catch( NumberFormatException e )
@@ -1625,12 +2131,12 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
-                    //判断是否使用WebRtc浮点版声学回音消除器。
+                    //判断音频输入是否使用WebRtc浮点版声学回音消除器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcAecRadioBtn ) ).isChecked() )
                     {
                         try
                         {
-                            m_MyAudioProcThreadPt.SetUseWebRtcAec(
+                            m_MyMediaProcThreadPt.SetAudioInputUseWebRtcAec(
                                     Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecEchoModeEdit ) ).getText().toString() ),
                                     Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecDelayEdit ) ).getText().toString() ),
                                     ( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgnosticModeCheckBox ) ).isChecked() ) ? 1 : 0,
@@ -1648,12 +2154,12 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
-                    //判断是否使用SpeexWebRtc三重声学回音消除器。
+                    //判断音频输入是否使用SpeexWebRtc三重声学回音消除器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexWebRtcAecRadioBtn ) ).isChecked() )
                     {
                         try
                         {
-                            m_MyAudioProcThreadPt.SetUseSpeexWebRtcAec(
+                            m_MyMediaProcThreadPt.SetAudioInputUseSpeexWebRtcAec(
                                     ( ( RadioButton ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRadioBtn ) ).isChecked() ? 1 :
                                             ( ( RadioButton ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRadioBtn ) ).isChecked() ? 2 :
                                                     ( ( RadioButton ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRadioBtn ) ).isChecked() ? 3 : 0,
@@ -1683,18 +2189,18 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
-                    //判断是否不使用噪音抑制器。
+                    //判断音频输入是否不使用噪音抑制器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseNoNsRadioBtn ) ).isChecked() )
                     {
-                        m_MyAudioProcThreadPt.SetUseNoNs();
+                        m_MyMediaProcThreadPt.SetAudioInputUseNoNs();
                     }
 
-                    //判断是否使用Speex预处理器的噪音抑制。
+                    //判断音频输入是否使用Speex预处理器的噪音抑制。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexPprocNsRadioBtn ) ).isChecked() )
                     {
                         try
                         {
-                            m_MyAudioProcThreadPt.SetUseSpeexPprocNs(
+                            m_MyMediaProcThreadPt.SetAudioInputUseSpeexPprocNs(
                                     ( ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).isChecked() ) ? 1 : 0,
                                     Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).getText().toString() ),
                                     ( ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).isChecked() ) ? 1 : 0
@@ -1707,13 +2213,13 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
-                    //判断是否使用WebRtc定点版噪音抑制器。
+                    //判断音频输入是否使用WebRtc定点版噪音抑制器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcNsxRadioBtn ) ).isChecked() )
                     {
                         try
                         {
-                            m_MyAudioProcThreadPt.SetUseWebRtcNsx(
-                                    Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyMode ) ).getText().toString() )
+                            m_MyMediaProcThreadPt.SetAudioInputUseWebRtcNsx(
+                                    Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdit ) ).getText().toString() )
                             );
                         }
                         catch( NumberFormatException e )
@@ -1723,13 +2229,13 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
-                    //判断是否使用WebRtc浮点版噪音抑制器。
+                    //判断音频输入是否使用WebRtc浮点版噪音抑制器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcNsRadioBtn ) ).isChecked() )
                     {
                         try
                         {
-                            m_MyAudioProcThreadPt.SetUseWebRtcNs(
-                                    Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyMode ) ).getText().toString() )
+                            m_MyMediaProcThreadPt.SetAudioInputUseWebRtcNs(
+                                    Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).getText().toString() )
                             );
                         }
                         catch( NumberFormatException e )
@@ -1739,12 +2245,12 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
-                    //判断是否使用RNNoise噪音抑制器。
+                    //判断音频输入是否使用RNNoise噪音抑制器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseRNNoiseRadioBtn ) ).isChecked() )
                     {
                         try
                         {
-                            m_MyAudioProcThreadPt.SetUseRNNoise();
+                            m_MyMediaProcThreadPt.SetAudioInputUseRNNoise();
                         }
                         catch( NumberFormatException e )
                         {
@@ -1753,12 +2259,12 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
-                    //判断是否使用Speex预处理器的其他功能。
+                    //判断音频输入是否使用Speex预处理器的其他功能。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).isChecked() )
                     {
                         try
                         {
-                            m_MyAudioProcThreadPt.SetSpeexPprocOther(
+                            m_MyMediaProcThreadPt.SetAudioInputUseSpeexPprocOther(
                                     1,
                                     ( ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).isChecked() ) ? 1 : 0,
                                     Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).getText().toString() ),
@@ -1778,25 +2284,80 @@ public class MainActivity extends AppCompatActivity
                     }
                     else
                     {
-                        m_MyAudioProcThreadPt.SetSpeexPprocOther( 0, 0, 0, 0, 0, 0, 0, 0, 0 );
+                        m_MyMediaProcThreadPt.SetAudioInputUseSpeexPprocOther( 0, 0, 0, 0, 0, 0, 0, 0, 0 );
                     }
 
-                    //判断是否使用PCM原始数据。
+                    //判断音频输入是否使用PCM原始数据。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UsePcmRadioBtn ) ).isChecked() )
                     {
-                        m_MyAudioProcThreadPt.SetUsePcm();
+                        m_MyMediaProcThreadPt.SetAudioInputUsePcm();
                     }
 
-                    //判断是否使用Speex编解码器。
+                    //判断音频输入是否使用Speex编码器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).isChecked() )
                     {
                         try
                         {
-                            m_MyAudioProcThreadPt.SetUseSpeexCodec(
+                            m_MyMediaProcThreadPt.SetAudioInputUseSpeexEncoder(
                                     ( ( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseCbrRadioBtn ) ).isChecked() ) ? 0 : 1,
                                     Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderQualityEdit ) ).getText().toString() ),
                                     Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).getText().toString() ),
-                                    Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderPlcExpectedLossRateEdit ) ).getText().toString() ),
+                                    Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderPlcExpectedLossRateEdit ) ).getText().toString() )
+                            );
+                        }
+                        catch( NumberFormatException e )
+                        {
+                            Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
+                            break out;
+                        }
+                    }
+
+                    //判断音频输入是否使用Opus编码器。
+                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpusCodecRadioBtn ) ).isChecked() )
+                    {
+                        m_MyMediaProcThreadPt.SetAudioInputUseOpusEncoder();
+                    }
+
+                    //判断音频输入是否保存音频到文件。
+                    if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).isChecked() )
+                    {
+                        m_MyMediaProcThreadPt.SetAudioInputSaveAudioToFile(
+                                1,
+                                m_ExternalDirFullAbsPathStrPt + "/AudioInput.wav",
+                                m_ExternalDirFullAbsPathStrPt + "/AudioResult.wav"
+                        );
+                    }
+                    else
+                    {
+                        m_MyMediaProcThreadPt.SetAudioInputSaveAudioToFile( 0, null, null );
+                    }
+
+                    //判断音频输入设备是否静音。
+                    m_MyMediaProcThreadPt.SetAudioInputDeviceIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+
+                    //判断是否使用音频输出。
+                    m_MyMediaProcThreadPt.SetUseAudioOutput(
+                            ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioTalkbackRadioBtn ) ).isChecked() ) ? 1 :
+                                    ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate8000RadioBtn ) ).isChecked() ) ? 8000 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate16000RadioBtn ) ).isChecked() ) ? 16000 :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate32000RadioBtn ) ).isChecked() ) ? 32000 : 0,
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen10msRadioBtn ) ).isChecked() ) ? 10 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).isChecked() ) ? 20 :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen30msRadioBtn ) ).isChecked() ) ? 30 : 0 );
+
+                    //判断音频输出是否使用PCM原始数据。
+                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UsePcmRadioBtn ) ).isChecked() )
+                    {
+                        m_MyMediaProcThreadPt.SetAudioOutputUsePcm();
+                    }
+
+                    //判断音频输出是否使用Speex解码器。
+                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).isChecked() )
+                    {
+                        try
+                        {
+                            m_MyMediaProcThreadPt.SetAudioOutputUseSpeexDecoder(
                                     ( ( ( CheckBox ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecIsUsePerceptualEnhancementCheckBox ) ).isChecked() ) ? 1 : 0
                             );
                         }
@@ -1807,60 +2368,124 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
-                    //判断是否使用Opus编解码器。
+                    //判断音频输出是否使用Opus解码器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpusCodecRadioBtn ) ).isChecked() )
                     {
-                        m_MyAudioProcThreadPt.SetUseOpusCodec();
+                        m_MyMediaProcThreadPt.SetAudioOutputUseOpusDecoder();
                     }
 
-                    //判断是否使用链表。
-                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseLnkLstRadioBtn ) ).isChecked() )
+                    //判断使用的音频输出设备。
+                    if( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseSpeakerRadioBtn ) ).isChecked() )
                     {
-                        m_MyAudioProcThreadPt.m_UseWhatRecvOutputFrame = 0;
+                        m_MyMediaProcThreadPt.SetAudioOutputUseDevice( 0, 0 );
                     }
-
-                    //判断是否使用自己设计的自适应抖动缓冲器。
-                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAjbRadioBtn ) ).isChecked() )
+                    else
                     {
-                        m_MyAudioProcThreadPt.m_UseWhatRecvOutputFrame = 1;
-
-                        try
-                        {
-                            m_MyAudioProcThreadPt.m_AjbMinNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.AjbMinNeedBufFrameCnt ) ).getText().toString() );
-                            m_MyAudioProcThreadPt.m_AjbMaxNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.AjbMaxNeedBufFrameCnt ) ).getText().toString() );
-                            m_MyAudioProcThreadPt.m_AjbAdaptSensitivity = ( byte ) Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.AjbAdaptSensitivity ) ).getText().toString() );
-                        }
-                        catch( NumberFormatException e )
-                        {
-                            Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
-                            break out;
-                        }
+                        m_MyMediaProcThreadPt.SetAudioOutputUseDevice( 1, 0 );
                     }
 
-                    //判断是否保存音频到文件。
+                    //判断音频输出设备是否静音。
+                    m_MyMediaProcThreadPt.SetAudioOutputDeviceIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+
+                    //判断音频输出是否保存音频到文件。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).isChecked() )
                     {
-                        m_MyAudioProcThreadPt.SetSaveAudioToFile(
+                        m_MyMediaProcThreadPt.SetAudioOutputSaveAudioToFile(
                                 1,
-                                m_ExternalDirFullAbsPathStrPt + "/AudioInput.wav",
-                                m_ExternalDirFullAbsPathStrPt + "/AudioOutput.wav",
-                                m_ExternalDirFullAbsPathStrPt + "/AudioResult.wav"
+                                m_ExternalDirFullAbsPathStrPt + "/AudioOutput.wav"
                         );
                     }
                     else
                     {
-                        m_MyAudioProcThreadPt.SetSaveAudioToFile( 0, null, null, null );
+                        m_MyMediaProcThreadPt.SetAudioOutputSaveAudioToFile( 0, null );
                     }
+
+                    //判断是否使用视频输入。
+                    m_MyMediaProcThreadPt.SetUseVideoInput(
+                            ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 :
+                                    ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate12RadioBtn ) ).isChecked() ) ? 12 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate16RadioBtn ) ).isChecked() ) ? 16 :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate24RadioBtn ) ).isChecked() ) ? 24 :
+                                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate30RadioBtn ) ).isChecked() ) ? 30 : 0,
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize144_176RadioBtn ) ).isChecked() ) ? 144 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).isChecked() ) ? 240 :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).isChecked() ) ? 480 :
+                                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).isChecked() ) ? 960 : 0,
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize144_176RadioBtn ) ).isChecked() ) ? 176 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).isChecked() ) ? 320 :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).isChecked() ) ? 640 :
+                                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).isChecked() ) ? 1280 : 0,
+                            m_VideoInputPreviewSurfaceViewPt
+                    );
+
+                    //判断视频输入是否使用YU12原始数据。
+                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseYU12RadioBtn ) ).isChecked() )
+                    {
+                        m_MyMediaProcThreadPt.SetVideoInputUseYU12();
+                    }
+
+                    //判断视频输入是否使用OpenH264编码器。
+                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).isChecked() )
+                    {
+                        m_MyMediaProcThreadPt.SetVideoInputUseOpenH264(
+                                Integer.parseInt( ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).getText().toString() ),
+                                Integer.parseInt( ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).getText().toString() ) * 1024 * 8,
+                                Integer.parseInt( ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).getText().toString() ),
+                                Integer.parseInt( ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).getText().toString() ),
+                                Integer.parseInt( ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).getText().toString() )
+                        );
+                    }
+
+                    //判断使用的视频输入设备。
+                    m_MyMediaProcThreadPt.SetVideoInputUseDevice( ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseFrontCamereRadioBtn ) ).isChecked() ) ? 0 : 1 );
+
+                    //判断视频输入设备是否黑屏。
+                    m_MyMediaProcThreadPt.SetVideoInputDeviceIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoInputDeviceIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
+
+                    //判断是否使用视频输出。
+                    m_MyMediaProcThreadPt.SetUseVideoOutput(
+                            ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 :
+                                    ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize144_176RadioBtn ) ).isChecked() ) ? 144 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).isChecked() ) ? 240 :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).isChecked() ) ? 480 :
+                                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).isChecked() ) ? 960 : 0,
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize144_176RadioBtn ) ).isChecked() ) ? 176 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).isChecked() ) ? 320 :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).isChecked() ) ? 640 :
+                                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).isChecked() ) ? 1280 : 0,
+                            m_VideoOutputDisplaySurfaceViewPt,
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).isChecked() ) ? 1.0f :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_5RadioBtn ) ).isChecked() ) ? 1.5f :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale2_0RadioBtn ) ).isChecked() ) ? 2.0f :
+                                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale3_0RadioBtn ) ).isChecked() ) ? 3.0f : 1.0f
+                    );
+
+                    //判断视频输出是否使用YU12原始数据。
+                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseYU12RadioBtn ) ).isChecked() )
+                    {
+                        m_MyMediaProcThreadPt.SetVideoOutputUseYU12();
+                    }
+
+                    //判断视频输出是否使用OpenH264编码器。
+                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).isChecked() )
+                    {
+                        m_MyMediaProcThreadPt.SetVideoOutputUseOpenH264( 0 );
+                    }
+
+                    //判断视频输出设备是否黑屏。
+                    m_MyMediaProcThreadPt.SetVideoOutputDeviceIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoOutputDeviceIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
                 }
 
-                m_MyAudioProcThreadPt.start(); //启动音频处理线程。
+                m_MyMediaProcThreadPt.start(); //启动音频处理线程。
 
                 Log.i( m_CurClsNameStrPt, "启动音频处理线程完毕。" );
             }
             else
             {
                 Log.i( m_CurClsNameStrPt, "开始请求并等待音频处理线程退出。" );
-                m_MyAudioProcThreadPt.RequireExit( 1, 1 );
+                m_MyMediaProcThreadPt.RequireExit( 1, 1 );
                 Log.i( m_CurClsNameStrPt, "结束请求并等待音频处理线程退出。" );
             }
 
@@ -1869,9 +2494,22 @@ public class MainActivity extends AppCompatActivity
             break out;
         }
 
-        if( p_Result != 0 )
+        if( p_Result != 0 ) //如果音频处理线程启动失败。
         {
-            m_MyAudioProcThreadPt = null;
+            m_MyMediaProcThreadPt = null;
+        }
+    }
+
+    //主界面视频输入预览SurfaceView按钮。
+    public void onClickVideoSurfaceView( View BtnPt )
+    {
+        if( ( ( LinearLayout )BtnPt.getParent() ).getOrientation() == LinearLayout.HORIZONTAL )
+        {
+            ( ( LinearLayout )BtnPt.getParent() ).setOrientation( LinearLayout.VERTICAL );
+        }
+        else
+        {
+            ( ( LinearLayout )BtnPt.getParent() ).setOrientation( LinearLayout.HORIZONTAL );
         }
     }
 
@@ -1891,15 +2529,7 @@ public class MainActivity extends AppCompatActivity
     //主界面必读说明按钮。
     public void OnClickReadMe( View BtnPt )
     {
-        setContentView( m_LyotActivityReadMeViewPt );
-        m_LyotActivityCurViewPt = m_LyotActivityReadMeViewPt;
-    }
-
-    //必读说明界面的确定按钮。
-    public void OnClickReadMeOk( View BtnPt )
-    {
-        setContentView( m_LyotActivityMainViewPt );
-        m_LyotActivityCurViewPt = m_LyotActivityMainViewPt;
+        startActivity( new Intent( Intent.ACTION_VIEW, Uri.parse( "https://github.com/cyz7758520/Android_audio_talkback_demo_program" ) ) );
     }
 
     //设置界面的确定按钮。
@@ -2093,101 +2723,531 @@ public class MainActivity extends AppCompatActivity
         m_LyotActivityCurViewPt = m_LyotActivitySettingViewPt;
     }
 
-    //自适应抖动缓冲器设置按钮。
+    //OpenH264编解码器设置按钮。
+    public void OnClickOpenH264CodecSetting( View BtnPt )
+    {
+        setContentView( m_LyotActivityOpenH264CodecViewPt );
+        m_LyotActivityCurViewPt = m_LyotActivityOpenH264CodecViewPt;
+    }
+
+    //Opus编解码器设置界面的确定按钮。
+    public void OnOpenH264CodecSettingOkClick( View BtnPt )
+    {
+        setContentView( m_LyotActivitySettingViewPt );
+        m_LyotActivityCurViewPt = m_LyotActivitySettingViewPt;
+    }
+
+    //音频自适应抖动缓冲器设置按钮。
     public void OnClickAjbSetting( View BtnPt )
     {
         setContentView( m_LyotActivityAjbViewPt );
         m_LyotActivityCurViewPt = m_LyotActivityAjbViewPt;
     }
 
-    //自适应抖动缓冲器设置界面的确定按钮。
+    //音频自适应抖动缓冲器设置界面的确定按钮。
     public void OnClickAjbSettingOk( View BtnPt )
     {
         setContentView( m_LyotActivitySettingViewPt );
         m_LyotActivityCurViewPt = m_LyotActivitySettingViewPt;
     }
 
-    //设置使用唤醒锁。
-    public void SetUseWakeLock( int IsUseWakeLock )
+    //效果等级：低。
+    public void OnClickUseEffectLowRadioBtn( View BtnPt )
     {
-        m_IsUseWakeLock = IsUseWakeLock;
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseEffectLowRadioBtn ) ).setChecked( true );
 
-        if( m_IsUseWakeLock != 0 ) //如果要使用唤醒锁。
-        {
-            if( m_MyAudioProcThreadPt != null )
-            {
-                if( m_MyAudioProcThreadPt.m_UseWhatAudioOutputDevice == 0 ) //如果使用扬声器音频输出设备。
-                {
-                    if( m_ProximityScreenOffWakeLockPt != null )
-                    {
-                        try
-                        {
-                            m_ProximityScreenOffWakeLockPt.release();
-                        }
-                        catch( RuntimeException e )
-                        {
-                        }
-                        m_ProximityScreenOffWakeLockPt = null;
-                        Log.i( m_CurClsNameStrPt, "销毁接近息屏唤醒锁类对象成功。" );
-                    }
-                }
-                else //如果使用听筒音频输出设备。
-                {
-                    if( m_ProximityScreenOffWakeLockPt == null )
-                    {
-                        m_ProximityScreenOffWakeLockPt = ( ( PowerManager ) getApplicationContext().getSystemService( Activity.POWER_SERVICE ) ).newWakeLock( PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_CurClsNameStrPt );
-                        if( m_ProximityScreenOffWakeLockPt != null )
-                        {
-                            m_ProximityScreenOffWakeLockPt.acquire();
-                            Log.i( m_CurClsNameStrPt, "创建并初始化接近息屏唤醒锁类对象成功。" );
-                        }
-                        else
-                        {
-                            Log.e( m_CurClsNameStrPt, "创建并初始化接近息屏唤醒锁类对象失败。" );
-                        }
-                    }
-                }
-                if( m_FullWakeLockPt == null )
-                {
-                    m_FullWakeLockPt = ( ( PowerManager ) getApplicationContext().getSystemService( Activity.POWER_SERVICE ) ).newWakeLock( PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_CurClsNameStrPt );
-                    if( m_FullWakeLockPt != null )
-                    {
-                        m_FullWakeLockPt.acquire();
-                        Log.i( m_CurClsNameStrPt, "创建并初始化屏幕键盘全亮唤醒锁类对象成功。" );
-                    }
-                    else
-                    {
-                        Log.e( m_CurClsNameStrPt, "创建并初始化屏幕键盘全亮唤醒锁类对象失败。" );
-                    }
-                }
-            }
-        }
-        else //如果不使用唤醒锁。
-        {
-            if( m_ProximityScreenOffWakeLockPt != null )
-            {
-                try
-                {
-                    m_ProximityScreenOffWakeLockPt.release();
-                }
-                catch( RuntimeException e )
-                {
-                }
-                m_ProximityScreenOffWakeLockPt = null;
-                Log.i( m_CurClsNameStrPt, "销毁接近息屏唤醒锁类对象成功。" );
-            }
-            if( m_FullWakeLockPt != null )
-            {
-                try
-                {
-                    m_FullWakeLockPt.release();
-                }
-                catch( RuntimeException e )
-                {
-                }
-                m_FullWakeLockPt = null;
-                Log.i( m_CurClsNameStrPt, "销毁屏幕键盘全亮唤醒锁类对象成功。" );
-            }
-        }
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate8000RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcAecmRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).setText( "500" );
+        ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsUseRecCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoMultipleEdit ) ).setText( "3.0" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoContEdit ) ).setText( "0.65" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoSupesEdit ) ).setText( "-32768" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoSupesActEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsSaveMemFileCheckBox ) ).setChecked( false );
+
+        ( ( CheckBox ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmIsUseCNGModeCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmEchoModeEdit ) ).setText( "4" );
+        ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmDelayEdit ) ).setText( "0" );
+
+        ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecEchoModeEdit ) ).setText( "2" );
+        ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecDelayEdit ) ).setText( "0" );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgnosticModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseExtdFilterModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).setChecked( false );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCheckBox ) ).setChecked( false );
+
+        ( ( RadioButton ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRadioBtn ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdit ) ).setText( "500" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMultipleEdit ) ).setText( "1.0" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoContEdit ) ).setText( "0.6" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesEdit ) ).setText( "-32768" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesActEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmIsUseCNGModeCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmEchoModeEdit ) ).setText( "4" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmDelayEdit ) ).setText( "0" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecEchoModeEdit ) ).setText( "2" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecDelayEdit ) ).setText( "0" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).setChecked( false );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "420" );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexPprocNsRadioBtn ) ).setChecked( true );
+
+        ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdit ) ).setText( "3" );
+
+        ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
+
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseAgcCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcLevelEdit ) ).setText( "30000" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcIncrementEdit ) ).setText( "10" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseCbrRadioBtn ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "1" );
+        ( ( CheckBox ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecIsUsePerceptualEnhancementCheckBox ) ).setChecked( true );
+
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( false );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate12RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize144_176RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).setText( "0" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "12" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).setText( "0" );
+    }
+
+    //效果等级：中。
+    public void OnClickUseEffectMidRadioBtn( View BtnPt )
+    {
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseEffectMidRadioBtn ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate16000RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcAecRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).setText( "500" );
+        ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsUseRecCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoMultipleEdit ) ).setText( "3.0" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoContEdit ) ).setText( "0.65" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoSupesEdit ) ).setText( "-32768" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoSupesActEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsSaveMemFileCheckBox ) ).setChecked( false );
+
+        ( ( CheckBox ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmIsUseCNGModeCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmEchoModeEdit ) ).setText( "4" );
+        ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmDelayEdit ) ).setText( "0" );
+
+        ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecEchoModeEdit ) ).setText( "2" );
+        ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecDelayEdit ) ).setText( "0" );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgnosticModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseExtdFilterModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).setChecked( false );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCheckBox ) ).setChecked( false );
+
+        ( ( RadioButton ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRadioBtn ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdit ) ).setText( "500" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMultipleEdit ) ).setText( "1.0" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoContEdit ) ).setText( "0.6" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesEdit ) ).setText( "-32768" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesActEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmIsUseCNGModeCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmEchoModeEdit ) ).setText( "4" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmDelayEdit ) ).setText( "0" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecEchoModeEdit ) ).setText( "2" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecDelayEdit ) ).setText( "0" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).setChecked( false );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "420" );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcNsxRadioBtn ) ).setChecked( true );
+
+        ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdit ) ).setText( "3" );
+
+        ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
+
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseAgcCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcLevelEdit ) ).setText( "30000" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcIncrementEdit ) ).setText( "10" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseCbrRadioBtn ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "4" );
+        ( ( CheckBox ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecIsUsePerceptualEnhancementCheckBox ) ).setChecked( true );
+
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( false );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate16RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).setText( "0" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "16" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).setText( "0" );
+    }
+
+    //效果等级：高。
+    public void OnClickUseEffectHighRadioBtn( View BtnPt )
+    {
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseEffectHighRadioBtn ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate16000RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexWebRtcAecRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).setText( "500" );
+        ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsUseRecCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoMultipleEdit ) ).setText( "3.0" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoContEdit ) ).setText( "0.65" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoSupesEdit ) ).setText( "-32768" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoSupesActEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsSaveMemFileCheckBox ) ).setChecked( false );
+
+        ( ( CheckBox ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmIsUseCNGModeCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmEchoModeEdit ) ).setText( "4" );
+        ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmDelayEdit ) ).setText( "0" );
+
+        ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecEchoModeEdit ) ).setText( "2" );
+        ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecDelayEdit ) ).setText( "0" );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgnosticModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseExtdFilterModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).setChecked( false );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCheckBox ) ).setChecked( false );
+
+        ( ( RadioButton ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRadioBtn ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdit ) ).setText( "500" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMultipleEdit ) ).setText( "1.0" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoContEdit ) ).setText( "0.6" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesEdit ) ).setText( "-32768" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesActEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmIsUseCNGModeCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmEchoModeEdit ) ).setText( "4" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmDelayEdit ) ).setText( "0" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecEchoModeEdit ) ).setText( "2" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecDelayEdit ) ).setText( "0" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).setChecked( false );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "420" );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcNsRadioBtn ) ).setChecked( true );
+
+        ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdit ) ).setText( "3" );
+
+        ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
+
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseAgcCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcLevelEdit ) ).setText( "30000" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcIncrementEdit ) ).setText( "10" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseVbrRadioBtn ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "8" );
+        ( ( CheckBox ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecIsUsePerceptualEnhancementCheckBox ) ).setChecked( true );
+
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( false );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate16RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).setText( "0" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "16" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).setText( "0" );
+    }
+
+    //效果等级：超。
+    public void OnClickUseEffectSuperRadioBtn( View BtnPt )
+    {
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseEffectSuperRadioBtn ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate16000RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexWebRtcAecRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).setText( "500" );
+        ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsUseRecCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoMultipleEdit ) ).setText( "3.0" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoContEdit ) ).setText( "0.65" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoSupesEdit ) ).setText( "-32768" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoSupesActEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsSaveMemFileCheckBox ) ).setChecked( false );
+
+        ( ( CheckBox ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmIsUseCNGModeCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmEchoModeEdit ) ).setText( "4" );
+        ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmDelayEdit ) ).setText( "0" );
+
+        ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecEchoModeEdit ) ).setText( "2" );
+        ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecDelayEdit ) ).setText( "0" );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgnosticModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseExtdFilterModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).setChecked( false );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCheckBox ) ).setChecked( false );
+
+        ( ( RadioButton ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRadioBtn ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdit ) ).setText( "500" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMultipleEdit ) ).setText( "1.0" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoContEdit ) ).setText( "0.6" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesEdit ) ).setText( "-32768" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesActEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmIsUseCNGModeCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmEchoModeEdit ) ).setText( "4" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmDelayEdit ) ).setText( "0" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecEchoModeEdit ) ).setText( "2" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecDelayEdit ) ).setText( "0" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).setChecked( false );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "420" );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseRNNoiseRadioBtn ) ).setChecked( true );
+
+        ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdit ) ).setText( "3" );
+
+        ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
+
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseAgcCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcLevelEdit ) ).setText( "30000" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcIncrementEdit ) ).setText( "10" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseVbrRadioBtn ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "10" );
+        ( ( CheckBox ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecIsUsePerceptualEnhancementCheckBox ) ).setChecked( true );
+
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( false );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate24RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).setText( "0" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "24" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).setText( "1" );
+    }
+
+    //效果等级：特。
+    public void OnClickUseEffectPremiumRadioBtn( View BtnPt )
+    {
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseEffectPremiumRadioBtn ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate32000RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexWebRtcAecRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).setText( "500" );
+        ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsUseRecCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoMultipleEdit ) ).setText( "3.0" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoContEdit ) ).setText( "0.65" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoSupesEdit ) ).setText( "-32768" );
+        ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoSupesActEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsSaveMemFileCheckBox ) ).setChecked( false );
+
+        ( ( CheckBox ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmIsUseCNGModeCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmEchoModeEdit ) ).setText( "4" );
+        ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmDelayEdit ) ).setText( "0" );
+
+        ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecEchoModeEdit ) ).setText( "2" );
+        ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecDelayEdit ) ).setText( "0" );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgnosticModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseExtdFilterModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).setChecked( false );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCheckBox ) ).setChecked( false );
+
+        ( ( RadioButton ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRadioBtn ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdit ) ).setText( "500" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMultipleEdit ) ).setText( "1.0" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoContEdit ) ).setText( "0.6" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesEdit ) ).setText( "-32768" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesActEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmIsUseCNGModeCheckBox ) ).setChecked( false );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmEchoModeEdit ) ).setText( "4" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmDelayEdit ) ).setText( "0" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecEchoModeEdit ) ).setText( "2" );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecDelayEdit ) ).setText( "0" );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).setChecked( false );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "420" );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseRNNoiseRadioBtn ) ).setChecked( true );
+
+        ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdit ) ).setText( "3" );
+
+        ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
+
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
+        ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseAgcCheckBox ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcLevelEdit ) ).setText( "30000" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcIncrementEdit ) ).setText( "10" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
+        ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
+
+        ( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseVbrRadioBtn ) ).setChecked( true );
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "10" );
+        ( ( CheckBox ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecIsUsePerceptualEnhancementCheckBox ) ).setChecked( true );
+
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( false );
+
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate30RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).setText( "0" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "30" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).setText( "2" );
+    }
+
+    //比特率等级：低。
+    public void OnClickUseBitrateLowRadioBtn( View BtnPt )
+    {
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseBitrateLowRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderQualityEdit ) ).setText( "1" );
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderPlcExpectedLossRateEdit ) ).setText( "1" );
+
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).setText( "1" );
+    }
+
+    //比特率等级：中。
+    public void OnClickUseBitrateMidRadioBtn( View BtnPt )
+    {
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseBitrateMidRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderQualityEdit ) ).setText( "4" );
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderPlcExpectedLossRateEdit ) ).setText( "40" );
+
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).setText( "20" );
+    }
+
+    //比特率等级：高。
+    public void OnClickUseBitrateHighRadioBtn( View BtnPt )
+    {
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseBitrateHighRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderQualityEdit ) ).setText( "8" );
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderPlcExpectedLossRateEdit ) ).setText( "80" );
+
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).setText( "40" );
+    }
+
+    //比特率等级：超。
+    public void OnClickUseBitrateSuperRadioBtn( View BtnPt )
+    {
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseBitrateSuperRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderQualityEdit ) ).setText( "10" );
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderPlcExpectedLossRateEdit ) ).setText( "100" );
+
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).setText( "60" );
+    }
+
+    //比特率等级：特。
+    public void OnClickUseBitratePremiumRadioBtn( View BtnPt )
+    {
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseBitratePremiumRadioBtn ) ).setChecked( true );
+
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderQualityEdit ) ).setText( "10" );
+        ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderPlcExpectedLossRateEdit ) ).setText( "100" );
+
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).setText( "80" );
     }
 }

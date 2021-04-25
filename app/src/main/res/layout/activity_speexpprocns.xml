@@ -29,7 +29,6 @@
             android:id="@+id/SpeexPprocIsUseNsCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:checked="true"
             android:gravity="center_vertical"/>
 
         <LinearLayout
@@ -45,7 +44,6 @@
                 android:gravity="center_vertical"/>
 
             <EditText
-                android:text="-32768"
                 android:id="@+id/SpeexPprocNoiseSupesEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -59,7 +57,6 @@
             android:id="@+id/SpeexPprocIsUseDereverbCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:checked="true"
             android:gravity="center_vertical"/>
 
         <Button

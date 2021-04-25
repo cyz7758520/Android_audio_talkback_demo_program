@@ -16,7 +16,7 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:text="Android下音频对讲演示程序\n设置\n"
+            android:text="Android下音视频对讲演示程序\n设置\n"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_horizontal"
@@ -27,36 +27,156 @@
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content" >
 
             <TextView
-                android:text="传输协议："
-                android:layout_width="0dp"
+                android:gravity="center_vertical"
                 android:layout_weight="3"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:gravity="center_vertical"/>
+                android:text="接收输出帧：" />
 
             <RadioGroup
-                android:orientation="horizontal"
-                android:layout_weight="8"
+                android:orientation="vertical"
+                android:layout_weight="7"
                 android:layout_width="0dp"
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:text="TCP协议"
-                    android:id="@+id/UseTcpPrtclRadioBtn"
-                    android:layout_weight="1"
+                    android:id="@+id/UseLnkLstRadioBtn"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    />
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:checked="false"
+                    android:text="链表" />
 
                 <RadioButton
-                    android:text="UDP协议"
-                    android:id="@+id/UseUdpPrtclRadioBtn"
+                    android:id="@+id/UseAjbRadioBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
                     android:layout_weight="1"
+                    android:checked="true"
+                    android:text="自己设计的自适应抖动缓冲器" />
+
+            </RadioGroup>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content">
+
+                <Button
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:checked="true" />
+                    android:text="设置"
+                    android:enabled="false"
+                    android:visibility="invisible"/>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="设置"
+                    android:onClick="OnClickAjbSetting" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/IsUseFrgndSrvcCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="使用前台服务" />
+
+        <CheckBox
+            android:id="@+id/IsSaveSettingToFileCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="保存设置到扩展目录下的Setting.txt文件中" />
+
+        <CheckBox
+            android:id="@+id/IsPrintLogcatCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="打印Logcat日志" />
+
+        <CheckBox
+            android:id="@+id/IsUseWakeLockCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="使用唤醒锁" />
+
+        <TextView
+            android:gravity="center_horizontal"
+            android:textAlignment="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="normal|bold"
+            android:textSize="20sp"
+            android:text="\n音视频预设设置\n" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:gravity="center_vertical"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="match_parent"
+                android:text="效果等级：" />
+
+            <RadioGroup
+                android:orientation="horizontal"
+                android:layout_weight="9"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:text="低"
+                    android:id="@+id/UseEffectLowRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseEffectLowRadioBtn"/>
+
+                <RadioButton
+                    android:text="中"
+                    android:id="@+id/UseEffectMidRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseEffectMidRadioBtn"/>
+
+                <RadioButton
+                    android:text="高"
+                    android:id="@+id/UseEffectHighRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseEffectHighRadioBtn"/>
+
+                <RadioButton
+                    android:text="超"
+                    android:id="@+id/UseEffectSuperRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseEffectSuperRadioBtn"/>
+
+                <RadioButton
+                    android:text="特"
+                    android:id="@+id/UseEffectPremiumRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseEffectPremiumRadioBtn"/>
 
             </RadioGroup>
 
@@ -72,37 +192,105 @@
                 android:layout_width="0dp"
                 android:layout_weight="3"
                 android:layout_height="match_parent"
+                android:text="比特率等级：" />
+
+            <RadioGroup
+                android:orientation="horizontal"
+                android:layout_weight="9"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:text="低"
+                    android:id="@+id/UseBitrateLowRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseBitrateLowRadioBtn"/>
+
+                <RadioButton
+                    android:text="中"
+                    android:id="@+id/UseBitrateMidRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseBitrateMidRadioBtn"/>
+
+                <RadioButton
+                    android:text="高"
+                    android:id="@+id/UseBitrateHighRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseBitrateHighRadioBtn"/>
+
+                <RadioButton
+                    android:text="超"
+                    android:id="@+id/UseBitrateSuperRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseBitrateSuperRadioBtn"/>
+
+                <RadioButton
+                    android:text="特"
+                    android:id="@+id/UseBitratePremiumRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseBitratePremiumRadioBtn"/>
+
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <TextView
+            android:gravity="center_horizontal"
+            android:textAlignment="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="normal|bold"
+            android:textSize="20sp"
+            android:text="\n音频设置\n" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:gravity="center_vertical"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="match_parent"
                 android:text="采样频率：" />
 
             <RadioGroup
                 android:orientation="horizontal"
-                android:layout_weight="8"
+                android:layout_weight="9"
                 android:layout_width="0dp"
                 android:layout_height="match_parent">
 
                 <RadioButton
                     android:text="8000"
-                    android:id="@+id/UseSamplingRate8000RadioBtn"
+                    android:id="@+id/UseAudioSamplingRate8000RadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:checked="false"/>
+                    android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="16000"
-                    android:id="@+id/UseSamplingRate16000RadioBtn"
+                    android:id="@+id/UseAudioSamplingRate16000RadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:checked="true"/>
+                    android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="32000"
-                    android:id="@+id/UseSamplingRate32000RadioBtn"
+                    android:id="@+id/UseAudioSamplingRate32000RadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:checked="false"/>
+                    android:layout_height="match_parent"/>
 
             </RadioGroup>
 
@@ -122,71 +310,39 @@
 
             <RadioGroup
                 android:orientation="horizontal"
-                android:layout_weight="8"
+                android:layout_weight="9"
                 android:layout_width="0dp"
                 android:layout_height="match_parent">
 
                 <RadioButton
                     android:text="10ms"
-                    android:id="@+id/UseFrame10msLenRadioBtn"
+                    android:id="@+id/UseAudioFrameLen10msRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:checked="false"/>
+                    android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="20ms"
-                    android:id="@+id/UseFrame20msLenRadioBtn"
+                    android:id="@+id/UseAudioFrameLen20msRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:checked="true"/>
+                    android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="30ms"
-                    android:id="@+id/UseFrame30msLenRadioBtn"
+                    android:id="@+id/UseAudioFrameLen30msRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:checked="false"/>
+                    android:layout_height="match_parent"/>
 
             </RadioGroup>
 
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/IsSaveSettingToFileCheckBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="保存设置到扩展目录下的Setting.txt文件中"/>
-
-        <CheckBox
-            android:id="@+id/IsPrintLogcatCheckBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="打印Logcat日志"/>
-
-        <CheckBox
-            android:id="@+id/IsUseWakeLockCheckBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="使用唤醒锁"/>
-
-        <CheckBox
-            android:id="@+id/IsUseFrgndSrvcCheckBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="使用前台服务"/>
-
-        <CheckBox
             android:id="@+id/IsUseSystemAecNsAgcCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:checked="true"
             android:text="使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带）"/>
 
         <LinearLayout
@@ -203,7 +359,7 @@
 
             <RadioGroup
                 android:orientation="vertical"
-                android:layout_weight="6"
+                android:layout_weight="7"
                 android:layout_width="0dp"
                 android:layout_height="match_parent">
 
@@ -212,7 +368,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:checked="false"
                     android:text="不使用" />
 
                 <RadioButton
@@ -220,7 +375,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:checked="false"
                     android:text="Speex声学回音消除器" />
 
                 <RadioButton
@@ -228,7 +382,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:checked="false"
                     android:text="WebRtc定点版声学回音消除器" />
 
                 <RadioButton
@@ -236,15 +389,13 @@
                     android:id="@+id/UseWebRtcAecRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:checked="false"/>
+                    android:layout_height="0dp"/>
 
                 <RadioButton
                     android:id="@+id/UseSpeexWebRtcAecRadioBtn"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:checked="true"
                     android:text="SpeexWebRtc三重声学回音消除器" />
 
             </RadioGroup>
@@ -304,7 +455,7 @@
 
                 <RadioGroup
                     android:orientation="vertical"
-                    android:layout_weight="6"
+                    android:layout_weight="7"
                     android:layout_width="0dp"
                     android:layout_height="match_parent">
 
@@ -313,15 +464,13 @@
                         android:id="@+id/UseNoNsRadioBtn"
                         android:layout_weight="1"
                         android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:checked="false"/>
+                        android:layout_height="0dp"/>
 
                     <RadioButton
                         android:id="@+id/UseSpeexPprocNsRadioBtn"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
-                        android:checked="false"
                         android:text="Speex预处理器的噪音抑制" />
 
                     <RadioButton
@@ -329,23 +478,20 @@
                         android:id="@+id/UseWebRtcNsxRadioBtn"
                         android:layout_weight="1"
                         android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:checked="false"/>
+                        android:layout_height="0dp"/>
 
                     <RadioButton
                         android:text="WebRtc浮点版噪音抑制器"
                         android:id="@+id/UseWebRtcNsRadioBtn"
                         android:layout_weight="1"
                         android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:checked="false"/>
+                        android:layout_height="0dp"/>
 
                     <RadioButton
                         android:id="@+id/UseRNNoiseRadioBtn"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
-                        android:checked="true"
                         android:text="RNNoise噪音抑制器" />
 
                 </RadioGroup>
@@ -402,8 +548,7 @@
                 android:layout_weight="9"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="使用Speex预处理器的其他功能"
-                android:checked="true"/>
+                android:text="使用Speex预处理器的其他功能"/>
 
             <Button
                 android:layout_weight="2"
@@ -428,7 +573,7 @@
 
             <RadioGroup
                 android:orientation="vertical"
-                android:layout_weight="6"
+                android:layout_weight="7"
                 android:layout_width="0dp"
                 android:layout_height="match_parent">
 
@@ -437,16 +582,14 @@
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:text="PCM原始数据"
-                    android:checked="false"/>
+                    android:text="PCM原始数据"/>
 
                 <RadioButton
                     android:id="@+id/UseSpeexCodecRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:text="Speex编解码器"
-                    android:checked="true"/>
+                    android:text="Speex编解码器"/>
 
                 <RadioButton
                     android:id="@+id/UseOpusCodecRadioBtn"
@@ -454,8 +597,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:text="Opus编解码器"
-                    android:enabled="false"
-                    android:checked="false"/>
+                    android:enabled="false"/>
 
             </RadioGroup>
 
@@ -489,6 +631,171 @@
 
         </LinearLayout>
 
+        <CheckBox
+            android:id="@+id/IsSaveAudioToFileCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="将音频输入帧、音频输出帧、音频结果帧分别替换保存到扩展目录下的AudioInput.wav、AudioOutput.wav、AudioResult.wav文件中" />
+
+        <TextView
+            android:gravity="center_horizontal"
+            android:textAlignment="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="normal|bold"
+            android:textSize="20sp"
+            android:text="\n视频设置\n" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:gravity="center_vertical"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="match_parent"
+                android:text="采样频率：" />
+
+            <RadioGroup
+                android:orientation="horizontal"
+                android:layout_weight="9"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:text="12"
+                    android:id="@+id/UseVideoSamplingRate12RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+                <RadioButton
+                    android:text="16"
+                    android:id="@+id/UseVideoSamplingRate16RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+                <RadioButton
+                    android:text="24"
+                    android:id="@+id/UseVideoSamplingRate24RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+                <RadioButton
+                    android:text="30"
+                    android:id="@+id/UseVideoSamplingRate30RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:gravity="center_vertical"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="match_parent"
+                android:text="帧大小：" />
+
+            <RadioGroup
+                android:orientation="horizontal"
+                android:layout_weight="9"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:text="144*176"
+                    android:id="@+id/UseVideoFrameSize144_176RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+                <RadioButton
+                    android:text="240*320"
+                    android:id="@+id/UseVideoFrameSize240_320RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+                <RadioButton
+                    android:text="480*640"
+                    android:id="@+id/UseVideoFrameSize480_640RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+                <RadioButton
+                    android:text="960*1280"
+                    android:id="@+id/UseVideoFrameSize960_1280RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:gravity="center_vertical"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="match_parent"
+                android:text="显示缩放：" />
+
+            <RadioGroup
+                android:orientation="horizontal"
+                android:layout_weight="9"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:text="不缩放"
+                    android:id="@+id/UseDisplayScale1_0RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+                <RadioButton
+                    android:text="1.5倍"
+                    android:id="@+id/UseDisplayScale1_5RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+                <RadioButton
+                    android:text="2倍"
+                    android:id="@+id/UseDisplayScale2_0RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+                <RadioButton
+                    android:text="3倍"
+                    android:id="@+id/UseDisplayScale3_0RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+            </RadioGroup>
+
+        </LinearLayout>
+
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
@@ -499,29 +806,27 @@
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="接收音频输出帧：" />
+                android:text="编解码器：" />
 
             <RadioGroup
                 android:orientation="vertical"
-                android:layout_weight="6"
+                android:layout_weight="7"
                 android:layout_width="0dp"
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:id="@+id/UseLnkLstRadioBtn"
+                    android:id="@+id/UseYU12RadioBtn"
+                    android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:checked="false"
-                    android:text="链表" />
+                    android:text="YU12原始数据"/>
 
                 <RadioButton
-                    android:id="@+id/UseAjbRadioBtn"
+                    android:id="@+id/UseOpenH264CodecRadioBtn"
+                    android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:checked="true"
-                    android:text="自己设计的自适应抖动缓冲器" />
+                    android:text="OpenH264编解码器"/>
 
             </RadioGroup>
 
@@ -532,9 +837,9 @@
                 android:layout_height="wrap_content">
 
                 <Button
+                    android:text="设置"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:text="设置"
                     android:enabled="false"
                     android:visibility="invisible"/>
 
@@ -542,18 +847,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnClickAjbSetting" />
+                    android:onClick="OnClickOpenH264CodecSetting" />
 
             </LinearLayout>
 
         </LinearLayout>
-
-        <CheckBox
-            android:id="@+id/IsSaveAudioToFileCheckBox"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:checked="true"
-            android:text="将音频输入帧、音频输出帧、音频结果帧分别替换保存到扩展目录下的AudioInput.wav、AudioOutput.wav、AudioResult.wav文件中" />
 
         <Button
             android:layout_width="match_parent"

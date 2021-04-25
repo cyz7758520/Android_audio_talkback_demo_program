@@ -25,7 +25,7 @@
             android:textSize="20sp" />
 
         <CheckBox
-            android:id="@+id/CheckBoxWebRtcAecmIsUseCNGMode"
+            android:id="@+id/WebRtcAecmIsUseCNGModeCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="false"
@@ -44,12 +44,11 @@
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/WebRtcAecmEchoMode"
+                android:id="@+id/WebRtcAecmEchoModeEdit"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:inputType="number|numberSigned"
-                android:text="4" />
+                android:inputType="number" />
 
         </LinearLayout>
 
@@ -66,12 +65,11 @@
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/WebRtcAecmDelay"
+                android:id="@+id/WebRtcAecmDelayEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number|numberSigned"
-                android:text="0" />
+                android:inputType="number|numberSigned" />
 
         </LinearLayout>
 

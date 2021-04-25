@@ -29,7 +29,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:checked="true"
             android:text="使用语音活动检测"/>
 
         <LinearLayout
@@ -49,8 +48,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="95" />
+                android:inputType="number" />
 
         </LinearLayout>
 
@@ -71,8 +69,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="95" />
+                android:inputType="number" />
 
         </LinearLayout>
 
@@ -80,7 +77,6 @@
             android:id="@+id/SpeexPprocIsUseAgcCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:checked="true"
             android:text="使用自动增益控制" />
 
         <LinearLayout
@@ -100,8 +96,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="30000" />
+                android:inputType="number" />
 
         </LinearLayout>
 
@@ -122,8 +117,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="10" />
+                android:inputType="number" />
 
         </LinearLayout>
 
@@ -144,8 +138,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="-30000" />
+                android:inputType="number" />
 
         </LinearLayout>
 
@@ -166,8 +159,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="25" />
+                android:inputType="number" />
 
         </LinearLayout>
 

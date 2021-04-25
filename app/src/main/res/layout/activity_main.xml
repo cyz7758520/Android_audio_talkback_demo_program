@@ -22,10 +22,47 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="Android下音频对讲演示程序\n版本：2021年02月01日\n"
+            android:text="Android下音视频对讲演示程序\n版本：2021年04月25日\n"
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="normal|bold" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="传输协议："
+                android:layout_width="0dp"
+                android:layout_weight="4"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"/>
+
+            <RadioGroup
+                android:orientation="horizontal"
+                android:layout_weight="7"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:text="TCP协议"
+                    android:id="@+id/UseTcpPrtclRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <RadioButton
+                    android:text="UDP协议"
+                    android:id="@+id/UseUdpPrtclRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:checked="true" />
+
+            </RadioGroup>
+
+        </LinearLayout>
 
         <LinearLayout
             android:orientation="horizontal"
@@ -79,6 +116,53 @@
             android:layout_height="wrap_content">
 
             <TextView
+                android:text="对讲模式："
+                android:layout_width="0dp"
+                android:layout_weight="4"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"/>
+
+            <RadioGroup
+                android:orientation="horizontal"
+                android:layout_weight="7"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:text="音频"
+                    android:id="@+id/UseAudioTalkbackRadioBtn"
+                    android:layout_weight="10"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:onClick="OnUseAudio"
+                    android:checked="true"/>
+
+                <RadioButton
+                    android:text="视频"
+                    android:id="@+id/UseVideoTalkbackRadioBtn"
+                    android:layout_weight="10"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:onClick="OnUseVideo"/>
+
+                <RadioButton
+                    android:text="音视频"
+                    android:id="@+id/UseAudioVideoTalkbackRadioBtn"
+                    android:layout_weight="9"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:onClick="OnUseAudioVideo"/>
+
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
                 android:text="音频输出设备："
                 android:layout_width="0dp"
                 android:layout_weight="4"
@@ -117,6 +201,45 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <TextView
+                android:text="视频输入设备："
+                android:layout_width="0dp"
+                android:layout_weight="4"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"/>
+
+            <RadioGroup
+                android:orientation="horizontal"
+                android:layout_weight="7"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:text="前置摄像头"
+                    android:id="@+id/UseFrontCamereRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:onClick="OnUseFrontCamere"
+                    android:checked="true"/>
+
+                <RadioButton
+                    android:text="后置摄像头"
+                    android:id="@+id/UseBackCamereRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:onClick="OnUseBackCamere"/>
+
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
             <CheckBox
                 android:id="@+id/AudioInputDeviceIsMuteCheckBox"
                 android:layout_width="wrap_content"
@@ -134,6 +257,31 @@
                 android:checked="false"
                 android:onClick="OnAudioOutputDeviceIsMute"
                 android:text="音频输出设备静音"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <CheckBox
+                android:id="@+id/VideoInputDeviceIsBlackCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:checked="false"
+                android:onClick="OnVideoInputDeviceIsBlack"
+                android:text="视频输入设备黑屏"/>
+
+            <CheckBox
+                android:id="@+id/VideoOutputDeviceIsBlackCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:checked="false"
+                android:onClick="OnVideoOutputDeviceIsBlack"
+                android:text="视频输出设备黑屏"/>
 
         </LinearLayout>
 
@@ -204,18 +352,41 @@
                 android:text="" />
 
             <Button
+                android:id="@+id/ReadMeBtn"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="4"
-                android:text="必读说明"
-                android:id="@+id/ReadMeBtn"
-                android:onClick="OnClickReadMe" />
+                android:onClick="OnClickReadMe"
+                android:text="必读说明" />
 
             <TextView
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:text="" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <HeavenTao.Media.HTSurfaceView
+                android:id="@+id/VideoInputPreviewSurfaceView"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:onClick="onClickVideoSurfaceView" />
+
+            <HeavenTao.Media.HTSurfaceView
+                android:id="@+id/VideoOutputDisplaySurfaceView"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:onClick="onClickVideoSurfaceView" />
 
         </LinearLayout>
 

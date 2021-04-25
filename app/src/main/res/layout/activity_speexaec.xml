@@ -41,8 +41,7 @@
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="500" />
+                android:inputType="number"/>
 
         </LinearLayout>
 
@@ -50,8 +49,7 @@
             android:text="使用残余回音消除"
             android:id="@+id/SpeexAecIsUseRecCheckBox"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:checked="true"/>
+            android:layout_height="match_parent"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -70,8 +68,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberDecimal"
-                android:text="3.0" />
+                android:inputType="numberDecimal"/>
 
         </LinearLayout>
 
@@ -92,8 +89,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberDecimal"
-                android:text="0.65" />
+                android:inputType="numberDecimal"/>
 
         </LinearLayout>
 
@@ -110,12 +106,11 @@
                 android:gravity="center_vertical"/>
 
             <EditText
-                android:text="-32768"
                 android:id="@+id/SpeexAecEchoSupesEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number|numberSigned"/>
+                android:inputType="numberSigned"/>
 
         </LinearLayout>
 
@@ -132,12 +127,11 @@
                 android:gravity="center_vertical"/>
 
             <EditText
-                android:text="-32768"
                 android:id="@+id/SpeexAecEchoSupesActEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number|numberSigned"/>
+                android:inputType="numberSigned"/>
 
         </LinearLayout>
 
@@ -152,7 +146,6 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3"
                 android:gravity="center_vertical"
-                android:checked="false"
                 android:text="将Speex声学回音消除器的内存块保存到扩展目录下的SpeexAecMem文件中，以便缩短下一次初始化时的收敛时间"/>
 
             <Button

@@ -47,24 +47,21 @@
                 android:id="@+id/SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRadioBtn"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:checked="false"/>
+                android:layout_height="wrap_content"/>
 
             <RadioButton
                 android:text="WebRtc定点版声学回音消除器+WebRtc浮点版声学回音消除器"
                 android:id="@+id/SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRadioBtn"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:checked="false"/>
+                android:layout_height="wrap_content"/>
 
             <RadioButton
                 android:text="Speex声学回音消除器+WebRtc定点版声学回音消除器+WebRtc浮点版声学回音消除器"
                 android:id="@+id/SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRadioBtn"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:checked="true"/>
+                android:layout_height="wrap_content"/>
 
         </RadioGroup>
 
@@ -87,8 +84,7 @@
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="500" />
+                android:inputType="number"/>
 
         </LinearLayout>
 
@@ -96,7 +92,6 @@
             android:id="@+id/SpeexWebRtcAecSpeexAecIsUseRecCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:checked="true"
             android:text="Speex声学回音消除器使用残余回音消除" />
 
         <LinearLayout
@@ -116,8 +111,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberDecimal"
-                android:text="3.0" />
+                android:inputType="numberDecimal" />
 
         </LinearLayout>
 
@@ -138,8 +132,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberDecimal"
-                android:text="0.65" />
+                android:inputType="numberDecimal"/>
 
         </LinearLayout>
 
@@ -156,12 +149,11 @@
                 android:gravity="center_vertical"/>
 
             <EditText
-                android:text="-32768"
                 android:id="@+id/SpeexWebRtcAecSpeexAecEchoSupesEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number|numberSigned"/>
+                android:inputType="numberSigned"/>
 
         </LinearLayout>
 
@@ -178,12 +170,11 @@
                 android:gravity="center_vertical"/>
 
             <EditText
-                android:text="-32768"
                 android:id="@+id/SpeexWebRtcAecSpeexAecEchoSupesActEdit"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number|numberSigned"/>
+                android:inputType="numberSigned"/>
 
         </LinearLayout>
 
@@ -211,8 +202,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="4" />
+                android:inputType="number"/>
 
         </LinearLayout>
 
@@ -233,8 +223,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number|numberSigned"
-                android:text="0" />
+                android:inputType="numberSigned"/>
 
         </LinearLayout>
 
@@ -255,8 +244,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="2" />
+                android:inputType="number"/>
 
         </LinearLayout>
 
@@ -277,8 +265,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number|numberSigned"
-                android:text="0" />
+                android:inputType="numberSigned"/>
 
         </LinearLayout>
 
@@ -286,7 +273,6 @@
             android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticModeCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:checked="true"
             android:gravity="center_vertical"
             android:text="WebRtc浮点版声学回音消除器使用回音延迟不可知模式" />
 
@@ -294,7 +280,6 @@
             android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:checked="true"
             android:gravity="center_vertical"
             android:text="WebRtc浮点版声学回音消除器使用扩展滤波器模式" />
 
@@ -302,7 +287,6 @@
             android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:checked="false"
             android:gravity="center_vertical"
             android:text="WebRtc浮点版声学回音消除器使用精制滤波器自适应Aec模式" />
 
@@ -310,7 +294,6 @@
             android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:checked="true"
             android:gravity="center_vertical"
             android:text="WebRtc浮点版声学回音消除器使用自适应调节回音的延迟" />
 
@@ -318,7 +301,6 @@
             android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:checked="true"
             android:gravity="center_vertical"
             android:text="使用同一房间声学回音消除" />
 
@@ -339,8 +321,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number|numberSigned"
-                android:text="420" />
+                android:inputType="number"/>
 
         </LinearLayout>
 

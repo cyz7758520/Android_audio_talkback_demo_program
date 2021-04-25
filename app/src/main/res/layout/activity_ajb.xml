@@ -34,10 +34,10 @@
                 android:layout_height="match_parent"
                 android:layout_weight="2"
                 android:gravity="center_vertical"
-                android:text="最小需缓冲数据帧的数量，单位帧，必须大于0：" />
+                android:text="音频自适应抖动缓冲器的最小需缓冲帧的数量，单位个，必须大于0：" />
 
             <EditText
-                android:id="@+id/AjbMinNeedBufFrameCnt"
+                android:id="@+id/AAjbMinNeedBufFrameCnt"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -56,10 +56,10 @@
                 android:layout_height="match_parent"
                 android:layout_weight="2"
                 android:gravity="center_vertical"
-                android:text="最大需缓冲数据帧的数量，单位帧，必须大于最小需缓冲数据帧的数量：" />
+                android:text="音频自适应抖动缓冲器的最大需缓冲帧的数量，单位个，必须大于最小需缓冲帧的数量：" />
 
             <EditText
-                android:id="@+id/AjbMaxNeedBufFrameCnt"
+                android:id="@+id/AAjbMaxNeedBufFrameCnt"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -78,15 +78,81 @@
                 android:layout_height="match_parent"
                 android:layout_weight="2"
                 android:gravity="center_vertical"
-                android:text="自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0,127]：" />
+                android:text="音频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0.0,127.0]：" />
 
             <EditText
-                android:id="@+id/AjbAdaptSensitivity"
+                android:id="@+id/AAjbAdaptSensitivity"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="numberDecimal"
+                android:text="1.0" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:gravity="center_vertical"
+                android:text="视频自适应抖动缓冲器的最小需缓冲帧的数量，单位个，必须大于0：" />
+
+            <EditText
+                android:id="@+id/VAjbMinNeedBufFrameCnt"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number"
                 android:text="1" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:gravity="center_vertical"
+                android:text="视频自适应抖动缓冲器的最大需缓冲帧的数量，单位个，必须大于最小需缓冲帧的数量：" />
+
+            <EditText
+                android:id="@+id/VAjbMaxNeedBufFrameCnt"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:text="24" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:gravity="center_vertical"
+                android:text="视频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0.0,127.0]：" />
+
+            <EditText
+                android:id="@+id/VAjbAdaptSensitivity"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="numberDecimal"
+                android:text="1.0" />
 
         </LinearLayout>
 

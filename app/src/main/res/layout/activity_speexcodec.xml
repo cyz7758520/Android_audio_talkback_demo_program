@@ -54,7 +54,6 @@
                     android:layout_weight="1"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:checked="true"
                     android:text="动态比特率"/>
 
             </RadioGroup>
@@ -78,8 +77,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="10" />
+                android:inputType="number"/>
 
         </LinearLayout>
 
@@ -100,8 +98,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="10" />
+                android:inputType="number"/>
 
         </LinearLayout>
 
@@ -122,8 +119,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"
-                android:text="100" />
+                android:inputType="number"/>
 
         </LinearLayout>
 
@@ -131,7 +127,6 @@
             android:id="@+id/SpeexCodecIsUsePerceptualEnhancementCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:checked="true"
             android:text="Speex解码器使用知觉增强"/>
 
         <Button
