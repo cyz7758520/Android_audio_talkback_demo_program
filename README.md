@@ -17,16 +17,30 @@
 #### 准备两台安装了Android 2.3及以上系统的设备（已适配到Android 10），其中一台设备作为客户端可以连接到另一台作为服务端的设备（可以用Ping工具测试，建议两台设备在同一局域网内），且两台设备都安装相同版本的本软件。
 
 # 开始
-#### 在一台设备上直接点击创建服务端，再在另一台设备上将IP地址改为服务端设备的IP地址，并点击连接服务端，即可开始对讲，在任意端点击中断，即可中断对讲。
+#### 在一台设备上直接点击创建服务端，再在另一台设备上将IP地址改为服务端设备的IP地址，并点击连接服务端，即可开始对讲，在任意一端点击中断，即可中断对讲。
 #### 设置按钮提供了各项功能的参数设置，绝大部分情况下都不需要修改，当然你也可以根据需要自行修改。
 #### 特别注意：如果把两台设备放在同一房间里测试，有可能会出现啸叫、声音不完整、等问题，这是因为现在手机的麦克风都很灵敏了，一点小小的声音都会被录进去，导致软件无法正确识别回音，所以建议放在不同的房间里测试。
 
 # 移植
-#### 如果需要在自己的软件中使用本软件的音频功能，只需要将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Media.MediaProcThread类，实现UserInit、UserProcess、UserDestroy、UserReadAudioVideoInputFrame、UserWriteAudioOutputFrame、UserGetPcmAudioOutputFrame这六个函数，再在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限即可。
+#### 如果需要在自己的软件中使用本软件的音视频功能，只需要将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Media.MediaProcThread类，实现UserInit、UserProcess、UserDestroy、UserReadAudioVideoInputFrame、UserWriteAudioOutputFrame、UserGetPcmAudioOutputFrame这六个函数，再在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限即可。
 #### 如果用户要在JNI层处理音视频帧，则可以将那六个函数继承为native函数，然后在JNI层实现即可。
-#### 如果有不需要的部分功能，则只需要删除该功能对应类文件和动态库文件，然后修改HeavenTao.Media.MediaProcThread类文件即可。
+#### 如果用户有不需要的部分功能，则只需要删除该功能对应的库文件即可，还可以进一步删除对应的类文件，并修改HeavenTao.Media.MediaProcThread类文件即可。
 #### 普通免费版功能包括：WebRtc定点版声学回音消除器、Speex预处理器的噪音抑制、WebRtc定点版噪音抑制器、WebRtc浮点版噪音抑制器、Speex预处理器的其他功能、Speex编解码器、本端TCP协议服务端套接字、本端TCP协议客户端套接字、本端UDP协议套接字。
 #### 高级收费版功能包括：Speex声学回音消除器、WebRtc浮点版声学回音消除器、SpeexWebRtc三重声学回音消除器、RNNoise噪音抑制器、OpenH264编解码器、自己设计的自适应抖动缓冲器。
+#### Speex声学回音消除器对应：libFunc.so、libSpeexDsp.so、SpeexAec.java。
+#### WebRtc定点版声学回音消除器对应：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcAecm.java。
+#### WebRtc浮点版声学回音消除器对应：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcAec.java。
+#### SpeexWebRtc三重声学回音消除器对应：libFunc.so、libSpeexDsp.so、libc++_shared.so、libWebRtc.so、SpeexWebRtcAec.java。
+#### WebRtc定点版噪音抑制器对应：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcNsx.java。
+#### WebRtc浮点版噪音抑制器对应：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcNs.java。
+#### RNNoise噪音抑制器对应：libFunc.so、libc++_shared.so、libWebRtc.so、libRNNoise.so、RNNoise.java。
+#### Speex预处理器对应：libFunc.so、libSpeexDsp.so、SpeexPproc.java。
+#### Speex编解码器对应：libFunc.so、libSpeex.so、SpeexEncoder.java、SpeexDecoder.java。
+#### Wave文件写入读取器对应：libFunc.so、libWaveFile.so、WaveFileReader.java、WaveFileWriter.java。
+#### OpenH264编解码器对应：libFunc.so、libOpenH264.so、OpenH264Encoder.java、OpenH264Decoder.java。
+#### 图片处理对应：libFunc.so、libLibYUV.so、LibYUV.java。
+#### 音视频自适应抖动缓冲器对应：libFunc.so、libc++_shared.so、libAjb.so、AAjb.java、VAjb.java。
+#### 本端TCP协议UDP协议套接字对应：libFunc.so、libSokt.so、TcpSrvrSokt.java、TcpClntSokt.java、UdpSokt.java。
 
 # 注意
 #### 不要在64位操作系统下使用32位动态库，或在32位操作系统下使用64位动态库，否则会导致意想不到的问题。
