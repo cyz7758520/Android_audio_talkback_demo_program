@@ -1641,109 +1641,114 @@ public abstract class MediaProcThread extends Thread
                 if( m_AudioInputPt.m_IsUseAudioInput != 0 ) //如果要使用音频输入。
                 {
                     //创建并初始化声学回音消除器类对象。
-                    if( ( m_AudioInputPt.m_UseWhatAec != 0 ) && ( ( m_AudioOutputPt.m_IsUseAudioOutput == 0 ) || ( m_AudioOutputPt.m_SamplingRate != m_AudioInputPt.m_SamplingRate ) || ( m_AudioOutputPt.m_FrameLen != m_AudioInputPt.m_FrameLen ) ) )
+                    if( m_AudioInputPt.m_UseWhatAec != 0 )
                     {
-                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：不使用音频输出、或音频输出的采样频率或帧的数据长度与音频输入不一致，不能使用声学回音消除器。" );
-                        break out;
-                    }
-                    switch( m_AudioInputPt.m_UseWhatAec )
-                    {
-                        case 0: //如果不使用声学回音消除器。
+                        if( ( m_AudioOutputPt.m_IsUseAudioOutput != 0 ) && ( m_AudioOutputPt.m_SamplingRate == m_AudioInputPt.m_SamplingRate ) && ( m_AudioOutputPt.m_FrameLen == m_AudioInputPt.m_FrameLen ) ) //如果要使用音频输出，且音频输出的采样频率和帧的数据长度与音频输入一致。
                         {
-                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：不使用声学回音消除器。" );
-                            break;
+                            switch( m_AudioInputPt.m_UseWhatAec )
+                            {
+                                case 0: //如果不使用声学回音消除器。
+                                {
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：不使用声学回音消除器。" );
+                                    break;
+                                }
+                                case 1: //如果要使用Speex声学回音消除器。
+                                {
+                                    if( m_AudioInputPt.m_SpeexAecIsSaveMemFile != 0 )
+                                    {
+                                        m_AudioInputPt.m_SpeexAecPt = new SpeexAec();
+                                        if( m_AudioInputPt.m_SpeexAecPt.InitByMemFile( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_SpeexAecFilterLen, m_AudioInputPt.m_SpeexAecIsUseRec, m_AudioInputPt.m_SpeexAecEchoMultiple, m_AudioInputPt.m_SpeexAecEchoCont, m_AudioInputPt.m_SpeexAecEchoSupes, m_AudioInputPt.m_SpeexAecEchoSupesAct, m_AudioInputPt.m_SpeexAecMemFileFullPathStrPt, null ) == 0 )
+                                        {
+                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：根据Speex声学回音消除器内存块文件 " + m_AudioInputPt.m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器类对象成功。" );
+                                        }
+                                        else
+                                        {
+                                            m_AudioInputPt.m_SpeexAecPt = null;
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：根据Speex声学回音消除器内存块文件 " + m_AudioInputPt.m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器类对象失败。" );
+                                        }
+                                    }
+                                    if( m_AudioInputPt.m_SpeexAecPt == null )
+                                    {
+                                        m_AudioInputPt.m_SpeexAecPt = new SpeexAec();
+                                        if( m_AudioInputPt.m_SpeexAecPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_SpeexAecFilterLen, m_AudioInputPt.m_SpeexAecIsUseRec, m_AudioInputPt.m_SpeexAecEchoMultiple, m_AudioInputPt.m_SpeexAecEchoCont, m_AudioInputPt.m_SpeexAecEchoSupes, m_AudioInputPt.m_SpeexAecEchoSupesAct ) == 0 )
+                                        {
+                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex声学回音消除器类对象成功。" );
+                                        }
+                                        else
+                                        {
+                                            m_AudioInputPt.m_SpeexAecPt = null;
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex声学回音消除器类对象失败。" );
+                                            break out;
+                                        }
+                                    }
+                                    break;
+                                }
+                                case 2: //如果要使用WebRtc定点版声学回音消除器。
+                                {
+                                    m_AudioInputPt.m_WebRtcAecmPt = new WebRtcAecm();
+                                    if( m_AudioInputPt.m_WebRtcAecmPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_WebRtcAecmIsUseCNGMode, m_AudioInputPt.m_WebRtcAecmEchoMode, m_AudioInputPt.m_WebRtcAecmDelay ) == 0 )
+                                    {
+                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版声学回音消除器类对象成功。" );
+                                    }
+                                    else
+                                    {
+                                        m_AudioInputPt.m_WebRtcAecmPt = null;
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版声学回音消除器类对象失败。" );
+                                        break out;
+                                    }
+                                    break;
+                                }
+                                case 3: //如果要使用WebRtc浮点版声学回音消除器。
+                                {
+                                    if( m_AudioInputPt.m_WebRtcAecIsSaveMemFile != 0 )
+                                    {
+                                        m_AudioInputPt.m_WebRtcAecPt = new WebRtcAec();
+                                        if( m_AudioInputPt.m_WebRtcAecPt.InitByMemFile( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_WebRtcAecEchoMode, m_AudioInputPt.m_WebRtcAecDelay, m_AudioInputPt.m_WebRtcAecIsUseDelayAgnosticMode, m_AudioInputPt.m_WebRtcAecIsUseExtdFilterMode, m_AudioInputPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AudioInputPt.m_WebRtcAecIsUseAdaptAdjDelay, m_AudioInputPt.m_WebRtcAecMemFileFullPathStrPt, null ) == 0 )
+                                        {
+                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_AudioInputPt.m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器类对象成功。" );
+                                        }
+                                        else
+                                        {
+                                            m_AudioInputPt.m_WebRtcAecPt = null;
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_AudioInputPt.m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器类对象失败。" );
+                                        }
+                                    }
+                                    if( m_AudioInputPt.m_WebRtcAecPt == null )
+                                    {
+                                        m_AudioInputPt.m_WebRtcAecPt = new WebRtcAec();
+                                        if( m_AudioInputPt.m_WebRtcAecPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_WebRtcAecEchoMode, m_AudioInputPt.m_WebRtcAecDelay, m_AudioInputPt.m_WebRtcAecIsUseDelayAgnosticMode, m_AudioInputPt.m_WebRtcAecIsUseExtdFilterMode, m_AudioInputPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AudioInputPt.m_WebRtcAecIsUseAdaptAdjDelay ) == 0 )
+                                        {
+                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版声学回音消除器类对象成功。" );
+                                        }
+                                        else
+                                        {
+                                            m_AudioInputPt.m_WebRtcAecPt = null;
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版声学回音消除器类对象失败。" );
+                                            break out;
+                                        }
+                                    }
+                                    break;
+                                }
+                                case 4: //如果要使用SpeexWebRtc三重声学回音消除器。
+                                {
+                                    m_AudioInputPt.m_SpeexWebRtcAecPt = new SpeexWebRtcAec();
+                                    if( m_AudioInputPt.m_SpeexWebRtcAecPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_SpeexWebRtcAecWorkMode, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecFilterLen, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecIsUseRec, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoMultiple, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoCont, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoSupes, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoSupesAct, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecmEchoMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecmDelay, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecEchoMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecDelay, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseExtdFilterMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay, m_AudioInputPt.m_SpeexWebRtcAecIsUseSameRoomAec, m_AudioInputPt.m_SpeexWebRtcAecSameRoomEchoMinDelay ) == 0 )
+                                    {
+                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化SpeexWebRtc三重声学回音消除器类对象成功。" );
+                                    }
+                                    else
+                                    {
+                                        m_AudioInputPt.m_SpeexWebRtcAecPt = null;
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化SpeexWebRtc三重声学回音消除器类对象失败。" );
+                                        break out;
+                                    }
+                                    break;
+                                }
+                            }
                         }
-                        case 1: //如果要使用Speex声学回音消除器。
+                        else
                         {
-                            if( m_AudioInputPt.m_SpeexAecIsSaveMemFile != 0 )
-                            {
-                                m_AudioInputPt.m_SpeexAecPt = new SpeexAec();
-                                if( m_AudioInputPt.m_SpeexAecPt.InitByMemFile( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_SpeexAecFilterLen, m_AudioInputPt.m_SpeexAecIsUseRec, m_AudioInputPt.m_SpeexAecEchoMultiple, m_AudioInputPt.m_SpeexAecEchoCont, m_AudioInputPt.m_SpeexAecEchoSupes, m_AudioInputPt.m_SpeexAecEchoSupesAct, m_AudioInputPt.m_SpeexAecMemFileFullPathStrPt, null ) == 0 )
-                                {
-                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：根据Speex声学回音消除器内存块文件 " + m_AudioInputPt.m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器类对象成功。" );
-                                }
-                                else
-                                {
-                                    m_AudioInputPt.m_SpeexAecPt = null;
-                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：根据Speex声学回音消除器内存块文件 " + m_AudioInputPt.m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器类对象失败。" );
-                                }
-                            }
-                            if( m_AudioInputPt.m_SpeexAecPt == null )
-                            {
-                                m_AudioInputPt.m_SpeexAecPt = new SpeexAec();
-                                if( m_AudioInputPt.m_SpeexAecPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_SpeexAecFilterLen, m_AudioInputPt.m_SpeexAecIsUseRec, m_AudioInputPt.m_SpeexAecEchoMultiple, m_AudioInputPt.m_SpeexAecEchoCont, m_AudioInputPt.m_SpeexAecEchoSupes, m_AudioInputPt.m_SpeexAecEchoSupesAct ) == 0 )
-                                {
-                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex声学回音消除器类对象成功。" );
-                                }
-                                else
-                                {
-                                    m_AudioInputPt.m_SpeexAecPt = null;
-                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex声学回音消除器类对象失败。" );
-                                    break out;
-                                }
-                            }
-                            break;
-                        }
-                        case 2: //如果要使用WebRtc定点版声学回音消除器。
-                        {
-                            m_AudioInputPt.m_WebRtcAecmPt = new WebRtcAecm();
-                            if( m_AudioInputPt.m_WebRtcAecmPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_WebRtcAecmIsUseCNGMode, m_AudioInputPt.m_WebRtcAecmEchoMode, m_AudioInputPt.m_WebRtcAecmDelay ) == 0 )
-                            {
-                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版声学回音消除器类对象成功。" );
-                            }
-                            else
-                            {
-                                m_AudioInputPt.m_WebRtcAecmPt = null;
-                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版声学回音消除器类对象失败。" );
-                                break out;
-                            }
-                            break;
-                        }
-                        case 3: //如果要使用WebRtc浮点版声学回音消除器。
-                        {
-                            if( m_AudioInputPt.m_WebRtcAecIsSaveMemFile != 0 )
-                            {
-                                m_AudioInputPt.m_WebRtcAecPt = new WebRtcAec();
-                                if( m_AudioInputPt.m_WebRtcAecPt.InitByMemFile( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_WebRtcAecEchoMode, m_AudioInputPt.m_WebRtcAecDelay, m_AudioInputPt.m_WebRtcAecIsUseDelayAgnosticMode, m_AudioInputPt.m_WebRtcAecIsUseExtdFilterMode, m_AudioInputPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AudioInputPt.m_WebRtcAecIsUseAdaptAdjDelay, m_AudioInputPt.m_WebRtcAecMemFileFullPathStrPt, null ) == 0 )
-                                {
-                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_AudioInputPt.m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器类对象成功。" );
-                                }
-                                else
-                                {
-                                    m_AudioInputPt.m_WebRtcAecPt = null;
-                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_AudioInputPt.m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器类对象失败。" );
-                                }
-                            }
-                            if( m_AudioInputPt.m_WebRtcAecPt == null )
-                            {
-                                m_AudioInputPt.m_WebRtcAecPt = new WebRtcAec();
-                                if( m_AudioInputPt.m_WebRtcAecPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_WebRtcAecEchoMode, m_AudioInputPt.m_WebRtcAecDelay, m_AudioInputPt.m_WebRtcAecIsUseDelayAgnosticMode, m_AudioInputPt.m_WebRtcAecIsUseExtdFilterMode, m_AudioInputPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AudioInputPt.m_WebRtcAecIsUseAdaptAdjDelay ) == 0 )
-                                {
-                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版声学回音消除器类对象成功。" );
-                                }
-                                else
-                                {
-                                    m_AudioInputPt.m_WebRtcAecPt = null;
-                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版声学回音消除器类对象失败。" );
-                                    break out;
-                                }
-                            }
-                            break;
-                        }
-                        case 4: //如果要使用SpeexWebRtc三重声学回音消除器。
-                        {
-                            m_AudioInputPt.m_SpeexWebRtcAecPt = new SpeexWebRtcAec();
-                            if( m_AudioInputPt.m_SpeexWebRtcAecPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_SpeexWebRtcAecWorkMode, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecFilterLen, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecIsUseRec, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoMultiple, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoCont, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoSupes, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoSupesAct, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecmEchoMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecmDelay, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecEchoMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecDelay, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseExtdFilterMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay, m_AudioInputPt.m_SpeexWebRtcAecIsUseSameRoomAec, m_AudioInputPt.m_SpeexWebRtcAecSameRoomEchoMinDelay ) == 0 )
-                            {
-                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化SpeexWebRtc三重声学回音消除器类对象成功。" );
-                            }
-                            else
-                            {
-                                m_AudioInputPt.m_SpeexWebRtcAecPt = null;
-                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化SpeexWebRtc三重声学回音消除器类对象失败。" );
-                                break out;
-                            }
-                            break;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：不使用音频输出、或音频输出的采样频率或帧的数据长度与音频输入不一致，不能使用声学回音消除器。" );
                         }
                     }
 
@@ -2374,7 +2379,7 @@ public abstract class MediaProcThread extends Thread
                             }
                             case 1: //如果要使用Speex声学回音消除器。
                             {
-                                if( m_AudioInputPt.m_SpeexAecPt.Proc( p_PcmAudioResultFramePt, p_PcmAudioOutputFramePt, p_PcmAudioTmpFramePt ) == 0 )
+                                if( ( m_AudioInputPt.m_SpeexAecPt != null ) && ( m_AudioInputPt.m_SpeexAecPt.Proc( p_PcmAudioResultFramePt, p_PcmAudioOutputFramePt, p_PcmAudioTmpFramePt ) == 0 ) )
                                 {
                                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用Speex声学回音消除器成功。" );
                                     p_PcmAudioSwapFramePt = p_PcmAudioResultFramePt;p_PcmAudioResultFramePt = p_PcmAudioTmpFramePt;p_PcmAudioTmpFramePt = p_PcmAudioSwapFramePt; //交换音频结果帧和音频临时帧。
@@ -2387,7 +2392,7 @@ public abstract class MediaProcThread extends Thread
                             }
                             case 2: //如果要使用WebRtc定点版声学回音消除器。
                             {
-                                if( m_AudioInputPt.m_WebRtcAecmPt.Proc( p_PcmAudioResultFramePt, p_PcmAudioOutputFramePt, p_PcmAudioTmpFramePt ) == 0 )
+                                if( ( m_AudioInputPt.m_WebRtcAecmPt != null ) && ( m_AudioInputPt.m_WebRtcAecmPt.Proc( p_PcmAudioResultFramePt, p_PcmAudioOutputFramePt, p_PcmAudioTmpFramePt ) == 0 ) )
                                 {
                                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用WebRtc定点版声学回音消除器成功。" );
                                     p_PcmAudioSwapFramePt = p_PcmAudioResultFramePt;p_PcmAudioResultFramePt = p_PcmAudioTmpFramePt;p_PcmAudioTmpFramePt = p_PcmAudioSwapFramePt; //交换音频结果帧和音频临时帧。
@@ -2400,7 +2405,7 @@ public abstract class MediaProcThread extends Thread
                             }
                             case 3: //如果要使用WebRtc浮点版声学回音消除器。
                             {
-                                if( m_AudioInputPt.m_WebRtcAecPt.Proc( p_PcmAudioResultFramePt, p_PcmAudioOutputFramePt, p_PcmAudioTmpFramePt ) == 0 )
+                                if( ( m_AudioInputPt.m_WebRtcAecPt != null ) && ( m_AudioInputPt.m_WebRtcAecPt.Proc( p_PcmAudioResultFramePt, p_PcmAudioOutputFramePt, p_PcmAudioTmpFramePt ) == 0 ) )
                                 {
                                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用WebRtc浮点版声学回音消除器成功。" );
                                     p_PcmAudioSwapFramePt = p_PcmAudioResultFramePt;p_PcmAudioResultFramePt = p_PcmAudioTmpFramePt;p_PcmAudioTmpFramePt = p_PcmAudioSwapFramePt; //交换音频结果帧和音频临时帧。
@@ -2413,7 +2418,7 @@ public abstract class MediaProcThread extends Thread
                             }
                             case 4: //如果要使用SpeexWebRtc三重声学回音消除器。
                             {
-                                if( m_AudioInputPt.m_SpeexWebRtcAecPt.Proc( p_PcmAudioResultFramePt, p_PcmAudioOutputFramePt, p_PcmAudioTmpFramePt ) == 0 )
+                                if( ( m_AudioInputPt.m_SpeexWebRtcAecPt != null ) && ( m_AudioInputPt.m_SpeexWebRtcAecPt.Proc( p_PcmAudioResultFramePt, p_PcmAudioOutputFramePt, p_PcmAudioTmpFramePt ) == 0 ) )
                                 {
                                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用SpeexWebRtc三重声学回音消除器成功。" );
                                     p_PcmAudioSwapFramePt = p_PcmAudioResultFramePt;p_PcmAudioResultFramePt = p_PcmAudioTmpFramePt;p_PcmAudioTmpFramePt = p_PcmAudioSwapFramePt; //交换音频结果帧和音频临时帧。
