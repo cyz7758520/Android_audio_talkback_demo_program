@@ -114,7 +114,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="复杂度，复杂度越高压缩率不变、CPU使用率越高、音质越好，取值区间为[0,2]："
+                android:text="复杂度，复杂度越高压缩率不变、CPU使用率越高、画质越好，取值区间为[0,2]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"

@@ -69,7 +69,7 @@ public abstract class MediaProcThread extends Thread
         int m_SpeexAecEchoSupes; //存放Speex声学回音消除器在残余回音消除时，残余回音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]。
         int m_SpeexAecEchoSupesAct; //存放Speex声学回音消除器在残余回音消除时，有近端语音活动时残余回音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]。
         int m_SpeexAecIsSaveMemFile; //存放Speex声学回音消除器是否保存内存块到文件，为非0表示要保存，为0表示不保存。
-        String m_SpeexAecMemFileFullPathStrPt; //存放Speex声学回音消除器的内存块文件完整路径字符串。
+        String m_SpeexAecMemFileFullPathStrPt; //存放Speex声学回音消除器的内存块文件完整路径字符串类对象的内存指针。
 
         WebRtcAecm m_WebRtcAecmPt; //存放WebRtc定点版声学回音消除器类对象的内存指针。
         int m_WebRtcAecmIsUseCNGMode; //存放WebRtc定点版声学回音消除器是否使用舒适噪音生成模式，为非0表示要使用，为0表示不使用。
@@ -202,12 +202,12 @@ public abstract class MediaProcThread extends Thread
         int m_OpenH264EncoderEncodedBitrate; //存放OpenH264编码器的编码后比特率，单位为bps。
         int m_OpenH264EncoderBitrateControlMode; //存放OpenH264编码器的比特率控制模式，为0表示质量优先模式，为1表示比特率优先模式，为2表示缓冲区优先模式，为3表示时间戳优先模式。
         int m_OpenH264EncoderIDRFrameIntvl; //存放OpenH264编码器的IDR帧间隔帧数，单位为个，为0表示仅第一帧为IDR帧，为大于0表示每隔这么帧就至少有一个IDR帧。
-        int m_OpenH264EncoderComplexity; //存放OpenH264编码器的复杂度，复杂度越高压缩率不变、CPU使用率越高、音质越好，取值区间为[0,2]。
+        int m_OpenH264EncoderComplexity; //存放OpenH264编码器的复杂度，复杂度越高压缩率不变、CPU使用率越高、画质越好，取值区间为[0,2]。
 
         public Camera m_VideoInputDevicePt; //存放视频输入设备类对象的内存指针。
         public int m_UseWhatVideoInputDevice = 0; //存放使用什么视频输入设备，为0表示后置摄像头，为1表示前置摄像头。
-        public HTSurfaceView m_VideoPreviewSurfaceViewPt; //存放视频预览SurfaceView类对象的内存指针。
-        public byte m_VideoPreviewCallbackBufferPtPt[][]; //存放视频预览回调函数缓冲区的内存指针。
+        public HTSurfaceView m_VideoInputPreviewSurfaceViewPt; //存放视频输入预览SurfaceView类对象的内存指针。
+        public byte m_VideoInputPreviewCallbackBufferPtPt[][]; //存放视频输入预览回调函数缓冲区的内存指针。
         public int m_VideoInputFrameRotate; //存放视频输入帧旋转的角度，只能为0、90、180、270。
         int m_VideoInputDeviceIsBlack = 0; //存放视频输入设备是否黑屏，为0表示有图像，为非0表示黑屏。
 
@@ -248,8 +248,8 @@ public abstract class MediaProcThread extends Thread
         OpenH264Decoder m_OpenH264DecoderPt; //存放OpenH264解码器类对象的内存指针。
         int m_OpenH264DecoderDecodeThreadNum; //存放OpenH264解码器的解码线程数，单位为个，为0表示直接在调用线程解码，为1或2或3表示解码子线程的数量。
 
-        HTSurfaceView m_VideoDisplaySurfaceViewPt; //存放视频显示SurfaceView类对象的内存指针。
-        float m_VideoDisplayScale = 1.0f; //存放视频显示缩放倍数。
+        HTSurfaceView m_VideoOutputDisplaySurfaceViewPt; //存放视频输出显示SurfaceView类对象的内存指针。
+        float m_VideoOutputDisplayScale = 1.0f; //存放视频输出显示缩放倍数。
         int m_VideoOutputDeviceIsBlack = 0; //存放视频输出设备是否黑屏，为0表示有图像，为非0表示黑屏。
 
         public LinkedList< VideoOutputFrameElm > m_VideoOutputFrameLnkLstPt; //存放视频输出帧链表类对象的内存指针。
@@ -338,20 +338,20 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置是否保存设置到文件。
-    public void SetSaveSettingToFile( int IsSaveSettingToFile, String SettingFileFullPathStrPt )
+    public void SetIsSaveSettingToFile( int IsSaveSettingToFile, String SettingFileFullPathStrPt )
     {
         m_IsSaveSettingToFile = IsSaveSettingToFile;
         m_SettingFileFullPathStrPt = SettingFileFullPathStrPt;
     }
 
     //设置是否打印Logcat日志。
-    public void SetPrintLogcat( int IsPrintLogcat )
+    public void SetIsPrintLogcat( int IsPrintLogcat )
     {
         m_IsPrintLogcat = IsPrintLogcat;
     }
 
     //设置是否使用唤醒锁。
-    public void SetUseWakeLock( int IsUseWakeLock )
+    public void SetIsUseWakeLock( int IsUseWakeLock )
     {
         m_IsUseWakeLock = IsUseWakeLock;
 
@@ -443,10 +443,10 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置是否使用音频输入。
-    public void SetUseAudioInput( int IsUseAudioInput, int SamplingRate, int FrameLenMsec )
+    public void SetIsUseAudioInput( int IsUseAudioInput, int SamplingRate, int FrameLenMsec )
     {
         if( ( ( IsUseAudioInput != 0 ) && ( ( SamplingRate != 8000 ) && ( SamplingRate != 16000 ) && ( SamplingRate != 32000 ) ) ) || //如果采样频率不正确。
-            ( ( IsUseAudioInput != 0 ) && ( ( FrameLenMsec == 0 ) || ( FrameLenMsec % 10 != 0 ) ) ) ) //如果帧的毫秒长度不正确。
+            ( ( IsUseAudioInput != 0 ) && ( ( FrameLenMsec <= 0 ) || ( FrameLenMsec % 10 != 0 ) ) ) ) //如果帧的毫秒长度不正确。
         {
             return;
         }
@@ -457,7 +457,7 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置音频输入是否使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带）。
-    public void SetAudioInputUseSystemAecNsAgc( int IsUseSystemAecNsAgc )
+    public void SetAudioInputIsUseSystemAecNsAgc( int IsUseSystemAecNsAgc )
     {
         m_AudioInputPt.m_IsUseSystemAecNsAgc = IsUseSystemAecNsAgc;
     }
@@ -564,8 +564,8 @@ public abstract class MediaProcThread extends Thread
         m_AudioInputPt.m_UseWhatNs = 4;
     }
 
-    //设置音频输入要使用Speex预处理器的其他功能。
-    public void SetAudioInputUseSpeexPprocOther( int IsUseOther, int IsUseVad, int VadProbStart, int VadProbCont, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain )
+    //设置音频输入是否使用Speex预处理器的其他功能。
+    public void SetAudioInputIsUseSpeexPprocOther( int IsUseOther, int IsUseVad, int VadProbStart, int VadProbCont, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain )
     {
         m_AudioInputPt.m_IsUseSpeexPprocOther = IsUseOther;
         m_AudioInputPt.m_SpeexPprocIsUseVad = IsUseVad;
@@ -601,7 +601,7 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置音频输入是否保存音频到文件。
-    public void SetAudioInputSaveAudioToFile( int IsSaveAudioToFile, String AudioInputFileFullPathStrPt, String AudioResultFileFullPathStrPt )
+    public void SetAudioInputIsSaveAudioToFile( int IsSaveAudioToFile, String AudioInputFileFullPathStrPt, String AudioResultFileFullPathStrPt )
     {
         m_AudioInputPt.m_IsSaveAudioToFile = IsSaveAudioToFile;
         m_AudioInputPt.m_AudioInputFileFullPathStrPt = AudioInputFileFullPathStrPt;
@@ -615,7 +615,7 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置是否使用音频输出。
-    public void SetUseAudioOutput( int IsUseAudioOutput, int SamplingRate, int FrameLenMsec )
+    public void SetIsUseAudioOutput( int IsUseAudioOutput, int SamplingRate, int FrameLenMsec )
     {
         if( ( ( IsUseAudioOutput != 0 ) && ( ( SamplingRate != 8000 ) && ( SamplingRate != 16000 ) && ( SamplingRate != 32000 ) ) ) || //如果采样频率不正确。
             ( ( IsUseAudioOutput != 0 ) && ( ( FrameLenMsec == 0 ) || ( FrameLenMsec % 10 != 0 ) ) ) ) //如果帧的毫秒长度不正确。
@@ -648,7 +648,7 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置音频输出是否保存音频到文件。
-    public void SetAudioOutputSaveAudioToFile( int IsSaveAudioToFile, String AudioOutputFileFullPathStrPt )
+    public void SetAudioOutputIsSaveAudioToFile( int IsSaveAudioToFile, String AudioOutputFileFullPathStrPt )
     {
         m_AudioOutputPt.m_IsSaveAudioToFile = IsSaveAudioToFile;
         m_AudioOutputPt.m_AudioOutputFileFullPathStrPt = AudioOutputFileFullPathStrPt;
@@ -664,7 +664,7 @@ public abstract class MediaProcThread extends Thread
 
         m_AudioOutputPt.m_UseWhatAudioOutputDevice = UseSpeakerOrEarpiece;
         m_AudioOutputPt.m_UseWhatAudioOutputStreamType = UseVoiceCallOrMusic;
-        SetUseWakeLock( m_IsUseWakeLock ); //重新初始化唤醒锁。
+        SetIsUseWakeLock( m_IsUseWakeLock ); //重新初始化唤醒锁。
     }
 
     //设置音频输出设备是否静音。
@@ -674,12 +674,12 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置是否使用视频输入。
-    public void SetUseVideoInput( int IsUseVideoInput, int MaxSamplingRate, int FrameWidth, int FrameHeight, HTSurfaceView VideoPreviewSurfaceViewPt )
+    public void SetIsUseVideoInput( int IsUseVideoInput, int MaxSamplingRate, int FrameWidth, int FrameHeight, HTSurfaceView VideoInputPreviewSurfaceViewPt )
     {
-        if( ( ( IsUseVideoInput != 0 ) && ( MaxSamplingRate <= 0 ) ) || //如果采样频率不正确。
-            ( ( IsUseVideoInput != 0 ) && ( FrameWidth <= 0 ) ) || //如果帧的宽度不正确。
-            ( ( IsUseVideoInput != 0 ) && ( FrameHeight <= 0 ) ) || //如果帧的高度不正确。
-            ( ( IsUseVideoInput != 0 ) && ( VideoPreviewSurfaceViewPt == null ) ) ) //如果视频预览SurfaceView类对象的内存指针不正确。
+        if( ( ( IsUseVideoInput != 0 ) && ( ( MaxSamplingRate < 1 ) || ( MaxSamplingRate > 60 ) ) ) || //如果采样频率不正确。
+            ( ( IsUseVideoInput != 0 ) && ( FrameWidth < 1 ) ) || //如果帧的宽度不正确。
+            ( ( IsUseVideoInput != 0 ) && ( FrameHeight < 1 ) ) || //如果帧的高度不正确。
+            ( ( IsUseVideoInput != 0 ) && ( VideoInputPreviewSurfaceViewPt == null ) ) ) //如果视频预览SurfaceView类对象的内存指针不正确。
         {
             return;
         }
@@ -688,7 +688,7 @@ public abstract class MediaProcThread extends Thread
         m_VideoInputPt.m_MaxSamplingRate = MaxSamplingRate;
         m_VideoInputPt.m_FrameWidth = FrameWidth;
         m_VideoInputPt.m_FrameHeight = FrameHeight;
-        m_VideoInputPt.m_VideoPreviewSurfaceViewPt = VideoPreviewSurfaceViewPt;
+        m_VideoInputPt.m_VideoInputPreviewSurfaceViewPt = VideoInputPreviewSurfaceViewPt;
     }
 
     //设置视频输入要使用YU12原始数据。
@@ -698,7 +698,7 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置视频输入要使用OpenH264编码器。
-    public void SetVideoInputUseOpenH264( int VideoType, int EncodedBitrate, int BitrateControlMode, int IDRFrameIntvl, int Complexity )
+    public void SetVideoInputUseOpenH264Encoder( int VideoType, int EncodedBitrate, int BitrateControlMode, int IDRFrameIntvl, int Complexity )
     {
         m_VideoInputPt.m_UseWhatEncoder = 1;
         m_VideoInputPt.m_OpenH264EncoderVideoType = VideoType;
@@ -721,11 +721,12 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置是否使用视频输出。
-    public void SetUseVideoOutput( int IsUseVideoOutput, int FrameWidth, int FrameHeight, HTSurfaceView VideoDisplaySurfaceViewPt, float VideoDisplayScale )
+    public void SetIsUseVideoOutput( int IsUseVideoOutput, int FrameWidth, int FrameHeight, HTSurfaceView VideoOutputDisplaySurfaceViewPt, float VideoDisplayScale )
     {
         if( ( ( IsUseVideoOutput != 0 ) && ( FrameWidth <= 0 ) ) || //如果帧的宽度不正确。
             ( ( IsUseVideoOutput != 0 ) && ( FrameHeight <= 0 ) ) || //如果帧的高度不正确。
-            ( ( IsUseVideoOutput != 0 ) && ( VideoDisplaySurfaceViewPt == null ) ) ) //如果视频显示SurfaceView类对象的内存指针不正确。
+            ( ( IsUseVideoOutput != 0 ) && ( VideoOutputDisplaySurfaceViewPt == null ) ) || //如果视频显示SurfaceView类对象的内存指针不正确。
+            ( ( IsUseVideoOutput != 0 ) && ( VideoDisplayScale <= 0 ) ) ) //如果视频显示缩放倍数不正确。
         {
             return;
         }
@@ -733,8 +734,8 @@ public abstract class MediaProcThread extends Thread
         m_VideoOutputPt.m_IsUseVideoOutput = IsUseVideoOutput;
         m_VideoOutputPt.m_FrameWidth = FrameWidth;
         m_VideoOutputPt.m_FrameHeight = FrameHeight;
-        m_VideoOutputPt.m_VideoDisplaySurfaceViewPt = VideoDisplaySurfaceViewPt;
-        m_VideoOutputPt.m_VideoDisplayScale = VideoDisplayScale;
+        m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt = VideoOutputDisplaySurfaceViewPt;
+        m_VideoOutputPt.m_VideoOutputDisplayScale = VideoDisplayScale;
     }
 
     //设置视频输出要使用YU12原始数据。
@@ -744,7 +745,7 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置视频输出要使用OpenH264解码器。
-    public void SetVideoOutputUseOpenH264( int DecodeThreadNum )
+    public void SetVideoOutputUseOpenH264Decoder( int DecodeThreadNum )
     {
         m_VideoOutputPt.m_UseWhatDecoder = 1;
         m_VideoOutputPt.m_OpenH264DecoderDecodeThreadNum = DecodeThreadNum;
@@ -834,7 +835,7 @@ public abstract class MediaProcThread extends Thread
 
             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：开始准备音频输入。" );
 
-            if( m_AudioInputPt.m_UseWhatAec != 0 ) //如果要使用音频输入的声学回音消除，就自适应计算声学回音的延迟，并设置到WebRtc定点版和浮点版声学回音消除器。
+            if( m_AudioInputPt.m_UseWhatAec != 0 ) //如果要使用音频输入的声学回音消除，就自适应计算声学回音的延迟，并设置到声学回音消除器。
             {
                 int p_Delay = 0; //存放声学回音的延迟，单位毫秒。
                 HTInt p_HTIntDelay = new HTInt();
@@ -1041,7 +1042,7 @@ public abstract class MediaProcThread extends Thread
                 {
                     if( m_IsPrintLogcat != 0 ) p_LastMsec = System.currentTimeMillis();
 
-                    //调用用户定义的写入输出帧函数，并解码成PCM原始数据。
+                    //调用用户定义的写入音频输出帧函数，并解码成PCM原始数据。
                     switch( m_AudioOutputPt.m_UseWhatDecoder ) //使用什么解码器。
                     {
                         case 0: //如果要使用PCM原始数据。
@@ -1078,13 +1079,13 @@ public abstract class MediaProcThread extends Thread
                         Arrays.fill( p_PcmAudioOutputFramePt, ( short ) 0 );
                     }
 
-                    //写入本次输出帧。
+                    //写入本次音频输出帧到音频输出设备。
                     m_AudioOutputPt.m_AudioOutputDevicePt.write( p_PcmAudioOutputFramePt, 0, p_PcmAudioOutputFramePt.length );
 
-                    //调用用户定义的获取PCM格式输出帧函数。
+                    //调用用户定义的获取PCM格式音频输出帧函数。
                     UserGetPcmAudioOutputFrame( p_PcmAudioOutputFramePt );
 
-                    //追加本次输出帧到音频输出帧链表。
+                    //追加本次音频输出帧到音频输出帧链表。
                     synchronized( m_AudioOutputPt.m_AudioOutputFrameLnkLstPt )
                     {
                         m_AudioOutputPt.m_AudioOutputFrameLnkLstPt.addLast( p_PcmAudioOutputFramePt );
@@ -1218,7 +1219,7 @@ public abstract class MediaProcThread extends Thread
                             }
                             case 1: //如果要使用OpenH264编码器。
                             {
-                                if( m_VideoInputPt.m_OpenH264EncoderPt.Proc( p_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt, p_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameWidthPt.m_Val, p_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameHeightPt.m_Val, 0, p_VideoInputFrameElmPt.m_EncoderVideoInputFramePt, p_VideoInputFrameElmPt.m_EncoderVideoInputFramePt.length, p_VideoInputFrameElmPt.m_EncoderVideoInputFrameLenPt, null ) == 0 )
+                                if( m_VideoInputPt.m_OpenH264EncoderPt.Proc( p_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt, p_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameWidthPt.m_Val, p_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameHeightPt.m_Val, p_LastMsec, p_VideoInputFrameElmPt.m_EncoderVideoInputFramePt, p_VideoInputFrameElmPt.m_EncoderVideoInputFramePt.length, p_VideoInputFrameElmPt.m_EncoderVideoInputFrameLenPt, null ) == 0 )
                                 {
                                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：使用OpenH264编码器成功。H264格式视频输入帧的数据长度：" + p_VideoInputFrameElmPt.m_EncoderVideoInputFrameLenPt.m_Val + "，时间戳：" + p_LastMsec );
                                 }
@@ -1341,13 +1342,13 @@ public abstract class MediaProcThread extends Thread
                     }
 
                     //缩放视频输出帧。
-                    if( m_VideoOutputPt.m_VideoDisplayScale != 1.0f )
+                    if( m_VideoOutputPt.m_VideoOutputDisplayScale != 1.0f )
                     {
                         if( p_ScaleYU12VideoOutputFramePt == null )
                         {
-                            p_ScaleYU12VideoOutputFramePt = new byte[( int ) ( p_YU12VideoOutputFrameWidth.m_Val * m_VideoOutputPt.m_VideoDisplayScale * p_YU12VideoOutputFrameHeigth.m_Val * m_VideoOutputPt.m_VideoDisplayScale * 3 / 2 )];
-                            p_ScaleYU12VideoOutputFrameWidth = new HTInt( ( int ) ( p_YU12VideoOutputFrameWidth.m_Val * m_VideoOutputPt.m_VideoDisplayScale ) );
-                            p_ScaleYU12VideoOutputFrameHeigth = new HTInt( ( int ) ( p_YU12VideoOutputFrameHeigth.m_Val * m_VideoOutputPt.m_VideoDisplayScale ) );
+                            p_ScaleYU12VideoOutputFramePt = new byte[( int ) ( p_YU12VideoOutputFrameWidth.m_Val * m_VideoOutputPt.m_VideoOutputDisplayScale * p_YU12VideoOutputFrameHeigth.m_Val * m_VideoOutputPt.m_VideoOutputDisplayScale * 3 / 2 )];
+                            p_ScaleYU12VideoOutputFrameWidth = new HTInt( ( int ) ( p_YU12VideoOutputFrameWidth.m_Val * m_VideoOutputPt.m_VideoOutputDisplayScale ) );
+                            p_ScaleYU12VideoOutputFrameHeigth = new HTInt( ( int ) ( p_YU12VideoOutputFrameHeigth.m_Val * m_VideoOutputPt.m_VideoOutputDisplayScale ) );
                         }
 
                         if( LibYUV.PictrScale( p_YU12VideoOutputFramePt, LibYUV.PICTR_FMT_YU12, p_YU12VideoOutputFrameWidth.m_Val, p_YU12VideoOutputFrameHeigth.m_Val, p_ScaleYU12VideoOutputFramePt, p_ScaleYU12VideoOutputFramePt.length, p_ScaleYU12VideoOutputFrameWidth.m_Val, p_ScaleYU12VideoOutputFrameHeigth.m_Val, 3, null, null ) != 0 )
@@ -1366,11 +1367,11 @@ public abstract class MediaProcThread extends Thread
                         p_ScaleYU12VideoOutputFrameHeigth = p_YU12VideoOutputFrameHeigth;
                     }
 
-                    //设置视频显示SurfaceView类对象的宽高比。
-                    m_VideoOutputPt.m_VideoDisplaySurfaceViewPt.setWidthToHeightRatio( ( float )p_ScaleYU12VideoOutputFrameWidth.m_Val / p_ScaleYU12VideoOutputFrameHeigth.m_Val );
+                    //设置视频输出显示SurfaceView类对象的宽高比。
+                    m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt.setWidthToHeightRatio( ( float )p_ScaleYU12VideoOutputFrameWidth.m_Val / p_ScaleYU12VideoOutputFrameHeigth.m_Val );
 
-                    //渲染视频输出帧到视频显示SurfaceView类对象。
-                    if( LibYUV.PictrDrawToSurface( p_ScaleYU12VideoOutputFramePt, 0, LibYUV.PICTR_FMT_YU12, p_ScaleYU12VideoOutputFrameWidth.m_Val, p_ScaleYU12VideoOutputFrameHeigth.m_Val, m_VideoOutputPt.m_VideoDisplaySurfaceViewPt.getHolder().getSurface(), null ) != 0 )
+                    //渲染视频输出帧到视频输出显示SurfaceView类对象。
+                    if( LibYUV.PictrDrawToSurface( p_ScaleYU12VideoOutputFramePt, 0, LibYUV.PICTR_FMT_YU12, p_ScaleYU12VideoOutputFrameWidth.m_Val, p_ScaleYU12VideoOutputFrameHeigth.m_Val, m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt.getHolder().getSurface(), null ) != 0 )
                     {
                         Log.e( m_CurClsNameStrPt, "视频输出线程：渲染失败。" );
                     }
@@ -1550,7 +1551,7 @@ public abstract class MediaProcThread extends Thread
                         p_SettingFileWriterPt.write( "m_AudioInputPt.m_SpeexPprocAgcDecrement：" + m_AudioInputPt.m_SpeexPprocAgcDecrement + "\n" );
                         p_SettingFileWriterPt.write( "m_AudioInputPt.m_SpeexPprocAgcMaxGain：" + m_AudioInputPt.m_SpeexPprocAgcMaxGain + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
-                        p_SettingFileWriterPt.write( "m_AudioInputPt.m_UseWhatCodec：" + m_AudioInputPt.m_UseWhatEncoder + "\n" );
+                        p_SettingFileWriterPt.write( "m_AudioInputPt.m_UseWhatEncoder：" + m_AudioInputPt.m_UseWhatEncoder + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
                         p_SettingFileWriterPt.write( "m_AudioInputPt.m_SpeexEncoderUseCbrOrVbr：" + m_AudioInputPt.m_SpeexEncoderUseCbrOrVbr + "\n" );
                         p_SettingFileWriterPt.write( "m_AudioInputPt.m_SpeexEncoderQuality：" + m_AudioInputPt.m_SpeexEncoderQuality + "\n" );
@@ -1569,7 +1570,7 @@ public abstract class MediaProcThread extends Thread
                         p_SettingFileWriterPt.write( "m_AudioOutputPt.m_SamplingRate：" + m_AudioOutputPt.m_SamplingRate + "\n" );
                         p_SettingFileWriterPt.write( "m_AudioOutputPt.m_FrameLen：" + m_AudioOutputPt.m_FrameLen + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
-                        p_SettingFileWriterPt.write( "m_AudioOutputPt.m_UseWhatCodec：" + m_AudioOutputPt.m_UseWhatDecoder + "\n" );
+                        p_SettingFileWriterPt.write( "m_AudioOutputPt.m_UseWhatDecoder：" + m_AudioOutputPt.m_UseWhatDecoder + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
                         p_SettingFileWriterPt.write( "m_AudioOutputPt.m_SpeexDecoderIsUsePerceptualEnhancement：" + m_AudioOutputPt.m_SpeexDecoderIsUsePerceptualEnhancement + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
@@ -1607,7 +1608,7 @@ public abstract class MediaProcThread extends Thread
                         p_SettingFileWriterPt.write( "\n" );
                         p_SettingFileWriterPt.write( "m_VideoOutputPt.m_OpenH264DecoderDecodeThreadNum：" + m_VideoOutputPt.m_OpenH264DecoderDecodeThreadNum + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
-                        p_SettingFileWriterPt.write( "m_VideoOutputPt.m_VideoDisplayScale：" + m_VideoOutputPt.m_VideoDisplayScale + "\n" );
+                        p_SettingFileWriterPt.write( "m_VideoOutputPt.m_VideoOutputDisplayScale：" + m_VideoOutputPt.m_VideoOutputDisplayScale + "\n" );
                         p_SettingFileWriterPt.write( "m_VideoOutputPt.m_VideoOutputDeviceIsBlack：" + m_VideoOutputPt.m_VideoOutputDeviceIsBlack + "\n" );
 
                         p_SettingFileWriterPt.flush();
@@ -1641,114 +1642,132 @@ public abstract class MediaProcThread extends Thread
                 if( m_AudioInputPt.m_IsUseAudioInput != 0 ) //如果要使用音频输入。
                 {
                     //创建并初始化声学回音消除器类对象。
-                    if( m_AudioInputPt.m_UseWhatAec != 0 )
+                    switch( m_AudioInputPt.m_UseWhatAec )
                     {
-                        if( ( m_AudioOutputPt.m_IsUseAudioOutput != 0 ) && ( m_AudioOutputPt.m_SamplingRate == m_AudioInputPt.m_SamplingRate ) && ( m_AudioOutputPt.m_FrameLen == m_AudioInputPt.m_FrameLen ) ) //如果要使用音频输出，且音频输出的采样频率和帧的数据长度与音频输入一致。
+                        case 0: //如果不使用声学回音消除器。
                         {
-                            switch( m_AudioInputPt.m_UseWhatAec )
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：不使用声学回音消除器。" );
+                            break;
+                        }
+                        case 1: //如果要使用Speex声学回音消除器。
+                        {
+                            if( ( m_AudioOutputPt.m_IsUseAudioOutput != 0 ) && ( m_AudioOutputPt.m_SamplingRate == m_AudioInputPt.m_SamplingRate ) && ( m_AudioOutputPt.m_FrameLen == m_AudioInputPt.m_FrameLen ) ) //如果要使用音频输出，且音频输出的采样频率和帧的数据长度与音频输入一致。
                             {
-                                case 0: //如果不使用声学回音消除器。
+                                if( m_AudioInputPt.m_SpeexAecIsSaveMemFile != 0 )
                                 {
-                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：不使用声学回音消除器。" );
-                                    break;
-                                }
-                                case 1: //如果要使用Speex声学回音消除器。
-                                {
-                                    if( m_AudioInputPt.m_SpeexAecIsSaveMemFile != 0 )
+                                    m_AudioInputPt.m_SpeexAecPt = new SpeexAec();
+                                    if( m_AudioInputPt.m_SpeexAecPt.InitByMemFile( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_SpeexAecFilterLen, m_AudioInputPt.m_SpeexAecIsUseRec, m_AudioInputPt.m_SpeexAecEchoMultiple, m_AudioInputPt.m_SpeexAecEchoCont, m_AudioInputPt.m_SpeexAecEchoSupes, m_AudioInputPt.m_SpeexAecEchoSupesAct, m_AudioInputPt.m_SpeexAecMemFileFullPathStrPt, null ) == 0 )
                                     {
-                                        m_AudioInputPt.m_SpeexAecPt = new SpeexAec();
-                                        if( m_AudioInputPt.m_SpeexAecPt.InitByMemFile( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_SpeexAecFilterLen, m_AudioInputPt.m_SpeexAecIsUseRec, m_AudioInputPt.m_SpeexAecEchoMultiple, m_AudioInputPt.m_SpeexAecEchoCont, m_AudioInputPt.m_SpeexAecEchoSupes, m_AudioInputPt.m_SpeexAecEchoSupesAct, m_AudioInputPt.m_SpeexAecMemFileFullPathStrPt, null ) == 0 )
-                                        {
-                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：根据Speex声学回音消除器内存块文件 " + m_AudioInputPt.m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器类对象成功。" );
-                                        }
-                                        else
-                                        {
-                                            m_AudioInputPt.m_SpeexAecPt = null;
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：根据Speex声学回音消除器内存块文件 " + m_AudioInputPt.m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器类对象失败。" );
-                                        }
-                                    }
-                                    if( m_AudioInputPt.m_SpeexAecPt == null )
-                                    {
-                                        m_AudioInputPt.m_SpeexAecPt = new SpeexAec();
-                                        if( m_AudioInputPt.m_SpeexAecPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_SpeexAecFilterLen, m_AudioInputPt.m_SpeexAecIsUseRec, m_AudioInputPt.m_SpeexAecEchoMultiple, m_AudioInputPt.m_SpeexAecEchoCont, m_AudioInputPt.m_SpeexAecEchoSupes, m_AudioInputPt.m_SpeexAecEchoSupesAct ) == 0 )
-                                        {
-                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex声学回音消除器类对象成功。" );
-                                        }
-                                        else
-                                        {
-                                            m_AudioInputPt.m_SpeexAecPt = null;
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex声学回音消除器类对象失败。" );
-                                            break out;
-                                        }
-                                    }
-                                    break;
-                                }
-                                case 2: //如果要使用WebRtc定点版声学回音消除器。
-                                {
-                                    m_AudioInputPt.m_WebRtcAecmPt = new WebRtcAecm();
-                                    if( m_AudioInputPt.m_WebRtcAecmPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_WebRtcAecmIsUseCNGMode, m_AudioInputPt.m_WebRtcAecmEchoMode, m_AudioInputPt.m_WebRtcAecmDelay ) == 0 )
-                                    {
-                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版声学回音消除器类对象成功。" );
+                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：根据Speex声学回音消除器内存块文件 " + m_AudioInputPt.m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器类对象成功。" );
                                     }
                                     else
                                     {
-                                        m_AudioInputPt.m_WebRtcAecmPt = null;
-                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版声学回音消除器类对象失败。" );
-                                        break out;
+                                        m_AudioInputPt.m_SpeexAecPt = null;
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：根据Speex声学回音消除器内存块文件 " + m_AudioInputPt.m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器类对象失败。" );
                                     }
-                                    break;
                                 }
-                                case 3: //如果要使用WebRtc浮点版声学回音消除器。
+                                if( m_AudioInputPt.m_SpeexAecPt == null )
                                 {
-                                    if( m_AudioInputPt.m_WebRtcAecIsSaveMemFile != 0 )
+                                    m_AudioInputPt.m_SpeexAecPt = new SpeexAec();
+                                    if( m_AudioInputPt.m_SpeexAecPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_SpeexAecFilterLen, m_AudioInputPt.m_SpeexAecIsUseRec, m_AudioInputPt.m_SpeexAecEchoMultiple, m_AudioInputPt.m_SpeexAecEchoCont, m_AudioInputPt.m_SpeexAecEchoSupes, m_AudioInputPt.m_SpeexAecEchoSupesAct ) == 0 )
                                     {
-                                        m_AudioInputPt.m_WebRtcAecPt = new WebRtcAec();
-                                        if( m_AudioInputPt.m_WebRtcAecPt.InitByMemFile( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_WebRtcAecEchoMode, m_AudioInputPt.m_WebRtcAecDelay, m_AudioInputPt.m_WebRtcAecIsUseDelayAgnosticMode, m_AudioInputPt.m_WebRtcAecIsUseExtdFilterMode, m_AudioInputPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AudioInputPt.m_WebRtcAecIsUseAdaptAdjDelay, m_AudioInputPt.m_WebRtcAecMemFileFullPathStrPt, null ) == 0 )
-                                        {
-                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_AudioInputPt.m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器类对象成功。" );
-                                        }
-                                        else
-                                        {
-                                            m_AudioInputPt.m_WebRtcAecPt = null;
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_AudioInputPt.m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器类对象失败。" );
-                                        }
-                                    }
-                                    if( m_AudioInputPt.m_WebRtcAecPt == null )
-                                    {
-                                        m_AudioInputPt.m_WebRtcAecPt = new WebRtcAec();
-                                        if( m_AudioInputPt.m_WebRtcAecPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_WebRtcAecEchoMode, m_AudioInputPt.m_WebRtcAecDelay, m_AudioInputPt.m_WebRtcAecIsUseDelayAgnosticMode, m_AudioInputPt.m_WebRtcAecIsUseExtdFilterMode, m_AudioInputPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AudioInputPt.m_WebRtcAecIsUseAdaptAdjDelay ) == 0 )
-                                        {
-                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版声学回音消除器类对象成功。" );
-                                        }
-                                        else
-                                        {
-                                            m_AudioInputPt.m_WebRtcAecPt = null;
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版声学回音消除器类对象失败。" );
-                                            break out;
-                                        }
-                                    }
-                                    break;
-                                }
-                                case 4: //如果要使用SpeexWebRtc三重声学回音消除器。
-                                {
-                                    m_AudioInputPt.m_SpeexWebRtcAecPt = new SpeexWebRtcAec();
-                                    if( m_AudioInputPt.m_SpeexWebRtcAecPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_SpeexWebRtcAecWorkMode, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecFilterLen, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecIsUseRec, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoMultiple, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoCont, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoSupes, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoSupesAct, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecmEchoMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecmDelay, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecEchoMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecDelay, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseExtdFilterMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay, m_AudioInputPt.m_SpeexWebRtcAecIsUseSameRoomAec, m_AudioInputPt.m_SpeexWebRtcAecSameRoomEchoMinDelay ) == 0 )
-                                    {
-                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化SpeexWebRtc三重声学回音消除器类对象成功。" );
+                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex声学回音消除器类对象成功。" );
                                     }
                                     else
                                     {
-                                        m_AudioInputPt.m_SpeexWebRtcAecPt = null;
-                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化SpeexWebRtc三重声学回音消除器类对象失败。" );
+                                        m_AudioInputPt.m_SpeexAecPt = null;
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex声学回音消除器类对象失败。" );
                                         break out;
                                     }
-                                    break;
                                 }
                             }
+                            else
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：不使用音频输出、或音频输出的采样频率或帧的数据长度与音频输入不一致，不能使用声学回音消除器。" );
+                            }
+                            break;
                         }
-                        else
+                        case 2: //如果要使用WebRtc定点版声学回音消除器。
                         {
-                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：不使用音频输出、或音频输出的采样频率或帧的数据长度与音频输入不一致，不能使用声学回音消除器。" );
+                            if( ( m_AudioOutputPt.m_IsUseAudioOutput != 0 ) && ( m_AudioOutputPt.m_SamplingRate == m_AudioInputPt.m_SamplingRate ) && ( m_AudioOutputPt.m_FrameLen == m_AudioInputPt.m_FrameLen ) ) //如果要使用音频输出，且音频输出的采样频率和帧的数据长度与音频输入一致。
+                            {
+                                m_AudioInputPt.m_WebRtcAecmPt = new WebRtcAecm();
+                                if( m_AudioInputPt.m_WebRtcAecmPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_WebRtcAecmIsUseCNGMode, m_AudioInputPt.m_WebRtcAecmEchoMode, m_AudioInputPt.m_WebRtcAecmDelay ) == 0 )
+                                {
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版声学回音消除器类对象成功。" );
+                                }
+                                else
+                                {
+                                    m_AudioInputPt.m_WebRtcAecmPt = null;
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版声学回音消除器类对象失败。" );
+                                    break out;
+                                }
+                            }
+                            else
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：不使用音频输出、或音频输出的采样频率或帧的数据长度与音频输入不一致，不能使用声学回音消除器。" );
+                            }
+                            break;
+                        }
+                        case 3: //如果要使用WebRtc浮点版声学回音消除器。
+                        {
+                            if( ( m_AudioOutputPt.m_IsUseAudioOutput != 0 ) && ( m_AudioOutputPt.m_SamplingRate == m_AudioInputPt.m_SamplingRate ) && ( m_AudioOutputPt.m_FrameLen == m_AudioInputPt.m_FrameLen ) ) //如果要使用音频输出，且音频输出的采样频率和帧的数据长度与音频输入一致。
+                            {
+                                if( m_AudioInputPt.m_WebRtcAecIsSaveMemFile != 0 )
+                                {
+                                    m_AudioInputPt.m_WebRtcAecPt = new WebRtcAec();
+                                    if( m_AudioInputPt.m_WebRtcAecPt.InitByMemFile( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_WebRtcAecEchoMode, m_AudioInputPt.m_WebRtcAecDelay, m_AudioInputPt.m_WebRtcAecIsUseDelayAgnosticMode, m_AudioInputPt.m_WebRtcAecIsUseExtdFilterMode, m_AudioInputPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AudioInputPt.m_WebRtcAecIsUseAdaptAdjDelay, m_AudioInputPt.m_WebRtcAecMemFileFullPathStrPt, null ) == 0 )
+                                    {
+                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_AudioInputPt.m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器类对象成功。" );
+                                    }
+                                    else
+                                    {
+                                        m_AudioInputPt.m_WebRtcAecPt = null;
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_AudioInputPt.m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器类对象失败。" );
+                                    }
+                                }
+                                if( m_AudioInputPt.m_WebRtcAecPt == null )
+                                {
+                                    m_AudioInputPt.m_WebRtcAecPt = new WebRtcAec();
+                                    if( m_AudioInputPt.m_WebRtcAecPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_WebRtcAecEchoMode, m_AudioInputPt.m_WebRtcAecDelay, m_AudioInputPt.m_WebRtcAecIsUseDelayAgnosticMode, m_AudioInputPt.m_WebRtcAecIsUseExtdFilterMode, m_AudioInputPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AudioInputPt.m_WebRtcAecIsUseAdaptAdjDelay ) == 0 )
+                                    {
+                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版声学回音消除器类对象成功。" );
+                                    }
+                                    else
+                                    {
+                                        m_AudioInputPt.m_WebRtcAecPt = null;
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版声学回音消除器类对象失败。" );
+                                        break out;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：不使用音频输出、或音频输出的采样频率或帧的数据长度与音频输入不一致，不能使用声学回音消除器。" );
+                            }
+                            break;
+                        }
+                        case 4: //如果要使用SpeexWebRtc三重声学回音消除器。
+                        {
+                            if( ( m_AudioOutputPt.m_IsUseAudioOutput != 0 ) && ( m_AudioOutputPt.m_SamplingRate == m_AudioInputPt.m_SamplingRate ) && ( m_AudioOutputPt.m_FrameLen == m_AudioInputPt.m_FrameLen ) ) //如果要使用音频输出，且音频输出的采样频率和帧的数据长度与音频输入一致。
+                            {
+                                m_AudioInputPt.m_SpeexWebRtcAecPt = new SpeexWebRtcAec();
+                                if( m_AudioInputPt.m_SpeexWebRtcAecPt.Init( m_AudioInputPt.m_SamplingRate, m_AudioInputPt.m_FrameLen, m_AudioInputPt.m_SpeexWebRtcAecWorkMode, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecFilterLen, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecIsUseRec, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoMultiple, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoCont, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoSupes, m_AudioInputPt.m_SpeexWebRtcAecSpeexAecEchoSupesAct, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecmEchoMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecmDelay, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecEchoMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecDelay, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseExtdFilterMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecMode, m_AudioInputPt.m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay, m_AudioInputPt.m_SpeexWebRtcAecIsUseSameRoomAec, m_AudioInputPt.m_SpeexWebRtcAecSameRoomEchoMinDelay ) == 0 )
+                                {
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化SpeexWebRtc三重声学回音消除器类对象成功。" );
+                                }
+                                else
+                                {
+                                    m_AudioInputPt.m_SpeexWebRtcAecPt = null;
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化SpeexWebRtc三重声学回音消除器类对象失败。" );
+                                    break out;
+                                }
+                            }
+                            else
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：不使用音频输出、或音频输出的采样频率或帧的数据长度与音频输入不一致，不能使用声学回音消除器。" );
+                            }
+                            break;
                         }
                     }
 
@@ -1838,7 +1857,7 @@ public abstract class MediaProcThread extends Thread
                         }
                     }
 
-                    //初始化编解码器对象。
+                    //初始化编码器对象。
                     switch( m_AudioInputPt.m_UseWhatEncoder )
                     {
                         case 0: //如果要使用PCM原始数据。
@@ -1846,11 +1865,11 @@ public abstract class MediaProcThread extends Thread
                             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用PCM原始数据。" );
                             break;
                         }
-                        case 1: //如果要使用Speex编解码器。
+                        case 1: //如果要使用Speex编码器。
                         {
                             if( m_AudioInputPt.m_FrameLen != m_AudioInputPt.m_SamplingRate / 1000 * 20 )
                             {
-                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：帧的数据长度不为20毫秒不能使用Speex编解码器。" );
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：帧的数据长度不为20毫秒不能使用Speex编码器。" );
                                 break out;
                             }
                             m_AudioInputPt.m_SpeexEncoderPt = new SpeexEncoder();
@@ -1866,9 +1885,9 @@ public abstract class MediaProcThread extends Thread
                             }
                             break;
                         }
-                        case 2: //如果要使用Opus编解码器。
+                        case 2: //如果要使用Opus编码器。
                         {
-                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：暂不支持使用Opus编解码器。" );
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：暂不支持使用Opus编码器。" );
                             break out;
                         }
                     }
@@ -1952,11 +1971,11 @@ public abstract class MediaProcThread extends Thread
                             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用PCM原始数据。" );
                             break;
                         }
-                        case 1: //如果要使用Speex编解码器。
+                        case 1: //如果要使用Speex解码器。
                         {
                             if( m_AudioOutputPt.m_FrameLen != m_AudioOutputPt.m_SamplingRate / 1000 * 20 )
                             {
-                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：帧的数据长度不为20毫秒不能使用Speex编解码器。" );
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：帧的数据长度不为20毫秒不能使用Speex解码器。" );
                                 break out;
                             }
                             m_AudioOutputPt.m_SpeexDecoderPt = new SpeexDecoder();
@@ -1972,9 +1991,9 @@ public abstract class MediaProcThread extends Thread
                             }
                             break;
                         }
-                        case 2: //如果要使用Opus编解码器。
+                        case 2: //如果要使用Opus解码器。
                         {
-                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：暂不支持使用Opus编解码器。" );
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：暂不支持使用Opus解码器。" );
                             break out;
                         }
                     }
@@ -2170,18 +2189,18 @@ public abstract class MediaProcThread extends Thread
 
                         try
                         {
-                            m_VideoInputPt.m_VideoInputDevicePt.setPreviewDisplay( m_VideoInputPt.m_VideoPreviewSurfaceViewPt.getHolder() ); //设置视频输入预览的SurfaceView类对象。
-                            m_VideoInputPt.m_VideoPreviewSurfaceViewPt.setWidthToHeightRatio( ( float )m_VideoInputPt.m_FrameWidth / m_VideoInputPt.m_FrameHeight ); //设置视频预览SurfaceView类对象的宽高比。
+                            m_VideoInputPt.m_VideoInputDevicePt.setPreviewDisplay( m_VideoInputPt.m_VideoInputPreviewSurfaceViewPt.getHolder() ); //设置视频输入预览SurfaceView类对象。
+                            m_VideoInputPt.m_VideoInputPreviewSurfaceViewPt.setWidthToHeightRatio( ( float )m_VideoInputPt.m_FrameWidth / m_VideoInputPt.m_FrameHeight ); //设置视频输入预览SurfaceView类对象的宽高比。
                         }
                         catch( Exception ignored )
                         {
                         }
                         m_VideoInputPt.m_VideoInputDevicePt.setDisplayOrientation( 90 ); //调整相机拍到的图像旋转，不然竖着拿手机，图像是横着的。
 
-                        //设置视频预览回调函数缓冲区的内存指针。
-                        m_VideoInputPt.m_VideoPreviewCallbackBufferPtPt = new byte[ m_VideoInputPt.m_MaxSamplingRate ][ m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight * 3 / 2 ];
+                        //设置视频输入预览回调函数缓冲区的内存指针。
+                        m_VideoInputPt.m_VideoInputPreviewCallbackBufferPtPt = new byte[ m_VideoInputPt.m_MaxSamplingRate ][ m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight * 3 / 2 ];
                         for( p_TmpInt321 = 0; p_TmpInt321 < m_VideoInputPt.m_MaxSamplingRate; p_TmpInt321++ )
-                            m_VideoInputPt.m_VideoInputDevicePt.addCallbackBuffer( m_VideoInputPt.m_VideoPreviewCallbackBufferPtPt[p_TmpInt321] );
+                            m_VideoInputPt.m_VideoInputDevicePt.addCallbackBuffer( m_VideoInputPt.m_VideoInputPreviewCallbackBufferPtPt[p_TmpInt321] );
 
                         m_VideoInputPt.m_VideoInputDevicePt.setPreviewCallbackWithBuffer( m_VideoInputPt.m_VideoInputThreadPt ); //设置视频输入预览回调函数。
 
@@ -2503,7 +2522,7 @@ public abstract class MediaProcThread extends Thread
                         if( m_AudioInputPt.m_AudioInputDeviceIsMute != 0 )
                         {
                             Arrays.fill( p_PcmAudioResultFramePt, ( short ) 0 );
-                            if( ( m_AudioInputPt.m_IsUseSpeexPprocOther != 0 ) && ( m_AudioInputPt.m_SpeexPprocIsUseVad != 0 ) ) //如果Speex预处理器使用了其他功能，且使用了语音活动检测。
+                            if( ( m_AudioInputPt.m_IsUseSpeexPprocOther != 0 ) && ( m_AudioInputPt.m_SpeexPprocIsUseVad != 0 ) ) //如果Speex预处理器要使用其他功能，且要使用语音活动检测。
                             {
                                 p_VoiceActStsPt.m_Val = 0;
                             }
@@ -3061,7 +3080,7 @@ public abstract class MediaProcThread extends Thread
                     m_VideoInputPt.m_VideoInputDevicePt.stopPreview(); //停止预览。
                     m_VideoInputPt.m_VideoInputDevicePt.release(); //销毁摄像头。
                     m_VideoInputPt.m_VideoInputDevicePt = null;
-                    m_VideoInputPt.m_VideoPreviewCallbackBufferPtPt = null;
+                    m_VideoInputPt.m_VideoInputPreviewCallbackBufferPtPt = null;
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁视频输入设备类对象成功。" );
                 }
 
@@ -3117,7 +3136,7 @@ public abstract class MediaProcThread extends Thread
 
             //销毁视频输出。
             {
-                //销毁音频输出线程类对象。
+                //销毁视频输出线程类对象。
                 if( m_VideoOutputPt.m_VideoOutputThreadPt != null )
                 {
                     try

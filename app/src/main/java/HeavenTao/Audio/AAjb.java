@@ -33,7 +33,7 @@ public class AAjb
     }
 
     //创建并初始化音频自适应抖动缓冲器。
-    public native int Init( int SamplingRate, int FrameLen, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrameCnt, int MaxNeedBufFrameCnt, float AdaptSensitivity );
+    public native int Init( int SamplingRate, int FrameLen, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrameCnt, int MaxNeedBufFrameCnt, float AdaptSensitivity, int IsUseMutexLock );
 
     //放入一个字节型帧到音频自适应抖动缓冲器。
     public native int PutOneByteFrame( int TimeStamp, byte ByteFramePt[], long FrameStart, long FrameLen );

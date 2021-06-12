@@ -54,7 +54,7 @@ class MainActivityHandler extends Handler
 
     public void handleMessage( Message MessagePt )
     {
-        if( MessagePt.what == 1 ) //如果是音频处理线程启动的消息。
+        if( MessagePt.what == 1 ) //如果是媒体处理线程启动的消息。
         {
             if( m_MainActivityPt.m_MyMediaProcThreadPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
             {
@@ -97,7 +97,7 @@ class MainActivityHandler extends Handler
                 m_MainActivityPt.bindService( new Intent( m_MainActivityPt, FrgndSrvc.class ), m_FrgndSrvcCnctPt, Context.BIND_AUTO_CREATE ); //创建并绑定前台服务。
             }
         }
-        else if( MessagePt.what == 2 ) //如果是音频处理线程退出的消息。
+        else if( MessagePt.what == 2 ) //如果是媒体处理线程退出的消息。
         {
             m_MainActivityPt.m_MyMediaProcThreadPt = null;
 
@@ -133,7 +133,7 @@ class MainActivityHandler extends Handler
     }
 }
 
-//我的音频处理线程类。
+//我的媒体处理线程类。
 class MyMediaProcThread extends MediaProcThread
 {
     String m_IPAddrStrPt; //存放IP地址字符串类对象的内存指针。
@@ -150,14 +150,13 @@ class MyMediaProcThread extends MediaProcThread
     public static final byte PKT_TYP_CNCT_HTBT = 0x00; //数据包类型：连接请求包或心跳包。
     public static final byte PKT_TYP_AFRAME = 0x01; //数据包类型：音频输入输出帧。
     public static final byte PKT_TYP_VFRAME = 0x02; //数据包类型：视频输入输出帧。
-    public static final byte PKT_TYP_ACK = 0x03; //数据包类型：连接应答包或音频输入输出帧应答包。
+    public static final byte PKT_TYP_ACK = 0x03; //数据包类型：连接应答包或音视频输入输出帧应答包。
     public static final byte PKT_TYP_EXIT = 0x04; //数据包类型：退出包。
 
     int m_LastSendAudioInputFrameIsAct; //存放最后一个发送的音频输入帧有无语音活动，为1表示有语音活动，为0表示无语音活动。
     int m_LastSendAudioInputFrameIsRecv; //存放最后一个发送的音频输入帧远端是否接收到，为0表示没有收到，为非0表示已经收到。
     int m_LastSendAudioInputFrameTimeStamp; //存放最后一个发送音频输入帧的时间戳。
     int m_LastSendVideoInputFrameTimeStamp; //存放最后一个发送视频输入帧的时间戳。
-    int m_LastRecvOutputFrameTimeStamp; //存放最后一个接收输出帧的时间戳。
     byte m_IsRecvExitPkt; //存放是否接收到退出包，为0表示否，为1表示是。
 
     int m_UseWhatRecvOutputFrame; //存放使用什么接收输出帧，为0表示链表，为1表示自适应抖动缓冲器。
@@ -170,11 +169,11 @@ class MyMediaProcThread extends MediaProcThread
     AAjb m_AAjbPt; //存放音频自适应抖动缓冲器类对象的内存指针。
     int m_AAjbMinNeedBufFrameCnt; //存放音频自适应抖动缓冲器的最小需缓冲帧数量，单位个。
     int m_AAjbMaxNeedBufFrameCnt; //存放音频自适应抖动缓冲器的最大需缓冲帧数量，单位个。
-    float m_AAjbAdaptSensitivity; //存放音频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0,127]。
+    float m_AAjbAdaptSensitivity; //存放音频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0.0,127.0]。
     VAjb m_VAjbPt; //存放视频自适应抖动缓冲器类对象的内存指针。
     int m_VAjbMinNeedBufFrameCnt; //存放视频自适应抖动缓冲器的最小需缓冲帧数量，单位个。
     int m_VAjbMaxNeedBufFrameCnt; //存放视频自适应抖动缓冲器的最大需缓冲帧数量，单位个。
-    float m_VAjbAdaptSensitivity; //存放视频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0,127]。
+    float m_VAjbAdaptSensitivity; //存放视频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0.0,127.0]。
 
     byte m_TmpBytePt[]; //存放临时数据。
     byte m_TmpByte2Pt[]; //存放临时数据。
@@ -197,7 +196,7 @@ class MyMediaProcThread extends MediaProcThread
 
         out:
         {
-            {Message p_MessagePt = new Message();p_MessagePt.what = 1;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送音频处理线程启动的消息。
+            {Message p_MessagePt = new Message();p_MessagePt.what = 1;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送媒体处理线程启动的消息。
 
             m_IsRecvExitPkt = 0; //设置没有接收到退出包。
             if( m_TmpBytePt == null ) m_TmpBytePt = new byte[1024 * 1024]; //初始化临时数据。
@@ -581,7 +580,7 @@ class MyMediaProcThread extends MediaProcThread
                                         {
                                             m_UdpSoktPt.Disconnect( m_ErrInfoVarStrPt );
                                             String p_InfoStrPt = "用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-                                            Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                                            Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                                             Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                                             break out;
                                         }
@@ -624,61 +623,49 @@ class MyMediaProcThread extends MediaProcThread
                         }
                     }
                 }
-            }
+            } //协议连接结束。
 
             switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
             {
                 case 0: //如果使用链表。
                 {
                     //初始化接收音频输出帧链表类对象。
-                    if( m_AudioOutputPt != null )
-                    {
-                        m_RecvAudioOutputFrameLnkLstPt = new LinkedList< byte[] >(); //创建接收音频输出帧链表类对象。
-                        Log.i( m_CurClsNameStrPt, "创建并初始化接收音频输出帧链表对象成功。" );
-                    }
+                    m_RecvAudioOutputFrameLnkLstPt = new LinkedList< byte[] >(); //创建接收音频输出帧链表类对象。
+                    Log.i( m_CurClsNameStrPt, "创建并初始化接收音频输出帧链表对象成功。" );
 
                     //初始化接收视频输出帧链表类对象。
-                    if( m_VideoOutputPt != null )
-                    {
-                        m_RecvVideoOutputFrameLnkLstPt = new LinkedList< byte[] >(); //创建接收视频输出帧链表类对象。
-                        Log.i( m_CurClsNameStrPt, "创建并初始化接收视频输出帧链表对象成功。" );
-                    }
+                    m_RecvVideoOutputFrameLnkLstPt = new LinkedList< byte[] >(); //创建接收视频输出帧链表类对象。
+                    Log.i( m_CurClsNameStrPt, "创建并初始化接收视频输出帧链表对象成功。" );
                     break;
                 }
                 case 1: //如果使用自适应抖动缓冲器。
                 {
                     //初始化音频自适应抖动缓冲器类对象。
-                    if( m_AudioOutputPt != null )
+                    m_AAjbPt = new AAjb();
+                    if( m_AAjbPt.Init( m_AudioOutputPt.m_SamplingRate, m_AudioOutputPt.m_FrameLen, 1, 1, 0, m_AAjbMinNeedBufFrameCnt, m_AAjbMaxNeedBufFrameCnt, m_AAjbAdaptSensitivity, 1 ) == 0 )
                     {
-                        m_AAjbPt = new AAjb();
-                        if( m_AAjbPt.Init( m_AudioOutputPt.m_SamplingRate, m_AudioOutputPt.m_FrameLen, ( byte ) 1, 1, ( byte ) 0, m_AAjbMinNeedBufFrameCnt, m_AAjbMaxNeedBufFrameCnt, m_AAjbAdaptSensitivity ) == 0 )
-                        {
-                            Log.i( m_CurClsNameStrPt, "创建并初始化音频自适应抖动缓冲器类对象成功。" );
-                        }
-                        else
-                        {
-                            String p_InfoStrPt = "创建并初始化音频自适应抖动缓冲器类对象失败。";
-                            Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                            break out;
-                        }
+                        Log.i( m_CurClsNameStrPt, "创建并初始化音频自适应抖动缓冲器类对象成功。" );
+                    }
+                    else
+                    {
+                        String p_InfoStrPt = "创建并初始化音频自适应抖动缓冲器类对象失败。";
+                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        break out;
                     }
 
                     //初始化视频自适应抖动缓冲器类对象。
-                    if( m_VideoOutputPt != null )
+                    m_VAjbPt = new VAjb();
+                    if( m_VAjbPt.Init( 1, m_VAjbMinNeedBufFrameCnt, m_VAjbMaxNeedBufFrameCnt, m_VAjbAdaptSensitivity, 1 ) == 0 )
                     {
-                        m_VAjbPt = new VAjb();
-                        if( m_VAjbPt.Init( ( byte ) 1, m_VAjbMinNeedBufFrameCnt, m_VAjbMaxNeedBufFrameCnt, m_VAjbAdaptSensitivity ) == 0 )
-                        {
-                            Log.i( m_CurClsNameStrPt, "创建并初始化视频自适应抖动缓冲器类对象成功。" );
-                        }
-                        else
-                        {
-                            String p_InfoStrPt = "创建并初始化视频自适应抖动缓冲器类对象失败。";
-                            Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                            Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                            break out;
-                        }
+                        Log.i( m_CurClsNameStrPt, "创建并初始化视频自适应抖动缓冲器类对象成功。" );
+                    }
+                    else
+                    {
+                        String p_InfoStrPt = "创建并初始化视频自适应抖动缓冲器类对象失败。";
+                        Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                        Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                        break out;
                     }
                     break;
                 }
@@ -687,11 +674,10 @@ class MyMediaProcThread extends MediaProcThread
             m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间为当前时间。
             m_LastPktRecvTime = m_LastPktSendTime; //设置最后一个数据包的接收时间为当前时间。
 
-            m_LastSendAudioInputFrameIsAct = 0; //设置最后发送的一个输入帧为无语音活动。
-            m_LastSendAudioInputFrameIsRecv = 1; //设置最后一个发送的输入帧远端已经接收到。
+            m_LastSendAudioInputFrameIsAct = 0; //设置最后发送的一个音频输入帧为无语音活动。
+            m_LastSendAudioInputFrameIsRecv = 1; //设置最后一个发送的音频输入帧远端已经接收到。
             m_LastSendAudioInputFrameTimeStamp = 0 - 1; //设置最后一个发送音频输入帧的时间戳为0的前一个，因为第一次发送音频输入帧时会递增一个步进。
             m_LastSendVideoInputFrameTimeStamp = 0 - 1; //设置最后一个发送视频输入帧的时间戳为0的前一个，因为第一次发送视频输入帧时会递增一个步进。
-            m_LastRecvOutputFrameTimeStamp = 0; //设置接收输出帧的时间戳为0。
 
             m_LastGetAudioOutputFrameIsAct = 0; //设置最后一个取出的音频输出帧为无语音活动，因为如果不使用音频输出，只使用视频输出时，可以保证视频正常输出。
             m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp = 0; //设置最后一个取出的音频输出帧对应视频输出帧的时间戳为0。
@@ -710,6 +696,7 @@ class MyMediaProcThread extends MediaProcThread
     @Override public int UserProcess()
     {
         int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_TmpInt;
 
         out:
         {
@@ -745,9 +732,9 @@ class MyMediaProcThread extends MediaProcThread
                         }
 
                         //读取音频输出帧时间戳。
-                        m_LastRecvOutputFrameTimeStamp = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
+                        p_TmpInt = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
 
-                        if( m_AudioOutputPt != null ) //如果要使用音频输出。
+                        if( m_AudioOutputPt.m_IsUseAudioOutput != 0 ) //如果要使用音频输出。
                         {
                             //将音频输出帧放入链表或自适应抖动缓冲器。
                             switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
@@ -760,13 +747,12 @@ class MyMediaProcThread extends MediaProcThread
                                         {
                                             m_RecvAudioOutputFrameLnkLstPt.addLast( Arrays.copyOfRange( m_TmpBytePt, 1 + 4, ( int ) ( m_TmpHTLongPt.m_Val ) ) );
                                         }
-                                        Log.i( m_CurClsNameStrPt, "接收一个有语音活动的音频输出帧包，并放入接收音频输出帧链表成功。音频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                        Log.i( m_CurClsNameStrPt, "接收一个有语音活动的音频输出帧包，并放入接收音频输出帧链表成功。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                                     }
                                     else //如果该音频输出帧为无语音活动。
                                     {
-                                        Log.i( m_CurClsNameStrPt, "接收一个无语音活动的音频输出帧包，无需放入接收音频输出帧链表。音频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                        Log.i( m_CurClsNameStrPt, "接收一个无语音活动的音频输出帧包，无需放入接收音频输出帧链表。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                                     }
-
                                     break;
                                 }
                                 case 1: //如果使用自适应抖动缓冲器。
@@ -775,13 +761,13 @@ class MyMediaProcThread extends MediaProcThread
                                     {
                                         if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该音频输出帧为有语音活动。
                                         {
-                                            m_AAjbPt.PutOneByteFrame( m_LastRecvOutputFrameTimeStamp, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4 );
-                                            Log.i( m_CurClsNameStrPt, "接收一个有语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                            m_AAjbPt.PutOneByteFrame( p_TmpInt, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4 );
+                                            Log.i( m_CurClsNameStrPt, "接收一个有语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                                         }
                                         else //如果该音频输出帧为无语音活动。
                                         {
-                                            m_AAjbPt.PutOneByteFrame( m_LastRecvOutputFrameTimeStamp, m_TmpBytePt, 1 + 4, 0 );
-                                            Log.i( m_CurClsNameStrPt, "接收一个无语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                            m_AAjbPt.PutOneByteFrame( p_TmpInt, m_TmpBytePt, 1 + 4, 0 );
+                                            Log.i( m_CurClsNameStrPt, "接收一个无语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                                         }
 
                                         HTInt p_CurHaveBufActFrameCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
@@ -791,15 +777,8 @@ class MyMediaProcThread extends MediaProcThread
                                         HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
                                         HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
                                         m_AAjbPt.GetBufFrameCnt( p_CurHaveBufActFrameCntPt, p_CurHaveBufInactFrameCntPt, p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
-                                        Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val +
-                                                                                            "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val +
-                                                                                            "，帧：" + p_CurHaveBufFrameCntPt.m_Val +
-                                                                                            "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val +
-                                                                                            "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val +
-                                                                                            "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val +
-                                                                                            "。" );
+                                        Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val + "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val + "，帧：" + p_CurHaveBufFrameCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val + "。" );
                                     }
-
                                     break;
                                 }
                             }
@@ -808,11 +787,11 @@ class MyMediaProcThread extends MediaProcThread
                         {
                             if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该音频输出帧为有语音活动。
                             {
-                                Log.i( m_CurClsNameStrPt, "接收一个有语音活动的音频输出帧包成功，但不使用音频输出。音频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                Log.i( m_CurClsNameStrPt, "接收一个有语音活动的音频输出帧包成功，但不使用音频输出。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                             }
                             else //如果该音频输出帧为无语音活动。
                             {
-                                Log.i( m_CurClsNameStrPt, "接收一个无语音活动的音频输出帧包成功，但不使用音频输出。音频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                Log.i( m_CurClsNameStrPt, "接收一个无语音活动的音频输出帧包成功，但不使用音频输出。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                             }
                         }
 
@@ -820,20 +799,20 @@ class MyMediaProcThread extends MediaProcThread
                         {
                             //设置音频输出帧应答包。
                             m_TmpBytePt[0] = PKT_TYP_ACK;
-                            //设置时间戳。
-                            m_TmpBytePt[1] = ( byte ) ( m_LastRecvOutputFrameTimeStamp & 0xFF );
-                            m_TmpBytePt[2] = ( byte ) ( ( m_LastRecvOutputFrameTimeStamp & 0xFF00 ) >> 8 );
-                            m_TmpBytePt[3] = ( byte ) ( ( m_LastRecvOutputFrameTimeStamp & 0xFF0000 ) >> 16 );
-                            m_TmpBytePt[4] = ( byte ) ( ( m_LastRecvOutputFrameTimeStamp & 0xFF000000 ) >> 24 );
+                            //设置音频输出帧时间戳。
+                            m_TmpBytePt[1] = ( byte ) ( p_TmpInt & 0xFF );
+                            m_TmpBytePt[2] = ( byte ) ( ( p_TmpInt & 0xFF00 ) >> 8 );
+                            m_TmpBytePt[3] = ( byte ) ( ( p_TmpInt & 0xFF0000 ) >> 16 );
+                            m_TmpBytePt[4] = ( byte ) ( ( p_TmpInt & 0xFF000000 ) >> 24 );
 
                             if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1 + 4, ( short ) 0, m_ErrInfoVarStrPt ) == 0 )
                             {
                                 m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
-                                Log.i( m_CurClsNameStrPt, "发送一个输出帧应答包成功。时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + 1 + 4 + "。" );
+                                Log.i( m_CurClsNameStrPt, "发送一个音频输出帧应答包成功。时间戳：" + p_TmpInt + "，总长度：" + 1 + 4 + "。" );
                             }
                             else
                             {
-                                String p_InfoStrPt = "发送一个输出帧应答包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                                String p_InfoStrPt = "发送一个音频输出帧应答包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
                                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                                 Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                                 break out;
@@ -849,7 +828,7 @@ class MyMediaProcThread extends MediaProcThread
                         }
 
                         //读取视频输出帧时间戳。
-                        m_LastRecvOutputFrameTimeStamp = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
+                        p_TmpInt = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
 
                         if( m_VideoOutputPt != null ) //如果要使用视频输出。
                         {
@@ -864,11 +843,11 @@ class MyMediaProcThread extends MediaProcThread
                                         {
                                             m_RecvVideoOutputFrameLnkLstPt.addLast( Arrays.copyOfRange( m_TmpBytePt, 1 + 4, ( int ) ( m_TmpHTLongPt.m_Val ) ) );
                                         }
-                                        Log.i( m_CurClsNameStrPt, "接收一个有图像活动的视频输出帧包，并放入接收视频输出帧链表成功。视频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                        Log.i( m_CurClsNameStrPt, "接收一个有图像活动的视频输出帧包，并放入接收视频输出帧链表成功。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                                     }
                                     else //如果该视频输出帧为无图像活动。
                                     {
-                                        Log.i( m_CurClsNameStrPt, "接收一个无图像活动的视频输出帧包，无需放入接收视频输出帧链表。视频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                        Log.i( m_CurClsNameStrPt, "接收一个无图像活动的视频输出帧包，无需放入接收视频输出帧链表。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                                     }
 
                                     break;
@@ -879,12 +858,12 @@ class MyMediaProcThread extends MediaProcThread
                                     {
                                         if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
                                         {
-                                            m_VAjbPt.PutOneByteFrame( System.currentTimeMillis(), m_LastRecvOutputFrameTimeStamp, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4 );
-                                            Log.i( m_CurClsNameStrPt, "接收一个有图像活动的视频输出帧包，并放入视频自适应抖动缓冲器成功。视频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。" );
+                                            m_VAjbPt.PutOneByteFrame( System.currentTimeMillis(), p_TmpInt, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4 );
+                                            Log.i( m_CurClsNameStrPt, "接收一个有图像活动的视频输出帧包，并放入视频自适应抖动缓冲器成功。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。" );
                                         }
                                         else //如果该视频输出帧为无图像活动。
                                         {
-                                            Log.i( m_CurClsNameStrPt, "接收一个无图像活动的视频输出帧包，无需放入视频自适应抖动缓冲器。视频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                            Log.i( m_CurClsNameStrPt, "接收一个无图像活动的视频输出帧包，无需放入视频自适应抖动缓冲器。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                                         }
 
                                         HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
@@ -892,11 +871,7 @@ class MyMediaProcThread extends MediaProcThread
                                         HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
                                         HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
                                         m_VAjbPt.GetBufFrameCnt( p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
-                                        Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器：帧：" + p_CurHaveBufFrameCntPt.m_Val +
-                                                                                            "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val +
-                                                                                            "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val +
-                                                                                            "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val +
-                                                                                            "。" );
+                                        Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器：帧：" + p_CurHaveBufFrameCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val + "。" );
                                     }
 
                                     break;
@@ -907,35 +882,35 @@ class MyMediaProcThread extends MediaProcThread
                         {
                             if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
                             {
-                                Log.i( m_CurClsNameStrPt, "接收一个有图像活动的视频输出帧包成功，但不使用视频输出。视频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                Log.i( m_CurClsNameStrPt, "接收一个有图像活动的视频输出帧包成功，但不使用视频输出。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                             }
                             else //如果该视频输出帧为无图像活动。
                             {
-                                Log.i( m_CurClsNameStrPt, "接收一个无图像活动的视频输出帧包成功，但不使用视频输出。视频输出帧时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                Log.i( m_CurClsNameStrPt, "接收一个无图像活动的视频输出帧包成功，但不使用视频输出。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                             }
                         }
                     }
-                    else if( m_TmpBytePt[0] == PKT_TYP_ACK ) //如果是连接应答包或输入输出帧应答包。
+                    else if( m_TmpBytePt[0] == PKT_TYP_ACK ) //如果是连接应答包或音视频输入输出帧应答包。
                     {
-                        if( m_TmpHTLongPt.m_Val == 1 ) //如果退出包的数据长度等于1，表示是连接应答包，就不管。
+                        if( m_TmpHTLongPt.m_Val == 1 ) //如果数据包的数据长度等于1，表示是连接应答包，就不管。
                         {
 
                         }
-                        else //如果退出包的数据长度大于1，表示是输入输出帧应答包。
+                        else //如果数据包的数据长度大于1，表示是音视频输入输出帧应答包。
                         {
                             if( m_TmpHTLongPt.m_Val != 1 + 4 )
                             {
-                                Log.e( m_CurClsNameStrPt, "接收一个音频输入输出帧应答包的数据长度为" + m_TmpHTLongPt.m_Val + "不等于1 + 4，表示格式不正确，无法继续接收。" );
+                                Log.e( m_CurClsNameStrPt, "接收一个音视频输入输出帧应答包的数据长度为" + m_TmpHTLongPt.m_Val + "不等于1 + 4，表示格式不正确，无法继续接收。" );
                                 break out;
                             }
 
                             //读取时间戳。
-                            m_LastRecvOutputFrameTimeStamp = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
+                            p_TmpInt = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
 
-                            Log.i( m_CurClsNameStrPt, "接收一个音频输入输出帧应答包。时间戳：" + m_LastRecvOutputFrameTimeStamp + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                            Log.i( m_CurClsNameStrPt, "接收一个音视频输入输出帧应答包。时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
 
-                            //设置最后一个发送的输入帧远端是否接收到。
-                            if( m_LastSendAudioInputFrameTimeStamp == m_LastRecvOutputFrameTimeStamp ) m_LastSendAudioInputFrameIsRecv = 1;
+                            //设置最后一个发送的音频输入帧远端是否接收到。
+                            if( m_LastSendAudioInputFrameTimeStamp == p_TmpInt ) m_LastSendAudioInputFrameIsRecv = 1;
                         }
                     }
                     else if( m_TmpBytePt[0] == PKT_TYP_EXIT ) //如果是退出包。
@@ -1154,7 +1129,7 @@ class MyMediaProcThread extends MediaProcThread
             }
             else //其他情况，本线程直接退出。
             {
-                {Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送音频处理线程退出的消息。
+                {Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送媒体处理线程退出的消息。
                 {Message clMessage = new Message();clMessage.what = 4;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建SurfaceView控件消息。
             }
         }
@@ -1170,7 +1145,7 @@ class MyMediaProcThread extends MediaProcThread
             }
             else //其他情况，本线程直接退出。
             {
-                {Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送音频处理线程退出的消息。
+                {Message clMessage = new Message();clMessage.what = 2;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送媒体处理线程退出的消息。
                 {Message clMessage = new Message();clMessage.what = 4;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建SurfaceView控件消息。
             }
         }
@@ -1236,7 +1211,7 @@ class MyMediaProcThread extends MediaProcThread
                     m_TmpBytePt[8] = ( byte ) ( ( m_LastSendVideoInputFrameTimeStamp & 0xFF000000 ) >> 24 );
 
                     if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_FramePktLen, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
-                            ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_FramePktLen, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
+                        ( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_FramePktLen, ( short ) 0, m_ErrInfoVarStrPt ) == 0 ) ) )
                     {
                         m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
                         Log.i( m_CurClsNameStrPt, "发送一个有语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAudioInputFrameTimeStamp + "，视频输入帧时间戳：" + m_LastSendVideoInputFrameTimeStamp + "，总长度：" + p_FramePktLen + "。" );
@@ -1289,7 +1264,7 @@ class MyMediaProcThread extends MediaProcThread
                     {
                         //设置音频输入帧包。
                         m_TmpBytePt[0] = PKT_TYP_AFRAME;
-                        //设置时间戳。
+                        //设置音频输入帧时间戳。
                         m_TmpBytePt[1] = ( byte ) ( m_LastSendAudioInputFrameTimeStamp & 0xFF );
                         m_TmpBytePt[2] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF00 ) >> 8 );
                         m_TmpBytePt[3] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF0000 ) >> 16 );
@@ -1318,7 +1293,7 @@ class MyMediaProcThread extends MediaProcThread
                 {
                     if( EncoderVideoInputFrameLenPt.m_Val != 0 ) //如果本次视频输入帧为有图像活动。
                     {
-                        System.arraycopy( EncoderVideoInputFramePt, 0, m_TmpBytePt, 1 + 4 + 4, ( int ) EncoderVideoInputFrameLenPt.m_Val ); //设置音频输入输出帧。
+                        System.arraycopy( EncoderVideoInputFramePt, 0, m_TmpBytePt, 1 + 4 + 4, ( int ) EncoderVideoInputFrameLenPt.m_Val ); //设置视频输入输出帧。
                         p_FramePktLen = 1 + 4 + 4 + ( int ) EncoderVideoInputFrameLenPt.m_Val; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 音频输入帧时间戳 + 已编码格式视频输入帧。
                     }
                     else
@@ -1328,7 +1303,7 @@ class MyMediaProcThread extends MediaProcThread
                 }
                 else //如果要使用YU12格式视频输入帧。
                 {
-                    System.arraycopy( YU12VideoInputFramePt, 0, m_TmpBytePt, 1 + 4 + 4, YU12VideoInputFramePt.length ); //设置音频输入输出帧。
+                    System.arraycopy( YU12VideoInputFramePt, 0, m_TmpBytePt, 1 + 4 + 4, YU12VideoInputFramePt.length ); //设置视频输入输出帧。
                     p_FramePktLen = 1 + 4 + 4 + YU12VideoInputFramePt.length; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 音频输入帧时间戳 + YU12格式视频输入帧。
                 }
 
@@ -1423,17 +1398,17 @@ class MyMediaProcThread extends MediaProcThread
                             p_AudioOutputFrameTimeStamp = m_TmpHTInt2Pt.m_Val;
                             p_AudioOutputFramePt = m_TmpByte2Pt;
                             p_AudioOutputFrameLen = m_TmpHTLong2Pt.m_Val;
-                            m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp = ( p_AudioOutputFramePt[0] & 0xFF ) + ( ( p_AudioOutputFramePt[1] & 0xFF ) << 8 ) + ( ( p_AudioOutputFramePt[2] & 0xFF ) << 16 ) + ( ( p_AudioOutputFramePt[3] & 0xFF ) << 24 ); //设置最后一个取出的音频输出帧对应视频输出帧的时间戳。
 
                             if( p_AudioOutputFrameLen > 0 ) //如果音频输出帧为有语音活动。
                             {
+                                m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp = ( p_AudioOutputFramePt[0] & 0xFF ) + ( ( p_AudioOutputFramePt[1] & 0xFF ) << 8 ) + ( ( p_AudioOutputFramePt[2] & 0xFF ) << 16 ) + ( ( p_AudioOutputFramePt[3] & 0xFF ) << 24 ); //设置最后一个取出的音频输出帧对应视频输出帧的时间戳。
                                 m_LastGetAudioOutputFrameIsAct = 1; //设置最后一个取出的音频输出帧为有语音活动。
                                 Log.i( m_CurClsNameStrPt, "从音频自适应抖动缓冲器取出一个有语音活动的音频输出帧。音频输出帧时间戳：" + p_AudioOutputFrameTimeStamp + "，视频输出帧时间戳：" + m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp + "，数据长度：" + p_AudioOutputFrameLen + "。" );
                             }
                             else if( p_AudioOutputFrameLen == 0 ) //如果音频输出帧为无语音活动。
                             {
                                 m_LastGetAudioOutputFrameIsAct = 0; //设置最后一个取出的音频输出帧为无语音活动。
-                                Log.i( m_CurClsNameStrPt, "从音频自适应抖动缓冲器取出一个无语音活动的音频输出帧。音频输出帧时间戳：" + p_AudioOutputFrameTimeStamp + "，视频输出帧时间戳：" + m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp + "，数据长度：" + p_AudioOutputFrameLen + "。" );
+                                Log.i( m_CurClsNameStrPt, "从音频自适应抖动缓冲器取出一个无语音活动的音频输出帧。音频输出帧时间戳：" + p_AudioOutputFrameTimeStamp + "，数据长度：" + p_AudioOutputFrameLen + "。" );
                             }
                             else //如果音频输出帧为丢失。
                             {
@@ -1448,13 +1423,7 @@ class MyMediaProcThread extends MediaProcThread
                             HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
                             HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
                             m_AAjbPt.GetBufFrameCnt( p_CurHaveBufActFrameCntPt, p_CurHaveBufInactFrameCntPt, p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
-                            Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val +
-                                                                                "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val +
-                                                                                "，帧：" + p_CurHaveBufFrameCntPt.m_Val +
-                                                                                "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val +
-                                                                                "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val +
-                                                                                "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val +
-                                                                                "。" );
+                            Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val + "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val + "，帧：" + p_CurHaveBufFrameCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val + "。" );
                         }
 
                         break;
@@ -1528,7 +1497,7 @@ class MyMediaProcThread extends MediaProcThread
 
     }
 
-    //取出并写入音频输出帧。
+    //取出并写入视频输出帧。
     void GetAndWriteVideoOutputFrame( byte TmpBytePt[], HTInt TmpHTIntPt, HTLong TmpHTLongPt )
     {
         int p_VideoOutputFrameTimeStamp = 0;
@@ -1593,11 +1562,7 @@ class MyMediaProcThread extends MediaProcThread
                     HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
                     HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
                     m_VAjbPt.GetBufFrameCnt( p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
-                    Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器：帧：" + p_CurHaveBufFrameCntPt.m_Val +
-                            "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val +
-                            "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val +
-                            "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val +
-                            "。" );
+                    Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器：帧：" + p_CurHaveBufFrameCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val + "。" );
                 }
 
                 break;
@@ -1639,7 +1604,7 @@ public class MainActivity extends AppCompatActivity
     View m_LyotActivityCurViewPt; //存放当前界面布局控件的内存指针。
 
     MainActivity m_MainActivityPt; //存放主界面类对象的内存指针。
-    MyMediaProcThread m_MyMediaProcThreadPt; //存放音频处理线程类对象的内存指针。
+    MyMediaProcThread m_MyMediaProcThreadPt; //存放媒体处理线程类对象的内存指针。
     MainActivityHandler m_MainActivityHandlerPt; //存放主界面消息处理类对象的内存指针。
 
     HTSurfaceView m_VideoInputPreviewSurfaceViewPt; //存放视频输入预览SurfaceView控件的内存指针。
@@ -1796,9 +1761,9 @@ public class MainActivity extends AppCompatActivity
             Log.i( m_CurClsNameStrPt, "用户在主界面按下返回键，本软件退出。" );
             if( m_MyMediaProcThreadPt != null )
             {
-                Log.i( m_CurClsNameStrPt, "开始请求并等待音频处理线程退出。" );
+                Log.i( m_CurClsNameStrPt, "开始请求并等待媒体处理线程退出。" );
                 m_MyMediaProcThreadPt.RequireExit( 1, 1 );
-                Log.i( m_CurClsNameStrPt, "结束请求并等待音频处理线程退出。" );
+                Log.i( m_CurClsNameStrPt, "结束请求并等待媒体处理线程退出。" );
             }
             System.exit(0);
         }
@@ -1972,13 +1937,13 @@ public class MainActivity extends AppCompatActivity
 
         out:
         {
-            if( m_MyMediaProcThreadPt == null ) //如果音频处理线程还没有启动。
+            if( m_MyMediaProcThreadPt == null ) //如果媒体处理线程还没有启动。
             {
-                Log.i( m_CurClsNameStrPt, "开始启动音频处理线程。" );
+                Log.i( m_CurClsNameStrPt, "开始启动媒体处理线程。" );
 
-                //创建并初始化音频处理线程类对象。
+                //创建并初始化媒体处理线程类对象。
                 {
-                    m_MyMediaProcThreadPt = new MyMediaProcThread( getApplicationContext() ); //创建音频处理线程类对象。
+                    m_MyMediaProcThreadPt = new MyMediaProcThread( getApplicationContext() ); //创建媒体处理线程类对象。
 
                     if( BtnPt.getId() == R.id.CreateSrvrBtn )
                     {
@@ -2036,35 +2001,35 @@ public class MainActivity extends AppCompatActivity
                     //判断是否保存设置到文件。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveSettingToFileCheckBox ) ).isChecked() )
                     {
-                        m_MyMediaProcThreadPt.SetSaveSettingToFile( 1, m_ExternalDirFullAbsPathStrPt + "/Setting.txt" );
+                        m_MyMediaProcThreadPt.SetIsSaveSettingToFile( 1, m_ExternalDirFullAbsPathStrPt + "/Setting.txt" );
                     }
                     else
                     {
-                        m_MyMediaProcThreadPt.SetSaveSettingToFile( 0, null );
+                        m_MyMediaProcThreadPt.SetIsSaveSettingToFile( 0, null );
                     }
 
                     //判断是否打印Logcat日志。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsPrintLogcatCheckBox ) ).isChecked() )
                     {
-                        m_MyMediaProcThreadPt.SetPrintLogcat( 1 );
+                        m_MyMediaProcThreadPt.SetIsPrintLogcat( 1 );
                     }
                     else
                     {
-                        m_MyMediaProcThreadPt.SetPrintLogcat( 0 );
+                        m_MyMediaProcThreadPt.SetIsPrintLogcat( 0 );
                     }
 
                     //判断是否使用唤醒锁。
                     if( ( ( CheckBox ) m_MainActivityPt.m_LyotActivitySettingViewPt.findViewById( R.id.IsUseWakeLockCheckBox ) ).isChecked() )
                     {
-                        m_MyMediaProcThreadPt.SetUseWakeLock( 1 );
+                        m_MyMediaProcThreadPt.SetIsUseWakeLock( 1 );
                     }
                     else
                     {
-                        m_MyMediaProcThreadPt.SetUseWakeLock( 0 );
+                        m_MyMediaProcThreadPt.SetIsUseWakeLock( 0 );
                     }
 
                     //判断是否使用音频输入。
-                    m_MyMediaProcThreadPt.SetUseAudioInput(
+                    m_MyMediaProcThreadPt.SetIsUseAudioInput(
                             ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioTalkbackRadioBtn ) ).isChecked() ) ? 1 :
                                     ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
                             ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate8000RadioBtn ) ).isChecked() ) ? 8000 :
@@ -2077,11 +2042,11 @@ public class MainActivity extends AppCompatActivity
                     //判断音频输入是否使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).isChecked() )
                     {
-                        m_MyMediaProcThreadPt.SetAudioInputUseSystemAecNsAgc( 1 );
+                        m_MyMediaProcThreadPt.SetAudioInputIsUseSystemAecNsAgc( 1 );
                     }
                     else
                     {
-                        m_MyMediaProcThreadPt.SetAudioInputUseSystemAecNsAgc( 0 );
+                        m_MyMediaProcThreadPt.SetAudioInputIsUseSystemAecNsAgc( 0 );
                     }
 
                     //判断音频输入是否不使用声学回音消除器。
@@ -2264,7 +2229,7 @@ public class MainActivity extends AppCompatActivity
                     {
                         try
                         {
-                            m_MyMediaProcThreadPt.SetAudioInputUseSpeexPprocOther(
+                            m_MyMediaProcThreadPt.SetAudioInputIsUseSpeexPprocOther(
                                     1,
                                     ( ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).isChecked() ) ? 1 : 0,
                                     Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).getText().toString() ),
@@ -2284,7 +2249,7 @@ public class MainActivity extends AppCompatActivity
                     }
                     else
                     {
-                        m_MyMediaProcThreadPt.SetAudioInputUseSpeexPprocOther( 0, 0, 0, 0, 0, 0, 0, 0, 0 );
+                        m_MyMediaProcThreadPt.SetAudioInputIsUseSpeexPprocOther( 0, 0, 0, 0, 0, 0, 0, 0, 0 );
                     }
 
                     //判断音频输入是否使用PCM原始数据。
@@ -2321,7 +2286,7 @@ public class MainActivity extends AppCompatActivity
                     //判断音频输入是否保存音频到文件。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).isChecked() )
                     {
-                        m_MyMediaProcThreadPt.SetAudioInputSaveAudioToFile(
+                        m_MyMediaProcThreadPt.SetAudioInputIsSaveAudioToFile(
                                 1,
                                 m_ExternalDirFullAbsPathStrPt + "/AudioInput.wav",
                                 m_ExternalDirFullAbsPathStrPt + "/AudioResult.wav"
@@ -2329,14 +2294,14 @@ public class MainActivity extends AppCompatActivity
                     }
                     else
                     {
-                        m_MyMediaProcThreadPt.SetAudioInputSaveAudioToFile( 0, null, null );
+                        m_MyMediaProcThreadPt.SetAudioInputIsSaveAudioToFile( 0, null, null );
                     }
 
                     //判断音频输入设备是否静音。
                     m_MyMediaProcThreadPt.SetAudioInputDeviceIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
 
                     //判断是否使用音频输出。
-                    m_MyMediaProcThreadPt.SetUseAudioOutput(
+                    m_MyMediaProcThreadPt.SetIsUseAudioOutput(
                             ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioTalkbackRadioBtn ) ).isChecked() ) ? 1 :
                                     ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
                             ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate8000RadioBtn ) ).isChecked() ) ? 8000 :
@@ -2390,18 +2355,18 @@ public class MainActivity extends AppCompatActivity
                     //判断音频输出是否保存音频到文件。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).isChecked() )
                     {
-                        m_MyMediaProcThreadPt.SetAudioOutputSaveAudioToFile(
+                        m_MyMediaProcThreadPt.SetAudioOutputIsSaveAudioToFile(
                                 1,
                                 m_ExternalDirFullAbsPathStrPt + "/AudioOutput.wav"
                         );
                     }
                     else
                     {
-                        m_MyMediaProcThreadPt.SetAudioOutputSaveAudioToFile( 0, null );
+                        m_MyMediaProcThreadPt.SetAudioOutputIsSaveAudioToFile( 0, null );
                     }
 
                     //判断是否使用视频输入。
-                    m_MyMediaProcThreadPt.SetUseVideoInput(
+                    m_MyMediaProcThreadPt.SetIsUseVideoInput(
                             ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 :
                                     ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
                             ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate12RadioBtn ) ).isChecked() ) ? 12 :
@@ -2428,7 +2393,7 @@ public class MainActivity extends AppCompatActivity
                     //判断视频输入是否使用OpenH264编码器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).isChecked() )
                     {
-                        m_MyMediaProcThreadPt.SetVideoInputUseOpenH264(
+                        m_MyMediaProcThreadPt.SetVideoInputUseOpenH264Encoder(
                                 Integer.parseInt( ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).getText().toString() ),
                                 Integer.parseInt( ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).getText().toString() ) * 1024 * 8,
                                 Integer.parseInt( ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).getText().toString() ),
@@ -2444,7 +2409,7 @@ public class MainActivity extends AppCompatActivity
                     m_MyMediaProcThreadPt.SetVideoInputDeviceIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoInputDeviceIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
 
                     //判断是否使用视频输出。
-                    m_MyMediaProcThreadPt.SetUseVideoOutput(
+                    m_MyMediaProcThreadPt.SetIsUseVideoOutput(
                             ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 :
                                     ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
                             ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize144_176RadioBtn ) ).isChecked() ) ? 144 :
@@ -2471,22 +2436,22 @@ public class MainActivity extends AppCompatActivity
                     //判断视频输出是否使用OpenH264编码器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).isChecked() )
                     {
-                        m_MyMediaProcThreadPt.SetVideoOutputUseOpenH264( 0 );
+                        m_MyMediaProcThreadPt.SetVideoOutputUseOpenH264Decoder( 0 );
                     }
 
                     //判断视频输出设备是否黑屏。
                     m_MyMediaProcThreadPt.SetVideoOutputDeviceIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoOutputDeviceIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
                 }
 
-                m_MyMediaProcThreadPt.start(); //启动音频处理线程。
+                m_MyMediaProcThreadPt.start(); //启动媒体处理线程。
 
-                Log.i( m_CurClsNameStrPt, "启动音频处理线程完毕。" );
+                Log.i( m_CurClsNameStrPt, "启动媒体处理线程完毕。" );
             }
             else
             {
-                Log.i( m_CurClsNameStrPt, "开始请求并等待音频处理线程退出。" );
+                Log.i( m_CurClsNameStrPt, "开始请求并等待媒体处理线程退出。" );
                 m_MyMediaProcThreadPt.RequireExit( 1, 1 );
-                Log.i( m_CurClsNameStrPt, "结束请求并等待音频处理线程退出。" );
+                Log.i( m_CurClsNameStrPt, "结束请求并等待媒体处理线程退出。" );
             }
 
             p_Result = 0;
@@ -2494,7 +2459,7 @@ public class MainActivity extends AppCompatActivity
             break out;
         }
 
-        if( p_Result != 0 ) //如果音频处理线程启动失败。
+        if( p_Result != 0 ) //如果媒体处理线程启动失败。
         {
             m_MyMediaProcThreadPt = null;
         }

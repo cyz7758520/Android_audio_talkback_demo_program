@@ -33,7 +33,7 @@ public class VAjb
     }
 
     //创建并初始化视频自适应抖动缓冲器。
-    public native int Init( int IsHaveTimeStamp, int MinNeedBufFrameCnt, int MaxNeedBufFrameCnt, float AdaptSensitivity );
+    public native int Init( int IsHaveTimeStamp, int MinNeedBufFrameCnt, int MaxNeedBufFrameCnt, float AdaptSensitivity, int IsUseMutexLock );
 
     //放入一个字节型帧到视频自适应抖动缓冲器。
     public native int PutOneByteFrame( long CurTime, int TimeStamp, byte ByteFramePt[], long FrameStart, long FrameLen );
