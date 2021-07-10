@@ -672,8 +672,8 @@
                     android:layout_height="match_parent"/>
 
                 <RadioButton
-                    android:text="16"
-                    android:id="@+id/UseVideoSamplingRate16RadioBtn"
+                    android:text="15"
+                    android:id="@+id/UseVideoSamplingRate15RadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>

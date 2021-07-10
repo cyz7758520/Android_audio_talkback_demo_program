@@ -30,21 +30,21 @@ public abstract class MediaProcThread extends Thread
 {
     public String m_CurClsNameStrPt = this.getClass().getSimpleName(); //存放当前类名称字符串。
 
-    public int m_RunFlag = RUN_FLAG_NORUN; //存放本线程运行标记。
+    public int m_RunFlag; //存放本线程运行标记。
     public static final int RUN_FLAG_NORUN = 0; //运行标记：未开始运行。
     public static final int RUN_FLAG_INIT = 1; //运行标记：刚开始运行正在初始化。
     public static final int RUN_FLAG_PROC = 2; //运行标记：初始化完毕正在循环处理帧。
     public static final int RUN_FLAG_DESTROY = 3; //运行标记：跳出循环处理帧正在销毁。
     public static final int RUN_FLAG_END = 4; //运行标记：销毁完毕。
-    public int m_ExitFlag = 0; //存放本线程退出标记，为0表示保持运行，为1表示请求退出，为2表示请求重启，为3表示请求重启但不执行用户定义的UserInit初始化函数和UserDestroy销毁函数。
-    public int m_ExitCode = 0; //存放本线程退出代码，为0表示正常退出，为-1表示初始化失败，为-2表示处理失败。
+    public int m_ExitFlag; //存放本线程退出标记，为0表示保持运行，为1表示请求退出，为2表示请求重启，为3表示请求重启但不执行用户定义的UserInit初始化函数和UserDestroy销毁函数。
+    public int m_ExitCode; //存放本线程退出代码，为0表示正常退出，为-1表示初始化失败，为-2表示处理失败。
 
     public static Context m_AppContextPt; //存放应用程序上下文类对象的内存指针。
 
-    int m_IsSaveSettingToFile = 0; //存放是否保存设置到文件，为非0表示要保存，为0表示不保存。
+    int m_IsSaveSettingToFile; //存放是否保存设置到文件，为非0表示要保存，为0表示不保存。
     String m_SettingFileFullPathStrPt; //存放设置文件的完整路径字符串。
 
-    public int m_IsPrintLogcat = 0; //存放是否打印Logcat日志，为非0表示要打印，为0表示不打印。
+    public int m_IsPrintLogcat; //存放是否打印Logcat日志，为非0表示要打印，为0表示不打印。
 
     int m_IsUseWakeLock; //存放是否使用唤醒锁，非0表示要使用，0表示不使用。
     PowerManager.WakeLock m_ProximityScreenOffWakeLockPt; //存放接近息屏唤醒锁类对象的内存指针。
@@ -54,12 +54,12 @@ public abstract class MediaProcThread extends Thread
     {
         public int m_IsUseAudioInput; //存放是否使用音频输入，为0表示不使用，为非0表示要使用。
 
-        public int m_SamplingRate = 16000; //存放采样频率，取值只能为8000、16000、32000。
-        public int m_FrameLen = 320; //存放帧的数据长度，单位采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960。
+        public int m_SamplingRate; //存放采样频率，取值只能为8000、16000、32000。
+        public int m_FrameLen; //存放帧的数据长度，单位采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960。
 
-        public int m_IsUseSystemAecNsAgc = 0; //存放是否使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带），为0表示不使用，为非0表示要使用。
+        public int m_IsUseSystemAecNsAgc; //存放是否使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带），为0表示不使用，为非0表示要使用。
 
-        public int m_UseWhatAec = 0; //存放使用什么声学回音消除器，为0表示不使用，为1表示Speex声学回音消除器，为2表示WebRtc定点版声学回音消除器，为2表示WebRtc浮点版声学回音消除器，为4表示SpeexWebRtc三重声学回音消除器。
+        public int m_UseWhatAec; //存放使用什么声学回音消除器，为0表示不使用，为1表示Speex声学回音消除器，为2表示WebRtc定点版声学回音消除器，为2表示WebRtc浮点版声学回音消除器，为4表示SpeexWebRtc三重声学回音消除器。
 
         SpeexAec m_SpeexAecPt; //存放Speex声学回音消除器类对象的内存指针。
         int m_SpeexAecFilterLen; //存放Speex声学回音消除器的滤波器数据长度，单位毫秒。
@@ -103,10 +103,10 @@ public abstract class MediaProcThread extends Thread
         int m_SpeexWebRtcAecWebRtcAecIsUseExtdFilterMode; //存放SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器是否使用扩展滤波器模式，为非0表示要使用，为0表示不使用。
         int m_SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecMode; //存放SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器是否使用精制滤波器自适应Aec模式，为非0表示要使用，为0表示不使用。
         int m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay; //存放SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器是否使用自适应调节回音的延迟，为非0表示要使用，为0表示不使用。
-        int m_SpeexWebRtcAecIsUseSameRoomAec; //存放SpeexWebRtc三重声学回音消除器是否使用同一房间声学回音消除，为非0表示要使用，为0表示不使用。
+        int m_SpeexWebRtcAecIsUseSameRoomAec; //存放SpeexWebRtc三重声学回音消除器是否使用同一房间声学回音消除，可能对近端音频有损伤，为非0表示要使用，为0表示不使用。
         int m_SpeexWebRtcAecSameRoomEchoMinDelay; //存放SpeexWebRtc三重声学回音消除器的同一房间回音最小延迟，单位毫秒，取值区间为[1,2147483647]。
 
-        public int m_UseWhatNs = 0; //存放使用什么噪音抑制器，为0表示不使用，为1表示Speex预处理器的噪音抑制，为2表示WebRtc定点版噪音抑制器，为3表示WebRtc浮点版噪音抑制器，为4表示RNNoise噪音抑制器。
+        public int m_UseWhatNs; //存放使用什么噪音抑制器，为0表示不使用，为1表示Speex预处理器的噪音抑制，为2表示WebRtc定点版噪音抑制器，为3表示WebRtc浮点版噪音抑制器，为4表示RNNoise噪音抑制器。
 
         SpeexPproc m_SpeexPprocPt; //存放Speex预处理器类对象的内存指针。
         int m_SpeexPprocIsUseNs; //存放Speex预处理器是否使用噪音抑制，为非0表示要使用，为0表示不使用。
@@ -131,7 +131,7 @@ public abstract class MediaProcThread extends Thread
         int m_SpeexPprocAgcDecrement; //存放Speex预处理器在自动增益控制时，每秒最大减益的分贝值，分贝值越小减益越大，取值区间为[-2147483648,0]。
         int m_SpeexPprocAgcMaxGain; //存放Speex预处理器在自动增益控制时，最大增益的分贝值，分贝值越大增益越大，取值区间为[0,2147483647]。
 
-        public int m_UseWhatEncoder = 0; //存放使用什么编码器，为0表示PCM原始数据，为1表示Speex编码器，为2表示Opus编码器。
+        public int m_UseWhatEncoder; //存放使用什么编码器，为0表示PCM原始数据，为1表示Speex编码器，为2表示Opus编码器。
 
         SpeexEncoder m_SpeexEncoderPt; //存放Speex编码器类对象的内存指针。
         int m_SpeexEncoderUseCbrOrVbr; //存放Speex编码器使用固定比特率还是动态比特率进行编码，为0表示要使用固定比特率，为非0表示要使用动态比特率。
@@ -139,7 +139,7 @@ public abstract class MediaProcThread extends Thread
         int m_SpeexEncoderComplexity; //存放Speex编码器的编码复杂度，复杂度越高压缩率不变、CPU使用率越高、音质越好，取值区间为[0,10]。
         int m_SpeexEncoderPlcExpectedLossRate; //存放Speex编码器在数据包丢失隐藏时，数据包的预计丢失概率，预计丢失概率越高抗网络抖动越强、压缩率越低，取值区间为[0,100]。
 
-        public int m_IsSaveAudioToFile = 0; //存放是否保存音频到文件，为非0表示要保存，为0表示不保存。
+        public int m_IsSaveAudioToFile; //存放是否保存音频到文件，为非0表示要保存，为0表示不保存。
         WaveFileWriter m_AudioInputWaveFileWriterPt; //存放音频输入Wave文件写入器对象的内存指针。
         WaveFileWriter m_AudioResultWaveFileWriterPt; //存放音频结果Wave文件写入器对象的内存指针。
         String m_AudioInputFileFullPathStrPt; //存放音频输入文件的完整路径字符串。
@@ -147,10 +147,16 @@ public abstract class MediaProcThread extends Thread
 
         AudioRecord m_AudioInputDevicePt; //存放音频输入设备类对象的内存指针。
         int m_AudioInputDeviceBufSz; //存放音频输入设备缓冲区大小，单位字节。
-        int m_AudioInputDeviceIsMute = 0; //存放音频输入设备是否静音，为0表示有声音，为非0表示静音。
+        int m_AudioInputDeviceIsMute; //存放音频输入设备是否静音，为0表示有声音，为非0表示静音。
 
         public LinkedList< short[] > m_AudioInputFrameLnkLstPt; //存放音频输入帧链表类对象的内存指针。
         public LinkedList< short[] > m_AudioInputIdleFrameLnkLstPt; //存放音频输入空闲帧链表类对象的内存指针。
+
+        //音频输入线程的临时变量。
+        short m_AudioInputFramePt[]; //存放音频输入帧的内存指针。
+        int m_AudioInputFrameLnkLstElmTotal; //存放音频输入帧链表的元数总数。
+        long m_LastTimeMsec; //存放上次时间的毫秒数。
+        long m_NowTimeMsec; //存放本次时间的毫秒数。
 
         AudioInputThread m_AudioInputThreadPt; //存放音频输入线程类对象的内存指针。
     }
@@ -161,26 +167,34 @@ public abstract class MediaProcThread extends Thread
     {
         public int m_IsUseAudioOutput; //存放是否使用音频输出，为0表示不使用，为非0表示要使用。
 
-        public int m_SamplingRate = 16000; //存放采样频率，取值只能为8000、16000、32000。
-        public int m_FrameLen = 320; //存放帧的数据长度，单位采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960。
+        public int m_SamplingRate; //存放采样频率，取值只能为8000、16000、32000。
+        public int m_FrameLen; //存放帧的数据长度，单位采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960。
 
-        public int m_UseWhatDecoder = 0; //存放使用什么解码器，为0表示PCM原始数据，为1表示Speex解码器，为2表示Opus解码器。
+        public int m_UseWhatDecoder; //存放使用什么解码器，为0表示PCM原始数据，为1表示Speex解码器，为2表示Opus解码器。
 
         SpeexDecoder m_SpeexDecoderPt; //存放Speex解码器类对象的内存指针。
         int m_SpeexDecoderIsUsePerceptualEnhancement; //存放Speex解码器是否使用知觉增强，为非0表示要使用，为0表示不使用。
 
-        public int m_IsSaveAudioToFile = 0; //存放是否保存音频到文件，为非0表示要保存，为0表示不保存。
+        public int m_IsSaveAudioToFile; //存放是否保存音频到文件，为非0表示要保存，为0表示不保存。
         WaveFileWriter m_AudioOutputWaveFileWriterPt; //存放音频输出Wave文件写入器对象的内存指针。
         String m_AudioOutputFileFullPathStrPt; //存放音频输出文件的完整路径字符串。
 
         public AudioTrack m_AudioOutputDevicePt; //存放音频输出设备类对象的内存指针。
         int m_AudioOutputDeviceBufSz; //存放音频输出设备缓冲区大小，单位字节。
-        public int m_UseWhatAudioOutputDevice = 0; //存放使用什么音频输出设备，为0表示扬声器，为非0表示听筒。
-        public int m_UseWhatAudioOutputStreamType = 0; //存放使用什么音频输出流类型，为0表示通话类型，为非0表示媒体类型。
-        int m_AudioOutputDeviceIsMute = 0; //存放音频输出设备是否静音，为0表示有声音，为非0表示静音。
+        public int m_UseWhatAudioOutputDevice; //存放使用什么音频输出设备，为0表示扬声器，为非0表示听筒。
+        public int m_UseWhatAudioOutputStreamType; //存放使用什么音频输出流类型，为0表示通话类型，为非0表示媒体类型。
+        int m_AudioOutputDeviceIsMute; //存放音频输出设备是否静音，为0表示有声音，为非0表示静音。
 
         public LinkedList< short[] > m_AudioOutputFrameLnkLstPt; //存放音频输出帧链表类对象的内存指针。
         public LinkedList< short[] > m_AudioOutputIdleFrameLnkLstPt; //存放音频输出空闲帧链表类对象的内存指针。
+
+        //音频输出线程的临时变量。
+        short m_AudioOutputFramePt[]; //存放音频输出帧的内存指针。
+        byte m_EncoderAudioOutputFramePt[]; //存放已编码格式音频输出帧的内存指针。
+        HTLong m_AudioOutputFrameLenPt; //存放音频输出帧的数据长度，单位字节。
+        int m_AudioOutputFrameLnkLstElmTotal; //存放音频输出帧链表的元数总数。
+        long m_LastTimeMsec; //存放上次时间的毫秒数。
+        long m_NowTimeMsec; //存放本次时间的毫秒数。
 
         AudioOutputThread m_AudioOutputThreadPt; //存放音频输出线程类对象的内存指针。
     }
@@ -191,11 +205,11 @@ public abstract class MediaProcThread extends Thread
     {
         public int m_IsUseVideoInput; //存放是否使用视频输入，为0表示不使用，为非0表示要使用。
 
-        public int m_MaxSamplingRate = 24; //存放最大采样频率，取值范围为[1,60]，实际帧率和图像的亮度有关，亮度较高时采样频率可以达到最大值，亮度较低时系统就自动降低采样频率来提升亮度。
-        public int m_FrameWidth = 640; //存放帧的宽度，单位为像素。
-        public int m_FrameHeight = 480; //存放帧的高度，单位为像素。
+        public int m_MaxSamplingRate; //存放最大采样频率，取值范围为[1,60]，实际帧率和图像的亮度有关，亮度较高时采样频率可以达到最大值，亮度较低时系统就自动降低采样频率来提升亮度。
+        public int m_FrameWidth; //存放帧的宽度，单位为像素。
+        public int m_FrameHeight; //存放帧的高度，单位为像素。
 
-        public int m_UseWhatEncoder = 0; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264编码器。
+        public int m_UseWhatEncoder; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264编码器。
 
         OpenH264Encoder m_OpenH264EncoderPt; //存放OpenH264编码器类对象的内存指针。
         int m_OpenH264EncoderVideoType;//存放OpenH264编码器的视频类型，为0表示实时摄像头视频，为1表示实时屏幕内容视频，为2表示非实时摄像头视频，为3表示非实时屏幕内容视频，为4表示其他视频。
@@ -209,29 +223,36 @@ public abstract class MediaProcThread extends Thread
         public HTSurfaceView m_VideoInputPreviewSurfaceViewPt; //存放视频输入预览SurfaceView类对象的内存指针。
         public byte m_VideoInputPreviewCallbackBufferPtPt[][]; //存放视频输入预览回调函数缓冲区的内存指针。
         public int m_VideoInputFrameRotate; //存放视频输入帧旋转的角度，只能为0、90、180、270。
-        int m_VideoInputDeviceIsBlack = 0; //存放视频输入设备是否黑屏，为0表示有图像，为非0表示黑屏。
+        int m_VideoInputDeviceIsBlack; //存放视频输入设备是否黑屏，为0表示有图像，为非0表示黑屏。
 
+        public class VideoInputFrameElm //视频输入帧链表元素类。
+        {
+            VideoInputFrameElm()
+            {
+                m_RotateYU12VideoInputFramePt = ( m_VideoInputPt.m_IsUseVideoInput != 0 ) ? new byte[ m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight * 3 / 2 ] : null;
+                m_RotateYU12VideoInputFrameWidthPt = ( m_VideoInputPt.m_IsUseVideoInput != 0 ) ? new HTInt() : null;
+                m_RotateYU12VideoInputFrameHeightPt = ( m_VideoInputPt.m_IsUseVideoInput != 0 ) ? new HTInt() : null;
+                m_EncoderVideoInputFramePt = ( m_VideoInputPt.m_IsUseVideoInput != 0 && m_VideoInputPt.m_UseWhatEncoder != 0 ) ? new byte[ m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight * 3 / 2 ] : null;
+                m_EncoderVideoInputFrameLenPt = ( m_VideoInputPt.m_IsUseVideoInput != 0 && m_VideoInputPt.m_UseWhatEncoder != 0 ) ? new HTLong( 0 ) : null;
+            }
+            byte m_RotateYU12VideoInputFramePt[]; //存放旋转后YU12格式视频输入帧的内存指针。
+            HTInt m_RotateYU12VideoInputFrameWidthPt; //存放旋转后YU12格式视频输入帧的宽度。
+            HTInt m_RotateYU12VideoInputFrameHeightPt; //存放旋转后YU12格式视频输入帧的高度。
+            byte m_EncoderVideoInputFramePt[]; //存放已编码格式视频输入帧。
+            HTLong m_EncoderVideoInputFrameLenPt; //存放已编码格式视频输入帧的数据长度，单位字节。
+        }
         public LinkedList< byte[] > m_NV21VideoInputFrameLnkLstPt; //存放NV21格式视频输入帧链表类对象的内存指针。
         public LinkedList< VideoInputFrameElm > m_VideoInputFrameLnkLstPt; //存放视频输入帧链表类对象的内存指针。
         public LinkedList< VideoInputFrameElm > m_VideoInputIdleFrameLnkLstPt; //存放视频输入空闲帧链表类对象的内存指针。
 
+        //视频输入线程的临时变量。
+        byte m_VideoInputFramePt[]; //存放视频输入帧的内存指针。
+        VideoInputFrameElm m_VideoInputFrameElmPt; //存放视频输入帧元素的内存指针。
+        int m_VideoInputFrameLnkLstElmTotal; //存放视频输入帧链表的元数总数。
+        long m_LastTimeMsec; //存放上次时间的毫秒数。
+        long m_NowTimeMsec; //存放本次时间的毫秒数。
+
         VideoInputThread m_VideoInputThreadPt; //存放视频输入线程类对象的内存指针。
-    }
-    public class VideoInputFrameElm //视频输入帧链表元素类。
-    {
-        VideoInputFrameElm()
-        {
-            m_RotateYU12VideoInputFramePt = ( m_VideoInputPt.m_IsUseVideoInput != 0 ) ? new byte[ m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight * 3 / 2 ] : null;
-            m_RotateYU12VideoInputFrameWidthPt = ( m_VideoInputPt.m_IsUseVideoInput != 0 ) ? new HTInt() : null;
-            m_RotateYU12VideoInputFrameHeightPt = ( m_VideoInputPt.m_IsUseVideoInput != 0 ) ? new HTInt() : null;
-            m_EncoderVideoInputFramePt = ( m_VideoInputPt.m_IsUseVideoInput != 0 && m_VideoInputPt.m_UseWhatEncoder != 0 ) ? new byte[ m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight * 3 / 2 ] : null;
-            m_EncoderVideoInputFrameLenPt = ( m_VideoInputPt.m_IsUseVideoInput != 0 && m_VideoInputPt.m_UseWhatEncoder != 0 ) ? new HTLong( 0 ) : null;
-        }
-        byte m_RotateYU12VideoInputFramePt[]; //存放旋转后YU12格式视频输入帧的内存指针。
-        HTInt m_RotateYU12VideoInputFrameWidthPt; //存放旋转后YU12格式视频输入帧的宽度。
-        HTInt m_RotateYU12VideoInputFrameHeightPt; //存放旋转后YU12格式视频输入帧的高度。
-        byte m_EncoderVideoInputFramePt[]; //存放已编码格式视频输入帧。
-        HTLong m_EncoderVideoInputFrameLenPt; //存放已编码格式视频输入帧的数据长度，单位字节。
     }
 
     public VideoInput m_VideoInputPt = new VideoInput(); //存放视频输入类对象的内存指针。
@@ -240,32 +261,29 @@ public abstract class MediaProcThread extends Thread
     {
         public int m_IsUseVideoOutput; //存放是否使用视频输出，为0表示不使用，为非0表示要使用。
 
-        public int m_FrameWidth = 640; //存放帧的宽度，单位为像素。
-        public int m_FrameHeight = 480; //存放帧的高度，单位为像素。
+        public int m_FrameWidth; //存放帧的宽度，单位为像素。
+        public int m_FrameHeight; //存放帧的高度，单位为像素。
 
-        public int m_UseWhatDecoder = 0; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264解码器。
+        public int m_UseWhatDecoder; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264解码器。
 
         OpenH264Decoder m_OpenH264DecoderPt; //存放OpenH264解码器类对象的内存指针。
         int m_OpenH264DecoderDecodeThreadNum; //存放OpenH264解码器的解码线程数，单位为个，为0表示直接在调用线程解码，为1或2或3表示解码子线程的数量。
 
         HTSurfaceView m_VideoOutputDisplaySurfaceViewPt; //存放视频输出显示SurfaceView类对象的内存指针。
-        float m_VideoOutputDisplayScale = 1.0f; //存放视频输出显示缩放倍数。
-        int m_VideoOutputDeviceIsBlack = 0; //存放视频输出设备是否黑屏，为0表示有图像，为非0表示黑屏。
+        float m_VideoOutputDisplayScale; //存放视频输出显示缩放倍数，为1.0f表示不缩放。
+        int m_VideoOutputDeviceIsBlack; //存放视频输出设备是否黑屏，为0表示有图像，为非0表示黑屏。
 
-        public LinkedList< VideoOutputFrameElm > m_VideoOutputFrameLnkLstPt; //存放视频输出帧链表类对象的内存指针。
-        public LinkedList< VideoOutputFrameElm > m_VideoOutputIdleFrameLnkLstPt; //存放视频输出空闲帧链表类对象的内存指针。
+        //视频输出线程的临时变量。
+        byte m_VideoOutputResultFramePt[]; //存放视频输出结果帧的内存指针。
+        byte m_VideoOutputTmpFramePt[]; //存放视频输出临时帧的内存指针。
+        byte m_VideoOutputSwapFramePt[]; //存放视频输出交换帧的内存指针。
+        HTLong m_VideoOutputResultFrameLenPt; //存放视频输出结果帧的数据长度，单位字节。
+        HTInt m_VideoOutputFrameWidthPt; //存放视频输出帧的宽度，单位为像素。
+        HTInt m_VideoOutputFrameHeightPt; //存放视频输出帧的高度，单位为像素。
+        long m_LastTimeMsec; //存放上次时间的毫秒数。
+        long m_NowTimeMsec; //存放本次时间的毫秒数。
 
         VideoOutputThread m_VideoOutputThreadPt; //存放视频输出线程类对象的内存指针。
-    }
-    public class VideoOutputFrameElm //视频输出帧链表元素类。
-    {
-        VideoOutputFrameElm()
-        {
-            m_VideoOutputFramePt = ( m_VideoOutputPt.m_IsUseVideoOutput != 0 ) ? new byte[ m_VideoOutputPt.m_FrameWidth * m_VideoOutputPt.m_FrameHeight * 3 / 2 ] : null;
-            m_VideoOutputFrameLen = 0;
-        }
-        byte m_VideoOutputFramePt[];
-        long m_VideoOutputFrameLen;
     }
 
     public VideoOutput m_VideoOutputPt = new VideoOutput(); //存放视频输出类对象的内存指针。
@@ -279,57 +297,13 @@ public abstract class MediaProcThread extends Thread
 
     public abstract int UserReadAudioVideoInputFrame( short PcmAudioInputFramePt[], short PcmAudioResultFramePt[], HTInt VoiceActStsPt, byte EncoderAudioInputFramePt[], HTLong EncoderAudioInputFrameLenPt, HTInt EncoderAudioInputFrameIsNeedTransPt, byte YU12VideoInputFramePt[], HTInt YU12VideoInputFrameWidthPt, HTInt YU12VideoInputFrameHeigthPt, byte EncoderVideoInputFramePt[], HTLong EncoderVideoInputFrameLenPt ); //用户定义的读取音视频输入帧函数，在读取到一个音频输入帧或视频输入帧并处理完后回调一次，为0表示成功，为非0表示失败。
 
-    public abstract void UserWriteAudioOutputFrame( short PcmAudioOutputFramePt[], byte EncoderAudioOutputFramePt[], HTLong EncoderAudioOutputFrameLen ); //用户定义的写入音频输出帧函数，在需要写入一个音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
+    public abstract void UserWriteAudioOutputFrame( short PcmAudioOutputFramePt[], byte EncoderAudioOutputFramePt[], HTLong AudioOutputFrameLen ); //用户定义的写入音频输出帧函数，在需要写入一个音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
 
     public abstract void UserGetPcmAudioOutputFrame( short PcmAudioOutputFramePt[] ); //用户定义的获取PCM格式音频输出帧函数，在解码完一个已编码音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
 
-    public void UserWriteVideoOutputFrame( byte VideoOutputFramePt[], int VideoOutputFrameStart, long VideoOutputFrameLen ) //用户调用的写入视频输出帧函数，在用户需要显示一个视频输出帧时主调一次。
-    {
-        VideoOutputFrameElm p_VideoOutputFrameElmPt = null;
-        int p_TmpInt32;
+    public abstract void UserWriteVideoOutputFrame( byte YU12VideoOutputFramePt[], byte EncoderVideoOutputFramePt[], HTLong VideoOutputFrameLen ); //用户定义的写入视频输出帧函数，在可以显示一个视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
 
-        out:
-        {
-            //写入一个视频输出帧到视频输出帧链表。
-            if( m_VideoOutputPt.m_VideoOutputIdleFrameLnkLstPt != null && VideoOutputFramePt != null && VideoOutputFrameLen > 0 && m_RunFlag == RUN_FLAG_PROC ) //如果要使用视频输出帧链表，且视频输出帧有图像活动，且媒体处理线程初始化完毕正在循环处理帧。
-            {
-                //获取一个视频输出空闲帧。
-                if( ( p_TmpInt32 = m_VideoOutputPt.m_VideoOutputIdleFrameLnkLstPt.size() ) > 0 ) //如果视频输出空闲帧链表中有视频输出空闲帧。
-                {
-                    //从视频输出空闲帧链表中取出第一个视频输出空闲帧。
-                    synchronized( m_VideoOutputPt.m_VideoOutputIdleFrameLnkLstPt )
-                    {
-                        p_VideoOutputFrameElmPt = m_VideoOutputPt.m_VideoOutputIdleFrameLnkLstPt.getFirst();
-                        m_VideoOutputPt.m_VideoOutputIdleFrameLnkLstPt.removeFirst();
-                    }
-                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从视频输出空闲帧链表中取出第一个视频输出空闲帧，视频输出空闲帧链表元素个数：" + p_TmpInt32 + "。" );
-                }
-                else //如果视频输出空闲帧链表中没有视频输出空闲帧。
-                {
-                    if( ( p_TmpInt32 = m_VideoOutputPt.m_VideoOutputFrameLnkLstPt.size() ) <= 20 )
-                    {
-                        p_VideoOutputFrameElmPt = new VideoOutputFrameElm(); //创建一个视频输出空闲帧。
-                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：视频输出空闲帧链表中没有视频输出空闲帧，创建一个视频输出空闲帧。" );
-                    }
-                    else
-                    {
-                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：视频输出帧链表中视频输出帧数量为" + p_TmpInt32 + "已经超过上限20，不再创建一个视频输出空闲帧。" );
-                        break out;
-                    }
-                }
-
-                //复制视频输出帧。
-                System.arraycopy( VideoOutputFramePt, VideoOutputFrameStart, p_VideoOutputFrameElmPt.m_VideoOutputFramePt, 0, ( int ) VideoOutputFrameLen );
-                p_VideoOutputFrameElmPt.m_VideoOutputFrameLen = VideoOutputFrameLen;
-
-                //追加本次视频输出帧到视频输出帧链表。
-                synchronized( m_VideoOutputPt.m_VideoOutputFrameLnkLstPt )
-                {
-                    m_VideoOutputPt.m_VideoOutputFrameLnkLstPt.addLast( p_VideoOutputFrameElmPt );
-                }
-            }
-        }
-    }
+    public abstract void UserGetYU12VideoOutputFrame( byte YU12VideoOutputFramePt[], int YU12VideoOutputFrameWidth, int YU12VideoOutputFrameHeigth ); //用户定义的获取YU12格式视频输出帧函数，在解码完一个已编码视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
 
     //构造函数。
     public MediaProcThread( Context AppContextPt )
@@ -551,7 +525,7 @@ public abstract class MediaProcThread extends Thread
         m_AudioInputPt.m_WebRtcNsxPolicyMode = PolicyMode;
     }
 
-    //设置音频输入要使用WebRtc定点版噪音抑制器。
+    //设置音频输入要使用WebRtc浮点版噪音抑制器。
     public void SetAudioInputUseWebRtcNs( int PolicyMode )
     {
         m_AudioInputPt.m_UseWhatNs = 3;
@@ -828,11 +802,6 @@ public abstract class MediaProcThread extends Thread
             this.setPriority( MAX_PRIORITY ); //设置本线程优先级。
             Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级。
 
-            short p_PcmAudioInputFramePt[]; //存放PCM格式音频输入帧。
-            int p_TmpInt32;
-            long p_LastMsec = 0;
-            long p_NowMsec = 0;
-
             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：开始准备音频输入。" );
 
             if( m_AudioInputPt.m_UseWhatAec != 0 ) //如果要使用音频输入的声学回音消除，就自适应计算声学回音的延迟，并设置到声学回音消除器。
@@ -842,34 +811,34 @@ public abstract class MediaProcThread extends Thread
 
                 //计算音频输出的延迟。
                 m_AudioOutputPt.m_AudioOutputDevicePt.play(); //让音频输出设备类对象开始播放。
-                p_PcmAudioInputFramePt = new short[ m_AudioOutputPt.m_FrameLen ]; //创建一个空的音频输出帧。
-                p_LastMsec = System.currentTimeMillis();
+                m_AudioInputPt.m_AudioInputFramePt = new short[ m_AudioOutputPt.m_FrameLen ]; //创建一个空的音频输出帧。
+                m_AudioInputPt.m_LastTimeMsec = System.currentTimeMillis();
                 while( true )
                 {
-                    m_AudioOutputPt.m_AudioOutputDevicePt.write( p_PcmAudioInputFramePt, 0, p_PcmAudioInputFramePt.length ); //播放一个空的音频输出帧。
-                    p_NowMsec = System.currentTimeMillis();
+                    m_AudioOutputPt.m_AudioOutputDevicePt.write( m_AudioInputPt.m_AudioInputFramePt, 0, m_AudioInputPt.m_AudioInputFramePt.length ); //播放一个空的音频输出帧。
+                    m_AudioInputPt.m_NowTimeMsec = System.currentTimeMillis();
                     p_Delay += m_AudioOutputPt.m_FrameLen; //递增音频输出的延迟。
-                    if( p_NowMsec - p_LastMsec >= 10 ) //如果播放耗时较长，就表示音频输出类对象的缓冲区已经写满，结束计算。
+                    if( m_AudioInputPt.m_NowTimeMsec - m_AudioInputPt.m_LastTimeMsec >= 10 ) //如果播放耗时较长，就表示音频输出类对象的缓冲区已经写满，结束计算。
                     {
                         break;
                     }
-                    p_LastMsec = p_NowMsec;
+                    m_AudioInputPt.m_LastTimeMsec = m_AudioInputPt.m_NowTimeMsec;
                 }
                 p_Delay = p_Delay * 1000 / m_AudioOutputPt.m_SamplingRate; //将音频输出的延迟转换为毫秒。
                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "音频输出延迟：" + p_Delay + " 毫秒。" );
 
                 //计算音频输入的延迟。
                 m_AudioInputPt.m_AudioInputDevicePt.startRecording(); //让音频输入设备类对象开始录音。
-                p_PcmAudioInputFramePt = new short[ m_AudioInputPt.m_FrameLen ]; //创建一个空的音频输入帧。
-                p_LastMsec = System.currentTimeMillis();
-                m_AudioInputPt.m_AudioInputDevicePt.read( p_PcmAudioInputFramePt, 0, p_PcmAudioInputFramePt.length ); //计算读取一个音频输入帧的耗时。
-                p_NowMsec = System.currentTimeMillis();
-                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "音频输入延迟：" + ( p_NowMsec - p_LastMsec ) + " 毫秒。" );
+                m_AudioInputPt.m_AudioInputFramePt = new short[ m_AudioInputPt.m_FrameLen ]; //创建一个空的音频输入帧。
+                m_AudioInputPt.m_LastTimeMsec = System.currentTimeMillis();
+                m_AudioInputPt.m_AudioInputDevicePt.read( m_AudioInputPt.m_AudioInputFramePt, 0, m_AudioInputPt.m_AudioInputFramePt.length ); //计算读取一个音频输入帧的耗时。
+                m_AudioInputPt.m_NowTimeMsec = System.currentTimeMillis();
+                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "音频输入延迟：" + ( m_AudioInputPt.m_NowTimeMsec - m_AudioInputPt.m_LastTimeMsec ) + " 毫秒。" );
 
                 m_AudioOutputPt.m_AudioOutputThreadPt.start(); //启动音频输出线程。
 
                 //计算声学回音的延迟。
-                p_Delay = p_Delay + ( int ) ( p_NowMsec - p_LastMsec );
+                p_Delay = p_Delay + ( int ) ( m_AudioInputPt.m_NowTimeMsec - m_AudioInputPt.m_LastTimeMsec );
                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "声学回音延迟：" + p_Delay + " 毫秒，现在启动音频输出线程，并开始音频输入循环，为了保证音频输入线程走在输出数据线程的前面。" );
 
                 //设置到WebRtc定点版和浮点版声学回音消除器。
@@ -929,47 +898,47 @@ public abstract class MediaProcThread extends Thread
             while( true )
             {
                 //获取一个音频输入空闲帧。
-                if( ( p_TmpInt32 = m_AudioInputPt.m_AudioInputIdleFrameLnkLstPt.size() ) > 0 ) //如果音频输入空闲帧链表中有音频输入空闲帧。
+                if( ( m_AudioInputPt.m_AudioInputFrameLnkLstElmTotal = m_AudioInputPt.m_AudioInputIdleFrameLnkLstPt.size() ) > 0 ) //如果音频输入空闲帧链表中有音频输入空闲帧。
                 {
                     //从音频输入空闲帧链表中取出第一个音频输入空闲帧。
                     synchronized( m_AudioInputPt.m_AudioInputIdleFrameLnkLstPt )
                     {
-                        p_PcmAudioInputFramePt = m_AudioInputPt.m_AudioInputIdleFrameLnkLstPt.getFirst();
+                        m_AudioInputPt.m_AudioInputFramePt = m_AudioInputPt.m_AudioInputIdleFrameLnkLstPt.getFirst();
                         m_AudioInputPt.m_AudioInputIdleFrameLnkLstPt.removeFirst();
                     }
-                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：从音频输入空闲帧链表中取出第一个音频输入空闲帧，音频输入空闲帧链表元素个数：" + p_TmpInt32 + "。" );
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：从音频输入空闲帧链表中取出第一个音频输入空闲帧，音频输入空闲帧链表元素个数：" + m_AudioInputPt.m_AudioInputFrameLnkLstElmTotal + "。" );
                 }
                 else //如果音频输入空闲帧链表中没有音频输入空闲帧。
                 {
-                    if( ( p_TmpInt32 = m_AudioInputPt.m_AudioInputFrameLnkLstPt.size() ) <= 50 )
+                    if( ( m_AudioInputPt.m_AudioInputFrameLnkLstElmTotal = m_AudioInputPt.m_AudioInputFrameLnkLstPt.size() ) <= 50 )
                     {
-                        p_PcmAudioInputFramePt = new short[m_AudioInputPt.m_FrameLen]; //创建一个音频输入空闲帧。
+                        m_AudioInputPt.m_AudioInputFramePt = new short[m_AudioInputPt.m_FrameLen]; //创建一个音频输入空闲帧。
                         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：音频输入空闲帧链表中没有音频输入空闲帧，创建一个音频输入空闲帧。" );
                     }
                     else
                     {
-                        p_PcmAudioInputFramePt = null;
-                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频输入线程：音频输入帧链表中音频输入帧数量为" + p_TmpInt32 + "已经超过上限50，不再创建一个音频输入空闲帧。" );
+                        m_AudioInputPt.m_AudioInputFramePt = null;
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频输入线程：音频输入帧链表中音频输入帧数量为" + m_AudioInputPt.m_AudioInputFrameLnkLstElmTotal + "已经超过上限50，不再创建一个音频输入空闲帧。" );
                     }
                 }
 
-                if( p_PcmAudioInputFramePt != null ) //如果获取了一个音频输入空闲帧。
+                if( m_AudioInputPt.m_AudioInputFramePt != null ) //如果获取了一个音频输入空闲帧。
                 {
-                    if( m_IsPrintLogcat != 0 ) p_LastMsec = System.currentTimeMillis();
+                    if( m_IsPrintLogcat != 0 ) m_AudioInputPt.m_LastTimeMsec = System.currentTimeMillis();
 
                     //读取本次音频输入帧。
-                    m_AudioInputPt.m_AudioInputDevicePt.read( p_PcmAudioInputFramePt, 0, p_PcmAudioInputFramePt.length );
+                    m_AudioInputPt.m_AudioInputDevicePt.read( m_AudioInputPt.m_AudioInputFramePt, 0, m_AudioInputPt.m_AudioInputFramePt.length );
 
                     //追加本次音频输入帧到音频输入帧链表。
                     synchronized( m_AudioInputPt.m_AudioInputFrameLnkLstPt )
                     {
-                        m_AudioInputPt.m_AudioInputFrameLnkLstPt.addLast( p_PcmAudioInputFramePt );
+                        m_AudioInputPt.m_AudioInputFrameLnkLstPt.addLast( m_AudioInputPt.m_AudioInputFramePt );
                     }
 
                     if( m_IsPrintLogcat != 0 )
                     {
-                        p_NowMsec = System.currentTimeMillis();
-                        Log.i( m_CurClsNameStrPt, "音频输入线程：本次音频输入帧读取完毕，耗时 " + ( p_NowMsec - p_LastMsec ) + " 毫秒。" );
+                        m_AudioInputPt.m_NowTimeMsec = System.currentTimeMillis();
+                        Log.i( m_CurClsNameStrPt, "音频输入线程：本次音频输入帧读取完毕，耗时 " + ( m_AudioInputPt.m_NowTimeMsec - m_AudioInputPt.m_LastTimeMsec ) + " 毫秒。" );
                     }
                 }
 
@@ -1000,13 +969,6 @@ public abstract class MediaProcThread extends Thread
             this.setPriority( MAX_PRIORITY ); //设置本线程优先级。
             Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级。
 
-            short p_PcmAudioOutputFramePt[]; //存放PCM格式音频输出帧。
-            byte p_EncoderAudioOutputFramePt[] = ( m_AudioOutputPt.m_UseWhatDecoder != 0 ) ? new byte[ m_AudioOutputPt.m_FrameLen ] : null; //存放已编码格式音频输出帧。
-            HTLong p_EncoderAudioOutputFrameLenPt = ( m_AudioOutputPt.m_UseWhatDecoder != 0 ) ? new HTLong() : null; //存放已编码格式音频输出帧的数据长度，单位字节。
-            long p_LastMsec = 0;
-            long p_NowMsec = 0;
-            int p_TmpInt32;
-
             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输出线程：开始准备音频输出。" );
 
             //开始音频输出循环。
@@ -1014,33 +976,33 @@ public abstract class MediaProcThread extends Thread
             while( true )
             {
                 //获取一个音频输出空闲帧。
-                if( ( p_TmpInt32 = m_AudioOutputPt.m_AudioOutputIdleFrameLnkLstPt.size() ) > 0 ) //如果音频输出空闲帧链表中有音频输出空闲帧。
+                if( ( m_AudioOutputPt.m_AudioOutputFrameLnkLstElmTotal = m_AudioOutputPt.m_AudioOutputIdleFrameLnkLstPt.size() ) > 0 ) //如果音频输出空闲帧链表中有音频输出空闲帧。
                 {
                     //从音频输出空闲帧链表中取出第一个音频输出空闲帧。
                     synchronized( m_AudioOutputPt.m_AudioOutputIdleFrameLnkLstPt )
                     {
-                        p_PcmAudioOutputFramePt = m_AudioOutputPt.m_AudioOutputIdleFrameLnkLstPt.getFirst();
+                        m_AudioOutputPt.m_AudioOutputFramePt = m_AudioOutputPt.m_AudioOutputIdleFrameLnkLstPt.getFirst();
                         m_AudioOutputPt.m_AudioOutputIdleFrameLnkLstPt.removeFirst();
                     }
-                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输出线程：从音频输出空闲帧链表中取出第一个音频输出空闲帧，音频输出空闲帧链表元素个数：" + p_TmpInt32 + "。" );
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输出线程：从音频输出空闲帧链表中取出第一个音频输出空闲帧，音频输出空闲帧链表元素个数：" + m_AudioOutputPt.m_AudioOutputFrameLnkLstElmTotal + "。" );
                 }
                 else //如果音频输出空闲帧链表中没有音频输出空闲帧。
                 {
-                    if( ( p_TmpInt32 = m_AudioOutputPt.m_AudioOutputFrameLnkLstPt.size() ) <= 50 )
+                    if( ( m_AudioOutputPt.m_AudioOutputFrameLnkLstElmTotal = m_AudioOutputPt.m_AudioOutputFrameLnkLstPt.size() ) <= 50 )
                     {
-                        p_PcmAudioOutputFramePt = new short[m_AudioOutputPt.m_FrameLen]; //创建一个音频输出空闲帧。
+                        m_AudioOutputPt.m_AudioOutputFramePt = new short[m_AudioOutputPt.m_FrameLen]; //创建一个音频输出空闲帧。
                         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输出线程：音频输出空闲帧链表中没有音频输出空闲帧，创建一个音频输出空闲帧。" );
                     }
                     else
                     {
-                        p_PcmAudioOutputFramePt = null;
-                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频输出线程：音频输出帧链表中音频输出帧数量为" + p_TmpInt32 + "已经超过上限50，不再创建一个音频输出空闲帧。" );
+                        m_AudioOutputPt.m_AudioOutputFramePt = null;
+                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频输出线程：音频输出帧链表中音频输出帧数量为" + m_AudioOutputPt.m_AudioOutputFrameLnkLstElmTotal + "已经超过上限50，不再创建一个音频输出空闲帧。" );
                     }
                 }
 
-                if( p_PcmAudioOutputFramePt != null ) //如果获取了一个音频输出空闲帧。
+                if( m_AudioOutputPt.m_AudioOutputFramePt != null ) //如果获取了一个音频输出空闲帧。
                 {
-                    if( m_IsPrintLogcat != 0 ) p_LastMsec = System.currentTimeMillis();
+                    if( m_IsPrintLogcat != 0 ) m_AudioOutputPt.m_LastTimeMsec = System.currentTimeMillis();
 
                     //调用用户定义的写入音频输出帧函数，并解码成PCM原始数据。
                     switch( m_AudioOutputPt.m_UseWhatDecoder ) //使用什么解码器。
@@ -1048,16 +1010,18 @@ public abstract class MediaProcThread extends Thread
                         case 0: //如果要使用PCM原始数据。
                         {
                             //调用用户定义的写入音频输出帧函数。
-                            UserWriteAudioOutputFrame( p_PcmAudioOutputFramePt, null, null );
+                            m_AudioOutputPt.m_AudioOutputFrameLenPt.m_Val = m_AudioOutputPt.m_AudioOutputFramePt.length;
+                            UserWriteAudioOutputFrame( m_AudioOutputPt.m_AudioOutputFramePt, null, m_AudioOutputPt.m_AudioOutputFrameLenPt );
                             break;
                         }
                         case 1: //如果要使用Speex解码器。
                         {
                             //调用用户定义的写入音频输出帧函数。
-                            UserWriteAudioOutputFrame( null, p_EncoderAudioOutputFramePt, p_EncoderAudioOutputFrameLenPt );
+                            m_AudioOutputPt.m_AudioOutputFrameLenPt.m_Val = m_AudioOutputPt.m_EncoderAudioOutputFramePt.length;
+                            UserWriteAudioOutputFrame( null, m_AudioOutputPt.m_EncoderAudioOutputFramePt, m_AudioOutputPt.m_AudioOutputFrameLenPt );
 
                             //使用Speex解码器。
-                            if( m_AudioOutputPt.m_SpeexDecoderPt.Proc( p_EncoderAudioOutputFramePt, p_EncoderAudioOutputFrameLenPt.m_Val, p_PcmAudioOutputFramePt ) == 0 )
+                            if( m_AudioOutputPt.m_SpeexDecoderPt.Proc( m_AudioOutputPt.m_EncoderAudioOutputFramePt, m_AudioOutputPt.m_AudioOutputFrameLenPt.m_Val, m_AudioOutputPt.m_AudioOutputFramePt ) == 0 )
                             {
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输出线程：使用Speex解码器成功。" );
                             }
@@ -1076,25 +1040,25 @@ public abstract class MediaProcThread extends Thread
                     //判断音频输出设备是否静音。在音频处理完后再设置静音，这样可以保证音频处理器的连续性。
                     if( m_AudioOutputPt.m_AudioOutputDeviceIsMute != 0 )
                     {
-                        Arrays.fill( p_PcmAudioOutputFramePt, ( short ) 0 );
+                        Arrays.fill( m_AudioOutputPt.m_AudioOutputFramePt, ( short ) 0 );
                     }
 
                     //写入本次音频输出帧到音频输出设备。
-                    m_AudioOutputPt.m_AudioOutputDevicePt.write( p_PcmAudioOutputFramePt, 0, p_PcmAudioOutputFramePt.length );
+                    m_AudioOutputPt.m_AudioOutputDevicePt.write( m_AudioOutputPt.m_AudioOutputFramePt, 0, m_AudioOutputPt.m_AudioOutputFramePt.length );
 
                     //调用用户定义的获取PCM格式音频输出帧函数。
-                    UserGetPcmAudioOutputFrame( p_PcmAudioOutputFramePt );
+                    UserGetPcmAudioOutputFrame( m_AudioOutputPt.m_AudioOutputFramePt );
 
                     //追加本次音频输出帧到音频输出帧链表。
                     synchronized( m_AudioOutputPt.m_AudioOutputFrameLnkLstPt )
                     {
-                        m_AudioOutputPt.m_AudioOutputFrameLnkLstPt.addLast( p_PcmAudioOutputFramePt );
+                        m_AudioOutputPt.m_AudioOutputFrameLnkLstPt.addLast( m_AudioOutputPt.m_AudioOutputFramePt );
                     }
 
                     if( m_IsPrintLogcat != 0 )
                     {
-                        p_NowMsec = System.currentTimeMillis();
-                        Log.i( m_CurClsNameStrPt, "音频输出线程：本次音频输出帧写入完毕，耗时 " + ( p_NowMsec - p_LastMsec ) + " 毫秒。" );
+                        m_AudioOutputPt.m_NowTimeMsec = System.currentTimeMillis();
+                        Log.i( m_CurClsNameStrPt, "音频输出线程：本次音频输出帧写入完毕，耗时 " + ( m_AudioOutputPt.m_NowTimeMsec - m_AudioOutputPt.m_LastTimeMsec ) + " 毫秒。" );
                     }
                 }
 
@@ -1137,12 +1101,6 @@ public abstract class MediaProcThread extends Thread
             this.setPriority( MAX_PRIORITY ); //设置本线程优先级。
             Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级。
 
-            byte p_NV21VideoInputFramePt[] = null;
-            VideoInputFrameElm p_VideoInputFrameElmPt = null;
-            long p_LastMsec = 0;
-            long p_NowMsec = 0;
-            int p_TmpInt32;
-
             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：开始准备视频输入。" );
 
             //开始视频输入循环。
@@ -1153,45 +1111,48 @@ public abstract class MediaProcThread extends Thread
                 if( m_VideoInputPt.m_NV21VideoInputFrameLnkLstPt.size() > 0 )//如果NV21格式视频输入帧链表中有帧了。
                 {
                     //获取一个视频输入空闲帧。
-                    if( ( p_TmpInt32 = m_VideoInputPt.m_VideoInputIdleFrameLnkLstPt.size() ) > 0 ) //如果视频输入空闲帧链表中有视频输入空闲帧。
+                    if( ( m_VideoInputPt.m_VideoInputFrameLnkLstElmTotal = m_VideoInputPt.m_VideoInputIdleFrameLnkLstPt.size() ) > 0 ) //如果视频输入空闲帧链表中有视频输入空闲帧。
                     {
                         //从视频输入空闲帧链表中取出第一个视频输入空闲帧。
                         synchronized( m_VideoInputPt.m_VideoInputIdleFrameLnkLstPt )
                         {
-                            p_VideoInputFrameElmPt = m_VideoInputPt.m_VideoInputIdleFrameLnkLstPt.getFirst();
+                            m_VideoInputPt.m_VideoInputFrameElmPt = m_VideoInputPt.m_VideoInputIdleFrameLnkLstPt.getFirst();
                             m_VideoInputPt.m_VideoInputIdleFrameLnkLstPt.removeFirst();
                         }
-                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：从视频输入空闲帧链表中取出第一个视频输入空闲帧，视频输入空闲帧链表元素个数：" + p_TmpInt32 + "。" );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：从视频输入空闲帧链表中取出第一个视频输入空闲帧，视频输入空闲帧链表元素个数：" + m_VideoInputPt.m_VideoInputFrameLnkLstElmTotal + "。" );
                     }
                     else //如果视频输入空闲帧链表中没有视频输入空闲帧。
                     {
-                        if( ( p_TmpInt32 = m_VideoInputPt.m_VideoInputFrameLnkLstPt.size() ) <= 20 )
+                        if( ( m_VideoInputPt.m_VideoInputFrameLnkLstElmTotal = m_VideoInputPt.m_VideoInputFrameLnkLstPt.size() ) <= 20 )
                         {
-                            p_VideoInputFrameElmPt = new VideoInputFrameElm(); //创建一个视频输入空闲帧。
+                            m_VideoInputPt.m_VideoInputFrameElmPt = m_VideoInputPt.new VideoInputFrameElm(); //创建一个视频输入空闲帧。
                             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：视频输入空闲帧链表中没有视频输入空闲帧，创建一个视频输入空闲帧。" );
                         }
                         else
                         {
-                            p_VideoInputFrameElmPt = null;
-                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输入线程：视频输入帧链表中视频输入帧数量为" + p_TmpInt32 + "已经超过上限20，不再创建一个视频输入空闲帧。" );
+                            m_VideoInputPt.m_VideoInputFrameElmPt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输入线程：视频输入帧链表中视频输入帧数量为" + m_VideoInputPt.m_VideoInputFrameLnkLstElmTotal + "已经超过上限20，不再创建一个视频输入空闲帧。" );
                         }
                     }
 
-                    if( p_VideoInputFrameElmPt != null ) //如果获取了一个视频输入空闲帧。
+                    if( m_VideoInputPt.m_VideoInputFrameElmPt != null ) //如果获取了一个视频输入空闲帧。
                     {
-                        if( m_IsPrintLogcat != 0 ) p_LastMsec = System.currentTimeMillis();
+                        if( m_IsPrintLogcat != 0 ) m_VideoInputPt.m_LastTimeMsec = System.currentTimeMillis();
 
                         //从视频输入帧链表中取出第一个视频输入帧。
-                        p_TmpInt32 = m_VideoInputPt.m_NV21VideoInputFrameLnkLstPt.size();
+                        m_VideoInputPt.m_VideoInputFrameLnkLstElmTotal = m_VideoInputPt.m_NV21VideoInputFrameLnkLstPt.size();
                         synchronized( m_VideoInputPt.m_NV21VideoInputFrameLnkLstPt )
                         {
-                            p_NV21VideoInputFramePt = m_VideoInputPt.m_NV21VideoInputFrameLnkLstPt.getFirst();
+                            m_VideoInputPt.m_VideoInputFramePt = m_VideoInputPt.m_NV21VideoInputFrameLnkLstPt.getFirst();
                             m_VideoInputPt.m_NV21VideoInputFrameLnkLstPt.removeFirst();
                         }
-                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：从NV21格式视频输入帧链表中取出第一个NV21格式视频输入帧，NV21格式视频输入帧链表元素个数：" + p_TmpInt32 + "。" );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：从NV21格式视频输入帧链表中取出第一个NV21格式视频输入帧，NV21格式视频输入帧链表元素个数：" + m_VideoInputPt.m_VideoInputFrameLnkLstElmTotal + "。" );
 
                         //NV21格式视频输入帧旋转为YU12格式视频输入帧。
-                        if( LibYUV.PictrRotate( p_NV21VideoInputFramePt, LibYUV.PICTR_FMT_NV21, m_VideoInputPt.m_FrameHeight, m_VideoInputPt.m_FrameWidth, m_VideoInputPt.m_VideoInputFrameRotate, p_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt, p_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt.length, p_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameWidthPt, p_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameHeightPt, null ) == 0 )
+                        if( LibYUV.PictrRotate( m_VideoInputPt.m_VideoInputFramePt, LibYUV.PICTR_FMT_BT601F8_NV21, m_VideoInputPt.m_FrameHeight, m_VideoInputPt.m_FrameWidth,
+                                                m_VideoInputPt.m_VideoInputFrameRotate,
+                                                m_VideoInputPt.m_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt, m_VideoInputPt.m_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt.length, m_VideoInputPt.m_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameWidthPt, m_VideoInputPt.m_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameHeightPt,
+                                                null ) == 0 )
                         {
                             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：NV21格式视频输入帧旋转为YU12格式视频输入帧成功。" );
                         }
@@ -1204,9 +1165,9 @@ public abstract class MediaProcThread extends Thread
                         //判断视频输入设备是否黑屏。在视频输入处理完后再设置黑屏，这样可以保证视频输入处理器的连续性。
                         if( m_VideoInputPt.m_VideoInputDeviceIsBlack != 0 )
                         {
-                            int p_TmpLen = p_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameWidthPt.m_Val * p_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameHeightPt.m_Val;
-                            Arrays.fill( p_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt, 0, p_TmpLen, ( byte ) 0 );
-                            Arrays.fill( p_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt, p_TmpLen, p_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt.length, ( byte ) 128 );
+                            int p_TmpLen = m_VideoInputPt.m_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameWidthPt.m_Val * m_VideoInputPt.m_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameHeightPt.m_Val;
+                            Arrays.fill( m_VideoInputPt.m_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt, 0, p_TmpLen, ( byte ) 0 );
+                            Arrays.fill( m_VideoInputPt.m_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt, p_TmpLen, m_VideoInputPt.m_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt.length, ( byte ) 128 );
                         }
 
                         //使用编码器。
@@ -1219,9 +1180,11 @@ public abstract class MediaProcThread extends Thread
                             }
                             case 1: //如果要使用OpenH264编码器。
                             {
-                                if( m_VideoInputPt.m_OpenH264EncoderPt.Proc( p_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt, p_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameWidthPt.m_Val, p_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameHeightPt.m_Val, p_LastMsec, p_VideoInputFrameElmPt.m_EncoderVideoInputFramePt, p_VideoInputFrameElmPt.m_EncoderVideoInputFramePt.length, p_VideoInputFrameElmPt.m_EncoderVideoInputFrameLenPt, null ) == 0 )
+                                if( m_VideoInputPt.m_OpenH264EncoderPt.Proc( m_VideoInputPt.m_VideoInputFrameElmPt.m_RotateYU12VideoInputFramePt, m_VideoInputPt.m_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameWidthPt.m_Val, m_VideoInputPt.m_VideoInputFrameElmPt.m_RotateYU12VideoInputFrameHeightPt.m_Val, m_VideoInputPt.m_LastTimeMsec,
+                                                                             m_VideoInputPt.m_VideoInputFrameElmPt.m_EncoderVideoInputFramePt, m_VideoInputPt.m_VideoInputFrameElmPt.m_EncoderVideoInputFramePt.length, m_VideoInputPt.m_VideoInputFrameElmPt.m_EncoderVideoInputFrameLenPt,
+                                                                             null ) == 0 )
                                 {
-                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：使用OpenH264编码器成功。H264格式视频输入帧的数据长度：" + p_VideoInputFrameElmPt.m_EncoderVideoInputFrameLenPt.m_Val + "，时间戳：" + p_LastMsec );
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：使用OpenH264编码器成功。H264格式视频输入帧的数据长度：" + m_VideoInputPt.m_VideoInputFrameElmPt.m_EncoderVideoInputFrameLenPt.m_Val + "，时间戳：" + m_VideoInputPt.m_LastTimeMsec );
                                 }
                                 else
                                 {
@@ -1234,18 +1197,18 @@ public abstract class MediaProcThread extends Thread
                         //追加本次视频输入帧到视频输入帧链表。
                         synchronized( m_VideoInputPt.m_VideoInputFrameLnkLstPt )
                         {
-                            m_VideoInputPt.m_VideoInputFrameLnkLstPt.addLast( p_VideoInputFrameElmPt );
+                            m_VideoInputPt.m_VideoInputFrameLnkLstPt.addLast( m_VideoInputPt.m_VideoInputFrameElmPt );
                         }
 
                         if( m_IsPrintLogcat != 0 )
                         {
-                            p_NowMsec = System.currentTimeMillis();
-                            Log.i( m_CurClsNameStrPt, "视频输入线程：本次视频输入帧处理完毕，耗时 " + ( p_NowMsec - p_LastMsec ) + " 毫秒。" );
+                            m_VideoInputPt.m_NowTimeMsec = System.currentTimeMillis();
+                            Log.i( m_CurClsNameStrPt, "视频输入线程：本次视频输入帧处理完毕，耗时 " + ( m_VideoInputPt.m_NowTimeMsec - m_VideoInputPt.m_LastTimeMsec ) + " 毫秒。" );
                         }
                     }
 
                     //追加本次NV21格式视频输入帧到视频输入设备。
-                    m_VideoInputPt.m_VideoInputDevicePt.addCallbackBuffer( p_NV21VideoInputFramePt );
+                    m_VideoInputPt.m_VideoInputDevicePt.addCallbackBuffer( m_VideoInputPt.m_VideoInputFramePt );
                 }
 
                 if( m_ExitFlag == 1 ) //如果退出标记为请求退出。
@@ -1277,115 +1240,107 @@ public abstract class MediaProcThread extends Thread
             this.setPriority( MAX_PRIORITY ); //设置本线程优先级。
             Process.setThreadPriority( Process.THREAD_PRIORITY_URGENT_AUDIO ); //设置本线程优先级。
 
-            VideoOutputFrameElm p_EncoderVideoOutputFramePt = null;
-            byte p_YU12VideoOutputFramePt[] = ( m_VideoOutputPt.m_UseWhatDecoder != 0 ) ? new byte[ 960 * 1280 * 3 / 2 ] : null;
-            HTInt p_YU12VideoOutputFrameWidth = new HTInt();
-            HTInt p_YU12VideoOutputFrameHeigth = new HTInt();
-            byte p_ScaleYU12VideoOutputFramePt[] = null;
-            HTInt p_ScaleYU12VideoOutputFrameWidth = null;
-            HTInt p_ScaleYU12VideoOutputFrameHeigth = null;
-            long p_LastMsec = 0;
-            long p_NowMsec = 0;
-            int p_TmpInt32;
-
             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输出线程：开始准备视频输出。" );
 
             //开始视频输出循环。
             out:
             while( true )
             {
-                //显示一个视频输出帧。
-                if( ( p_TmpInt32 = m_VideoOutputPt.m_VideoOutputFrameLnkLstPt.size() ) > 0 ) //如果视频输出帧链表中有帧了。
+                skip:
                 {
-                    if( m_IsPrintLogcat != 0 ) p_LastMsec = System.currentTimeMillis();
+                    if( m_IsPrintLogcat != 0 ) m_VideoOutputPt.m_LastTimeMsec = System.currentTimeMillis();
 
-                    //从视频输出帧链表中取出第一个视频输出帧。
-                    synchronized( m_VideoOutputPt.m_VideoOutputFrameLnkLstPt )
-                    {
-                        p_EncoderVideoOutputFramePt = m_VideoOutputPt.m_VideoOutputFrameLnkLstPt.getFirst();
-                        m_VideoOutputPt.m_VideoOutputFrameLnkLstPt.removeFirst();
-                    }
-                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输出线程：从视频输出帧链表中取出第一个视频输出帧，视频输出帧链表元素个数：" + p_TmpInt32 + "。" );
-
-                    //解码成YU12原始数据。
+                    //调用用户定义的写入视频输出帧函数，并解码成YU12原始数据。
                     switch( m_VideoOutputPt.m_UseWhatDecoder ) //使用什么解码器。
                     {
-                        case 0: //如果要使用YU12原始数据。
+                        case 0: //如果使用YU12原始数据。
                         {
-                            p_YU12VideoOutputFramePt = p_EncoderVideoOutputFramePt.m_VideoOutputFramePt;
-                            p_YU12VideoOutputFrameWidth.m_Val = m_VideoOutputPt.m_FrameWidth;
-                            p_YU12VideoOutputFrameHeigth.m_Val = m_VideoOutputPt.m_FrameHeight;
+                            //调用用户定义的写入视频输出帧函数。
+                            m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val = m_VideoOutputPt.m_FrameWidth * m_VideoOutputPt.m_FrameHeight * 3 / 2;
+                            UserWriteVideoOutputFrame( m_VideoOutputPt.m_VideoOutputResultFramePt, null, m_VideoOutputPt.m_VideoOutputResultFrameLenPt );
 
-                            break;
-                        }
-                        case 1: //如果要使用OpenH264解码器。
-                        {
-                            if( m_VideoOutputPt.m_OpenH264DecoderPt.Proc( p_EncoderVideoOutputFramePt.m_VideoOutputFramePt, p_EncoderVideoOutputFramePt.m_VideoOutputFrameLen, p_YU12VideoOutputFramePt, p_YU12VideoOutputFramePt.length, p_YU12VideoOutputFrameWidth, p_YU12VideoOutputFrameHeigth, null ) == 0 )
+                            if( m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val == m_VideoOutputPt.m_FrameWidth * m_VideoOutputPt.m_FrameHeight * 3 / 2 )
                             {
-                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输出线程：使用OpenH264解码器成功。" );
+                                m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val = m_VideoOutputPt.m_FrameWidth;
+                                m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val = m_VideoOutputPt.m_FrameHeight;
                             }
                             else
                             {
-                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输出线程：使用OpenH264解码器失败。" );
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输出线程：YU12格式视频输出帧的数据长度不正确，本次视频输出帧丢弃。" );
+                                break skip;
                             }
+                            break;
+                        }
+                        case 1: //如果使用OpenH264解码器。
+                        {
+                            //调用用户定义的写入视频输出帧函数。
+                            m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val = m_VideoOutputPt.m_VideoOutputTmpFramePt.length;
+                            UserWriteVideoOutputFrame( null, m_VideoOutputPt.m_VideoOutputTmpFramePt, m_VideoOutputPt.m_VideoOutputResultFrameLenPt );
 
+                            if( m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val != 0 )
+                            {
+                                //使用OpenH264解码器。
+                                if( m_VideoOutputPt.m_OpenH264DecoderPt.Proc( m_VideoOutputPt.m_VideoOutputTmpFramePt, m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val,
+                                                                              m_VideoOutputPt.m_VideoOutputResultFramePt, m_VideoOutputPt.m_VideoOutputResultFramePt.length, m_VideoOutputPt.m_VideoOutputFrameWidthPt, m_VideoOutputPt.m_VideoOutputFrameHeightPt,
+                                                                              null ) == 0 )
+                                {
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输出线程：使用OpenH264解码器成功。" );
+                                }
+                                else
+                                {
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输出线程：使用OpenH264解码器失败，本次视频输出帧丢弃。" );
+                                    break skip;
+                                }
+                            }
+                            else
+                            {
+                                break skip;
+                            }
                             break;
                         }
                     }
 
-                    //判断音频输出设备是否静音。在音频处理完后再设置静音，这样可以保证音频处理器的连续性。
+                    //用户定义的获取YU12格式视频输出帧函数。
+                    UserGetYU12VideoOutputFrame( m_VideoOutputPt.m_VideoOutputResultFramePt, m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val, m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val );
+
+                    //判断视频输出设备是否黑屏。在视频处理完后再设置黑屏，这样可以保证视频处理器的连续性。
                     if( m_VideoOutputPt.m_VideoOutputDeviceIsBlack != 0 )
                     {
-                        int p_TmpLen = p_YU12VideoOutputFrameWidth.m_Val * p_YU12VideoOutputFrameHeigth.m_Val;
-                        Arrays.fill( p_YU12VideoOutputFramePt, 0, p_TmpLen, ( byte ) 0 );
-                        Arrays.fill( p_YU12VideoOutputFramePt, p_TmpLen, p_TmpLen + p_TmpLen / 2, ( byte ) 128 );
+                        int p_TmpLen = m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val * m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val;
+                        Arrays.fill( m_VideoOutputPt.m_VideoOutputResultFramePt, 0, p_TmpLen, ( byte ) 0 );
+                        Arrays.fill( m_VideoOutputPt.m_VideoOutputResultFramePt, p_TmpLen, p_TmpLen + p_TmpLen / 2, ( byte ) 128 );
                     }
 
                     //缩放视频输出帧。
                     if( m_VideoOutputPt.m_VideoOutputDisplayScale != 1.0f )
                     {
-                        if( p_ScaleYU12VideoOutputFramePt == null )
+                        if( LibYUV.PictrScale( m_VideoOutputPt.m_VideoOutputResultFramePt, LibYUV.PICTR_FMT_BT601F8_YU12, m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val, m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val,
+                                               3,
+                                               m_VideoOutputPt.m_VideoOutputTmpFramePt, m_VideoOutputPt.m_VideoOutputTmpFramePt.length, null, ( int )( m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val * m_VideoOutputPt.m_VideoOutputDisplayScale ), ( int )( m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val * m_VideoOutputPt.m_VideoOutputDisplayScale ),
+                                               null ) != 0 )
                         {
-                            p_ScaleYU12VideoOutputFramePt = new byte[( int ) ( p_YU12VideoOutputFrameWidth.m_Val * m_VideoOutputPt.m_VideoOutputDisplayScale * p_YU12VideoOutputFrameHeigth.m_Val * m_VideoOutputPt.m_VideoOutputDisplayScale * 3 / 2 )];
-                            p_ScaleYU12VideoOutputFrameWidth = new HTInt( ( int ) ( p_YU12VideoOutputFrameWidth.m_Val * m_VideoOutputPt.m_VideoOutputDisplayScale ) );
-                            p_ScaleYU12VideoOutputFrameHeigth = new HTInt( ( int ) ( p_YU12VideoOutputFrameHeigth.m_Val * m_VideoOutputPt.m_VideoOutputDisplayScale ) );
+                            Log.e( m_CurClsNameStrPt, "视频输出线程：视频输出显示缩放失败，本次视频输出帧丢弃。" );
+                            break skip;
                         }
+                        m_VideoOutputPt.m_VideoOutputSwapFramePt = m_VideoOutputPt.m_VideoOutputResultFramePt; m_VideoOutputPt.m_VideoOutputResultFramePt = m_VideoOutputPt.m_VideoOutputTmpFramePt; m_VideoOutputPt.m_VideoOutputTmpFramePt = m_VideoOutputPt.m_VideoOutputSwapFramePt; //交换视频结果帧和视频临时帧。
 
-                        if( LibYUV.PictrScale( p_YU12VideoOutputFramePt, LibYUV.PICTR_FMT_YU12, p_YU12VideoOutputFrameWidth.m_Val, p_YU12VideoOutputFrameHeigth.m_Val, p_ScaleYU12VideoOutputFramePt, p_ScaleYU12VideoOutputFramePt.length, p_ScaleYU12VideoOutputFrameWidth.m_Val, p_ScaleYU12VideoOutputFrameHeigth.m_Val, 3, null, null ) != 0 )
-                        {
-                            Log.e( m_CurClsNameStrPt, "视频输出线程：缩放失败。" );
-
-                            System.arraycopy( p_YU12VideoOutputFramePt, 0, p_ScaleYU12VideoOutputFramePt, 0, p_YU12VideoOutputFrameWidth.m_Val * p_YU12VideoOutputFrameHeigth.m_Val * 3 / 2 );
-                            p_ScaleYU12VideoOutputFrameWidth.m_Val = p_YU12VideoOutputFrameWidth.m_Val;
-                            p_ScaleYU12VideoOutputFrameHeigth.m_Val = p_YU12VideoOutputFrameHeigth.m_Val;
-                        }
-                    }
-                    else
-                    {
-                        p_ScaleYU12VideoOutputFramePt = p_YU12VideoOutputFramePt;
-                        p_ScaleYU12VideoOutputFrameWidth = p_YU12VideoOutputFrameWidth;
-                        p_ScaleYU12VideoOutputFrameHeigth = p_YU12VideoOutputFrameHeigth;
+                        m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val *= m_VideoOutputPt.m_VideoOutputDisplayScale;
+                        m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val *= m_VideoOutputPt.m_VideoOutputDisplayScale;
                     }
 
                     //设置视频输出显示SurfaceView类对象的宽高比。
-                    m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt.setWidthToHeightRatio( ( float )p_ScaleYU12VideoOutputFrameWidth.m_Val / p_ScaleYU12VideoOutputFrameHeigth.m_Val );
+                    m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt.setWidthToHeightRatio( ( float )m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val / m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val );
 
                     //渲染视频输出帧到视频输出显示SurfaceView类对象。
-                    if( LibYUV.PictrDrawToSurface( p_ScaleYU12VideoOutputFramePt, 0, LibYUV.PICTR_FMT_YU12, p_ScaleYU12VideoOutputFrameWidth.m_Val, p_ScaleYU12VideoOutputFrameHeigth.m_Val, m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt.getHolder().getSurface(), null ) != 0 )
+                    if( LibYUV.PictrDrawToSurface( m_VideoOutputPt.m_VideoOutputResultFramePt, 0, LibYUV.PICTR_FMT_BT601F8_YU12, m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val, m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val, m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt.getHolder().getSurface(), null ) != 0 )
                     {
                         Log.e( m_CurClsNameStrPt, "视频输出线程：渲染失败。" );
                     }
 
-                    //追加本次视频输出帧到视频输出空闲帧链表。
-                    synchronized( m_VideoOutputPt.m_VideoOutputIdleFrameLnkLstPt )
-                    {
-                        m_VideoOutputPt.m_VideoOutputIdleFrameLnkLstPt.addLast( p_EncoderVideoOutputFramePt );
-                    }
-
                     if( m_IsPrintLogcat != 0 )
                     {
-                        p_NowMsec = System.currentTimeMillis();
-                        Log.i( m_CurClsNameStrPt, "视频输出线程：本次视频输出帧处理完毕，耗时 " + ( p_NowMsec - p_LastMsec ) + " 毫秒。" );
+                        m_VideoOutputPt.m_NowTimeMsec = System.currentTimeMillis();
+                        Log.i( m_CurClsNameStrPt, "视频输出线程：本次视频输出帧处理完毕，耗时 " + ( m_VideoOutputPt.m_NowTimeMsec - m_VideoOutputPt.m_LastTimeMsec ) + " 毫秒。" );
                     }
                 }
 
@@ -1422,7 +1377,7 @@ public abstract class MediaProcThread extends Thread
         byte p_EncoderAudioInputFramePt[] = null; //已编码格式音频输入帧。
         HTLong p_EncoderAudioInputFrameLenPt = null; //已编码格式音频输入帧的数据长度，单位字节。
         HTInt p_EncoderAudioInputFrameIsNeedTransPt = null; //已编码格式音频输入帧是否需要传输，为1表示需要传输，为0表示不需要传输。
-        VideoInputFrameElm p_VideoInputFramePt = null; //视频输入帧。
+        VideoInput.VideoInputFrameElm p_VideoInputFramePt = null; //视频输入帧。
 
         ReInit:
         while( true )
@@ -1955,6 +1910,15 @@ public abstract class MediaProcThread extends Thread
                     m_AudioInputPt.m_AudioInputIdleFrameLnkLstPt = new LinkedList< short[] >();
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输入空闲帧链表类对象成功。" );
 
+                    //初始化音频输入线程的临时变量。
+                    {
+                        m_AudioInputPt.m_AudioInputFramePt = null; //初始化音频输入帧的内存指针。
+                        m_AudioInputPt.m_AudioInputFrameLnkLstElmTotal = 0; //初始化音频输入帧链表的元数总数。
+                        m_AudioInputPt.m_LastTimeMsec = 0; //初始化上次时间的毫秒数。
+                        m_AudioInputPt.m_NowTimeMsec = 0; //初始化本次时间的毫秒数。
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：初始化音频输入线程的临时变量成功。" );
+                    }
+
                     //创建并初始化音频输入线程类对象。
                     m_AudioInputPt.m_AudioInputThreadPt = new AudioInputThread();
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输入线程类对象成功。" );
@@ -2087,6 +2051,17 @@ public abstract class MediaProcThread extends Thread
                     m_AudioOutputPt.m_AudioOutputIdleFrameLnkLstPt = new LinkedList< short[] >();
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输出空闲帧链表类对象成功。" );
 
+                    //初始化音频输出线程的临时变量。
+                    {
+                        m_AudioOutputPt.m_AudioOutputFramePt = null; //初始化音频输出帧的内存指针。
+                        m_AudioOutputPt.m_EncoderAudioOutputFramePt = ( m_AudioOutputPt.m_UseWhatDecoder != 0 ) ? new byte[ m_AudioOutputPt.m_FrameLen ] : null; //初始化已编码格式音频输出帧的内存指针。
+                        m_AudioOutputPt.m_AudioOutputFrameLenPt = new HTLong(); //初始化音频输出帧的数据长度，单位字节。
+                        m_AudioOutputPt.m_AudioOutputFrameLnkLstElmTotal = 0; //初始化音频输出帧链表的元数总数。
+                        m_AudioOutputPt.m_LastTimeMsec = 0; //初始化上次时间的毫秒数。
+                        m_AudioOutputPt.m_NowTimeMsec = 0; //初始化本次时间的毫秒数。
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：初始化音频输出线程的临时变量成功。" );
+                    }
+
                     //创建并初始化音频输出线程类对象。
                     m_AudioOutputPt.m_AudioOutputThreadPt = new AudioOutputThread();
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输出线程类对象成功。" );
@@ -2118,6 +2093,16 @@ public abstract class MediaProcThread extends Thread
                             }
                             break;
                         }
+                    }
+
+                    //初始化视频输入线程的临时变量。
+                    {
+                        m_VideoInputPt.m_VideoInputFramePt = null; //初始化视频输入帧的内存指针。
+                        m_VideoInputPt.m_VideoInputFrameElmPt = null; //初始化视频输入帧元素的内存指针。
+                        m_VideoInputPt.m_VideoInputFrameLnkLstElmTotal = 0; //初始化视频输入帧链表的元数总数。
+                        m_VideoInputPt.m_LastTimeMsec = 0; //初始化上次时间的毫秒数。
+                        m_VideoInputPt.m_NowTimeMsec = 0; //初始化本次时间的毫秒数。
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：初始化视频输入线程的临时变量成功。" );
                     }
 
                     //创建视频输入线程类对象。
@@ -2221,11 +2206,11 @@ public abstract class MediaProcThread extends Thread
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化NV21格式视频输入帧链表类对象成功。" );
 
                     //创建并初始化视频输入帧链表类对象。
-                    m_VideoInputPt.m_VideoInputFrameLnkLstPt = new LinkedList< VideoInputFrameElm >();
+                    m_VideoInputPt.m_VideoInputFrameLnkLstPt = new LinkedList< VideoInput.VideoInputFrameElm >();
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化视频输入帧链表类对象成功。" );
 
                     //创建并初始化视频输入空闲帧链表类对象。
-                    m_VideoInputPt.m_VideoInputIdleFrameLnkLstPt = new LinkedList< VideoInputFrameElm >();
+                    m_VideoInputPt.m_VideoInputIdleFrameLnkLstPt = new LinkedList< VideoInput.VideoInputFrameElm >();
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化视频输入空闲帧链表类对象成功。" );
                 } //初始化视频输入完毕。
 
@@ -2257,14 +2242,19 @@ public abstract class MediaProcThread extends Thread
                         }
                     }
 
-                    //创建并初始化视频输出帧链表类对象。
-                    m_VideoOutputPt.m_VideoOutputFrameLnkLstPt = new LinkedList< VideoOutputFrameElm >();
-                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化视频输出帧链表类对象成功。" );
-
-                    //创建并初始化视频输出空闲帧链表类对象。
-                    m_VideoOutputPt.m_VideoOutputIdleFrameLnkLstPt = new LinkedList< VideoOutputFrameElm >();
-                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化视频输出空闲帧链表类对象成功。" );
-
+                    //初始化视频输出线程的临时变量。
+                    {
+                        m_VideoOutputPt.m_VideoOutputResultFramePt = new byte[ 960 * 1280 * 3 * 3 ]; //初始化视频输出结果帧的内存指针。
+                        m_VideoOutputPt.m_VideoOutputTmpFramePt = new byte[ 960 * 1280 * 3 * 3 ]; //初始化视频输出临时帧的内存指针。
+                        m_VideoOutputPt.m_VideoOutputSwapFramePt = null; //初始化视频输出交换帧的内存指针。
+                        m_VideoOutputPt.m_VideoOutputResultFrameLenPt = new HTLong(); //初始化视频输出结果帧的数据长度。
+                        m_VideoOutputPt.m_VideoOutputFrameWidthPt = new HTInt(); //初始化视频输出帧的宽度。
+                        m_VideoOutputPt.m_VideoOutputFrameHeightPt = new HTInt(); //初始化视频输出帧的高度。
+                        m_VideoOutputPt.m_LastTimeMsec = 0; //初始化上次时间的毫秒数。
+                        m_VideoOutputPt.m_NowTimeMsec = 0; //初始化本次时间的毫秒数。
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：初始化视频输出线程的临时变量成功。" );
+                    }
+                    
                     //创建视频输出线程类对象。
                     m_VideoOutputPt.m_VideoOutputThreadPt = new VideoOutputThread();
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建视频输出线程类对象成功。" );
@@ -2629,9 +2619,9 @@ public abstract class MediaProcThread extends Thread
                     }
 
                     //调用用户定义的读取音视频输入帧函数。
-                    if( ( p_PcmAudioInputFramePt != null ) || ( p_VideoInputFramePt != null ) )
+                    if( ( p_PcmAudioInputFramePt != null ) || ( p_VideoInputFramePt != null ) ) //如果取出了音频输入帧或视频输入帧。
                     {
-                        if( p_VideoInputFramePt != null )
+                        if( p_VideoInputFramePt != null ) //如果取出了视频输入帧。
                             p_TmpInt321 = UserReadAudioVideoInputFrame( p_PcmAudioInputFramePt, p_PcmAudioResultFramePt, p_VoiceActStsPt, p_EncoderAudioInputFramePt, p_EncoderAudioInputFrameLenPt, p_EncoderAudioInputFrameIsNeedTransPt, p_VideoInputFramePt.m_RotateYU12VideoInputFramePt, p_VideoInputFramePt.m_RotateYU12VideoInputFrameWidthPt, p_VideoInputFramePt.m_RotateYU12VideoInputFrameHeightPt, p_VideoInputFramePt.m_EncoderVideoInputFramePt, p_VideoInputFramePt.m_EncoderVideoInputFrameLenPt );
                         else
                             p_TmpInt321 = UserReadAudioVideoInputFrame( p_PcmAudioInputFramePt, p_PcmAudioResultFramePt, p_VoiceActStsPt, p_EncoderAudioInputFramePt, p_EncoderAudioInputFrameLenPt, p_EncoderAudioInputFrameIsNeedTransPt, null, null, null, null, null );
@@ -3073,6 +3063,16 @@ public abstract class MediaProcThread extends Thread
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁视频输入线程类对象成功。" );
                 }
 
+                //销毁视频输入线程的临时变量。
+                {
+                    m_VideoInputPt.m_VideoInputFramePt = null; //销毁视频输入帧的内存指针。
+                    m_VideoInputPt.m_VideoInputFrameElmPt = null; //销毁视频输入帧元素的内存指针。
+                    m_VideoInputPt.m_VideoInputFrameLnkLstElmTotal = 0; //销毁视频输入帧链表的元数总数。
+                    m_VideoInputPt.m_LastTimeMsec = 0; //销毁上次时间的毫秒数。
+                    m_VideoInputPt.m_NowTimeMsec = 0; //销毁本次时间的毫秒数。
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁视频输入线程的临时变量成功。" );
+                }
+
                 //销毁视频输入设备类对象。
                 if( m_VideoInputPt.m_VideoInputDevicePt != null )
                 {
@@ -3150,20 +3150,17 @@ public abstract class MediaProcThread extends Thread
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁视频输出线程类对象成功。" );
                 }
 
-                //销毁视频输出空闲帧链表类对象。
-                if( m_VideoOutputPt.m_VideoOutputIdleFrameLnkLstPt != null )
+                //销毁视频输出线程的临时变量。
                 {
-                    m_VideoOutputPt.m_VideoOutputIdleFrameLnkLstPt.clear();
-                    m_VideoOutputPt.m_VideoOutputIdleFrameLnkLstPt = null;
-                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁视频输出空闲帧链表类对象成功。" );
-                }
-
-                //销毁视频输出帧链表类对象。
-                if( m_VideoOutputPt.m_VideoOutputFrameLnkLstPt != null )
-                {
-                    m_VideoOutputPt.m_VideoOutputFrameLnkLstPt.clear();
-                    m_VideoOutputPt.m_VideoOutputFrameLnkLstPt = null;
-                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁视频输出帧链表类对象成功。" );
+                    m_VideoOutputPt.m_VideoOutputResultFramePt = null; //销毁视频输出结果帧的内存指针。
+                    m_VideoOutputPt.m_VideoOutputTmpFramePt = null; //销毁视频输出临时帧的内存指针。
+                    m_VideoOutputPt.m_VideoOutputSwapFramePt = null; //销毁视频输出交换帧的内存指针。
+                    m_VideoOutputPt.m_VideoOutputResultFrameLenPt = null; //销毁视频输出结果帧的数据长度。
+                    m_VideoOutputPt.m_VideoOutputFrameWidthPt = null; //销毁视频输出帧的宽度。
+                    m_VideoOutputPt.m_VideoOutputFrameHeightPt = null; //销毁视频输出帧的高度。
+                    m_VideoOutputPt.m_LastTimeMsec = 0; //销毁上次时间的毫秒数。
+                    m_VideoOutputPt.m_NowTimeMsec = 0; //销毁本次时间的毫秒数。
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁视频输出线程的临时变量成功。" );
                 }
 
                 //销毁解码器类对象。

@@ -167,20 +167,23 @@ class MyMediaProcThread extends MediaProcThread
     LinkedList< byte[] > m_RecvVideoOutputFrameLnkLstPt; //存放接收视频输出帧链表类对象的内存指针。
 
     AAjb m_AAjbPt; //存放音频自适应抖动缓冲器类对象的内存指针。
-    int m_AAjbMinNeedBufFrameCnt; //存放音频自适应抖动缓冲器的最小需缓冲帧数量，单位个。
-    int m_AAjbMaxNeedBufFrameCnt; //存放音频自适应抖动缓冲器的最大需缓冲帧数量，单位个。
+    int m_AAjbMinNeedBufFrameCnt; //存放音频自适应抖动缓冲器的最小需缓冲帧数量，单位个，必须大于0。
+    int m_AAjbMaxNeedBufFrameCnt; //存放音频自适应抖动缓冲器的最大需缓冲帧数量，单位个，必须大于最小需缓冲数据帧的数量。
     float m_AAjbAdaptSensitivity; //存放音频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0.0,127.0]。
     VAjb m_VAjbPt; //存放视频自适应抖动缓冲器类对象的内存指针。
-    int m_VAjbMinNeedBufFrameCnt; //存放视频自适应抖动缓冲器的最小需缓冲帧数量，单位个。
-    int m_VAjbMaxNeedBufFrameCnt; //存放视频自适应抖动缓冲器的最大需缓冲帧数量，单位个。
+    int m_VAjbMinNeedBufFrameCnt; //存放视频自适应抖动缓冲器的最小需缓冲帧数量，单位个，必须大于0。
+    int m_VAjbMaxNeedBufFrameCnt; //存放视频自适应抖动缓冲器的最大需缓冲帧数量，单位个，必须大于最小需缓冲数据帧的数量。
     float m_VAjbAdaptSensitivity; //存放视频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0.0,127.0]。
 
     byte m_TmpBytePt[]; //存放临时数据。
     byte m_TmpByte2Pt[]; //存放临时数据。
+    byte m_TmpByte3Pt[]; //存放临时数据。
     HTInt m_TmpHTIntPt; //存放临时数据。
     HTInt m_TmpHTInt2Pt; //存放临时数据。
+    HTInt m_TmpHTInt3Pt; //存放临时数据。
     HTLong m_TmpHTLongPt; //存放临时数据。
     HTLong m_TmpHTLong2Pt; //存放临时数据。
+    HTLong m_TmpHTLong3Pt; //存放临时数据。
 
     VarStr m_ErrInfoVarStrPt; //存放错误信息动态字符串类对象的内存指针，可以为NULL。
 
@@ -201,10 +204,13 @@ class MyMediaProcThread extends MediaProcThread
             m_IsRecvExitPkt = 0; //设置没有接收到退出包。
             if( m_TmpBytePt == null ) m_TmpBytePt = new byte[1024 * 1024]; //初始化临时数据。
             if( m_TmpByte2Pt == null ) m_TmpByte2Pt = new byte[1024 * 1024]; //初始化临时数据。
+            if( m_TmpByte3Pt == null ) m_TmpByte3Pt = new byte[1024 * 1024]; //初始化临时数据。
             if( m_TmpHTIntPt == null ) m_TmpHTIntPt = new HTInt(); //初始化临时数据。
             if( m_TmpHTInt2Pt == null ) m_TmpHTInt2Pt = new HTInt(); //初始化临时数据。
+            if( m_TmpHTInt3Pt == null ) m_TmpHTInt3Pt = new HTInt(); //初始化临时数据。
             if( m_TmpHTLongPt == null ) m_TmpHTLongPt = new HTLong(); //初始化临时数据。
             if( m_TmpHTLong2Pt == null ) m_TmpHTLong2Pt = new HTLong(); //初始化临时数据。
+            if( m_TmpHTLong3Pt == null ) m_TmpHTLong3Pt = new HTLong(); //初始化临时数据。
             if( m_ErrInfoVarStrPt == null ) //创建并初始化错误信息动态字符串类对象。
             {
                 m_ErrInfoVarStrPt = new VarStr();
@@ -757,28 +763,26 @@ class MyMediaProcThread extends MediaProcThread
                                 }
                                 case 1: //如果使用自适应抖动缓冲器。
                                 {
-                                    synchronized( m_AAjbPt )
+                                    if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该音频输出帧为有语音活动。
                                     {
-                                        if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该音频输出帧为有语音活动。
-                                        {
-                                            m_AAjbPt.PutOneByteFrame( p_TmpInt, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4 );
-                                            Log.i( m_CurClsNameStrPt, "接收一个有语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
-                                        }
-                                        else //如果该音频输出帧为无语音活动。
-                                        {
-                                            m_AAjbPt.PutOneByteFrame( p_TmpInt, m_TmpBytePt, 1 + 4, 0 );
-                                            Log.i( m_CurClsNameStrPt, "接收一个无语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
-                                        }
-
-                                        HTInt p_CurHaveBufActFrameCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
-                                        HTInt p_CurHaveBufInactFrameCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
-                                        HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
-                                        HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
-                                        HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
-                                        HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
-                                        m_AAjbPt.GetBufFrameCnt( p_CurHaveBufActFrameCntPt, p_CurHaveBufInactFrameCntPt, p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
-                                        Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val + "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val + "，帧：" + p_CurHaveBufFrameCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val + "。" );
+                                        m_AAjbPt.PutOneByteFrame( p_TmpInt, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4 );
+                                        Log.i( m_CurClsNameStrPt, "接收一个有语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                                     }
+                                    else //如果该音频输出帧为无语音活动。
+                                    {
+                                        m_AAjbPt.PutOneByteFrame( p_TmpInt, m_TmpBytePt, 1 + 4, 0 );
+                                        Log.i( m_CurClsNameStrPt, "接收一个无语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                    }
+
+                                    HTInt p_CurHaveBufActFrameCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
+                                    HTInt p_CurHaveBufInactFrameCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
+                                    HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
+                                    HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
+                                    HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+                                    HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
+                                    m_AAjbPt.GetBufFrameCnt( p_CurHaveBufActFrameCntPt, p_CurHaveBufInactFrameCntPt, p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
+                                    Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val + "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val + "，帧：" + p_CurHaveBufFrameCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val + "。" );
+
                                     break;
                                 }
                             }
@@ -830,7 +834,7 @@ class MyMediaProcThread extends MediaProcThread
                         //读取视频输出帧时间戳。
                         p_TmpInt = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
 
-                        if( m_VideoOutputPt != null ) //如果要使用视频输出。
+                        if( m_VideoOutputPt.m_IsUseVideoOutput != 0 ) //如果要使用视频输出。
                         {
                             //将视频输出帧放入链表或自适应抖动缓冲器。
                             switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
@@ -849,30 +853,26 @@ class MyMediaProcThread extends MediaProcThread
                                     {
                                         Log.i( m_CurClsNameStrPt, "接收一个无图像活动的视频输出帧包，无需放入接收视频输出帧链表。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
                                     }
-
                                     break;
                                 }
                                 case 1: //如果使用自适应抖动缓冲器。
                                 {
-                                    synchronized( m_VAjbPt )
+                                    if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
                                     {
-                                        if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
-                                        {
-                                            m_VAjbPt.PutOneByteFrame( System.currentTimeMillis(), p_TmpInt, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4 );
-                                            Log.i( m_CurClsNameStrPt, "接收一个有图像活动的视频输出帧包，并放入视频自适应抖动缓冲器成功。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。" );
-                                        }
-                                        else //如果该视频输出帧为无图像活动。
-                                        {
-                                            Log.i( m_CurClsNameStrPt, "接收一个无图像活动的视频输出帧包，无需放入视频自适应抖动缓冲器。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
-                                        }
-
-                                        HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
-                                        HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
-                                        HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
-                                        HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
-                                        m_VAjbPt.GetBufFrameCnt( p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
-                                        Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器：帧：" + p_CurHaveBufFrameCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val + "。" );
+                                        m_VAjbPt.PutOneByteFrame( System.currentTimeMillis(), p_TmpInt, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4 );
+                                        Log.i( m_CurClsNameStrPt, "接收一个有图像活动的视频输出帧包，并放入视频自适应抖动缓冲器成功。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。" );
                                     }
+                                    else //如果该视频输出帧为无图像活动。
+                                    {
+                                        Log.i( m_CurClsNameStrPt, "接收一个无图像活动的视频输出帧包，无需放入视频自适应抖动缓冲器。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                    }
+
+                                    HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
+                                    HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
+                                    HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+                                    HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
+                                    m_VAjbPt.GetBufFrameCnt( p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
+                                    Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器：帧：" + p_CurHaveBufFrameCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val + "。" );
 
                                     break;
                                 }
@@ -969,9 +969,6 @@ class MyMediaProcThread extends MediaProcThread
                 Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                 break out;
             }
-
-            //如果不使用音频输入，就取出并写入音频输出帧。
-            if( m_AudioInputPt.m_IsUseAudioInput == 0 ) GetAndWriteVideoOutputFrame( m_TmpBytePt, m_TmpHTIntPt, m_TmpHTLongPt );
 
             p_Result = 0; //设置本函数执行成功。
         }
@@ -1391,40 +1388,37 @@ class MyMediaProcThread extends MediaProcThread
                     }
                     case 1: //如果使用自适应抖动缓冲器。
                     {
-                        synchronized( m_AAjbPt )
+                        //从音频自适应抖动缓冲器取出一个音频输出帧。
+                        m_AAjbPt.GetOneByteFrame( m_TmpHTInt2Pt, m_TmpByte2Pt, 0, m_TmpByte2Pt.length, m_TmpHTLong2Pt );
+                        p_AudioOutputFrameTimeStamp = m_TmpHTInt2Pt.m_Val;
+                        p_AudioOutputFramePt = m_TmpByte2Pt;
+                        p_AudioOutputFrameLen = m_TmpHTLong2Pt.m_Val;
+
+                        if( p_AudioOutputFrameLen > 0 ) //如果音频输出帧为有语音活动。
                         {
-                            //从音频自适应抖动缓冲器取出一个音频输出帧。
-                            m_AAjbPt.GetOneByteFrame( m_TmpHTInt2Pt, m_TmpByte2Pt, 0, m_TmpByte2Pt.length, m_TmpHTLong2Pt );
-                            p_AudioOutputFrameTimeStamp = m_TmpHTInt2Pt.m_Val;
-                            p_AudioOutputFramePt = m_TmpByte2Pt;
-                            p_AudioOutputFrameLen = m_TmpHTLong2Pt.m_Val;
-
-                            if( p_AudioOutputFrameLen > 0 ) //如果音频输出帧为有语音活动。
-                            {
-                                m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp = ( p_AudioOutputFramePt[0] & 0xFF ) + ( ( p_AudioOutputFramePt[1] & 0xFF ) << 8 ) + ( ( p_AudioOutputFramePt[2] & 0xFF ) << 16 ) + ( ( p_AudioOutputFramePt[3] & 0xFF ) << 24 ); //设置最后一个取出的音频输出帧对应视频输出帧的时间戳。
-                                m_LastGetAudioOutputFrameIsAct = 1; //设置最后一个取出的音频输出帧为有语音活动。
-                                Log.i( m_CurClsNameStrPt, "从音频自适应抖动缓冲器取出一个有语音活动的音频输出帧。音频输出帧时间戳：" + p_AudioOutputFrameTimeStamp + "，视频输出帧时间戳：" + m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp + "，数据长度：" + p_AudioOutputFrameLen + "。" );
-                            }
-                            else if( p_AudioOutputFrameLen == 0 ) //如果音频输出帧为无语音活动。
-                            {
-                                m_LastGetAudioOutputFrameIsAct = 0; //设置最后一个取出的音频输出帧为无语音活动。
-                                Log.i( m_CurClsNameStrPt, "从音频自适应抖动缓冲器取出一个无语音活动的音频输出帧。音频输出帧时间戳：" + p_AudioOutputFrameTimeStamp + "，数据长度：" + p_AudioOutputFrameLen + "。" );
-                            }
-                            else //如果音频输出帧为丢失。
-                            {
-                                m_LastGetAudioOutputFrameIsAct = 1; //设置最后一个取出的音频输出帧为有语音活动。
-                                Log.i( m_CurClsNameStrPt, "从音频自适应抖动缓冲器取出一个丢失的音频输出帧。音频输出帧时间戳：" + p_AudioOutputFrameTimeStamp + "，视频输出帧时间戳：" + m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp + "，数据长度：" + p_AudioOutputFrameLen + "。" );
-                            }
-
-                            HTInt p_CurHaveBufActFrameCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
-                            HTInt p_CurHaveBufInactFrameCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
-                            HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
-                            HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
-                            HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
-                            HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
-                            m_AAjbPt.GetBufFrameCnt( p_CurHaveBufActFrameCntPt, p_CurHaveBufInactFrameCntPt, p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
-                            Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val + "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val + "，帧：" + p_CurHaveBufFrameCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val + "。" );
+                            m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp = ( p_AudioOutputFramePt[0] & 0xFF ) + ( ( p_AudioOutputFramePt[1] & 0xFF ) << 8 ) + ( ( p_AudioOutputFramePt[2] & 0xFF ) << 16 ) + ( ( p_AudioOutputFramePt[3] & 0xFF ) << 24 ); //设置最后一个取出的音频输出帧对应视频输出帧的时间戳。
+                            m_LastGetAudioOutputFrameIsAct = 1; //设置最后一个取出的音频输出帧为有语音活动。
+                            Log.i( m_CurClsNameStrPt, "从音频自适应抖动缓冲器取出一个有语音活动的音频输出帧。音频输出帧时间戳：" + p_AudioOutputFrameTimeStamp + "，视频输出帧时间戳：" + m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp + "，数据长度：" + p_AudioOutputFrameLen + "。" );
                         }
+                        else if( p_AudioOutputFrameLen == 0 ) //如果音频输出帧为无语音活动。
+                        {
+                            m_LastGetAudioOutputFrameIsAct = 0; //设置最后一个取出的音频输出帧为无语音活动。
+                            Log.i( m_CurClsNameStrPt, "从音频自适应抖动缓冲器取出一个无语音活动的音频输出帧。音频输出帧时间戳：" + p_AudioOutputFrameTimeStamp + "，数据长度：" + p_AudioOutputFrameLen + "。" );
+                        }
+                        else //如果音频输出帧为丢失。
+                        {
+                            m_LastGetAudioOutputFrameIsAct = 1; //设置最后一个取出的音频输出帧为有语音活动。
+                            Log.i( m_CurClsNameStrPt, "从音频自适应抖动缓冲器取出一个丢失的音频输出帧。音频输出帧时间戳：" + p_AudioOutputFrameTimeStamp + "，视频输出帧时间戳：" + m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp + "，数据长度：" + p_AudioOutputFrameLen + "。" );
+                        }
+
+                        HTInt p_CurHaveBufActFrameCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
+                        HTInt p_CurHaveBufInactFrameCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
+                        HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
+                        HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
+                        HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+                        HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
+                        m_AAjbPt.GetBufFrameCnt( p_CurHaveBufActFrameCntPt, p_CurHaveBufInactFrameCntPt, p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
+                        Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrameCntPt.m_Val + "，无活动帧：" + p_CurHaveBufInactFrameCntPt.m_Val + "，帧：" + p_CurHaveBufFrameCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val + "。" );
 
                         break;
                     }
@@ -1453,7 +1447,7 @@ class MyMediaProcThread extends MediaProcThread
                         if( p_AudioOutputFrameLen - 4 > EncoderAudioOutputFramePt.length )
                         {
                             EncoderAudioOutputFrameLen.m_Val = 0;
-                            Log.e( m_CurClsNameStrPt, "音频输出帧的数据长度已超过已编码格式的数据长度。音频输出帧：" + ( p_AudioOutputFrameLen - 4 ) + "，已编码格式：" + EncoderAudioOutputFramePt.length + "。" );
+                            Log.e( m_CurClsNameStrPt, "视频输出帧的数据长度已超过已编码格式的数据长度。音频输出帧：" + ( p_AudioOutputFrameLen - 4 ) + "，已编码格式：" + EncoderAudioOutputFramePt.length + "。" );
                             break out;
                         }
 
@@ -1485,9 +1479,6 @@ class MyMediaProcThread extends MediaProcThread
                     }
                 }
             }
-
-            //取出并写入音频输出帧。
-            GetAndWriteVideoOutputFrame( m_TmpByte2Pt, m_TmpHTInt2Pt, m_TmpHTLong2Pt );
         }
     }
 
@@ -1497,13 +1488,14 @@ class MyMediaProcThread extends MediaProcThread
 
     }
 
-    //取出并写入视频输出帧。
-    void GetAndWriteVideoOutputFrame( byte TmpBytePt[], HTInt TmpHTIntPt, HTLong TmpHTLongPt )
+    //用户定义的写入视频输出帧函数，在可以显示一个视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
+    @Override public void UserWriteVideoOutputFrame( byte YU12VideoOutputFramePt[], byte EncoderVideoOutputFramePt[], HTLong VideoOutputFrameLen )
     {
         int p_VideoOutputFrameTimeStamp = 0;
         int p_VideoOutputFrameAudioOutputFrameTimeStamp = 0;
         byte p_VideoOutputFramePt[] = null;
         long p_VideoOutputFrameLen = 0;
+        long p_NowTimeMesc;
 
         //从链表或自适应抖动缓冲器取出一个视频输出帧。
         switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
@@ -1533,20 +1525,28 @@ class MyMediaProcThread extends MediaProcThread
             }
             case 1: //如果使用自适应抖动缓冲器。
             {
-                synchronized( m_VAjbPt )
+                HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
+                HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
+                HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+                HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
+                m_VAjbPt.GetBufFrameCnt( p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
+
+                if( p_CurHaveBufFrameCntPt.m_Val != 0 ) //如果视频自适应抖动缓冲器不为空。
                 {
+                    Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器：帧：" + p_CurHaveBufFrameCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val + "。" );
+
                     //从视频自适应抖动缓冲器取出一个视频输出帧。
                     if( m_AudioOutputPt.m_IsUseAudioOutput != 0 && m_LastGetAudioOutputFrameIsAct != 0 ) //如果要使用音频输出，且最后一个取出的音频输出帧为有语音活动，就根据最后一个取出的音频输出帧对应视频输出帧的时间戳来取出。
                     {
-                        m_VAjbPt.GetOneByteFrameWantTimeStamp( System.currentTimeMillis(), m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp, TmpHTIntPt, TmpBytePt, 0, TmpBytePt.length, TmpHTLongPt );
+                        m_VAjbPt.GetOneByteFrameWantTimeStamp( System.currentTimeMillis(), m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp, m_TmpHTInt3Pt, m_TmpByte3Pt, 0, m_TmpByte3Pt.length, m_TmpHTLong3Pt );
                     }
                     else //如果最后一个取出的音频输出帧为无语音活动，就根据直接取出。
                     {
-                        m_VAjbPt.GetOneByteFrame( System.currentTimeMillis(), TmpHTIntPt, TmpBytePt, 0, TmpBytePt.length, TmpHTLongPt );
+                        m_VAjbPt.GetOneByteFrame( System.currentTimeMillis(), m_TmpHTInt3Pt, m_TmpByte3Pt, 0, m_TmpByte3Pt.length, m_TmpHTLong3Pt );
                     }
-                    p_VideoOutputFrameTimeStamp = TmpHTIntPt.m_Val;
-                    p_VideoOutputFramePt = TmpBytePt;
-                    p_VideoOutputFrameLen = TmpHTLongPt.m_Val;
+                    p_VideoOutputFrameTimeStamp = m_TmpHTInt3Pt.m_Val;
+                    p_VideoOutputFramePt = m_TmpByte3Pt;
+                    p_VideoOutputFrameLen = m_TmpHTLong3Pt.m_Val;
 
                     if( p_VideoOutputFrameLen > 0 ) //如果视频输出帧为有图像活动。
                     {
@@ -1556,13 +1556,6 @@ class MyMediaProcThread extends MediaProcThread
                     {
                         Log.i( m_CurClsNameStrPt, "从视频自适应抖动缓冲器取出一个无图像活动的视频输出帧。时间戳：" + p_VideoOutputFrameTimeStamp + "，数据长度：" + p_VideoOutputFrameLen + "。" );
                     }
-
-                    HTInt p_CurHaveBufFrameCntPt = new HTInt(); //存放当前已缓冲帧的数量。
-                    HTInt p_MinNeedBufFrameCntPt = new HTInt(); //存放最小需缓冲帧的数量。
-                    HTInt p_MaxNeedBufFrameCntPt = new HTInt(); //存放最大需缓冲帧的数量。
-                    HTInt p_CurNeedBufFrameCntPt = new HTInt(); //存放当前需缓冲帧的数量。
-                    m_VAjbPt.GetBufFrameCnt( p_CurHaveBufFrameCntPt, p_MinNeedBufFrameCntPt, p_MaxNeedBufFrameCntPt, p_CurNeedBufFrameCntPt );
-                    Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器：帧：" + p_CurHaveBufFrameCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrameCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrameCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrameCntPt.m_Val + "。" );
                 }
 
                 break;
@@ -1575,12 +1568,49 @@ class MyMediaProcThread extends MediaProcThread
             //读取视频输出帧对应音频输出帧的时间戳。
             p_VideoOutputFrameAudioOutputFrameTimeStamp = ( p_VideoOutputFramePt[0] & 0xFF ) + ( ( p_VideoOutputFramePt[1] & 0xFF ) << 8 ) + ( ( p_VideoOutputFramePt[2] & 0xFF ) << 16 ) + ( ( p_VideoOutputFramePt[3] & 0xFF ) << 24 );
 
-            UserWriteVideoOutputFrame( p_VideoOutputFramePt, 4, p_VideoOutputFrameLen - 4 );
+            if( YU12VideoOutputFramePt != null ) //如果要使用YU12格式视频输出帧。
+            {
+                if( p_VideoOutputFrameLen - 4 != VideoOutputFrameLen.m_Val )
+                {
+                    Arrays.fill( YU12VideoOutputFramePt, 0, ( int )VideoOutputFrameLen.m_Val, ( byte ) 0 );
+                    Log.e( m_CurClsNameStrPt, "视频输出帧的数据长度不等于YU12格式的数据长度。视频输出帧：" + ( p_VideoOutputFrameLen - 4 ) + "，YU12格式：" + VideoOutputFrameLen.m_Val + "。" );
+                    return;
+                }
+
+                //写入YU12格式视频输出帧。
+                System.arraycopy( p_VideoOutputFramePt, 4, YU12VideoOutputFramePt, 0, ( int )( p_VideoOutputFrameLen - 4 ) );
+            }
+            else //如果要使用已编码格式视频输出帧。
+            {
+                if( p_VideoOutputFrameLen - 4 > VideoOutputFrameLen.m_Val )
+                {
+                    VideoOutputFrameLen.m_Val = 0;
+                    Log.e( m_CurClsNameStrPt, "视频输出帧的数据长度已超过已编码格式的数据长度。视频输出帧：" + ( p_VideoOutputFrameLen - 4 ) + "，已编码格式：" + VideoOutputFrameLen.m_Val + "。" );
+                    return;
+                }
+
+                //写入已编码格式视频输出帧。
+                System.arraycopy( p_VideoOutputFramePt, 4, EncoderVideoOutputFramePt, 0, ( int )( p_VideoOutputFrameLen - 4 ) );
+                VideoOutputFrameLen.m_Val = p_VideoOutputFrameLen - 4;
+            }
         }
         else if( p_VideoOutputFrameLen == 0 ) //如果视频输出帧为无图像活动。
         {
-
+            if( YU12VideoOutputFramePt != null ) //如果要使用YU12格式视频输出帧。
+            {
+                VideoOutputFrameLen.m_Val = 0;
+            }
+            else //如果要使用已编码格式视频输出帧。
+            {
+                VideoOutputFrameLen.m_Val = 0;
+            }
         }
+    }
+
+    //用户定义的获取YU12格式视频输出帧函数，在解码完一个已编码视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
+    @Override public void UserGetYU12VideoOutputFrame( byte YU12VideoOutputFramePt[], int YU12VideoOutputFrameWidth, int YU12VideoOutputFrameHeigth )
+    {
+
     }
 }
 
@@ -1617,6 +1647,7 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate( savedInstanceState );
 
+        //创建布局。
         LayoutInflater layoutInflater = LayoutInflater.from( this );
         m_LyotActivityMainViewPt = layoutInflater.inflate( R.layout.activity_main, null );
         m_LyotActivitySettingViewPt = layoutInflater.inflate( R.layout.activity_setting, null );
@@ -2370,7 +2401,7 @@ public class MainActivity extends AppCompatActivity
                             ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 :
                                     ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
                             ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate12RadioBtn ) ).isChecked() ) ? 12 :
-                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate16RadioBtn ) ).isChecked() ) ? 16 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate15RadioBtn ) ).isChecked() ) ? 15 :
                                             ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate24RadioBtn ) ).isChecked() ) ? 24 :
                                                     ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate30RadioBtn ) ).isChecked() ) ? 30 : 0,
                             ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize144_176RadioBtn ) ).isChecked() ) ? 144 :
@@ -2433,7 +2464,7 @@ public class MainActivity extends AppCompatActivity
                         m_MyMediaProcThreadPt.SetVideoOutputUseYU12();
                     }
 
-                    //判断视频输出是否使用OpenH264编码器。
+                    //判断视频输出是否使用OpenH264解码器。
                     if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).isChecked() )
                     {
                         m_MyMediaProcThreadPt.SetVideoOutputUseOpenH264Decoder( 0 );
@@ -2720,12 +2751,18 @@ public class MainActivity extends AppCompatActivity
     public void OnClickUseEffectLowRadioBtn( View BtnPt )
     {
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseEffectLowRadioBtn ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate8000RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcAecmRadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexPprocNsRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate12RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize144_176RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
 
         ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).setText( "500" );
         ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsUseRecCheckBox ) ).setChecked( true );
@@ -2766,8 +2803,6 @@ public class MainActivity extends AppCompatActivity
         ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( false );
         ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "420" );
 
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexPprocNsRadioBtn ) ).setChecked( true );
-
         ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
         ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
@@ -2776,7 +2811,6 @@ public class MainActivity extends AppCompatActivity
 
         ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
 
-        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
@@ -2786,18 +2820,9 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
 
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseCbrRadioBtn ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "1" );
         ( ( CheckBox ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecIsUsePerceptualEnhancementCheckBox ) ).setChecked( true );
-
-        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( false );
-
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate12RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize144_176RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
 
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).setText( "0" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
@@ -2809,12 +2834,18 @@ public class MainActivity extends AppCompatActivity
     public void OnClickUseEffectMidRadioBtn( View BtnPt )
     {
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseEffectMidRadioBtn ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate16000RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcAecRadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcNsxRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate15RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
 
         ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).setText( "500" );
         ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsUseRecCheckBox ) ).setChecked( true );
@@ -2855,8 +2886,6 @@ public class MainActivity extends AppCompatActivity
         ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( false );
         ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "420" );
 
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcNsxRadioBtn ) ).setChecked( true );
-
         ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
         ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
@@ -2865,7 +2894,6 @@ public class MainActivity extends AppCompatActivity
 
         ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
 
-        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
@@ -2875,22 +2903,13 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
 
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseCbrRadioBtn ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "4" );
         ( ( CheckBox ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecIsUsePerceptualEnhancementCheckBox ) ).setChecked( true );
 
-        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( false );
-
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate16RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
-
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).setText( "0" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
-        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "16" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "15" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).setText( "0" );
     }
 
@@ -2898,12 +2917,18 @@ public class MainActivity extends AppCompatActivity
     public void OnClickUseEffectHighRadioBtn( View BtnPt )
     {
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseEffectHighRadioBtn ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate16000RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexWebRtcAecRadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcNsRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate15RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
 
         ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).setText( "500" );
         ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsUseRecCheckBox ) ).setChecked( true );
@@ -2944,8 +2969,6 @@ public class MainActivity extends AppCompatActivity
         ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( false );
         ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "420" );
 
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcNsRadioBtn ) ).setChecked( true );
-
         ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
         ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
@@ -2954,7 +2977,6 @@ public class MainActivity extends AppCompatActivity
 
         ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
 
-        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
@@ -2964,22 +2986,13 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
 
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseVbrRadioBtn ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "8" );
         ( ( CheckBox ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecIsUsePerceptualEnhancementCheckBox ) ).setChecked( true );
 
-        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( false );
-
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate16RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
-
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).setText( "0" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
-        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "16" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "15" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).setText( "0" );
     }
 
@@ -2987,12 +3000,18 @@ public class MainActivity extends AppCompatActivity
     public void OnClickUseEffectSuperRadioBtn( View BtnPt )
     {
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseEffectSuperRadioBtn ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate16000RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexWebRtcAecRadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseRNNoiseRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate24RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
 
         ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).setText( "500" );
         ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsUseRecCheckBox ) ).setChecked( true );
@@ -3030,10 +3049,8 @@ public class MainActivity extends AppCompatActivity
         ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCheckBox ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).setChecked( false );
         ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox ) ).setChecked( true );
-        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( false );
         ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "420" );
-
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseRNNoiseRadioBtn ) ).setChecked( true );
 
         ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
@@ -3043,7 +3060,6 @@ public class MainActivity extends AppCompatActivity
 
         ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
 
-        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
@@ -3053,18 +3069,9 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
 
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseVbrRadioBtn ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "10" );
         ( ( CheckBox ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecIsUsePerceptualEnhancementCheckBox ) ).setChecked( true );
-
-        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( false );
-
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate24RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
 
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).setText( "0" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
@@ -3076,12 +3083,18 @@ public class MainActivity extends AppCompatActivity
     public void OnClickUseEffectPremiumRadioBtn( View BtnPt )
     {
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseEffectPremiumRadioBtn ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate32000RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexWebRtcAecRadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseRNNoiseRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate30RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
+        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
 
         ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).setText( "500" );
         ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsUseRecCheckBox ) ).setChecked( true );
@@ -3119,10 +3132,8 @@ public class MainActivity extends AppCompatActivity
         ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCheckBox ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox ) ).setChecked( false );
         ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox ) ).setChecked( true );
-        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( false );
         ( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "420" );
-
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseRNNoiseRadioBtn ) ).setChecked( true );
 
         ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
@@ -3132,7 +3143,6 @@ public class MainActivity extends AppCompatActivity
 
         ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
 
-        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
@@ -3142,18 +3152,9 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
         ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
 
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
-
         ( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseVbrRadioBtn ) ).setChecked( true );
         ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "10" );
         ( ( CheckBox ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecIsUsePerceptualEnhancementCheckBox ) ).setChecked( true );
-
-        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( false );
-
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate30RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
-        ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).setChecked( true );
 
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).setText( "0" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
