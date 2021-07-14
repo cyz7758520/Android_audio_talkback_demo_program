@@ -19,7 +19,7 @@
 # 开始
 #### 在一台设备上直接点击创建服务端，再在另一台设备上将IP地址改为服务端设备的IP地址，并点击连接服务端，即可开始对讲，在任意一端点击中断，即可中断对讲。
 #### 设置按钮提供了各项功能的参数设置，绝大部分情况下都不需要修改，当然你也可以根据需要自行修改。
-#### 特别注意：如果把两台设备放在同一房间里测试，有可能会出现啸叫、声音不完整、等问题，这是因为现在手机的麦克风都很灵敏了，一点小小的声音都会被录进去，两台设备会相互录音，导致软件无法正确识别回音，所以建议放在不同的房间里测试。
+#### 特别注意：如果把两台设备放在同一房间里测试，有可能会出现啸叫、声音不完整、等问题，这是因为现在的麦克风都很灵敏了，一点小小的声音都会被录进去，两台设备会相互录音，导致软件无法正确识别回音，所以建议放在不同的房间里测试。
 
 # 移植
 #### 如果需要在自己的软件中使用本软件的音视频功能，只需要将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Media.MediaProcThread类，实现UserInit、UserProcess、UserDestroy、UserReadAudioVideoInputFrame、UserWriteAudioOutputFrame、UserGetPcmAudioOutputFrame、UserWriteVideoOutputFrame、UserGetYU12VideoOutputFrame这八个函数，再在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限即可。

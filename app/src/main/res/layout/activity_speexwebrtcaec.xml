@@ -302,7 +302,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:text="使用同一房间声学回音消除，可能对近端音频有损伤" />
+            android:text="使用同一房间声学回音消除" />
 
         <LinearLayout
             android:layout_width="match_parent"
