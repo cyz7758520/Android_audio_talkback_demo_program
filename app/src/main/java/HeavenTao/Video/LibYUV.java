@@ -48,6 +48,11 @@ public class LibYUV
     public static final int ROTATE_DEGREE_180 = 180;  //180度。
     public static final int ROTATE_DEGREE_270 = 270;  //270度。
 
+    public native static int PictrCrop( byte SrcPictrPt[], int SrcPictrFmt, int SrcPictrWidth, int SrcPictrHeight,
+                                        int CropX, int CropY, int CropWidth, int CropHeight,
+                                        byte DstPictrPt[], long DstPictrSz, HTLong DstPictrLenPt, HTInt DstPictrWidthPt, HTInt DstPictrHeightPt,
+                                        VarStr ErrInfoVarStrPt );
+
     public native static int PictrRotate( byte SrcPictrPt[], int SrcPictrFmt, int SrcPictrWidth, int SrcPictrHeight,
                                           int RotateDegree,
                                           byte DstPictrPt[], long DstPictrSz, HTInt DstPictrWidthPt, HTInt DstPictrHeightPt,

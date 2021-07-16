@@ -98,11 +98,11 @@
             android:text="保存设置到扩展目录下的Setting.txt文件中" />
 
         <CheckBox
-            android:id="@+id/IsPrintLogcatCheckBox"
+            android:id="@+id/IsPrintLogcatShowToastCheckBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="true"
-            android:text="打印Logcat日志" />
+            android:text="打印Logcat日志，并显示Toast" />
 
         <CheckBox
             android:id="@+id/IsUseWakeLockCheckBox"
@@ -715,8 +715,8 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:text="144*176"
-                    android:id="@+id/UseVideoFrameSize144_176RadioBtn"
+                    android:text="120*160"
+                    android:id="@+id/UseVideoFrameSize120_160RadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
