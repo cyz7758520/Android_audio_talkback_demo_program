@@ -962,12 +962,25 @@ class MyMediaProcThread extends MediaProcThread
             }
 
             //判断套接字连接是否中断。
-            if( System.currentTimeMillis() - m_LastPktRecvTime > 2000 ) //如果超过2000毫秒没有接收任何数据包，就判定连接已经断开了。
+            if( m_UseWhatXfrPrtcl == 0 ) //如果使用TCP协议。
             {
-                String p_InfoStrPt = "超过2000毫秒没有接收任何数据包，判定套接字连接已经断开了。";
-                Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                break out;
+                if( System.currentTimeMillis() - m_LastPktRecvTime > 2000 ) //如果超过2000毫秒没有接收任何数据包，就判定连接已经断开了。
+                {
+                    String p_InfoStrPt = "超过2000毫秒没有接收任何数据包，判定套接字连接已经断开了。";
+                    Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                    break out;
+                }
+            }
+            else if( m_UseWhatXfrPrtcl == 1 ) //如果使用UDP协议。
+            {
+                if( System.currentTimeMillis() - m_LastPktRecvTime > 5000 ) //如果超过5000毫秒没有接收任何数据包，就判定连接已经断开了。
+                {
+                    String p_InfoStrPt = "超过5000毫秒没有接收任何数据包，判定套接字连接已经断开了。";
+                    Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                    break out;
+                }
             }
 
             p_Result = 0; //设置本函数执行成功。
