@@ -1,11 +1,14 @@
 package com.example.Android_audio_talkback_demo_program;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
@@ -25,6 +28,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -691,6 +695,7 @@ class MyMediaProcThread extends MediaProcThread
             String p_InfoStrPt = "开始进行对讲。";
             Log.i( m_CurClsNameStrPt, p_InfoStrPt );
             Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+            if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 
             p_Result = 0; //设置本函数执行成功。
         }
@@ -1656,9 +1661,10 @@ public class MainActivity extends AppCompatActivity
     String m_ExternalDirFullAbsPathStrPt; //存放扩展目录完整绝对路径字符串的内存指针。
 
     @Override
-    protected void onCreate( Bundle savedInstanceState )
+    protected void onCreate( Bundle savedInstanceState ) //Activity创建消息。
     {
         super.onCreate( savedInstanceState );
+        Log.i( m_CurClsNameStrPt, "onCreate" );
 
         //创建布局。
         LayoutInflater layoutInflater = LayoutInflater.from( this );
@@ -1751,6 +1757,50 @@ public class MainActivity extends AppCompatActivity
         //设置端口控件的内容。
         ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.PortEdit ) ).setText( "12345" );
 
+        //初始化音频输出音量控件。
+        {
+            SeekBar p_AudioOutputVolumePt = ( SeekBar ) m_LyotActivityMainViewPt.findViewById( R.id.SystemAudioOutputVolume ); //获取音频输出音量控件的内存指针。
+            AudioManager p_AudioManagerPt = ( AudioManager ) getSystemService( Context.AUDIO_SERVICE ); //获取音频服务的内存指针。
+
+            p_AudioOutputVolumePt.setMax( p_AudioManagerPt.getStreamMaxVolume( AudioManager.STREAM_VOICE_CALL ) ); //设置音频输出音量控件的最大值。
+            p_AudioOutputVolumePt.setProgress( p_AudioManagerPt.getStreamVolume( AudioManager.STREAM_VOICE_CALL ) ); //设置音频输出音量控件的当前值。
+
+            //设置音频输出音量控件的变化消息监听器。
+            p_AudioOutputVolumePt.setOnSeekBarChangeListener( new SeekBar.OnSeekBarChangeListener()
+            {
+                @Override
+                public void onProgressChanged( SeekBar seekBar, int progress, boolean fromUser )
+                {
+                    ( ( AudioManager ) getSystemService( Context.AUDIO_SERVICE ) ).setStreamVolume( AudioManager.STREAM_VOICE_CALL, progress, AudioManager.FLAG_PLAY_SOUND );
+                    p_AudioOutputVolumePt.setProgress( p_AudioManagerPt.getStreamVolume( AudioManager.STREAM_VOICE_CALL ) );
+                }
+
+                @Override
+                public void onStartTrackingTouch( SeekBar seekBar )
+                {
+
+                }
+
+                @Override
+                public void onStopTrackingTouch( SeekBar seekBar )
+                {
+
+                }
+            } );
+
+            //设置系统音量的变化消息监听器。
+            IntentFilter p_VolumeChangedActionIntentFilterPt = new IntentFilter();
+            p_VolumeChangedActionIntentFilterPt.addAction( "android.media.VOLUME_CHANGED_ACTION" );
+            registerReceiver( new BroadcastReceiver()
+            {
+                @Override
+                public void onReceive( Context context, Intent intent )
+                {
+                    p_AudioOutputVolumePt.setProgress( p_AudioManagerPt.getStreamVolume( AudioManager.STREAM_VOICE_CALL ) );
+                }
+            }, p_VolumeChangedActionIntentFilterPt );
+        }
+
         //添加视频输入预览SurfaceView的回调函数。
         m_VideoInputPreviewSurfaceViewPt = ( ( HTSurfaceView )findViewById( R.id.VideoInputPreviewSurfaceView ) );
         m_VideoInputPreviewSurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS );
@@ -1796,10 +1846,53 @@ public class MainActivity extends AppCompatActivity
         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
     }
 
-    //返回键。
     @Override
-    public void onBackPressed()
+    public void onStart() //Activity从遮挡恢复消息。
     {
+        super.onStart();
+        Log.i( m_CurClsNameStrPt, "onStart" );
+    }
+
+    @Override
+    public void onRestart() //Activity从后台恢复消息。
+    {
+        super.onRestart();
+        Log.i( m_CurClsNameStrPt, "onRestart" );
+    }
+
+    @Override
+    public void onResume() //Activity恢复运行消息。
+    {
+        super.onResume();
+        Log.i( m_CurClsNameStrPt, "onResume" );
+    }
+
+    @Override
+    public void onPause() //Activity被遮挡消息。
+    {
+        super.onPause();
+        Log.i( m_CurClsNameStrPt, "onPause" );
+    }
+
+    @Override
+    public void onStop() //Activity转入后台消息。
+    {
+        super.onStop();
+        Log.i( m_CurClsNameStrPt, "onStop" );
+    }
+
+    @Override
+    public void onDestroy() //Activity销毁消息。
+    {
+        super.onDestroy();
+        Log.i( m_CurClsNameStrPt, "onDestroy" );
+    }
+
+    @Override
+    public void onBackPressed() //Activity返回键消息。
+    {
+        Log.i( m_CurClsNameStrPt, "onBackPressed" );
+
         if( m_LyotActivityCurViewPt == m_LyotActivityMainViewPt )
         {
             Log.i( m_CurClsNameStrPt, "用户在主界面按下返回键，本软件退出。" );

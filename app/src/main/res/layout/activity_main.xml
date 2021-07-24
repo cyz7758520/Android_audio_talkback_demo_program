@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="Android下音视频对讲演示程序\n版本：2021年07月10日\n"
+            android:text="Android下音视频对讲演示程序\n版本：2021年07月24日\n"
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="normal|bold" />
@@ -282,6 +282,27 @@
                 android:checked="false"
                 android:onClick="OnVideoOutputDeviceIsBlack"
                 android:text="视频输出设备黑屏"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:gravity="center_vertical"
+                android:text="系统音频输出音量：" />
+
+            <SeekBar
+                android:id="@+id/SystemAudioOutputVolume"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="7"
+                android:minHeight="30dp" />
 
         </LinearLayout>
 
