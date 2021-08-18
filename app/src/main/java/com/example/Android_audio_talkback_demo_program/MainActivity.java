@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Environment;
@@ -369,6 +370,22 @@ class MyMediaProcThread extends MediaProcThread
                     Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                     break out;
                 }
+
+                if( m_TcpClntSoktPt.SetSendBufSz( 128 * 1024, m_ErrInfoVarStrPt ) != 0 )
+                {
+                    String p_InfoStrPt = "设置已连接的本端TCP协议客户端套接字的发送缓冲区内存大小失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                    Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                    break out;
+                }
+
+                if( m_TcpClntSoktPt.SetRecvBufSz( 128 * 1024, m_ErrInfoVarStrPt ) != 0 )
+                {
+                    String p_InfoStrPt = "设置已连接的本端TCP协议客户端套接字的接收缓冲区内存大小失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                    Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                    break out;
+                }
             }
             else //如果使用UDP协议。
             {
@@ -632,6 +649,22 @@ class MyMediaProcThread extends MediaProcThread
                             }
                         }
                     }
+                }
+
+                if( m_UdpSoktPt.SetSendBufSz( 128 * 1024, m_ErrInfoVarStrPt ) != 0 )
+                {
+                    String p_InfoStrPt = "设置已监听的本端UDP协议套接字的发送缓冲区内存大小失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                    Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                    break out;
+                }
+
+                if( m_UdpSoktPt.SetRecvBufSz( 128 * 1024, m_ErrInfoVarStrPt ) != 0 )
+                {
+                    String p_InfoStrPt = "设置已监听的本端UDP协议套接字的接收缓冲区内存大小失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+                    Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                    Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                    break out;
                 }
             } //协议连接结束。
 
@@ -1167,7 +1200,8 @@ class MyMediaProcThread extends MediaProcThread
     }
 
     //用户定义的读取音视频输入帧函数，在读取到一个音频输入帧或视频输入帧并处理完后回调一次，为0表示成功，为非0表示失败。
-    @Override public int UserReadAudioVideoInputFrame( short PcmAudioInputFramePt[], short PcmAudioResultFramePt[], HTInt VoiceActStsPt, byte EncoderAudioInputFramePt[], HTLong EncoderAudioInputFrameLenPt, HTInt EncoderAudioInputFrameIsNeedTransPt, byte YU12VideoInputFramePt[], HTInt YU12VideoInputFrameWidthPt, HTInt YU12VideoInputFrameHeigthPt, byte EncoderVideoInputFramePt[], HTLong EncoderVideoInputFrameLenPt )
+    @Override public int UserReadAudioVideoInputFrame( short PcmAudioInputFramePt[], short PcmAudioResultFramePt[], HTInt VoiceActStsPt, byte EncoderAudioInputFramePt[], HTLong EncoderAudioInputFrameLenPt, HTInt EncoderAudioInputFrameIsNeedTransPt,
+                                                       byte YU12VideoInputFramePt[], HTInt YU12VideoInputFrameWidthPt, HTInt YU12VideoInputFrameHeightPt, byte EncoderVideoInputFramePt[], HTLong EncoderVideoInputFrameLenPt )
     {
         int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
         int p_FramePktLen = 0; //存放输入输出帧数据包的数据长度，单位字节。
@@ -1318,8 +1352,19 @@ class MyMediaProcThread extends MediaProcThread
                 }
                 else //如果要使用YU12格式视频输入帧。
                 {
-                    System.arraycopy( YU12VideoInputFramePt, 0, m_TmpBytePt, 1 + 4 + 4, YU12VideoInputFramePt.length ); //设置视频输入输出帧。
-                    p_FramePktLen = 1 + 4 + 4 + YU12VideoInputFramePt.length; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 音频输入帧时间戳 + YU12格式视频输入帧。
+                    //设置视频输入帧宽度。
+                    m_TmpBytePt[9] = ( byte ) ( YU12VideoInputFrameWidthPt.m_Val & 0xFF );
+                    m_TmpBytePt[10] = ( byte ) ( ( YU12VideoInputFrameWidthPt.m_Val & 0xFF00 ) >> 8 );
+                    m_TmpBytePt[11] = ( byte ) ( ( YU12VideoInputFrameWidthPt.m_Val & 0xFF0000 ) >> 16 );
+                    m_TmpBytePt[12] = ( byte ) ( ( YU12VideoInputFrameWidthPt.m_Val & 0xFF000000 ) >> 24 );
+                    //设置视频输入帧高度。
+                    m_TmpBytePt[13] = ( byte ) ( YU12VideoInputFrameHeightPt.m_Val & 0xFF );
+                    m_TmpBytePt[14] = ( byte ) ( ( YU12VideoInputFrameHeightPt.m_Val & 0xFF00 ) >> 8 );
+                    m_TmpBytePt[15] = ( byte ) ( ( YU12VideoInputFrameHeightPt.m_Val & 0xFF0000 ) >> 16 );
+                    m_TmpBytePt[16] = ( byte ) ( ( YU12VideoInputFrameHeightPt.m_Val & 0xFF000000 ) >> 24 );
+
+                    System.arraycopy( YU12VideoInputFramePt, 0, m_TmpBytePt, 1 + 4 + 4 + 4 + 4, YU12VideoInputFramePt.length ); //设置视频输入输出帧。
+                    p_FramePktLen = 1 + 4 + 4 + 4 + 4 + YU12VideoInputFramePt.length; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 音频输入帧时间戳 + YU12格式视频输入帧。
                 }
 
                 //发送视频输入帧数据包。
@@ -1507,7 +1552,7 @@ class MyMediaProcThread extends MediaProcThread
     }
 
     //用户定义的写入视频输出帧函数，在可以显示一个视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
-    @Override public void UserWriteVideoOutputFrame( byte YU12VideoOutputFramePt[], byte EncoderVideoOutputFramePt[], HTLong VideoOutputFrameLen )
+    @Override public void UserWriteVideoOutputFrame( byte YU12VideoOutputFramePt[], HTInt YU12VideoInputFrameWidthPt, HTInt YU12VideoInputFrameHeightPt, byte EncoderVideoOutputFramePt[], HTLong VideoOutputFrameLen )
     {
         int p_VideoOutputFrameTimeStamp = 0;
         int p_VideoOutputFrameAudioOutputFrameTimeStamp = 0;
@@ -1588,15 +1633,21 @@ class MyMediaProcThread extends MediaProcThread
 
             if( YU12VideoOutputFramePt != null ) //如果要使用YU12格式视频输出帧。
             {
-                if( p_VideoOutputFrameLen - 4 != VideoOutputFrameLen.m_Val )
+                //读取视频输出帧宽度。
+                YU12VideoInputFrameWidthPt.m_Val = ( p_VideoOutputFramePt[4] & 0xFF ) + ( ( p_VideoOutputFramePt[5] & 0xFF ) << 8 ) + ( ( p_VideoOutputFramePt[6] & 0xFF ) << 16 ) + ( ( p_VideoOutputFramePt[7] & 0xFF ) << 24 );
+                //读取视频输出帧高度。
+                YU12VideoInputFrameHeightPt.m_Val = ( p_VideoOutputFramePt[8] & 0xFF ) + ( ( p_VideoOutputFramePt[9] & 0xFF ) << 8 ) + ( ( p_VideoOutputFramePt[10] & 0xFF ) << 16 ) + ( ( p_VideoOutputFramePt[11] & 0xFF ) << 24 );
+
+                if( p_VideoOutputFrameLen - 4 - 4 - 4 != ( long )( YU12VideoInputFrameWidthPt.m_Val * YU12VideoInputFrameHeightPt.m_Val * 3 / 2 ) )
                 {
-                    Arrays.fill( YU12VideoOutputFramePt, 0, ( int )VideoOutputFrameLen.m_Val, ( byte ) 0 );
-                    Log.e( m_CurClsNameStrPt, "视频输出帧的数据长度不等于YU12格式的数据长度。视频输出帧：" + ( p_VideoOutputFrameLen - 4 ) + "，YU12格式：" + VideoOutputFrameLen.m_Val + "。" );
+                    Log.e( m_CurClsNameStrPt, "视频输出帧的数据长度不等于YU12格式的数据长度。视频输出帧：" + ( p_VideoOutputFrameLen - 4 - 4 - 4 ) + "，YU12格式：" + ( YU12VideoInputFrameWidthPt.m_Val * YU12VideoInputFrameHeightPt.m_Val * 3 / 2 ) + "。" );
+                    YU12VideoInputFrameWidthPt.m_Val = 0;
+                    YU12VideoInputFrameHeightPt.m_Val = 0;
                     return;
                 }
 
                 //写入YU12格式视频输出帧。
-                System.arraycopy( p_VideoOutputFramePt, 4, YU12VideoOutputFramePt, 0, ( int )( p_VideoOutputFrameLen - 4 ) );
+                System.arraycopy( p_VideoOutputFramePt, 4 + 4 + 4, YU12VideoOutputFramePt, 0, ( int )( p_VideoOutputFrameLen - 4 - 4 - 4 ) );
             }
             else //如果要使用已编码格式视频输出帧。
             {
@@ -1626,7 +1677,7 @@ class MyMediaProcThread extends MediaProcThread
     }
 
     //用户定义的获取YU12格式视频输出帧函数，在解码完一个已编码视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
-    @Override public void UserGetYU12VideoOutputFrame( byte YU12VideoOutputFramePt[], int YU12VideoOutputFrameWidth, int YU12VideoOutputFrameHeigth )
+    @Override public void UserGetYU12VideoOutputFrame( byte YU12VideoOutputFramePt[], int YU12VideoOutputFrameWidth, int YU12VideoOutputFrameHeight )
     {
 
     }
@@ -1921,6 +1972,36 @@ public class MainActivity extends AppCompatActivity
                 ( m_LyotActivityCurViewPt == m_LyotActivityAjbViewPt ) )
         {
             this.OnClickWebRtcAecSettingOk( null );
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged( Configuration newConfig )
+    {
+        super.onConfigurationChanged( newConfig );
+
+        if( m_MyMediaProcThreadPt != null && m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaProcThreadPt.m_RunFlag == MediaProcThread.RUN_FLAG_PROC ) //如果SurfaceView已经重新创建，且媒体处理线程已经启动，且要使用视频输入，并处于初始化完毕正在循环处理帧。
+        {
+            m_MyMediaProcThreadPt.SetIsUseVideoInput(
+                    ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 :
+                            ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
+                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate12RadioBtn ) ).isChecked() ) ? 12 :
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate15RadioBtn ) ).isChecked() ) ? 15 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate24RadioBtn ) ).isChecked() ) ? 24 :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate30RadioBtn ) ).isChecked() ) ? 30 : 0,
+                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize120_160RadioBtn ) ).isChecked() ) ? 120 :
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).isChecked() ) ? 240 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).isChecked() ) ? 480 :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).isChecked() ) ? 960 : 0,
+                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize120_160RadioBtn ) ).isChecked() ) ? 160 :
+                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).isChecked() ) ? 320 :
+                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).isChecked() ) ? 640 :
+                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).isChecked() ) ? 1280 : 0,
+                    getWindowManager().getDefaultDisplay().getRotation() * 90,
+                    m_VideoInputPreviewSurfaceViewPt
+            );
+
+            m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启媒体处理线程，来保证正常的视频输入，否则视频输入会中断。
         }
     }
 
@@ -2518,6 +2599,7 @@ public class MainActivity extends AppCompatActivity
                                     ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).isChecked() ) ? 320 :
                                             ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).isChecked() ) ? 640 :
                                                     ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).isChecked() ) ? 1280 : 0,
+                            getWindowManager().getDefaultDisplay().getRotation() * 90,
                             m_VideoInputPreviewSurfaceViewPt
                     );
 
@@ -2549,14 +2631,6 @@ public class MainActivity extends AppCompatActivity
                     m_MyMediaProcThreadPt.SetIsUseVideoOutput(
                             ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 :
                                     ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
-                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize120_160RadioBtn ) ).isChecked() ) ? 120 :
-                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).isChecked() ) ? 240 :
-                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).isChecked() ) ? 480 :
-                                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).isChecked() ) ? 960 : 0,
-                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize120_160RadioBtn ) ).isChecked() ) ? 160 :
-                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).isChecked() ) ? 320 :
-                                            ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).isChecked() ) ? 640 :
-                                                    ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).isChecked() ) ? 1280 : 0,
                             m_VideoOutputDisplaySurfaceViewPt,
                             ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).isChecked() ) ? 1.0f :
                                     ( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_5RadioBtn ) ).isChecked() ) ? 1.5f :

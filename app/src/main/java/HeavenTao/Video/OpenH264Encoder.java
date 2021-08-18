@@ -41,7 +41,9 @@ public class OpenH264Encoder
     public native int GetEncodedBitrate( HTInt EncodedBitratePt, VarStr ErrInfoVarStrPt );
 
     //用OpenH264编码器对8位无符号整型YU12格式帧进行H264格式编码。
-    public native int Proc( byte YU12FramePt[], int YU12Width, int YU12Height, long YU12FrameTimeStamp, byte H264FramePt[], long H264FrameSz, HTLong H264FrameLenPt, VarStr ErrInfoVarStrPt );
+    public native int Proc( byte YU12FramePt[], int YU12FrameWidth, int YU12FrameHeight, long YU12FrameTimeStampMs,
+                            byte H264FramePt[], long H264FrameSz, HTLong H264FrameLenPt,
+                            VarStr ErrInfoVarStrPt );
 
     //销毁OpenH264编码器。
     public native int Destroy( VarStr ErrInfoVarStrPt );

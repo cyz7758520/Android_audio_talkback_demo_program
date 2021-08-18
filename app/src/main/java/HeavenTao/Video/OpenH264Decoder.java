@@ -34,8 +34,10 @@ public class OpenH264Decoder
     //创建并初始化OpenH264解码器。
     public native int Init( int DecodeThreadNum, VarStr ErrInfoVarStrPt );
 
-    //用OpenH264解码器对8位无符号整型YU12格式帧进行H264格式编码。
-    public native int Proc( byte H264FramePt[], long H264FrameLen, byte YU12FramePt[], long YU12FrameSz, HTInt YU12Width, HTInt YU12Height, VarStr ErrInfoVarStrPt );
+    //用OpenH264解码器对H264格式进行8位无符号整型YU12格式帧解码。
+    public native int Proc( byte H264FramePt[], long H264FrameLen,
+                            byte YU12FramePt[], long YU12FrameSz, HTInt YU12FrameWidth, HTInt YU12FrameHeight,
+                            VarStr ErrInfoVarStrPt );
 
     //销毁OpenH264解码器。
     public native int Destroy( VarStr ErrInfoVarStrPt );

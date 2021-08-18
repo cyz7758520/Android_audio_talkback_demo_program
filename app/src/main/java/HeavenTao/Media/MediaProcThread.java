@@ -209,8 +209,9 @@ public abstract class MediaProcThread extends Thread
         public int m_IsUseVideoInput; //存放是否使用视频输入，为0表示不使用，为非0表示要使用。
 
         public int m_MaxSamplingRate; //存放最大采样频率，取值范围为[1,60]，实际帧率和图像的亮度有关，亮度较高时采样频率可以达到最大值，亮度较低时系统就自动降低采样频率来提升亮度。
-        public int m_FrameWidth; //存放帧的宽度，单位为像素。
-        public int m_FrameHeight; //存放帧的高度，单位为像素。
+        public int m_FrameWidth; //存放屏幕旋转0度时，帧的宽度，单位为像素。
+        public int m_FrameHeight; //存放屏幕旋转0度时，帧的高度，单位为像素。
+        public int m_ScreenRotate; //存放屏幕旋转的角度，只能为0、90、180、270，0度表示竖屏，其他表示顺时针旋转。
 
         public int m_UseWhatEncoder; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264编码器。
 
@@ -222,10 +223,9 @@ public abstract class MediaProcThread extends Thread
         int m_OpenH264EncoderComplexity; //存放OpenH264编码器的复杂度，复杂度越高压缩率不变、CPU使用率越高、画质越好，取值区间为[0,2]。
 
         public Camera m_VideoInputDevicePt; //存放视频输入设备类对象的内存指针。
-        public int m_UseWhatVideoInputDevice = 0; //存放使用什么视频输入设备，为0表示后置摄像头，为1表示前置摄像头。
+        public int m_UseWhatVideoInputDevice; //存放使用什么视频输入设备，为0表示前置摄像头，为1表示后置摄像头。
         public HTSurfaceView m_VideoInputPreviewSurfaceViewPt; //存放视频输入预览SurfaceView类对象的内存指针。
         public byte m_VideoInputPreviewCallbackBufferPtPt[][]; //存放视频输入预览回调函数缓冲区的内存指针。
-        int m_VideoInputFrameRotate; //存放视频输入帧旋转的角度，只能为0、90、180、270。
         int m_VideoInputDeviceFrameWidth; //存放视频输入设备帧的宽度，单位为像素。
         int m_VideoInputDeviceFrameHeight; //存放视频输入设备帧的高度，单位为像素。
         int m_VideoInputDeviceFrameIsCrop; //存放视频输入设备帧是否裁剪，为0表示不裁剪，为非0表示要裁剪。
@@ -233,17 +233,22 @@ public abstract class MediaProcThread extends Thread
         int m_VideoInputDeviceFrameCropY; //存放视频输入设备帧裁剪区域左上角的纵坐标，单位像素。
         int m_VideoInputDeviceFrameCropWidth; //存放视频输入设备帧裁剪区域的宽度，单位像素。
         int m_VideoInputDeviceFrameCropHeight; //存放视频输入设备帧裁剪区域的高度，单位像素。
+        int m_VideoInputDeviceFrameRotate; //存放视频输入设备帧旋转的角度，只能为0、90、180、270，0度表示横屏，其他表示顺时针旋转。
+        int m_VideoInputDeviceFrameRotateWidth; //存放视频输入设备帧旋转后的宽度，单位为像素。
+        int m_VideoInputDeviceFrameRotateHeight; //存放视频输入设备帧旋转后的高度，单位为像素。
         int m_VideoInputDeviceFrameIsScale; //存放视频输入设备帧是否缩放，为0表示不缩放，为非0表示要缩放。
+        int m_VideoInputDeviceFrameScaleWidth; //存放视频输入帧缩放后的宽度，单位为像素。
+        int m_VideoInputDeviceFrameScaleHeight; //存放视频输入帧缩放后的高度，单位为像素。
         int m_VideoInputDeviceIsBlack; //存放视频输入设备是否黑屏，为0表示有图像，为非0表示黑屏。
 
         public class VideoInputFrameElm //视频输入帧链表元素类。
         {
             VideoInputFrameElm()
             {
-                m_YU12VideoInputFramePt = ( m_VideoInputPt.m_IsUseVideoInput != 0 ) ? new byte[ m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight * 3 / 2 ] : null;
+                m_YU12VideoInputFramePt = ( m_VideoInputPt.m_IsUseVideoInput != 0 ) ? new byte[ m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth * m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight * 3 / 2 ] : null;
                 m_YU12VideoInputFrameWidthPt = ( m_VideoInputPt.m_IsUseVideoInput != 0 ) ? new HTInt() : null;
                 m_YU12VideoInputFrameHeightPt = ( m_VideoInputPt.m_IsUseVideoInput != 0 ) ? new HTInt() : null;
-                m_EncoderVideoInputFramePt = ( m_VideoInputPt.m_IsUseVideoInput != 0 && m_VideoInputPt.m_UseWhatEncoder != 0 ) ? new byte[ m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight * 3 / 2 ] : null;
+                m_EncoderVideoInputFramePt = ( m_VideoInputPt.m_IsUseVideoInput != 0 && m_VideoInputPt.m_UseWhatEncoder != 0 ) ? new byte[ m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth * m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight * 3 / 2 ] : null;
                 m_EncoderVideoInputFrameLenPt = ( m_VideoInputPt.m_IsUseVideoInput != 0 && m_VideoInputPt.m_UseWhatEncoder != 0 ) ? new HTLong( 0 ) : null;
             }
             byte m_YU12VideoInputFramePt[]; //存放YU12格式视频输入帧的内存指针。
@@ -277,9 +282,6 @@ public abstract class MediaProcThread extends Thread
     {
         public int m_IsUseVideoOutput; //存放是否使用视频输出，为0表示不使用，为非0表示要使用。
 
-        public int m_FrameWidth; //存放帧的宽度，单位为像素。
-        public int m_FrameHeight; //存放帧的高度，单位为像素。
-
         public int m_UseWhatDecoder; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264解码器。
 
         OpenH264Decoder m_OpenH264DecoderPt; //存放OpenH264解码器类对象的内存指针。
@@ -304,22 +306,32 @@ public abstract class MediaProcThread extends Thread
 
     public VideoOutput m_VideoOutputPt = new VideoOutput(); //存放视频输出类对象的内存指针。
 
-    //用户定义的相关函数。
-    public abstract int UserInit(); //用户定义的初始化函数，在本线程刚启动时回调一次，返回值表示是否成功，为0表示成功，为非0表示失败。
+    //用户定义的相关回调函数。
 
-    public abstract int UserProcess(); //用户定义的处理函数，在本线程运行时每隔1毫秒就回调一次，返回值表示是否成功，为0表示成功，为非0表示失败。
+    //用户定义的初始化函数，在本线程刚启动时回调一次，返回值表示是否成功，为0表示成功，为非0表示失败。
+    public abstract int UserInit();
 
-    public abstract void UserDestroy(); //用户定义的销毁函数，在本线程退出时回调一次。
+    //用户定义的处理函数，在本线程运行时每隔1毫秒就回调一次，返回值表示是否成功，为0表示成功，为非0表示失败。
+    public abstract int UserProcess();
 
-    public abstract int UserReadAudioVideoInputFrame( short PcmAudioInputFramePt[], short PcmAudioResultFramePt[], HTInt VoiceActStsPt, byte EncoderAudioInputFramePt[], HTLong EncoderAudioInputFrameLenPt, HTInt EncoderAudioInputFrameIsNeedTransPt, byte YU12VideoInputFramePt[], HTInt YU12VideoInputFrameWidthPt, HTInt YU12VideoInputFrameHeigthPt, byte EncoderVideoInputFramePt[], HTLong EncoderVideoInputFrameLenPt ); //用户定义的读取音视频输入帧函数，在读取到一个音频输入帧或视频输入帧并处理完后回调一次，为0表示成功，为非0表示失败。
+    //用户定义的销毁函数，在本线程退出时回调一次。
+    public abstract void UserDestroy();
 
-    public abstract void UserWriteAudioOutputFrame( short PcmAudioOutputFramePt[], byte EncoderAudioOutputFramePt[], HTLong AudioOutputFrameLen ); //用户定义的写入音频输出帧函数，在需要写入一个音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
+    //用户定义的读取音视频输入帧函数，在读取到一个音频输入帧或视频输入帧并处理完后回调一次，为0表示成功，为非0表示失败。
+    public abstract int UserReadAudioVideoInputFrame( short PcmAudioInputFramePt[], short PcmAudioResultFramePt[], HTInt VoiceActStsPt, byte EncoderAudioInputFramePt[], HTLong EncoderAudioInputFrameLenPt, HTInt EncoderAudioInputFrameIsNeedTransPt,
+                                                      byte YU12VideoInputFramePt[], HTInt YU12VideoInputFrameWidthPt, HTInt YU12VideoInputFrameHeightPt, byte EncoderVideoInputFramePt[], HTLong EncoderVideoInputFrameLenPt );
 
-    public abstract void UserGetPcmAudioOutputFrame( short PcmAudioOutputFramePt[] ); //用户定义的获取PCM格式音频输出帧函数，在解码完一个已编码音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
+    //用户定义的写入音频输出帧函数，在需要写入一个音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
+    public abstract void UserWriteAudioOutputFrame( short PcmAudioOutputFramePt[], byte EncoderAudioOutputFramePt[], HTLong AudioOutputFrameLenPt );
 
-    public abstract void UserWriteVideoOutputFrame( byte YU12VideoOutputFramePt[], byte EncoderVideoOutputFramePt[], HTLong VideoOutputFrameLen ); //用户定义的写入视频输出帧函数，在可以显示一个视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
+    //用户定义的获取PCM格式音频输出帧函数，在解码完一个已编码音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
+    public abstract void UserGetPcmAudioOutputFrame( short PcmAudioOutputFramePt[] );
 
-    public abstract void UserGetYU12VideoOutputFrame( byte YU12VideoOutputFramePt[], int YU12VideoOutputFrameWidth, int YU12VideoOutputFrameHeigth ); //用户定义的获取YU12格式视频输出帧函数，在解码完一个已编码视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
+    //用户定义的写入视频输出帧函数，在可以显示一个视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
+    public abstract void UserWriteVideoOutputFrame( byte YU12VideoOutputFramePt[], HTInt YU12VideoInputFrameWidthPt, HTInt YU12VideoInputFrameHeightPt, byte EncoderVideoOutputFramePt[], HTLong VideoOutputFrameLenPt );
+
+    //用户定义的获取YU12格式视频输出帧函数，在解码完一个已编码视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
+    public abstract void UserGetYU12VideoOutputFrame( byte YU12VideoOutputFramePt[], int YU12VideoOutputFrameWidth, int YU12VideoOutputFrameHeight );
 
     //构造函数。
     public MediaProcThread( Context AppContextPt )
@@ -671,11 +683,12 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置是否使用视频输入。
-    public void SetIsUseVideoInput( int IsUseVideoInput, int MaxSamplingRate, int FrameWidth, int FrameHeight, HTSurfaceView VideoInputPreviewSurfaceViewPt )
+    public void SetIsUseVideoInput( int IsUseVideoInput, int MaxSamplingRate, int FrameWidth, int FrameHeight, int ScreenRotate, HTSurfaceView VideoInputPreviewSurfaceViewPt )
     {
         if( ( ( IsUseVideoInput != 0 ) && ( ( MaxSamplingRate < 1 ) || ( MaxSamplingRate > 60 ) ) ) || //如果采样频率不正确。
             ( ( IsUseVideoInput != 0 ) && ( ( FrameWidth <= 0 ) || ( ( FrameWidth & 1 ) != 0 ) ) ) || //如果帧的宽度不正确。
             ( ( IsUseVideoInput != 0 ) && ( ( FrameHeight <= 0 ) || ( ( FrameHeight & 1 ) != 0 ) ) ) || //如果帧的高度不正确。
+            ( ( IsUseVideoInput != 0 ) && ( ScreenRotate != 0 ) && ( ScreenRotate != 90 ) && ( ScreenRotate != 180 ) && ( ScreenRotate != 270 ) ) || //如果屏幕旋转的角度不正确。
             ( ( IsUseVideoInput != 0 ) && ( VideoInputPreviewSurfaceViewPt == null ) ) ) //如果视频预览SurfaceView类对象的内存指针不正确。
         {
             return;
@@ -685,6 +698,7 @@ public abstract class MediaProcThread extends Thread
         m_VideoInputPt.m_MaxSamplingRate = MaxSamplingRate;
         m_VideoInputPt.m_FrameWidth = FrameWidth;
         m_VideoInputPt.m_FrameHeight = FrameHeight;
+        m_VideoInputPt.m_ScreenRotate = ScreenRotate;
         m_VideoInputPt.m_VideoInputPreviewSurfaceViewPt = VideoInputPreviewSurfaceViewPt;
     }
 
@@ -708,7 +722,12 @@ public abstract class MediaProcThread extends Thread
     //设置视频输入使用的设备。
     public void SetVideoInputUseDevice( int UseFrontOrBack )
     {
-        m_VideoInputPt.m_UseWhatVideoInputDevice = ( UseFrontOrBack == 0 ) ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK; //设置视频输入设备。
+        if( ( UseFrontOrBack != 0 ) && ( UseFrontOrBack != 1 ) )
+        {
+            return;
+        }
+
+        m_VideoInputPt.m_UseWhatVideoInputDevice = UseFrontOrBack; //设置视频输入设备。
     }
 
     //设置视频输入设备是否黑屏。
@@ -718,19 +737,15 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置是否使用视频输出。
-    public void SetIsUseVideoOutput( int IsUseVideoOutput, int FrameWidth, int FrameHeight, HTSurfaceView VideoOutputDisplaySurfaceViewPt, float VideoDisplayScale )
+    public void SetIsUseVideoOutput( int IsUseVideoOutput, HTSurfaceView VideoOutputDisplaySurfaceViewPt, float VideoDisplayScale )
     {
-        if( ( ( IsUseVideoOutput != 0 ) && ( ( FrameWidth <= 0 ) || ( ( FrameWidth & 1 ) != 0 ) ) ) || //如果帧的宽度不正确。
-            ( ( IsUseVideoOutput != 0 ) && ( ( FrameHeight <= 0 ) || ( ( FrameHeight & 1 ) != 0 ) ) ) || //如果帧的高度不正确。
-            ( ( IsUseVideoOutput != 0 ) && ( VideoOutputDisplaySurfaceViewPt == null ) ) || //如果视频显示SurfaceView类对象的内存指针不正确。
+        if( ( ( IsUseVideoOutput != 0 ) && ( VideoOutputDisplaySurfaceViewPt == null ) ) || //如果视频显示SurfaceView类对象的内存指针不正确。
             ( ( IsUseVideoOutput != 0 ) && ( VideoDisplayScale <= 0 ) ) ) //如果视频显示缩放倍数不正确。
         {
             return;
         }
 
         m_VideoOutputPt.m_IsUseVideoOutput = IsUseVideoOutput;
-        m_VideoOutputPt.m_FrameWidth = FrameWidth;
-        m_VideoOutputPt.m_FrameHeight = FrameHeight;
         m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt = VideoOutputDisplaySurfaceViewPt;
         m_VideoOutputPt.m_VideoOutputDisplayScale = VideoDisplayScale;
     }
@@ -803,7 +818,7 @@ public abstract class MediaProcThread extends Thread
                 }
             }
 
-            p_Result = 0;
+            p_Result = 0; //设置本函数执行成功。
         }
 
         return p_Result;
@@ -1173,9 +1188,31 @@ public abstract class MediaProcThread extends Thread
 
                         skip:
                         {
+                            //裁剪视频输入设备帧。
+                            if( m_VideoInputPt.m_VideoInputDeviceFrameIsCrop != 0 )
+                            {
+                                if( LibYUV.PictrCrop( m_VideoInputPt.m_VideoInputFramePt, LibYUV.PICTR_FMT_BT601F8_NV21, m_VideoInputPt.m_VideoInputDeviceFrameWidth, m_VideoInputPt.m_VideoInputDeviceFrameHeight,
+                                                      m_VideoInputPt.m_VideoInputDeviceFrameCropX, m_VideoInputPt.m_VideoInputDeviceFrameCropY, m_VideoInputPt.m_VideoInputDeviceFrameCropWidth, m_VideoInputPt.m_VideoInputDeviceFrameCropHeight,
+                                                      m_VideoInputPt.m_VideoInputTmpFramePt, m_VideoInputPt.m_VideoInputResultFrameSz, m_VideoInputPt.m_VideoInputResultFrameLenPt, null, null,
+                                                      null ) == 0 )
+                                {
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：裁剪视频输入设备帧成功。" );
+                                    m_VideoInputPt.m_VideoInputSwapFramePt = m_VideoInputPt.m_VideoInputTmpFramePt;
+                                }
+                                else
+                                {
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输入线程：裁剪视频输入设备帧失败，本次视频输入帧丢弃。" );
+                                    break skip;
+                                }
+                            }
+                            else
+                            {
+                                m_VideoInputPt.m_VideoInputSwapFramePt = m_VideoInputPt.m_VideoInputFramePt;
+                            }
+
                             //NV21格式视频输入帧旋转为YU12格式视频输入帧。
-                            if( LibYUV.PictrRotate( m_VideoInputPt.m_VideoInputFramePt, LibYUV.PICTR_FMT_BT601F8_NV21, m_VideoInputPt.m_VideoInputDeviceFrameHeight, m_VideoInputPt.m_VideoInputDeviceFrameWidth,
-                                                    m_VideoInputPt.m_VideoInputFrameRotate,
+                            if( LibYUV.PictrRotate( m_VideoInputPt.m_VideoInputSwapFramePt, LibYUV.PICTR_FMT_BT601F8_NV21, m_VideoInputPt.m_VideoInputDeviceFrameCropWidth, m_VideoInputPt.m_VideoInputDeviceFrameCropHeight,
+                                                    m_VideoInputPt.m_VideoInputDeviceFrameRotate,
                                                     m_VideoInputPt.m_VideoInputResultFramePt, m_VideoInputPt.m_VideoInputResultFramePt.length, null, null,
                                                     null ) == 0 )
                             {
@@ -1187,30 +1224,12 @@ public abstract class MediaProcThread extends Thread
                                 break skip;
                             }
 
-                            //裁剪视频输入设备帧。
-                            if( m_VideoInputPt.m_VideoInputDeviceFrameIsCrop != 0 )
-                            {
-                                if( LibYUV.PictrCrop( m_VideoInputPt.m_VideoInputResultFramePt, LibYUV.PICTR_FMT_BT601F8_YU12, m_VideoInputPt.m_VideoInputDeviceFrameWidth, m_VideoInputPt.m_VideoInputDeviceFrameHeight,
-                                                      m_VideoInputPt.m_VideoInputDeviceFrameCropX, m_VideoInputPt.m_VideoInputDeviceFrameCropY, m_VideoInputPt.m_VideoInputDeviceFrameCropWidth, m_VideoInputPt.m_VideoInputDeviceFrameCropHeight,
-                                                      m_VideoInputPt.m_VideoInputTmpFramePt, m_VideoInputPt.m_VideoInputResultFrameSz, m_VideoInputPt.m_VideoInputResultFrameLenPt, null, null,
-                                                      null ) == 0 )
-                                {
-                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：裁剪视频输入设备帧成功。" );
-                                    m_VideoInputPt.m_VideoInputSwapFramePt = m_VideoInputPt.m_VideoInputResultFramePt; m_VideoInputPt.m_VideoInputResultFramePt = m_VideoInputPt.m_VideoInputTmpFramePt; m_VideoInputPt.m_VideoInputTmpFramePt = m_VideoInputPt.m_VideoInputSwapFramePt; //交换视频输入结果帧和视频输入临时帧。
-                                }
-                                else
-                                {
-                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输入线程：裁剪视频输入设备帧失败，本次视频输入帧丢弃。" );
-                                    break skip;
-                                }
-                            }
-
                             //缩放视频输入设备帧。
                             if( m_VideoInputPt.m_VideoInputDeviceFrameIsScale != 0 )
                             {
-                                if( LibYUV.PictrScale( m_VideoInputPt.m_VideoInputResultFramePt, LibYUV.PICTR_FMT_BT601F8_YU12, m_VideoInputPt.m_VideoInputDeviceFrameCropWidth, m_VideoInputPt.m_VideoInputDeviceFrameCropHeight,
+                                if( LibYUV.PictrScale( m_VideoInputPt.m_VideoInputResultFramePt, LibYUV.PICTR_FMT_BT601F8_YU12_I420, m_VideoInputPt.m_VideoInputDeviceFrameRotateWidth, m_VideoInputPt.m_VideoInputDeviceFrameRotateHeight,
                                                        3,
-                                                       m_VideoInputPt.m_VideoInputTmpFramePt, m_VideoInputPt.m_VideoInputResultFrameSz, m_VideoInputPt.m_VideoInputResultFrameLenPt, m_VideoInputPt.m_FrameWidth, m_VideoInputPt.m_FrameHeight,
+                                                       m_VideoInputPt.m_VideoInputTmpFramePt, m_VideoInputPt.m_VideoInputResultFrameSz, m_VideoInputPt.m_VideoInputResultFrameLenPt, m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth, m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight,
                                                        null ) == 0 )
                                 {
                                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：缩放视频输入设备帧成功。" );
@@ -1224,14 +1243,14 @@ public abstract class MediaProcThread extends Thread
                             }
 
                             //将视频结果帧复制到视频输入帧元素。
-                            System.arraycopy( m_VideoInputPt.m_VideoInputResultFramePt, 0, m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFramePt, 0, m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight * 3 / 2 );
-                            m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFrameWidthPt.m_Val = m_VideoInputPt.m_FrameWidth;
-                            m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFrameHeightPt.m_Val = m_VideoInputPt.m_FrameHeight;
+                            System.arraycopy( m_VideoInputPt.m_VideoInputResultFramePt, 0, m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFramePt, 0, m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth * m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight * 3 / 2 );
+                            m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFrameWidthPt.m_Val = m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth;
+                            m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFrameHeightPt.m_Val = m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight;
 
                             //判断视频输入设备是否黑屏。在视频输入处理完后再设置黑屏，这样可以保证视频输入处理器的连续性。
                             if( m_VideoInputPt.m_VideoInputDeviceIsBlack != 0 )
                             {
-                                int p_TmpLen = m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight;
+                                int p_TmpLen = m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth * m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight;
                                 Arrays.fill( m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFramePt, 0, p_TmpLen, ( byte ) 0 );
                                 Arrays.fill( m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFramePt, p_TmpLen, m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFramePt.length, ( byte ) 128 );
                             }
@@ -1246,7 +1265,7 @@ public abstract class MediaProcThread extends Thread
                                 }
                                 case 1: //如果要使用OpenH264编码器。
                                 {
-                                    if( m_VideoInputPt.m_OpenH264EncoderPt.Proc( m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFramePt, m_VideoInputPt.m_FrameWidth, m_VideoInputPt.m_FrameHeight, m_VideoInputPt.m_LastTimeMsec,
+                                    if( m_VideoInputPt.m_OpenH264EncoderPt.Proc( m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFramePt, m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth, m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight, m_VideoInputPt.m_LastTimeMsec,
                                                                                  m_VideoInputPt.m_VideoInputFrameElmPt.m_EncoderVideoInputFramePt, m_VideoInputPt.m_VideoInputFrameElmPt.m_EncoderVideoInputFramePt.length, m_VideoInputPt.m_VideoInputFrameElmPt.m_EncoderVideoInputFrameLenPt,
                                                                                  null ) == 0 )
                                     {
@@ -1324,17 +1343,17 @@ public abstract class MediaProcThread extends Thread
                         case 0: //如果使用YU12原始数据。
                         {
                             //调用用户定义的写入视频输出帧函数。
-                            m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val = m_VideoOutputPt.m_FrameWidth * m_VideoOutputPt.m_FrameHeight * 3 / 2;
-                            UserWriteVideoOutputFrame( m_VideoOutputPt.m_VideoOutputResultFramePt, null, m_VideoOutputPt.m_VideoOutputResultFrameLenPt );
+                            m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val = 0;
+                            m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val = 0;
+                            m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val = m_VideoOutputPt.m_VideoOutputResultFramePt.length;
+                            UserWriteVideoOutputFrame( m_VideoOutputPt.m_VideoOutputResultFramePt, m_VideoOutputPt.m_VideoOutputFrameWidthPt, m_VideoOutputPt.m_VideoOutputFrameHeightPt, null, m_VideoOutputPt.m_VideoOutputResultFrameLenPt );
 
-                            if( m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val == m_VideoOutputPt.m_FrameWidth * m_VideoOutputPt.m_FrameHeight * 3 / 2 )
+                            if( ( m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val > 0 ) && ( m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val > 0 ) )//如果本次写入了视频输出帧。
                             {
-                                m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val = m_VideoOutputPt.m_FrameWidth;
-                                m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val = m_VideoOutputPt.m_FrameHeight;
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输出线程：使用YU12原始数据成功。" );
                             }
-                            else
+                            else //如果本次没写入视频输出帧。
                             {
-                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输出线程：YU12格式视频输出帧的数据长度不正确，本次视频输出帧丢弃。" );
                                 break skip;
                             }
                             break;
@@ -1343,9 +1362,9 @@ public abstract class MediaProcThread extends Thread
                         {
                             //调用用户定义的写入视频输出帧函数。
                             m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val = m_VideoOutputPt.m_VideoOutputTmpFramePt.length;
-                            UserWriteVideoOutputFrame( null, m_VideoOutputPt.m_VideoOutputTmpFramePt, m_VideoOutputPt.m_VideoOutputResultFrameLenPt );
+                            UserWriteVideoOutputFrame( null, null, null, m_VideoOutputPt.m_VideoOutputTmpFramePt, m_VideoOutputPt.m_VideoOutputResultFrameLenPt );
 
-                            if( m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val != 0 )
+                            if( m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val != 0 ) //如果本次写入了视频输出帧。
                             {
                                 //使用OpenH264解码器。
                                 if( m_VideoOutputPt.m_OpenH264DecoderPt.Proc( m_VideoOutputPt.m_VideoOutputTmpFramePt, m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val,
@@ -1360,7 +1379,7 @@ public abstract class MediaProcThread extends Thread
                                     break skip;
                                 }
                             }
-                            else
+                            else //如果本次没写入视频输出帧。
                             {
                                 break skip;
                             }
@@ -1382,7 +1401,7 @@ public abstract class MediaProcThread extends Thread
                     //缩放视频输出帧。
                     if( m_VideoOutputPt.m_VideoOutputDisplayScale != 1.0f )
                     {
-                        if( LibYUV.PictrScale( m_VideoOutputPt.m_VideoOutputResultFramePt, LibYUV.PICTR_FMT_BT601F8_YU12, m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val, m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val,
+                        if( LibYUV.PictrScale( m_VideoOutputPt.m_VideoOutputResultFramePt, LibYUV.PICTR_FMT_BT601F8_YU12_I420, m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val, m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val,
                                                3,
                                                m_VideoOutputPt.m_VideoOutputTmpFramePt, m_VideoOutputPt.m_VideoOutputTmpFramePt.length, null, ( int )( m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val * m_VideoOutputPt.m_VideoOutputDisplayScale ), ( int )( m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val * m_VideoOutputPt.m_VideoOutputDisplayScale ),
                                                null ) != 0 )
@@ -1400,7 +1419,7 @@ public abstract class MediaProcThread extends Thread
                     m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt.setWidthToHeightRatio( ( float )m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val / m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val );
 
                     //渲染视频输出帧到视频输出显示SurfaceView类对象。
-                    if( LibYUV.PictrDrawToSurface( m_VideoOutputPt.m_VideoOutputResultFramePt, 0, LibYUV.PICTR_FMT_BT601F8_YU12, m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val, m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val, m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt.getHolder().getSurface(), null ) != 0 )
+                    if( LibYUV.PictrDrawToSurface( m_VideoOutputPt.m_VideoOutputResultFramePt, 0, LibYUV.PICTR_FMT_BT601F8_YU12_I420, m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val, m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val, m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt.getHolder().getSurface(), null ) != 0 )
                     {
                         Log.e( m_CurClsNameStrPt, "视频输出线程：渲染失败。" );
                     }
@@ -1623,9 +1642,6 @@ public abstract class MediaProcThread extends Thread
                         p_SettingFileWriterPt.write( "m_VideoInputPt.m_VideoInputDeviceIsBlack：" + m_VideoInputPt.m_VideoInputDeviceIsBlack + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
                         p_SettingFileWriterPt.write( "m_VideoOutputPt.m_IsUseVideoOutput：" + m_VideoOutputPt.m_IsUseVideoOutput + "\n" );
-                        p_SettingFileWriterPt.write( "\n" );
-                        p_SettingFileWriterPt.write( "m_VideoOutputPt.m_FrameWidth：" + m_VideoOutputPt.m_FrameWidth + "\n" );
-                        p_SettingFileWriterPt.write( "m_VideoOutputPt.m_FrameHeight：" + m_VideoOutputPt.m_FrameHeight + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
                         p_SettingFileWriterPt.write( "m_VideoOutputPt.m_UseWhatDecoder：" + m_VideoOutputPt.m_UseWhatDecoder + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
@@ -2140,31 +2156,6 @@ public abstract class MediaProcThread extends Thread
                 //初始化视频输入。
                 if( m_VideoInputPt.m_IsUseVideoInput != 0 )
                 {
-                    //初始化编码器对象。
-                    switch( m_VideoInputPt.m_UseWhatEncoder )
-                    {
-                        case 0: //如果要使用YU12原始数据。
-                        {
-                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用YU12原始数据。" );
-                            break;
-                        }
-                        case 1: //如果要使用OpenH264编码器。
-                        {
-                            m_VideoInputPt.m_OpenH264EncoderPt = new OpenH264Encoder();
-                            if( m_VideoInputPt.m_OpenH264EncoderPt.Init( m_VideoInputPt.m_FrameWidth, m_VideoInputPt.m_FrameHeight, m_VideoInputPt.m_OpenH264EncoderVideoType, m_VideoInputPt.m_OpenH264EncoderEncodedBitrate, m_VideoInputPt.m_OpenH264EncoderBitrateControlMode, m_VideoInputPt.m_MaxSamplingRate, m_VideoInputPt.m_OpenH264EncoderIDRFrameIntvl, m_VideoInputPt.m_OpenH264EncoderComplexity, null ) == 0 )
-                            {
-                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化OpenH264编码器类对象成功。" );
-                            }
-                            else
-                            {
-                                m_VideoInputPt.m_OpenH264EncoderPt = null;
-                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化OpenH264编码器类对象失败。" );
-                                break out;
-                            }
-                            break;
-                        }
-                    }
-
                     //创建视频输入线程类对象。
                     m_VideoInputPt.m_VideoInputThreadPt = new VideoInputThread();
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建视频输入线程类对象成功。" );
@@ -2174,7 +2165,7 @@ public abstract class MediaProcThread extends Thread
                         //打开视频输入设备。
                         try
                         {
-                            m_VideoInputPt.m_VideoInputDevicePt = Camera.open( m_VideoInputPt.m_UseWhatVideoInputDevice );
+                            m_VideoInputPt.m_VideoInputDevicePt = Camera.open( ( m_VideoInputPt.m_UseWhatVideoInputDevice == 0 ) ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK );
                         }
                         catch( RuntimeException e )
                         {
@@ -2189,73 +2180,116 @@ public abstract class MediaProcThread extends Thread
 
                         p_CameraParaPt.setPreviewFrameRate( m_VideoInputPt.m_MaxSamplingRate ); //设置最大采样频率。
 
-                        List< Camera.Size > p_SupportedPreviewSizesListPt = p_CameraParaPt.getSupportedPreviewSizes();
-                        double p_FrameWidthToHeightRatio = ( double )m_VideoInputPt.m_FrameWidth / ( double )m_VideoInputPt.m_FrameHeight; //存放指定帧的宽高比。
+                        //选择合适的视频输入设备帧大小。
+                        int p_VideoInputTargetFrameWidth = m_VideoInputPt.m_FrameHeight; //存放视频输入目标帧的宽度，单位为像素。
+                        int p_VideoInputTargetFrameHeight = m_VideoInputPt.m_FrameWidth; //存放视频输入目标帧的高度，单位为像素。
+                        double p_TargetFrameWidthToHeightRatio = ( double )p_VideoInputTargetFrameWidth / ( double )p_VideoInputTargetFrameHeight; //存放目标帧的宽高比。
+                        List< Camera.Size > p_SupportedPreviewSizesListPt = p_CameraParaPt.getSupportedPreviewSizes(); //设置视频输入设备支持的预览帧大小。
                         Camera.Size p_CameraSizePt; //存放本次的帧大小。
-                        double p_VideoInputDeviceFrameWidthToHeightRatio = 0; //存放本次视频输入设备帧的宽高比。
-                        int p_VideoInputDeviceFrameCropWidth = 0; //存放本次视频输入设备帧的裁剪宽度。
-                        int p_VideoInputDeviceFrameCropHeight = 0; //存放本次视频输入设备帧的裁剪高度。
+                        double p_VideoInputDeviceFrameWidthToHeightRatio; //存放本次视频输入设备帧的宽高比。
+                        int p_VideoInputDeviceFrameCropX; //存放本次视频输入设备帧裁剪区域左上角的横坐标，单位像素。
+                        int p_VideoInputDeviceFrameCropY; //存放本次视频输入设备帧裁剪区域左上角的纵坐标，单位像素。
+                        int p_VideoInputDeviceFrameCropWidth; //存放本次视频输入设备帧裁剪区域的宽度，单位像素。
+                        int p_VideoInputDeviceFrameCropHeight; //存放本次视频输入设备帧裁剪区域的高度，单位像素。
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：视频输入设备目标的帧大小：width：" + p_VideoInputTargetFrameWidth + " height：" + p_VideoInputTargetFrameHeight );
                         for( p_TmpInt321 = 0; p_TmpInt321 < p_SupportedPreviewSizesListPt.size(); p_TmpInt321++ )
                         {
                             p_CameraSizePt = p_SupportedPreviewSizesListPt.get( p_TmpInt321 );
                             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：视频输入设备支持的帧大小：width：" + p_CameraSizePt.width + " height：" + p_CameraSizePt.height );
 
                             //设置本次视频输入设备帧的宽高比、裁剪宽度、裁剪高度。
-                            p_VideoInputDeviceFrameWidthToHeightRatio = ( double )p_CameraSizePt.height / ( double )p_CameraSizePt.width;
-                            if( p_VideoInputDeviceFrameWidthToHeightRatio >= p_FrameWidthToHeightRatio )
+                            p_VideoInputDeviceFrameWidthToHeightRatio = ( double )p_CameraSizePt.width / ( double )p_CameraSizePt.height;
+                            if( p_VideoInputDeviceFrameWidthToHeightRatio >= p_TargetFrameWidthToHeightRatio ) //如果本次视频输入设备帧的宽高比目标帧的大，就表示需要裁剪宽度。
                             {
-                                p_VideoInputDeviceFrameCropWidth = ( int )( ( double )p_CameraSizePt.width * p_FrameWidthToHeightRatio );
+                                p_VideoInputDeviceFrameCropWidth = ( int )( ( double )p_CameraSizePt.height * p_TargetFrameWidthToHeightRatio ); //设置本次视频输入设备帧裁剪区域左上角的宽度，使裁剪区域居中。
                                 p_VideoInputDeviceFrameCropWidth -= p_VideoInputDeviceFrameCropWidth % 2;
-                                p_VideoInputDeviceFrameCropHeight = p_CameraSizePt.width;
+                                p_VideoInputDeviceFrameCropHeight = p_CameraSizePt.height; //设置本次视频输入设备帧裁剪区域左上角的高度，使裁剪区域居中。
+
+                                p_VideoInputDeviceFrameCropX = ( p_CameraSizePt.width - p_VideoInputDeviceFrameCropWidth ) / 2; //设置本次视频输入设备帧裁剪区域左上角的横坐标，使裁剪区域居中。
+                                p_VideoInputDeviceFrameCropX -= p_VideoInputDeviceFrameCropX % 2;
+                                p_VideoInputDeviceFrameCropY = 0; //设置本次视频输入设备帧裁剪区域左上角的纵坐标。
                             }
-                            else
+                            else //如果本次视频输入设备帧的宽高比指定帧的小，就表示需要裁剪高度。
                             {
-                                p_VideoInputDeviceFrameCropWidth = p_CameraSizePt.height;
-                                p_VideoInputDeviceFrameCropHeight = ( int )( ( double )p_CameraSizePt.height / p_FrameWidthToHeightRatio );
+                                p_VideoInputDeviceFrameCropWidth = p_CameraSizePt.width; //设置本次视频输入设备帧裁剪区域左上角的宽度，使裁剪区域居中。
+                                p_VideoInputDeviceFrameCropHeight = ( int )( ( double )p_CameraSizePt.width / p_TargetFrameWidthToHeightRatio ); //设置本次视频输入设备帧裁剪区域左上角的高度，使裁剪区域居中。
                                 p_VideoInputDeviceFrameCropHeight -= p_VideoInputDeviceFrameCropHeight % 2;
+
+                                p_VideoInputDeviceFrameCropX = 0; //设置本次视频输入设备帧裁剪区域左上角的横坐标。
+                                p_VideoInputDeviceFrameCropY = ( p_CameraSizePt.height - p_VideoInputDeviceFrameCropHeight ) / 2; //设置本次视频输入设备帧裁剪区域左上角的纵坐标，使裁剪区域居中。
+                                p_VideoInputDeviceFrameCropY -= p_VideoInputDeviceFrameCropY % 2;
                             }
 
-                            //如果选择的裁剪帧大小不满足指定的（包括选择的裁剪帧大小为0），但是本次的裁剪帧大小比选择的高，就设置选择的为本次的。
-                            //如果本次的裁剪帧大小满足指定的（选择的裁剪帧大小肯定也满足指定的，如果选择的裁剪帧大小不满足指定的，那么就会走上一条判断），但是本次的裁剪帧大小比选择的低，就设置选择的为本次的。
-                            if( ( ( ( m_VideoInputPt.m_VideoInputDeviceFrameCropWidth < m_VideoInputPt.m_FrameWidth ) || ( m_VideoInputPt.m_VideoInputDeviceFrameCropHeight < m_VideoInputPt.m_FrameHeight ) ) && ( ( p_VideoInputDeviceFrameCropWidth > m_VideoInputPt.m_VideoInputDeviceFrameCropWidth ) && ( p_VideoInputDeviceFrameCropHeight > m_VideoInputPt.m_VideoInputDeviceFrameCropHeight ) ) ) ||
-                                ( ( ( p_VideoInputDeviceFrameCropWidth >= m_VideoInputPt.m_FrameWidth ) && ( p_VideoInputDeviceFrameCropHeight >= m_VideoInputPt.m_FrameHeight ) ) && ( ( p_VideoInputDeviceFrameCropWidth < m_VideoInputPt.m_VideoInputDeviceFrameCropWidth ) || ( p_VideoInputDeviceFrameCropHeight < m_VideoInputPt.m_VideoInputDeviceFrameCropHeight ) ) ) )
+                            //如果选择的帧裁剪区域不满足指定的（包括选择的帧裁剪区域为0），但是本次的帧裁剪区域比选择的高，就设置选择的为本次的。
+                            //如果本次的帧裁剪区域满足指定的（选择的帧裁剪区域肯定也满足指定的，如果选择的帧裁剪区域不满足指定的，那么就会走上一条判断），但是本次的帧裁剪区域比选择的低，就设置选择的为本次的。
+                            if(
+                                (
+                                  ( ( m_VideoInputPt.m_VideoInputDeviceFrameCropWidth < p_VideoInputTargetFrameWidth ) || ( m_VideoInputPt.m_VideoInputDeviceFrameCropHeight < p_VideoInputTargetFrameHeight ) )
+                                  &&
+                                  ( ( p_VideoInputDeviceFrameCropWidth > m_VideoInputPt.m_VideoInputDeviceFrameCropWidth ) && ( p_VideoInputDeviceFrameCropHeight > m_VideoInputPt.m_VideoInputDeviceFrameCropHeight ) )
+                                )
+                                ||
+                                (
+                                  ( ( p_VideoInputDeviceFrameCropWidth >= p_VideoInputTargetFrameWidth ) && ( p_VideoInputDeviceFrameCropHeight >= p_VideoInputTargetFrameHeight ) )
+                                  &&
+                                  (
+                                    ( ( p_VideoInputDeviceFrameCropWidth < m_VideoInputPt.m_VideoInputDeviceFrameCropWidth ) || ( p_VideoInputDeviceFrameCropHeight < m_VideoInputPt.m_VideoInputDeviceFrameCropHeight ) )
+                                    ||
+                                    ( ( p_VideoInputDeviceFrameCropWidth == m_VideoInputPt.m_VideoInputDeviceFrameCropWidth ) && ( p_VideoInputDeviceFrameCropHeight == m_VideoInputPt.m_VideoInputDeviceFrameCropHeight ) && ( p_VideoInputDeviceFrameCropX + p_VideoInputDeviceFrameCropY < m_VideoInputPt.m_VideoInputDeviceFrameCropX + m_VideoInputPt.m_VideoInputDeviceFrameCropY ) )
+                                  )
+                                )
+                              )
                             {
-                                m_VideoInputPt.m_VideoInputDeviceFrameWidth = p_CameraSizePt.height;
-                                m_VideoInputPt.m_VideoInputDeviceFrameHeight = p_CameraSizePt.width;
+                                m_VideoInputPt.m_VideoInputDeviceFrameWidth = p_CameraSizePt.width;
+                                m_VideoInputPt.m_VideoInputDeviceFrameHeight = p_CameraSizePt.height;
 
+                                m_VideoInputPt.m_VideoInputDeviceFrameCropX = p_VideoInputDeviceFrameCropX;
+                                m_VideoInputPt.m_VideoInputDeviceFrameCropY = p_VideoInputDeviceFrameCropY;
                                 m_VideoInputPt.m_VideoInputDeviceFrameCropWidth = p_VideoInputDeviceFrameCropWidth;
                                 m_VideoInputPt.m_VideoInputDeviceFrameCropHeight = p_VideoInputDeviceFrameCropHeight;
                             }
                         }
-                        p_CameraParaPt.setPreviewSize( m_VideoInputPt.m_VideoInputDeviceFrameHeight, m_VideoInputPt.m_VideoInputDeviceFrameWidth ); //设置预览帧的宽度为设置的高度，预览帧的高度为设置的宽度，因为预览帧处理的时候要旋转。
-                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：视频输入设备选择的帧大小：width：" + m_VideoInputPt.m_VideoInputDeviceFrameHeight + " height：" + m_VideoInputPt.m_VideoInputDeviceFrameWidth );
+                        p_CameraParaPt.setPreviewSize( m_VideoInputPt.m_VideoInputDeviceFrameWidth, m_VideoInputPt.m_VideoInputDeviceFrameHeight ); //设置预览帧的宽度为设置的高度，预览帧的高度为设置的宽度，因为预览帧处理的时候要旋转。
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：视频输入设备选择的帧大小：width：" + m_VideoInputPt.m_VideoInputDeviceFrameWidth + " height：" + m_VideoInputPt.m_VideoInputDeviceFrameHeight );
 
                         //判断视频输入设备帧是否裁剪。
-                        if( m_VideoInputPt.m_VideoInputDeviceFrameWidth > m_VideoInputPt.m_VideoInputDeviceFrameCropWidth ) //如果视频输入设备帧的宽度比裁剪宽度大，就表示需要裁剪宽度。
+                        if(
+                            ( m_VideoInputPt.m_VideoInputDeviceFrameWidth > m_VideoInputPt.m_VideoInputDeviceFrameCropWidth ) //如果视频输入设备帧的宽度比裁剪宽度大，就表示需要裁剪宽度。
+                            ||
+                            ( m_VideoInputPt.m_VideoInputDeviceFrameHeight > m_VideoInputPt.m_VideoInputDeviceFrameCropHeight ) //如果视频输入设备帧的高度比裁剪高度大，就表示需要裁剪高度。
+                          )
                         {
                             m_VideoInputPt.m_VideoInputDeviceFrameIsCrop = 1; //设置视频输入设备帧要裁剪。
-
-                            m_VideoInputPt.m_VideoInputDeviceFrameCropX = ( m_VideoInputPt.m_VideoInputDeviceFrameWidth - m_VideoInputPt.m_VideoInputDeviceFrameCropWidth ) / 2; //设置视频输入设备帧裁剪区域左上角的横坐标，使裁剪区域居中。
-                            m_VideoInputPt.m_VideoInputDeviceFrameCropY = 0; //设置视频输入设备帧裁剪区域左上角的纵坐标。
-                        }
-                        else if( m_VideoInputPt.m_VideoInputDeviceFrameHeight > m_VideoInputPt.m_VideoInputDeviceFrameCropHeight ) //如果视频输入设备帧的高度比裁剪高度大，就表示需要裁剪高度。
-                        {
-                            m_VideoInputPt.m_VideoInputDeviceFrameIsCrop = 1; //设置视频输入设备帧要裁剪。
-
-                            m_VideoInputPt.m_VideoInputDeviceFrameCropX = 0; //设置视频输入设备帧裁剪区域左上角的横坐标。
-                            m_VideoInputPt.m_VideoInputDeviceFrameCropY = ( m_VideoInputPt.m_VideoInputDeviceFrameHeight - m_VideoInputPt.m_VideoInputDeviceFrameCropHeight ) / 2; //设置视频输入设备帧裁剪区域左上角的纵坐标，使裁剪区域居中。
                         }
                         else //如果视频输入设备帧的宽度和高度与裁剪宽度和高度一致，就表示不需要裁剪。
                         {
                             m_VideoInputPt.m_VideoInputDeviceFrameIsCrop = 0; //设置视频输入设备帧不裁剪。
-
-                            m_VideoInputPt.m_VideoInputDeviceFrameCropX = 0; //设置视频输入设备帧裁剪区域左上角的横坐标。
-                            m_VideoInputPt.m_VideoInputDeviceFrameCropY = 0; //设置视频输入设备帧裁剪区域左上角的纵坐标。
                         }
                         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：视频输入设备帧是否裁剪：" + m_VideoInputPt.m_VideoInputDeviceFrameIsCrop + "  左上角的横坐标：" + m_VideoInputPt.m_VideoInputDeviceFrameCropX + "  纵坐标：" + m_VideoInputPt.m_VideoInputDeviceFrameCropY + "  裁剪区域的宽度：" + m_VideoInputPt.m_VideoInputDeviceFrameCropWidth + "  高度：" + m_VideoInputPt.m_VideoInputDeviceFrameCropHeight + "。" );
 
+                        //设置视频输入设备帧的旋转。
+                        if( m_VideoInputPt.m_UseWhatVideoInputDevice == 0 ) //如果要使用前置摄像头。
+                        {
+                            m_VideoInputPt.m_VideoInputDeviceFrameRotate = ( 270 + m_VideoInputPt.m_ScreenRotate ) % 360; //设置视频输入帧的旋转角度。
+                        }
+                        else //如果要使用后置摄像头。
+                        {
+                            m_VideoInputPt.m_VideoInputDeviceFrameRotate = ( 450 - m_VideoInputPt.m_ScreenRotate ) % 360; //设置视频输入帧的旋转角度。
+                        }
+                        if( ( m_VideoInputPt.m_VideoInputDeviceFrameRotate == 0 ) || ( m_VideoInputPt.m_VideoInputDeviceFrameRotate == 180 ) ) //如果旋转后为横屏。
+                        {
+                            m_VideoInputPt.m_VideoInputDeviceFrameRotateWidth = m_VideoInputPt.m_VideoInputDeviceFrameCropWidth; //设置视频输入设备帧旋转后的宽度。
+                            m_VideoInputPt.m_VideoInputDeviceFrameRotateHeight = m_VideoInputPt.m_VideoInputDeviceFrameCropHeight; //设置视频输入设备帧旋转后的高度。
+                        }
+                        else //如果旋转后为竖屏。
+                        {
+                            m_VideoInputPt.m_VideoInputDeviceFrameRotateWidth = m_VideoInputPt.m_VideoInputDeviceFrameCropHeight; //设置视频输入设备帧旋转后的宽度。
+                            m_VideoInputPt.m_VideoInputDeviceFrameRotateHeight = m_VideoInputPt.m_VideoInputDeviceFrameCropWidth; //设置视频输入设备帧旋转后的高度。
+                        }
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：视频输入设备帧旋转后的宽度：" + m_VideoInputPt.m_VideoInputDeviceFrameRotateWidth + "，旋转后的高度：" + m_VideoInputPt.m_VideoInputDeviceFrameRotateHeight + "。" );
+
                         //判断视频输入设备帧是否缩放。
-                        if( ( m_VideoInputPt.m_VideoInputDeviceFrameCropWidth != m_VideoInputPt.m_FrameWidth ) || ( m_VideoInputPt.m_VideoInputDeviceFrameCropHeight != m_VideoInputPt.m_FrameHeight ) )
+                        if( ( m_VideoInputPt.m_VideoInputDeviceFrameCropWidth != p_VideoInputTargetFrameWidth ) || ( m_VideoInputPt.m_VideoInputDeviceFrameCropHeight != p_VideoInputTargetFrameHeight ) )
                         {
                             m_VideoInputPt.m_VideoInputDeviceFrameIsScale = 1; //设置视频输入设备帧要缩放。
                         }
@@ -2263,7 +2297,17 @@ public abstract class MediaProcThread extends Thread
                         {
                             m_VideoInputPt.m_VideoInputDeviceFrameIsScale = 0; //设置视频输入设备帧不缩放。
                         }
-                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：视频输入设备帧是否缩放：" + m_VideoInputPt.m_VideoInputDeviceFrameIsScale + "。" );
+                        if( ( m_VideoInputPt.m_VideoInputDeviceFrameRotate == 0 ) || ( m_VideoInputPt.m_VideoInputDeviceFrameRotate == 180 ) ) //如果旋转后为横屏。
+                        {
+                            m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth = p_VideoInputTargetFrameWidth; //设置视频输入设备帧缩放后的宽度。
+                            m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight = p_VideoInputTargetFrameHeight; //设置视频输入设备帧缩放后的高度。
+                        }
+                        else //如果旋转后为竖屏。
+                        {
+                            m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth = p_VideoInputTargetFrameHeight; //设置视频输入设备帧缩放后的宽度。
+                            m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight = p_VideoInputTargetFrameWidth; //设置视频输入设备帧缩放后的高度。
+                        }
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：视频输入设备帧是否缩放：" + m_VideoInputPt.m_VideoInputDeviceFrameIsScale + "，缩放后的宽度：" + m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth + "，缩放后的高度：" + m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight + "。" );
 
                         List<String> p_FocusModesListPt = p_CameraParaPt.getSupportedFocusModes();
                         String p_PreviewFocusModePt = "";
@@ -2325,12 +2369,19 @@ public abstract class MediaProcThread extends Thread
                         try
                         {
                             m_VideoInputPt.m_VideoInputDevicePt.setPreviewDisplay( m_VideoInputPt.m_VideoInputPreviewSurfaceViewPt.getHolder() ); //设置视频输入预览SurfaceView类对象。
-                            m_VideoInputPt.m_VideoInputPreviewSurfaceViewPt.setWidthToHeightRatio( ( float )m_VideoInputPt.m_VideoInputDeviceFrameWidth / m_VideoInputPt.m_VideoInputDeviceFrameHeight ); //设置视频输入预览SurfaceView类对象的宽高比。
+                            if( m_VideoInputPt.m_ScreenRotate == 0 || m_VideoInputPt.m_ScreenRotate == 180 ) //如果屏幕为竖屏。
+                            {
+                                m_VideoInputPt.m_VideoInputPreviewSurfaceViewPt.setWidthToHeightRatio( ( float )m_VideoInputPt.m_VideoInputDeviceFrameHeight / m_VideoInputPt.m_VideoInputDeviceFrameWidth ); //设置视频输入预览SurfaceView类对象的宽高比。
+                            }
+                            else //如果屏幕为横屏。
+                            {
+                                m_VideoInputPt.m_VideoInputPreviewSurfaceViewPt.setWidthToHeightRatio( ( float )m_VideoInputPt.m_VideoInputDeviceFrameWidth / m_VideoInputPt.m_VideoInputDeviceFrameHeight ); //设置视频输入预览SurfaceView类对象的宽高比。
+                            }
                         }
                         catch( Exception ignored )
                         {
                         }
-                        m_VideoInputPt.m_VideoInputDevicePt.setDisplayOrientation( 90 ); //调整相机拍到的图像旋转，不然竖着拿手机，图像是横着的。
+                        m_VideoInputPt.m_VideoInputDevicePt.setDisplayOrientation( ( 450 - m_VideoInputPt.m_ScreenRotate ) % 360 ); //调整相机拍到的图像旋转，不然竖着拿手机，图像是横着的。
 
                         //设置视频输入预览回调函数缓冲区的内存指针。
                         m_VideoInputPt.m_VideoInputPreviewCallbackBufferPtPt = new byte[ m_VideoInputPt.m_MaxSamplingRate ][ m_VideoInputPt.m_VideoInputDeviceFrameWidth * m_VideoInputPt.m_VideoInputDeviceFrameHeight * 3 / 2 ];
@@ -2339,26 +2390,42 @@ public abstract class MediaProcThread extends Thread
 
                         m_VideoInputPt.m_VideoInputDevicePt.setPreviewCallbackWithBuffer( m_VideoInputPt.m_VideoInputThreadPt ); //设置视频输入预览回调函数。
 
-                        if( m_VideoInputPt.m_UseWhatVideoInputDevice == 1 ) //如果要使用前置摄像头。
-                        {
-                            m_VideoInputPt.m_VideoInputFrameRotate = 270; //设置视频输入帧的旋转角度。
-                        }
-                        else //如果要使用后置摄像头。
-                        {
-                            m_VideoInputPt.m_VideoInputFrameRotate = 90; //设置视频输入帧的旋转角度。
-                        }
-
                         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化视频输入设备类对象成功。" );
+                    }
+
+                    //初始化编码器对象。
+                    switch( m_VideoInputPt.m_UseWhatEncoder )
+                    {
+                        case 0: //如果要使用YU12原始数据。
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用YU12原始数据。" );
+                            break;
+                        }
+                        case 1: //如果要使用OpenH264编码器。
+                        {
+                            m_VideoInputPt.m_OpenH264EncoderPt = new OpenH264Encoder();
+                            if( m_VideoInputPt.m_OpenH264EncoderPt.Init( m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth, m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight, m_VideoInputPt.m_OpenH264EncoderVideoType, m_VideoInputPt.m_OpenH264EncoderEncodedBitrate, m_VideoInputPt.m_OpenH264EncoderBitrateControlMode, m_VideoInputPt.m_MaxSamplingRate, m_VideoInputPt.m_OpenH264EncoderIDRFrameIntvl, m_VideoInputPt.m_OpenH264EncoderComplexity, null ) == 0 )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化OpenH264编码器类对象成功。" );
+                            }
+                            else
+                            {
+                                m_VideoInputPt.m_OpenH264EncoderPt = null;
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化OpenH264编码器类对象失败。" );
+                                break out;
+                            }
+                            break;
+                        }
                     }
 
                     //初始化视频输入线程的临时变量。
                     {
                         m_VideoInputPt.m_VideoInputFramePt = null; //初始化视频输入帧的内存指针。
-                        if( m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight >= m_VideoInputPt.m_VideoInputDeviceFrameWidth * m_VideoInputPt.m_VideoInputDeviceFrameHeight ) //如果视频输入帧指定的尺寸大于等于视频输入设备帧的尺寸。
+                        if( m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight >= m_VideoInputPt.m_VideoInputDeviceFrameWidth * m_VideoInputPt.m_VideoInputDeviceFrameHeight ) //如果视频输入帧指定的大小大于等于视频输入设备帧的大小。
                         {
                             m_VideoInputPt.m_VideoInputResultFrameSz = m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight * 3 / 2; //初始化视频输入结果帧的内存大小。
                         }
-                        else //如果视频输入帧指定的尺寸小于视频输入设备帧的尺寸。
+                        else //如果视频输入帧指定的大小小于视频输入设备帧的大小。
                         {
                             m_VideoInputPt.m_VideoInputResultFrameSz = m_VideoInputPt.m_VideoInputDeviceFrameWidth * m_VideoInputPt.m_VideoInputDeviceFrameHeight * 3 / 2; //初始化视频输入结果帧的内存大小。
                         }
@@ -2416,8 +2483,8 @@ public abstract class MediaProcThread extends Thread
 
                     //初始化视频输出线程的临时变量。
                     {
-                        m_VideoOutputPt.m_VideoOutputResultFramePt = new byte[ 960 * 1280 * 3 * 3 ]; //初始化视频输出结果帧的内存指针。
-                        m_VideoOutputPt.m_VideoOutputTmpFramePt = new byte[ 960 * 1280 * 3 * 3 ]; //初始化视频输出临时帧的内存指针。
+                        m_VideoOutputPt.m_VideoOutputResultFramePt = new byte[ 960 * 1280 * 3 / 2 * 3 ]; //初始化视频输出结果帧的内存指针。
+                        m_VideoOutputPt.m_VideoOutputTmpFramePt = new byte[ 960 * 1280 * 3 / 2 * 3 ]; //初始化视频输出临时帧的内存指针。
                         m_VideoOutputPt.m_VideoOutputSwapFramePt = null; //初始化视频输出交换帧的内存指针。
                         m_VideoOutputPt.m_VideoOutputResultFrameLenPt = new HTLong(); //初始化视频输出结果帧的数据长度。
                         m_VideoOutputPt.m_VideoOutputFrameWidthPt = new HTInt(); //初始化视频输出帧的宽度。
@@ -2794,7 +2861,7 @@ public abstract class MediaProcThread extends Thread
                     if( ( p_PcmAudioInputFramePt != null ) || ( p_VideoInputFramePt != null ) ) //如果取出了音频输入帧或视频输入帧。
                     {
                         if( p_VideoInputFramePt != null ) //如果取出了视频输入帧。
-                            p_TmpInt321 = UserReadAudioVideoInputFrame( p_PcmAudioInputFramePt, p_PcmAudioResultFramePt, p_VoiceActStsPt, p_EncoderAudioInputFramePt, p_EncoderAudioInputFrameLenPt, p_EncoderAudioInputFrameIsNeedTransPt, p_VideoInputFramePt.m_YU12VideoInputFramePt, m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFrameWidthPt, m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFrameHeightPt, p_VideoInputFramePt.m_EncoderVideoInputFramePt, p_VideoInputFramePt.m_EncoderVideoInputFrameLenPt );
+                            p_TmpInt321 = UserReadAudioVideoInputFrame( p_PcmAudioInputFramePt, p_PcmAudioResultFramePt, p_VoiceActStsPt, p_EncoderAudioInputFramePt, p_EncoderAudioInputFrameLenPt, p_EncoderAudioInputFrameIsNeedTransPt, p_VideoInputFramePt.m_YU12VideoInputFramePt, p_VideoInputFramePt.m_YU12VideoInputFrameWidthPt, p_VideoInputFramePt.m_YU12VideoInputFrameHeightPt, p_VideoInputFramePt.m_EncoderVideoInputFramePt, p_VideoInputFramePt.m_EncoderVideoInputFrameLenPt );
                         else
                             p_TmpInt321 = UserReadAudioVideoInputFrame( p_PcmAudioInputFramePt, p_PcmAudioResultFramePt, p_VoiceActStsPt, p_EncoderAudioInputFramePt, p_EncoderAudioInputFrameLenPt, p_EncoderAudioInputFrameIsNeedTransPt, null, null, null, null, null );
                         if( p_TmpInt321 == 0 )
@@ -3258,7 +3325,7 @@ public abstract class MediaProcThread extends Thread
                     m_VideoInputPt.m_VideoInputDevicePt.release(); //销毁摄像头。
                     m_VideoInputPt.m_VideoInputDevicePt = null;
                     m_VideoInputPt.m_VideoInputPreviewCallbackBufferPtPt = null;
-                    m_VideoInputPt.m_VideoInputFrameRotate = 0;
+                    m_VideoInputPt.m_VideoInputDeviceFrameRotate = 0;
                     m_VideoInputPt.m_VideoInputDeviceFrameWidth = 0;
                     m_VideoInputPt.m_VideoInputDeviceFrameHeight = 0;
                     m_VideoInputPt.m_VideoInputDeviceFrameIsCrop = 0;

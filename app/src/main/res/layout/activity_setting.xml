@@ -545,7 +545,7 @@
 
             <CheckBox
                 android:id="@+id/IsUseSpeexPprocOtherCheckBox"
-                android:layout_weight="9"
+                android:layout_weight="10"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:text="使用Speex预处理器的其他功能"/>
