@@ -23,7 +23,7 @@ public class VAjb
     //析构函数。
     public void finalize()
     {
-        Destroy();
+        Destroy( null );
     }
 
     //获取视频自适应抖动缓冲器的内存指针。
@@ -33,32 +33,32 @@ public class VAjb
     }
 
     //创建并初始化视频自适应抖动缓冲器。
-    public native int Init( int IsHaveTimeStamp, int MinNeedBufFrameCnt, int MaxNeedBufFrameCnt, float AdaptSensitivity, int IsUseMutexLock );
+    public native int Init( int IsHaveTimeStamp, int MinNeedBufFrameCnt, int MaxNeedBufFrameCnt, float AdaptSensitivity, int IsUseMutexLock, VarStr ErrInfoVarStrPt );
 
     //放入一个字节型帧到视频自适应抖动缓冲器。
-    public native int PutOneByteFrame( long CurTime, int TimeStamp, byte ByteFramePt[], long FrameStart, long FrameLen );
+    public native int PutOneByteFrame( long CurTime, int TimeStamp, byte ByteFramePt[], long FrameStart, long FrameLen, VarStr ErrInfoVarStrPt );
 
     //放入一个短整型帧到视频自适应抖动缓冲器。
-    public native int PutOneShortFrame( long CurTime, int TimeStamp, short ShortFramePt[], long FrameStart, long FrameLen );
+    public native int PutOneShortFrame( long CurTime, int TimeStamp, short ShortFramePt[], long FrameStart, long FrameLen, VarStr ErrInfoVarStrPt );
 
     //从视频自适应抖动缓冲器取出一个字节型帧。
-    public native int GetOneByteFrame( long CurTime, HTInt TimeStampPt, byte ByteFramePt[], long FrameStart, long FrameStartSz, HTLong FrameLenPt );
+    public native int GetOneByteFrame( long CurTime, HTInt TimeStampPt, byte ByteFramePt[], long FrameStart, long FrameStartSz, HTLong FrameLenPt, VarStr ErrInfoVarStrPt );
 
     //从视频自适应抖动缓冲器取出一个短整型帧。
-    public native int GetOneShortFrame( long CurTime, HTInt TimeStampPt, short ShortFramePt[], long FrameStart, long FrameStartSz, HTLong FrameLenPt );
+    public native int GetOneShortFrame( long CurTime, HTInt TimeStampPt, short ShortFramePt[], long FrameStart, long FrameStartSz, HTLong FrameLenPt, VarStr ErrInfoVarStrPt );
 
     //从视频自适应抖动缓冲器取出一个字节型帧。
-    public native int GetOneByteFrameWantTimeStamp( long CurTime, int WantTimeStamp, HTInt TimeStampPt, byte ByteFramePt[], long FrameStart, long FrameStartSz, HTLong FrameLenPt );
+    public native int GetOneByteFrameWantTimeStamp( long CurTime, int WantTimeStamp, HTInt TimeStampPt, byte ByteFramePt[], long FrameStart, long FrameStartSz, HTLong FrameLenPt, VarStr ErrInfoVarStrPt );
 
     //从视频自适应抖动缓冲器取出一个短整型帧。
-    public native int GetOneShortFrameWantTimeStamp( long CurTime, int WantTimeStamp, HTInt TimeStampPt, short ShortFramePt[], long FrameStart, long FrameStartSz, HTLong FrameLenPt );
+    public native int GetOneShortFrameWantTimeStamp( long CurTime, int WantTimeStamp, HTInt TimeStampPt, short ShortFramePt[], long FrameStart, long FrameStartSz, HTLong FrameLenPt, VarStr ErrInfoVarStrPt );
 
     //获取缓冲帧的数量。
-    public native int GetBufFrameCnt( HTInt CurHaveBufFrameCntPt, HTInt MinNeedBufFrameCntPt, HTInt MaxNeedBufFrameCntPt, HTInt CurNeedBufFrameCntPt );
+    public native int GetBufFrameCnt( HTInt CurHaveBufFrameCntPt, HTInt MinNeedBufFrameCntPt, HTInt MaxNeedBufFrameCntPt, HTInt CurNeedBufFrameCntPt, VarStr ErrInfoVarStrPt );
 
     //清空视频自适应抖动缓冲器。
-    public native int Clear();
+    public native int Clear( VarStr ErrInfoVarStrPt);
 
     //销毁视频自适应抖动缓冲器。
-    public native int Destroy();
+    public native int Destroy( VarStr ErrInfoVarStrPt);
 }
