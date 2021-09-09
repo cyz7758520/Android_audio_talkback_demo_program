@@ -32,7 +32,7 @@ public class OpenH264Encoder
     }
 
     //创建并初始化OpenH264编码器。
-    public native int Init( int EncodedPictrWidth, int EncodedPictrHeight, int VideoType, int EncodedBitrate, int BitrateControlMode, int MaxFrameRate, int IDRFrameIntvl, int Complexity, VarStr ErrInfoVarStrPt );
+    public native int Init( int EncodedPictrWidth, int EncodedPictrHeight, int VideoType, int EncodedBitrate, int BitrateControlMode, int MaxFrameRate, int IDRFrameIntvlFrameCnt, int Complexity, VarStr ErrInfoVarStrPt );
 
     //设置OpenH264编码器的编码后比特率。
     public native int SetEncodedBitrate( int EncodedBitrate, VarStr ErrInfoVarStrPt );
@@ -41,7 +41,7 @@ public class OpenH264Encoder
     public native int GetEncodedBitrate( HTInt EncodedBitratePt, VarStr ErrInfoVarStrPt );
 
     //用OpenH264编码器对8位无符号整型YU12格式帧进行H264格式编码。
-    public native int Proc( byte YU12FramePt[], int YU12FrameWidth, int YU12FrameHeight, long YU12FrameTimeStampMs,
+    public native int Proc( byte YU12FramePt[], int YU12FrameWidth, int YU12FrameHeight, long YU12FrameTimeStampMsec,
                             byte H264FramePt[], long H264FrameSz, HTLong H264FrameLenPt,
                             VarStr ErrInfoVarStrPt );
 

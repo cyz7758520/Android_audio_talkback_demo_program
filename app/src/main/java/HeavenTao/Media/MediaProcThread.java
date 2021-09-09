@@ -150,7 +150,7 @@ public abstract class MediaProcThread extends Thread
 
         AudioRecord m_AudioInputDevicePt; //存放音频输入设备类对象的内存指针。
         int m_AudioInputDeviceBufSz; //存放音频输入设备缓冲区大小，单位字节。
-        int m_AudioInputDeviceIsMute; //存放音频输入设备是否静音，为0表示有声音，为非0表示静音。
+        int m_AudioInputIsMute; //存放音频输入是否静音，为0表示有声音，为非0表示静音。
 
         public LinkedList< short[] > m_AudioInputFrameLnkLstPt; //存放音频输入帧链表类对象的内存指针。
         public LinkedList< short[] > m_AudioInputIdleFrameLnkLstPt; //存放音频输入空闲帧链表类对象的内存指针。
@@ -186,7 +186,7 @@ public abstract class MediaProcThread extends Thread
         int m_AudioOutputDeviceBufSz; //存放音频输出设备缓冲区大小，单位字节。
         public int m_UseWhatAudioOutputDevice; //存放使用什么音频输出设备，为0表示扬声器，为非0表示听筒。
         public int m_UseWhatAudioOutputStreamType; //存放使用什么音频输出流类型，为0表示通话类型，为非0表示媒体类型。
-        int m_AudioOutputDeviceIsMute; //存放音频输出设备是否静音，为0表示有声音，为非0表示静音。
+        int m_AudioOutputIsMute; //存放音频输出是否静音，为0表示有声音，为非0表示静音。
 
         public LinkedList< short[] > m_AudioOutputFrameLnkLstPt; //存放音频输出帧链表类对象的内存指针。
         public LinkedList< short[] > m_AudioOutputIdleFrameLnkLstPt; //存放音频输出空闲帧链表类对象的内存指针。
@@ -213,7 +213,7 @@ public abstract class MediaProcThread extends Thread
         public int m_FrameHeight; //存放屏幕旋转0度时，帧的高度，单位为像素。
         public int m_ScreenRotate; //存放屏幕旋转的角度，只能为0、90、180、270，0度表示竖屏，其他表示顺时针旋转。
 
-        public int m_UseWhatEncoder; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264编码器。
+        public int m_UseWhatEncoder; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264编码器，为2表示系统自带H264编码器。
 
         OpenH264Encoder m_OpenH264EncoderPt; //存放OpenH264编码器类对象的内存指针。
         int m_OpenH264EncoderVideoType;//存放OpenH264编码器的视频类型，为0表示实时摄像头视频，为1表示实时屏幕内容视频，为2表示非实时摄像头视频，为3表示非实时屏幕内容视频，为4表示其他视频。
@@ -222,8 +222,16 @@ public abstract class MediaProcThread extends Thread
         int m_OpenH264EncoderIDRFrameIntvl; //存放OpenH264编码器的IDR帧间隔帧数，单位为个，为0表示仅第一帧为IDR帧，为大于0表示每隔这么帧就至少有一个IDR帧。
         int m_OpenH264EncoderComplexity; //存放OpenH264编码器的复杂度，复杂度越高压缩率不变、CPU使用率越高、画质越好，取值区间为[0,2]。
 
+        AndroidSystemH264Encoder m_SystemH264EncoderPt; //存放系统自带H264编码器类对象的内存指针。
+        int m_SystemH264EncoderEncodedBitrate; //存放系统自带H264编码器的编码后比特率，单位为bps。
+        int m_SystemH264EncoderBitrateControlMode; //存放系统自带H264编码器的比特率控制模式，为MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CQ(0x00)表示质量模式，为MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR(0x01)表示动态比特率模式，为MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR(0x02)表示固定比特率模式。
+        int m_SystemH264EncoderIDRFrameIntvlTimeSec; //存放系统自带H264编码器的IDR帧间隔时间，单位为秒，为负数表示仅第一帧为IDR帧，为0表示每一帧都为IDR帧，为大于0表示每这么多秒就有一个IDR帧。
+        int m_SystemH264EncoderComplexity; //存放系统自带H264编码器的复杂度，复杂度越高压缩率不变、CPU使用率越高、画质越好，取值区间为[0,2]。
+
         public Camera m_VideoInputDevicePt; //存放视频输入设备类对象的内存指针。
         public int m_UseWhatVideoInputDevice; //存放使用什么视频输入设备，为0表示前置摄像头，为1表示后置摄像头。
+        int m_FrontCameraDeviceId = -1; //存放前置摄像头的设备ID，为-1表示自动查找。
+        int m_BackCameraDeviceId = -1; //存放后置摄像头的设备ID，为-1表示自动查找。
         public HTSurfaceView m_VideoInputPreviewSurfaceViewPt; //存放视频输入预览SurfaceView类对象的内存指针。
         public byte m_VideoInputPreviewCallbackBufferPtPt[][]; //存放视频输入预览回调函数缓冲区的内存指针。
         int m_VideoInputDeviceFrameWidth; //存放视频输入设备帧的宽度，单位为像素。
@@ -239,7 +247,7 @@ public abstract class MediaProcThread extends Thread
         int m_VideoInputDeviceFrameIsScale; //存放视频输入设备帧是否缩放，为0表示不缩放，为非0表示要缩放。
         public int m_VideoInputDeviceFrameScaleWidth; //存放视频输入帧缩放后的宽度，单位为像素。
         public int m_VideoInputDeviceFrameScaleHeight; //存放视频输入帧缩放后的高度，单位为像素。
-        int m_VideoInputDeviceIsBlack; //存放视频输入设备是否黑屏，为0表示有图像，为非0表示黑屏。
+        int m_VideoInputIsBlack; //存放视频输入是否黑屏，为0表示有图像，为非0表示黑屏。
 
         public class VideoInputFrameElm //视频输入帧链表元素类。
         {
@@ -282,14 +290,16 @@ public abstract class MediaProcThread extends Thread
     {
         public int m_IsUseVideoOutput; //存放是否使用视频输出，为0表示不使用，为非0表示要使用。
 
-        public int m_UseWhatDecoder; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264解码器。
+        public int m_UseWhatDecoder; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264解码器，为2表示系统自带H264解码器。
 
         OpenH264Decoder m_OpenH264DecoderPt; //存放OpenH264解码器类对象的内存指针。
         int m_OpenH264DecoderDecodeThreadNum; //存放OpenH264解码器的解码线程数，单位为个，为0表示直接在调用线程解码，为1或2或3表示解码子线程的数量。
 
+        AndroidSystemH264Decoder m_SystemH264DecoderPt; //存放系统自带H264解码器类对象的内存指针。
+
         HTSurfaceView m_VideoOutputDisplaySurfaceViewPt; //存放视频输出显示SurfaceView类对象的内存指针。
         float m_VideoOutputDisplayScale; //存放视频输出显示缩放倍数，为1.0f表示不缩放。
-        int m_VideoOutputDeviceIsBlack; //存放视频输出设备是否黑屏，为0表示有图像，为非0表示黑屏。
+        int m_VideoOutputIsBlack; //存放视频输出是否黑屏，为0表示有图像，为非0表示黑屏。
 
         //视频输出线程的临时变量。
         byte m_VideoOutputResultFramePt[]; //存放视频输出结果帧的内存指针。
@@ -325,7 +335,7 @@ public abstract class MediaProcThread extends Thread
     public abstract void UserWriteAudioOutputFrame( short PcmAudioOutputFramePt[], byte EncodedAudioOutputFramePt[], HTLong AudioOutputFrameLenPt );
 
     //用户定义的获取PCM格式音频输出帧函数，在解码完一个已编码音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
-    public abstract void UserGetPcmAudioOutputFrame( short PcmAudioOutputFramePt[] );
+    public abstract void UserGetPcmAudioOutputFrame( short PcmAudioOutputFramePt[], long PcmAudioOutputFrameLen );
 
     //用户定义的写入视频输出帧函数，在可以显示一个视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
     public abstract void UserWriteVideoOutputFrame( byte YU12VideoOutputFramePt[], HTInt YU12VideoInputFrameWidthPt, HTInt YU12VideoInputFrameHeightPt, byte EncodedVideoOutputFramePt[], HTLong VideoOutputFrameLenPt );
@@ -617,10 +627,10 @@ public abstract class MediaProcThread extends Thread
         m_AudioInputPt.m_AudioResultFileFullPathStrPt = AudioResultFileFullPathStrPt;
     }
 
-    //设置音频输入设备是否静音。
-    public void SetAudioInputDeviceIsMute( int IsMute )
+    //设置音频输入是否静音。
+    public void SetAudioInputIsMute( int IsMute )
     {
-        m_AudioInputPt.m_AudioInputDeviceIsMute = IsMute;
+        m_AudioInputPt.m_AudioInputIsMute = IsMute;
     }
 
     //设置是否使用音频输出。
@@ -676,10 +686,10 @@ public abstract class MediaProcThread extends Thread
         SetIsUseWakeLock( m_IsUseWakeLock ); //重新初始化唤醒锁。
     }
 
-    //设置音频输出设备是否静音。
-    public void SetAudioOutputDeviceIsMute( int IsMute )
+    //设置音频输出是否静音。
+    public void SetAudioOutputIsMute( int IsMute )
     {
-        m_AudioOutputPt.m_AudioOutputDeviceIsMute = IsMute; //设置音频输出设备是否静音。
+        m_AudioOutputPt.m_AudioOutputIsMute = IsMute; //设置音频输出是否静音。
     }
 
     //设置是否使用视频输入。
@@ -719,21 +729,35 @@ public abstract class MediaProcThread extends Thread
         m_VideoInputPt.m_OpenH264EncoderComplexity = Complexity;
     }
 
-    //设置视频输入使用的设备。
-    public void SetVideoInputUseDevice( int UseFrontOrBack )
+    //设置视频输入要使用系统自带H264编码器。
+    public void SetVideoInputUseSystemH264Encoder( int EncodedBitrate, int BitrateControlMode, int IDRFrameIntvlTimeSec, int Complexity )
     {
-        if( ( UseFrontOrBack != 0 ) && ( UseFrontOrBack != 1 ) )
+        m_VideoInputPt.m_UseWhatEncoder = 2;
+        m_VideoInputPt.m_SystemH264EncoderEncodedBitrate = EncodedBitrate;
+        m_VideoInputPt.m_SystemH264EncoderBitrateControlMode = BitrateControlMode;
+        m_VideoInputPt.m_SystemH264EncoderIDRFrameIntvlTimeSec = IDRFrameIntvlTimeSec;
+        m_VideoInputPt.m_SystemH264EncoderComplexity = Complexity;
+    }
+
+    //设置视频输入使用的设备。
+    public void SetVideoInputUseDevice( int UseFrontOrBack, int FrontCameraDeviceId, int BackCameraDeviceId )
+    {
+        if( ( ( UseFrontOrBack != 0 ) && ( UseFrontOrBack != 1 ) ) ||
+              ( FrontCameraDeviceId < -1 ) ||
+              ( BackCameraDeviceId < -1 ) )
         {
             return;
         }
 
         m_VideoInputPt.m_UseWhatVideoInputDevice = UseFrontOrBack; //设置视频输入设备。
+        m_VideoInputPt.m_FrontCameraDeviceId = FrontCameraDeviceId; //设置视频输入前置摄像头的设备ID。
+        m_VideoInputPt.m_BackCameraDeviceId = BackCameraDeviceId; //设置视频输入后置摄像头的设备ID。
     }
 
-    //设置视频输入设备是否黑屏。
-    public void SetVideoInputDeviceIsBlack( int IsBlack )
+    //设置视频输入是否黑屏。
+    public void SetVideoInputIsBlack( int IsBlack )
     {
-        m_VideoInputPt.m_VideoInputDeviceIsBlack = IsBlack;
+        m_VideoInputPt.m_VideoInputIsBlack = IsBlack;
     }
 
     //设置是否使用视频输出。
@@ -763,10 +787,16 @@ public abstract class MediaProcThread extends Thread
         m_VideoOutputPt.m_OpenH264DecoderDecodeThreadNum = DecodeThreadNum;
     }
 
-    //设置视频输出设备是否黑屏。
-    public void SetVideoOutputDeviceIsBlack( int IsBlack )
+    //设置视频输出要使用系统自带H264解码器。
+    public void SetVideoOutputUseSystemH264Decoder()
     {
-        m_VideoOutputPt.m_VideoOutputDeviceIsBlack = IsBlack;
+        m_VideoOutputPt.m_UseWhatDecoder = 2;
+    }
+
+    //设置视频输出是否黑屏。
+    public void SetVideoOutputIsBlack( int IsBlack )
+    {
+        m_VideoOutputPt.m_VideoOutputIsBlack = IsBlack;
     }
 
     //请求本线程退出。
@@ -1075,8 +1105,8 @@ public abstract class MediaProcThread extends Thread
                         }
                     }
 
-                    //判断音频输出设备是否静音。在音频处理完后再设置静音，这样可以保证音频处理器的连续性。
-                    if( m_AudioOutputPt.m_AudioOutputDeviceIsMute != 0 )
+                    //判断音频输出是否静音。在音频处理完后再设置静音，这样可以保证音频处理器的连续性。
+                    if( m_AudioOutputPt.m_AudioOutputIsMute != 0 )
                     {
                         Arrays.fill( m_AudioOutputPt.m_AudioOutputFramePt, ( short ) 0 );
                     }
@@ -1085,7 +1115,7 @@ public abstract class MediaProcThread extends Thread
                     m_AudioOutputPt.m_AudioOutputDevicePt.write( m_AudioOutputPt.m_AudioOutputFramePt, 0, m_AudioOutputPt.m_AudioOutputFramePt.length );
 
                     //调用用户定义的获取PCM格式音频输出帧函数。
-                    UserGetPcmAudioOutputFrame( m_AudioOutputPt.m_AudioOutputFramePt );
+                    UserGetPcmAudioOutputFrame( m_AudioOutputPt.m_AudioOutputFramePt, m_AudioOutputPt.m_AudioOutputFramePt.length );
 
                     //追加本次音频输出帧到音频输出帧链表。
                     synchronized( m_AudioOutputPt.m_AudioOutputFrameLnkLstPt )
@@ -1123,8 +1153,7 @@ public abstract class MediaProcThread extends Thread
         }
 
         //读取一个视频输入帧的预览回调函数，本函数是在主线程中运行的。
-        @Override
-        public void onPreviewFrame( byte[] data, Camera camera )
+        @Override public void onPreviewFrame( byte[] data, Camera camera )
         {
             //追加本次视频输入帧到视频输入帧链表。
             synchronized( m_VideoInputPt.m_NV21VideoInputFrameLnkLstPt )
@@ -1247,8 +1276,8 @@ public abstract class MediaProcThread extends Thread
                             m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFrameWidthPt.m_Val = m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth;
                             m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFrameHeightPt.m_Val = m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight;
 
-                            //判断视频输入设备是否黑屏。在视频输入处理完后再设置黑屏，这样可以保证视频输入处理器的连续性。
-                            if( m_VideoInputPt.m_VideoInputDeviceIsBlack != 0 )
+                            //判断视频输入是否黑屏。在视频输入处理完后再设置黑屏，这样可以保证视频输入处理器的连续性。
+                            if( m_VideoInputPt.m_VideoInputIsBlack != 0 )
                             {
                                 int p_TmpLen = m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth * m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight;
                                 Arrays.fill( m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFramePt, 0, p_TmpLen, ( byte ) 0 );
@@ -1274,6 +1303,21 @@ public abstract class MediaProcThread extends Thread
                                     else
                                     {
                                         if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输入线程：使用OpenH264编码器失败，本次视频输入帧丢弃。" );
+                                        break skip;
+                                    }
+                                    break;
+                                }
+                                case 2: //如果要使用系统自带H264编码器。
+                                {
+                                    if( m_VideoInputPt.m_SystemH264EncoderPt.Proc( m_VideoInputPt.m_VideoInputFrameElmPt.m_YU12VideoInputFramePt, m_VideoInputPt.m_LastTimeMsec,
+                                                                                   m_VideoInputPt.m_VideoInputFrameElmPt.m_EncodedVideoInputFramePt, ( long )m_VideoInputPt.m_VideoInputFrameElmPt.m_EncodedVideoInputFramePt.length, m_VideoInputPt.m_VideoInputFrameElmPt.m_EncodedVideoInputFrameLenPt,
+                                                                                   1000 / m_VideoInputPt.m_MaxSamplingRate * 2 / 3, null ) == 0 )
+                                    {
+                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输入线程：使用系统自带H264编码器成功。H264格式视频输入帧的数据长度：" + m_VideoInputPt.m_VideoInputFrameElmPt.m_EncodedVideoInputFrameLenPt.m_Val + "，时间戳：" + m_VideoInputPt.m_LastTimeMsec + "，类型：" + ( m_VideoInputPt.m_VideoInputFrameElmPt.m_EncodedVideoInputFramePt[4] & 0xff ) + "。" );
+                                    }
+                                    else
+                                    {
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输入线程：使用系统自带H264编码器失败，本次视频输入帧丢弃。" );
                                         break skip;
                                     }
                                     break;
@@ -1364,7 +1408,7 @@ public abstract class MediaProcThread extends Thread
                             m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val = m_VideoOutputPt.m_VideoOutputTmpFramePt.length;
                             UserWriteVideoOutputFrame( null, null, null, m_VideoOutputPt.m_VideoOutputTmpFramePt, m_VideoOutputPt.m_VideoOutputResultFrameLenPt );
 
-                            if( m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val != 0 ) //如果本次写入了视频输出帧。
+                            if( m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val > 0 ) //如果本次写入了视频输出帧。
                             {
                                 //使用OpenH264解码器。
                                 if( m_VideoOutputPt.m_OpenH264DecoderPt.Proc( m_VideoOutputPt.m_VideoOutputTmpFramePt, m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val,
@@ -1386,13 +1430,43 @@ public abstract class MediaProcThread extends Thread
                             }
                             break;
                         }
+                        case 2: //如果使用系统自带H264解码器。
+                        {
+                            //调用用户定义的写入视频输出帧函数。
+                            m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val = m_VideoOutputPt.m_VideoOutputTmpFramePt.length;
+                            UserWriteVideoOutputFrame( null, null, null, m_VideoOutputPt.m_VideoOutputTmpFramePt, m_VideoOutputPt.m_VideoOutputResultFrameLenPt );
+
+                            if( m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val != 0 ) //如果本次写入了视频输出帧。
+                            {
+                                VarStr p_ErrInfoVarStrPt = new VarStr();
+                                p_ErrInfoVarStrPt.Init();
+                                //使用系统自带H264解码器。
+                                if( m_VideoOutputPt.m_SystemH264DecoderPt.Proc( m_VideoOutputPt.m_VideoOutputTmpFramePt, m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val,
+                                                                                m_VideoOutputPt.m_VideoOutputResultFramePt, m_VideoOutputPt.m_VideoOutputResultFramePt.length, m_VideoOutputPt.m_VideoOutputFrameWidthPt, m_VideoOutputPt.m_VideoOutputFrameHeightPt,
+                                                                                40, p_ErrInfoVarStrPt ) == 0 )
+                                {
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输出线程：使用系统自带H264解码器成功。已解码YU12格式帧宽度：" + m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val + "，已解码YU12格式帧高度：" + m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val + "。" );
+                                    if( ( m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val == 0 ) || ( m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val == 0 ) ) break skip; //如果未解码出YU12格式帧，就把本次视频输出帧丢弃。
+                                }
+                                else
+                                {
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输出线程：使用系统自带H264解码器失败，本次视频输出帧丢弃。" + p_ErrInfoVarStrPt.GetStr() );
+                                    break skip;
+                                }
+                            }
+                            else //如果本次没写入视频输出帧。
+                            {
+                                break skip;
+                            }
+                            break;
+                        }
                     }
 
                     //用户定义的获取YU12格式视频输出帧函数。
                     UserGetYU12VideoOutputFrame( m_VideoOutputPt.m_VideoOutputResultFramePt, m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val, m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val );
 
-                    //判断视频输出设备是否黑屏。在视频处理完后再设置黑屏，这样可以保证视频处理器的连续性。
-                    if( m_VideoOutputPt.m_VideoOutputDeviceIsBlack != 0 )
+                    //判断视频输出是否黑屏。在视频处理完后再设置黑屏，这样可以保证视频处理器的连续性。
+                    if( m_VideoOutputPt.m_VideoOutputIsBlack != 0 )
                     {
                         int p_TmpLen = m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val * m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val;
                         Arrays.fill( m_VideoOutputPt.m_VideoOutputResultFramePt, 0, p_TmpLen, ( byte ) 0 );
@@ -1419,10 +1493,11 @@ public abstract class MediaProcThread extends Thread
                     //设置视频输出显示SurfaceView类对象的宽高比。
                     m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt.setWidthToHeightRatio( ( float )m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val / m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val );
 
-                    //渲染视频输出帧到视频输出显示SurfaceView类对象。
+                    //显示视频输出帧。
                     if( LibYUV.PictrDrawToSurface( m_VideoOutputPt.m_VideoOutputResultFramePt, 0, LibYUV.PICTR_FMT_BT601F8_YU12_I420, m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val, m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val, m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt.getHolder().getSurface(), null ) != 0 )
                     {
-                        Log.e( m_CurClsNameStrPt, "视频输出线程：渲染失败。" );
+                        Log.e( m_CurClsNameStrPt, "视频输出线程：绘制视频输出帧到视频输出显示SurfaceView类对象失败，本次视频输出帧丢弃。" );
+                        break skip;
                     }
 
                     if( m_IsPrintLogcat != 0 )
@@ -1608,7 +1683,7 @@ public abstract class MediaProcThread extends Thread
                         p_SettingFileWriterPt.write( "m_AudioInputPt.m_AudioResultFileFullPathStrPt：" + m_AudioInputPt.m_AudioResultFileFullPathStrPt + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
                         p_SettingFileWriterPt.write( "m_AudioInputPt.m_AudioInputDeviceBufSz：" + m_AudioInputPt.m_AudioInputDeviceBufSz + "\n" );
-                        p_SettingFileWriterPt.write( "m_AudioInputPt.m_AudioInputDeviceIsMute：" + m_AudioInputPt.m_AudioInputDeviceIsMute + "\n" );
+                        p_SettingFileWriterPt.write( "m_AudioInputPt.m_AudioInputIsMute：" + m_AudioInputPt.m_AudioInputIsMute + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
                         p_SettingFileWriterPt.write( "m_AudioOutputPt.m_IsUseAudioOutput：" + m_AudioOutputPt.m_IsUseAudioOutput + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
@@ -1625,7 +1700,7 @@ public abstract class MediaProcThread extends Thread
                         p_SettingFileWriterPt.write( "m_AudioOutputPt.m_AudioOutputDeviceBufSz：" + m_AudioOutputPt.m_AudioOutputDeviceBufSz + "\n" );
                         p_SettingFileWriterPt.write( "m_AudioOutputPt.m_UseWhatAudioOutputDevice：" + m_AudioOutputPt.m_UseWhatAudioOutputDevice + "\n" );
                         p_SettingFileWriterPt.write( "m_AudioOutputPt.m_UseWhatAudioOutputStreamType：" + m_AudioOutputPt.m_UseWhatAudioOutputStreamType + "\n" );
-                        p_SettingFileWriterPt.write( "m_AudioOutputPt.m_AudioOutputDeviceIsMute：" + m_AudioOutputPt.m_AudioOutputDeviceIsMute + "\n" );
+                        p_SettingFileWriterPt.write( "m_AudioOutputPt.m_AudioOutputIsMute：" + m_AudioOutputPt.m_AudioOutputIsMute + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
                         p_SettingFileWriterPt.write( "m_VideoInputPt.m_IsUseVideoInput：" + m_VideoInputPt.m_IsUseVideoInput + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
@@ -1642,9 +1717,14 @@ public abstract class MediaProcThread extends Thread
                         p_SettingFileWriterPt.write( "m_VideoInputPt.m_OpenH264EncoderIDRFrameIntvl：" + m_VideoInputPt.m_OpenH264EncoderIDRFrameIntvl + "\n" );
                         p_SettingFileWriterPt.write( "m_VideoInputPt.m_OpenH264EncoderComplexity：" + m_VideoInputPt.m_OpenH264EncoderComplexity + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
+                        p_SettingFileWriterPt.write( "m_VideoInputPt.m_SystemH264EncoderEncodedBitrate：" + m_VideoInputPt.m_SystemH264EncoderEncodedBitrate + "\n" );
+                        p_SettingFileWriterPt.write( "m_VideoInputPt.m_SystemH264EncoderBitrateControlMode：" + m_VideoInputPt.m_SystemH264EncoderBitrateControlMode + "\n" );
+                        p_SettingFileWriterPt.write( "m_VideoInputPt.m_SystemH264EncoderIDRFrameIntvlTimeSec：" + m_VideoInputPt.m_SystemH264EncoderIDRFrameIntvlTimeSec + "\n" );
+                        p_SettingFileWriterPt.write( "m_VideoInputPt.m_SystemH264EncoderComplexity：" + m_VideoInputPt.m_SystemH264EncoderComplexity + "\n" );
+                        p_SettingFileWriterPt.write( "\n" );
                         p_SettingFileWriterPt.write( "m_VideoInputPt.m_UseWhatVideoInputDevice：" + m_VideoInputPt.m_UseWhatVideoInputDevice + "\n" );
                         p_SettingFileWriterPt.write( "m_VideoInputPt.m_VideoInputPreviewSurfaceViewPt：" + m_VideoInputPt.m_VideoInputPreviewSurfaceViewPt + "\n" );
-                        p_SettingFileWriterPt.write( "m_VideoInputPt.m_VideoInputDeviceIsBlack：" + m_VideoInputPt.m_VideoInputDeviceIsBlack + "\n" );
+                        p_SettingFileWriterPt.write( "m_VideoInputPt.m_VideoInputIsBlack：" + m_VideoInputPt.m_VideoInputIsBlack + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
                         p_SettingFileWriterPt.write( "m_VideoOutputPt.m_IsUseVideoOutput：" + m_VideoOutputPt.m_IsUseVideoOutput + "\n" );
                         p_SettingFileWriterPt.write( "\n" );
@@ -1654,7 +1734,7 @@ public abstract class MediaProcThread extends Thread
                         p_SettingFileWriterPt.write( "\n" );
                         p_SettingFileWriterPt.write( "m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt：" + m_VideoOutputPt.m_VideoOutputDisplaySurfaceViewPt + "\n" );
                         p_SettingFileWriterPt.write( "m_VideoOutputPt.m_VideoOutputDisplayScale：" + m_VideoOutputPt.m_VideoOutputDisplayScale + "\n" );
-                        p_SettingFileWriterPt.write( "m_VideoOutputPt.m_VideoOutputDeviceIsBlack：" + m_VideoOutputPt.m_VideoOutputDeviceIsBlack + "\n" );
+                        p_SettingFileWriterPt.write( "m_VideoOutputPt.m_VideoOutputIsBlack：" + m_VideoOutputPt.m_VideoOutputIsBlack + "\n" );
 
                         p_SettingFileWriterPt.flush();
                         p_SettingFileWriterPt.close();
@@ -2170,44 +2250,55 @@ public abstract class MediaProcThread extends Thread
                     {
                         //打开视频输入设备。
                         {
-                            int p_CameraId;
+                            int p_CameraDeviceId = 0;
                             Camera.CameraInfo p_CameraInfoPt = new Camera.CameraInfo();
 
                             //查找视频输入设备对应的ID。
-                            for( p_CameraId = 0; p_CameraId < Camera.getNumberOfCameras(); p_CameraId++ )
+                            if( m_VideoInputPt.m_UseWhatVideoInputDevice == 0 ) //如果要使用前置摄像头。
                             {
-                                try
+                                p_CameraDeviceId = m_VideoInputPt.m_FrontCameraDeviceId;
+                            }
+                            else if( m_VideoInputPt.m_UseWhatVideoInputDevice == 1 ) //如果要使用后置摄像头。
+                            {
+                                p_CameraDeviceId = m_VideoInputPt.m_BackCameraDeviceId;
+                            }
+                            if( p_CameraDeviceId == -1 ) //如果需要自动查找设备ID。
+                            {
+                                for( p_CameraDeviceId = 0; p_CameraDeviceId < Camera.getNumberOfCameras(); p_CameraDeviceId++ )
                                 {
-                                    Camera.getCameraInfo( p_CameraId, p_CameraInfoPt );
+                                    try
+                                    {
+                                        Camera.getCameraInfo( p_CameraDeviceId, p_CameraInfoPt );
+                                    }
+                                    catch( Exception e )
+                                    {
+                                        String p_InfoStrPt = "媒体处理线程：获取视频输入设备 " + p_CameraDeviceId + " 的信息失败。原因：" + e.getMessage();
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                        if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+                                        break out;
+                                    }
+                                    if( p_CameraInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_FRONT )
+                                    {
+                                        if( m_VideoInputPt.m_UseWhatVideoInputDevice == 0 ) break;
+                                    }
+                                    else if( p_CameraInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_BACK )
+                                    {
+                                        if( m_VideoInputPt.m_UseWhatVideoInputDevice == 1 ) break;
+                                    }
                                 }
-                                catch( Exception e )
+                                if( p_CameraDeviceId == Camera.getNumberOfCameras() )
                                 {
-                                    String p_InfoStrPt = "媒体处理线程：获取视频输入设备 " + p_CameraId + " 的信息失败。原因：" + e.getMessage();
+                                    String p_InfoStrPt = "媒体处理线程：查找视频输入设备对应的ID失败。原因：没有" + ( ( m_VideoInputPt.m_UseWhatVideoInputDevice == 0 ) ? "前置摄像头。" : "后置摄像头。" );
                                     if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                                     if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
                                     break out;
                                 }
-                                if( p_CameraInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_FRONT )
-                                {
-                                    if( m_VideoInputPt.m_UseWhatVideoInputDevice == 0 ) break;
-                                }
-                                else if( p_CameraInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_BACK )
-                                {
-                                    if( m_VideoInputPt.m_UseWhatVideoInputDevice == 1 ) break;
-                                }
-                            }
-                            if( p_CameraId == Camera.getNumberOfCameras() )
-                            {
-                                String p_InfoStrPt = "媒体处理线程：查找视频输入设备对应的ID失败。原因：没有" + ( ( m_VideoInputPt.m_UseWhatVideoInputDevice == 0 ) ? "前置摄像头。" : "后置摄像头。" );
-                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                                if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
-                                break out;
                             }
 
                             //打开视频输入设备。
                             try
                             {
-                                m_VideoInputPt.m_VideoInputDevicePt = Camera.open( p_CameraId );
+                                m_VideoInputPt.m_VideoInputDevicePt = Camera.open( p_CameraDeviceId );
                             }
                             catch( RuntimeException e )
                             {
@@ -2461,6 +2552,21 @@ public abstract class MediaProcThread extends Thread
                             }
                             break;
                         }
+                        case 2: //如果要使用系统自带H264编码器。
+                        {
+                            m_VideoInputPt.m_SystemH264EncoderPt = new AndroidSystemH264Encoder();
+                            if( m_VideoInputPt.m_SystemH264EncoderPt.Init( m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth, m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight, m_VideoInputPt.m_SystemH264EncoderEncodedBitrate, m_VideoInputPt.m_SystemH264EncoderBitrateControlMode, m_VideoInputPt.m_MaxSamplingRate, m_VideoInputPt.m_SystemH264EncoderIDRFrameIntvlTimeSec, m_VideoInputPt.m_SystemH264EncoderComplexity, null ) == 0 )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化系统自带H264编码器类对象成功。" );
+                            }
+                            else
+                            {
+                                m_VideoInputPt.m_SystemH264EncoderPt = null;
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化系统自带H264编码器类对象失败。" );
+                                break out;
+                            }
+                            break;
+                        }
                     }
 
                     //初始化视频输入线程的临时变量。
@@ -2520,6 +2626,21 @@ public abstract class MediaProcThread extends Thread
                             {
                                 m_VideoOutputPt.m_OpenH264DecoderPt = null;
                                 if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化OpenH264解码器类对象失败。" );
+                                break out;
+                            }
+                            break;
+                        }
+                        case 2: //如果要使用系统自带H264解码器。
+                        {
+                            m_VideoOutputPt.m_SystemH264DecoderPt = new AndroidSystemH264Decoder();
+                            if( m_VideoOutputPt.m_SystemH264DecoderPt.Init( null ) == 0 )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化系统自带H264解码器类对象成功。" );
+                            }
+                            else
+                            {
+                                m_VideoOutputPt.m_SystemH264DecoderPt = null;
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化系统自带H264解码器类对象失败。" );
                                 break out;
                             }
                             break;
@@ -2792,8 +2913,8 @@ public abstract class MediaProcThread extends Thread
                             }
                         }
 
-                        //判断音频输入设备是否静音。在音频输入处理完后再设置静音，这样可以保证音频输入处理器的连续性。
-                        if( m_AudioInputPt.m_AudioInputDeviceIsMute != 0 )
+                        //判断音频输入是否静音。在音频输入处理完后再设置静音，这样可以保证音频输入处理器的连续性。
+                        if( m_AudioInputPt.m_AudioInputIsMute != 0 )
                         {
                             Arrays.fill( p_PcmAudioResultFramePt, ( short ) 0 );
                             if( ( m_AudioInputPt.m_IsUseSpeexPprocOther != 0 ) && ( m_AudioInputPt.m_SpeexPprocIsUseVad != 0 ) ) //如果Speex预处理器要使用其他功能，且要使用语音活动检测。
@@ -3429,6 +3550,22 @@ public abstract class MediaProcThread extends Thread
                         }
                         break;
                     }
+                    case 2: //如果要使用系统自带H264编码器。
+                    {
+                        if( m_VideoInputPt.m_SystemH264EncoderPt != null )
+                        {
+                            if( m_VideoInputPt.m_SystemH264EncoderPt.Destroy( null ) == 0 )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁系统自带H264编码器类对象成功。" );
+                            }
+                            else
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁系统自带H264编码器类对象失败。" );
+                            }
+                            m_VideoInputPt.m_SystemH264EncoderPt = null;
+                        }
+                        break;
+                    }
                 }
             } //销毁视频输入完毕。
 
@@ -3481,6 +3618,22 @@ public abstract class MediaProcThread extends Thread
                                 if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁OpenH264解码器类对象失败。" );
                             }
                             m_VideoOutputPt.m_OpenH264DecoderPt = null;
+                        }
+                        break;
+                    }
+                    case 2: //如果要使用系统自带H264解码器。
+                    {
+                        if( m_VideoOutputPt.m_SystemH264DecoderPt != null )
+                        {
+                            if( m_VideoOutputPt.m_SystemH264DecoderPt.Destroy( null ) == 0 )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁系统自带H264解码器类对象成功。" );
+                            }
+                            else
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁系统自带H264解码器类对象失败。" );
+                            }
+                            m_VideoOutputPt.m_SystemH264DecoderPt = null;
                         }
                         break;
                     }

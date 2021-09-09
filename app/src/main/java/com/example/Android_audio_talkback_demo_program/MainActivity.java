@@ -87,14 +87,12 @@ class MainActivityHandler extends Handler
             {
                 m_FrgndSrvcCnctPt = new ServiceConnection() //创建存放前台服务连接器。
                 {
-                    @Override
-                    public void onServiceConnected( ComponentName name, IBinder service ) //前台服务绑定成功。
+                    @Override public void onServiceConnected( ComponentName name, IBinder service ) //前台服务绑定成功。
                     {
                         ( ( FrgndSrvc.FrgndSrvcBinder ) service ).SetForeground( m_MainActivityPt ); //将服务设置为前台服务。
                     }
 
-                    @Override
-                    public void onServiceDisconnected( ComponentName name ) //前台服务解除绑定。
+                    @Override public void onServiceDisconnected( ComponentName name ) //前台服务解除绑定。
                     {
 
                     }
@@ -1364,7 +1362,7 @@ class MyMediaProcThread extends MediaProcThread
                     m_TmpBytePt[16] = ( byte ) ( ( YU12VideoInputFrameHeightPt.m_Val & 0xFF000000 ) >> 24 );
 
                     System.arraycopy( YU12VideoInputFramePt, 0, m_TmpBytePt, 1 + 4 + 4 + 4 + 4, YU12VideoInputFramePt.length ); //设置视频输入输出帧。
-                    p_FramePktLen = 1 + 4 + 4 + 4 + 4 + YU12VideoInputFramePt.length; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 音频输入帧时间戳 + YU12格式视频输入帧。
+                    p_FramePktLen = 1 + 4 + 4 + 4 + 4 + YU12VideoInputFramePt.length; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 音频输入帧时间戳 + 视频输入帧宽度 + 视频输入帧高度 + YU12格式视频输入帧。
                 }
 
                 //发送视频输入帧数据包。
@@ -1546,7 +1544,7 @@ class MyMediaProcThread extends MediaProcThread
     }
 
     //用户定义的获取PCM格式音频输出帧函数，在解码完一个已编码音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
-    @Override public void UserGetPcmAudioOutputFrame( short PcmOutputFramePt[] )
+    @Override public void UserGetPcmAudioOutputFrame( short PcmOutputFramePt[], long PcmAudioOutputFrameLen )
     {
 
     }
@@ -1558,7 +1556,6 @@ class MyMediaProcThread extends MediaProcThread
         int p_VideoOutputFrameAudioOutputFrameTimeStamp = 0;
         byte p_VideoOutputFramePt[] = null;
         long p_VideoOutputFrameLen = 0;
-        long p_NowTimeMesc;
 
         //从链表或自适应抖动缓冲器取出一个视频输出帧。
         switch( m_UseWhatRecvOutputFrame ) //使用什么接收输出帧。
@@ -1699,6 +1696,7 @@ public class MainActivity extends AppCompatActivity
     View m_LyotActivitySpeexPprocOtherViewPt; //存放Speex预处理器的其他功能设置布局控件的内存指针。
     View m_LyotActivitySpeexCodecViewPt; //存放Speex编解码器设置布局控件的内存指针。
     View m_LyotActivityOpenH264CodecViewPt; //存放OpenH264编解码器设置布局控件的内存指针。
+    View m_LyotActivitySystemH264CodecViewPt; //存放系统自带H264编解码器设置布局控件的内存指针。
     View m_LyotActivityAjbViewPt; //存放音频自适应抖动缓冲器设置布局控件的内存指针。
     View m_LyotActivityCurViewPt; //存放当前界面布局控件的内存指针。
 
@@ -1711,8 +1709,8 @@ public class MainActivity extends AppCompatActivity
 
     String m_ExternalDirFullAbsPathStrPt; //存放扩展目录完整绝对路径字符串的内存指针。
 
-    @Override
-    protected void onCreate( Bundle savedInstanceState ) //Activity创建消息。
+    //Activity创建消息。
+    @Override protected void onCreate( Bundle savedInstanceState )
     {
         super.onCreate( savedInstanceState );
         Log.i( m_CurClsNameStrPt, "onCreate" );
@@ -1731,6 +1729,7 @@ public class MainActivity extends AppCompatActivity
         m_LyotActivitySpeexPprocOtherViewPt = layoutInflater.inflate( R.layout.activity_speexpprocother, null );
         m_LyotActivitySpeexCodecViewPt = layoutInflater.inflate( R.layout.activity_speexcodec, null );
         m_LyotActivityOpenH264CodecViewPt = layoutInflater.inflate( R.layout.activity_openh264codec, null );
+        m_LyotActivitySystemH264CodecViewPt = layoutInflater.inflate( R.layout.activity_systemh264codec, null );
         m_LyotActivityAjbViewPt = layoutInflater.inflate( R.layout.activity_ajb, null );
 
         setContentView( m_LyotActivityMainViewPt ); //设置界面的内容为主界面。
@@ -1819,21 +1818,18 @@ public class MainActivity extends AppCompatActivity
             //设置音频输出音量控件的变化消息监听器。
             p_AudioOutputVolumePt.setOnSeekBarChangeListener( new SeekBar.OnSeekBarChangeListener()
             {
-                @Override
-                public void onProgressChanged( SeekBar seekBar, int progress, boolean fromUser )
+                @Override public void onProgressChanged( SeekBar seekBar, int progress, boolean fromUser )
                 {
                     ( ( AudioManager ) getSystemService( Context.AUDIO_SERVICE ) ).setStreamVolume( AudioManager.STREAM_VOICE_CALL, progress, AudioManager.FLAG_PLAY_SOUND );
                     p_AudioOutputVolumePt.setProgress( p_AudioManagerPt.getStreamVolume( AudioManager.STREAM_VOICE_CALL ) );
                 }
 
-                @Override
-                public void onStartTrackingTouch( SeekBar seekBar )
+                @Override public void onStartTrackingTouch( SeekBar seekBar )
                 {
 
                 }
 
-                @Override
-                public void onStopTrackingTouch( SeekBar seekBar )
+                @Override public void onStopTrackingTouch( SeekBar seekBar )
                 {
 
                 }
@@ -1844,8 +1840,7 @@ public class MainActivity extends AppCompatActivity
             p_VolumeChangedActionIntentFilterPt.addAction( "android.media.VOLUME_CHANGED_ACTION" );
             registerReceiver( new BroadcastReceiver()
             {
-                @Override
-                public void onReceive( Context context, Intent intent )
+                @Override public void onReceive( Context context, Intent intent )
                 {
                     p_AudioOutputVolumePt.setProgress( p_AudioManagerPt.getStreamVolume( AudioManager.STREAM_VOICE_CALL ) );
                 }
@@ -1857,8 +1852,7 @@ public class MainActivity extends AppCompatActivity
         m_VideoInputPreviewSurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS );
         m_VideoInputPreviewSurfaceViewPt.getHolder().addCallback( new SurfaceHolder.Callback()
         {
-            @Override
-            public void surfaceCreated( SurfaceHolder holder )
+            @Override public void surfaceCreated( SurfaceHolder holder )
             {
                 Log.i( m_CurClsNameStrPt, "VideoInputPreviewSurfaceView Created" );
                 if( m_MyMediaProcThreadPt != null && m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaProcThreadPt.m_RunFlag == MediaProcThread.RUN_FLAG_PROC ) //如果SurfaceView已经重新创建，且媒体处理线程已经启动，且要使用视频输入，并处于初始化完毕正在循环处理帧。
@@ -1867,14 +1861,12 @@ public class MainActivity extends AppCompatActivity
                 }
             }
 
-            @Override
-            public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
+            @Override public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
             {
                 Log.i( m_CurClsNameStrPt, "VideoInputPreviewSurfaceView Changed" );
             }
 
-            @Override
-            public void surfaceDestroyed( SurfaceHolder holder )
+            @Override public void surfaceDestroyed( SurfaceHolder holder )
             {
                 Log.i( m_CurClsNameStrPt, "VideoInputPreviewSurfaceView Destroyed" );
             }
@@ -1897,50 +1889,106 @@ public class MainActivity extends AppCompatActivity
         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
     }
 
-    @Override
-    public void onStart() //Activity从遮挡恢复消息。
+        /*p_Result = p_ErrInfoVarStrPt.Init();
+        p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
+
+        p_Result = p_OpenH264EncoderPt.Init( p_EncodedPictureWidth, p_EncodedPictureHeight, 0, 10 * 1024 * 8, 3, 30, p_ErrInfoVarStrPt );
+        p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
+
+        p_Result = p_OpenH264EncoderPt.GetEncodedBitrate( p_HTIntPt, p_ErrInfoVarStrPt );
+        p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
+
+        p_Result = p_OpenH264EncoderPt.SetEncodedBitrate( p_HTIntPt.m_Val * 2, p_ErrInfoVarStrPt );
+        p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
+
+        p_Result = p_OpenH264EncoderPt.GetEncodedBitrate( p_HTIntPt, p_ErrInfoVarStrPt );
+        p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
+
+        p_Result = p_OpenH264DecoderPt.Init( p_ErrInfoVarStrPt );
+        p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
+
+        try
+        {
+            p_TmpLong = SystemClock.currentThreadTimeMillis();
+            while( ( p_Result = p_YUV420PFilePt.read( p_YUV420PFrameBufPt, 0, p_EncodedPictureWidth * p_EncodedPictureHeight * 3 / 2 ) ) == p_EncodedPictureWidth * p_EncodedPictureHeight * 3 / 2 )
+            {
+                p_Result = p_OpenH264EncoderPt.Proc( p_YUV420PFrameBufPt, p_EncodedPictureWidth, p_EncodedPictureHeight, p_YUV420PFrameCount * 1000 / 30, p_H264FrameBufPt, p_H264FrameBufPt.length, p_HTLongPt, p_ErrInfoVarStrPt );
+                p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
+
+                p_Result = p_OpenH264DecoderPt.Proc( p_H264FrameBufPt, p_HTLongPt.m_Val, p_YUV420PFrameDecBufPt, p_YUV420PFrameDecBufPt.length, p_YUV420PWidth, p_YUV420PHeight, p_ErrInfoVarStrPt );
+                p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
+
+                p_H264FilePt.write( p_H264FrameBufPt, 0, ( int ) p_HTLongPt.m_Val );
+                p_YUV420PDecFilePt.write( p_YUV420PFrameDecBufPt, 0, p_YUV420PWidth.m_Val * p_YUV420PHeight.m_Val * 3 / 2 );
+                p_YUV420PFrameCount++;
+            }
+            Log.i( m_CurClsNameStrPt, "视频文件处理完毕，帧数：" + p_YUV420PFrameCount + " 编码耗时：" + ( SystemClock.currentThreadTimeMillis() - p_TmpLong ) );
+        }
+        catch( Exception e )
+        {
+
+        }
+
+        try
+        {
+            p_YUV420PFilePt.close();
+            p_H264FilePt.close();
+            p_YUV420PDecFilePt.close();
+            p_Result = p_OpenH264EncoderPt.Destroy( p_ErrInfoVarStrPt );
+            p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
+            p_Result = p_OpenH264DecoderPt.Destroy( p_ErrInfoVarStrPt );
+            p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
+        }
+        catch( Exception e )
+        {
+
+        }*/
+    }
+
+    //Activity从遮挡恢复消息。
+    @Override public void onStart()
     {
         super.onStart();
         Log.i( m_CurClsNameStrPt, "onStart" );
     }
 
-    @Override
-    public void onRestart() //Activity从后台恢复消息。
+    //Activity从后台恢复消息。
+    @Override public void onRestart()
     {
         super.onRestart();
         Log.i( m_CurClsNameStrPt, "onRestart" );
     }
 
-    @Override
-    public void onResume() //Activity恢复运行消息。
+    //Activity恢复运行消息。
+    @Override public void onResume()
     {
         super.onResume();
         Log.i( m_CurClsNameStrPt, "onResume" );
     }
 
-    @Override
-    public void onPause() //Activity被遮挡消息。
+    //Activity被遮挡消息。
+    @Override public void onPause()
     {
         super.onPause();
         Log.i( m_CurClsNameStrPt, "onPause" );
     }
 
-    @Override
-    public void onStop() //Activity转入后台消息。
+    //Activity转入后台消息。
+    @Override public void onStop()
     {
         super.onStop();
         Log.i( m_CurClsNameStrPt, "onStop" );
     }
 
-    @Override
-    public void onDestroy() //Activity销毁消息。
+    //Activity销毁消息。
+    @Override public void onDestroy()
     {
         super.onDestroy();
         Log.i( m_CurClsNameStrPt, "onDestroy" );
     }
 
-    @Override
-    public void onBackPressed() //Activity返回键消息。
+    //Activity返回键消息。
+    @Override public void onBackPressed()
     {
         Log.i( m_CurClsNameStrPt, "onBackPressed" );
 
@@ -1969,14 +2017,15 @@ public class MainActivity extends AppCompatActivity
                 ( m_LyotActivityCurViewPt == m_LyotActivitySpeexPprocOtherViewPt ) ||
                 ( m_LyotActivityCurViewPt == m_LyotActivitySpeexCodecViewPt ) ||
                 ( m_LyotActivityCurViewPt == m_LyotActivityOpenH264CodecViewPt ) ||
+                ( m_LyotActivityCurViewPt == m_LyotActivitySystemH264CodecViewPt ) ||
                 ( m_LyotActivityCurViewPt == m_LyotActivityAjbViewPt ) )
         {
             this.OnClickWebRtcAecSettingOk( null );
         }
     }
 
-    @Override
-    public void onConfigurationChanged( Configuration newConfig )
+    //界面横竖屏切换消息。
+    @Override public void onConfigurationChanged( Configuration newConfig )
     {
         super.onConfigurationChanged( newConfig );
 
@@ -2089,7 +2138,7 @@ public class MainActivity extends AppCompatActivity
     {
         if( m_MyMediaProcThreadPt != null )
         {
-            m_MyMediaProcThreadPt.SetVideoInputUseDevice( 0 );
+            m_MyMediaProcThreadPt.SetVideoInputUseDevice( 0, -1, -1 );
 
             if( m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
             {
@@ -2103,7 +2152,7 @@ public class MainActivity extends AppCompatActivity
     {
         if( m_MyMediaProcThreadPt != null )
         {
-            m_MyMediaProcThreadPt.SetVideoInputUseDevice( 1 );
+            m_MyMediaProcThreadPt.SetVideoInputUseDevice( 1, -1, -1 );
 
             if( m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
             {
@@ -2113,38 +2162,38 @@ public class MainActivity extends AppCompatActivity
     }
 
     //音频输入设备静音按钮。
-    public void OnAudioInputDeviceIsMute( View BtnPt )
+    public void OnAudioInputIsMute( View BtnPt )
     {
         if( m_MyMediaProcThreadPt != null )
         {
-            m_MyMediaProcThreadPt.SetAudioInputDeviceIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+            m_MyMediaProcThreadPt.SetAudioInputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
         }
     }
 
     //音频输出设备静音按钮。
-    public void OnAudioOutputDeviceIsMute( View BtnPt )
+    public void OnAudioOutputIsMute( View BtnPt )
     {
         if( m_MyMediaProcThreadPt != null )
         {
-            m_MyMediaProcThreadPt.SetAudioOutputDeviceIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+            m_MyMediaProcThreadPt.SetAudioOutputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
         }
     }
 
     //视频输入设备黑屏按钮。
-    public void OnVideoInputDeviceIsBlack( View BtnPt )
+    public void OnVideoInputIsBlack( View BtnPt )
     {
         if( m_MyMediaProcThreadPt != null )
         {
-            m_MyMediaProcThreadPt.SetVideoInputDeviceIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoInputDeviceIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
+            m_MyMediaProcThreadPt.SetVideoInputIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoInputIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
         }
     }
 
-    //时频输出设备黑屏按钮。
-    public void OnVideoOutputDeviceIsBlack( View BtnPt )
+    //视频输出设备黑屏按钮。
+    public void OnVideoOutputIsBlack( View BtnPt )
     {
         if( m_MyMediaProcThreadPt != null )
         {
-            m_MyMediaProcThreadPt.SetVideoOutputDeviceIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoOutputDeviceIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
+            m_MyMediaProcThreadPt.SetVideoOutputIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoOutputIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
         }
     }
 
@@ -2515,8 +2564,8 @@ public class MainActivity extends AppCompatActivity
                         m_MyMediaProcThreadPt.SetAudioInputIsSaveAudioToFile( 0, null, null );
                     }
 
-                    //判断音频输入设备是否静音。
-                    m_MyMediaProcThreadPt.SetAudioInputDeviceIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+                    //判断音频输入是否静音。
+                    m_MyMediaProcThreadPt.SetAudioInputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
 
                     //判断是否使用音频输出。
                     m_MyMediaProcThreadPt.SetIsUseAudioOutput(
@@ -2567,8 +2616,8 @@ public class MainActivity extends AppCompatActivity
                         m_MyMediaProcThreadPt.SetAudioOutputUseDevice( 1, 0 );
                     }
 
-                    //判断音频输出设备是否静音。
-                    m_MyMediaProcThreadPt.SetAudioOutputDeviceIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputDeviceIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+                    //判断音频输出是否静音。
+                    m_MyMediaProcThreadPt.SetAudioOutputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
 
                     //判断音频输出是否保存音频到文件。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).isChecked() )
@@ -2621,11 +2670,23 @@ public class MainActivity extends AppCompatActivity
                         );
                     }
 
-                    //判断使用的视频输入设备。
-                    m_MyMediaProcThreadPt.SetVideoInputUseDevice( ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseFrontCamereRadioBtn ) ).isChecked() ) ? 0 : 1 );
+                    //判断视频输入是否使用系统自带H264编码器。
+                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSystemH264CodecRadioBtn ) ).isChecked() )
+                    {
+                        m_MyMediaProcThreadPt.SetVideoInputUseSystemH264Encoder(
+                                Integer.parseInt( ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderEncodedBitrateEdit ) ).getText().toString() ) * 1024 * 8,
+                                Integer.parseInt( ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderBitrateControlModeEdit ) ).getText().toString() ),
+                                Integer.parseInt( ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderIDRFrameIntvlEdit ) ).getText().toString() ),
+                                Integer.parseInt( ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderComplexityEdit ) ).getText().toString() )
+                        );
+                    }
 
-                    //判断视频输入设备是否黑屏。
-                    m_MyMediaProcThreadPt.SetVideoInputDeviceIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoInputDeviceIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
+                    //判断使用的视频输入设备。
+                    m_MyMediaProcThreadPt.SetVideoInputUseDevice( ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseFrontCamereRadioBtn ) ).isChecked() ) ? 0 : 1,
+                                                                  -1, -1 );
+
+                    //判断视频输入是否黑屏。
+                    m_MyMediaProcThreadPt.SetVideoInputIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoInputIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
 
                     //判断是否使用视频输出。
                     m_MyMediaProcThreadPt.SetIsUseVideoOutput(
@@ -2650,8 +2711,14 @@ public class MainActivity extends AppCompatActivity
                         m_MyMediaProcThreadPt.SetVideoOutputUseOpenH264Decoder( 0 );
                     }
 
-                    //判断视频输出设备是否黑屏。
-                    m_MyMediaProcThreadPt.SetVideoOutputDeviceIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoOutputDeviceIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
+                    //判断视频输出是否使用系统自带H264解码器。
+                    if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSystemH264CodecRadioBtn ) ).isChecked() )
+                    {
+                        m_MyMediaProcThreadPt.SetVideoOutputUseSystemH264Decoder();
+                    }
+
+                    //判断视频输出是否黑屏。
+                    m_MyMediaProcThreadPt.SetVideoOutputIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoOutputIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
                 }
 
                 m_MyMediaProcThreadPt.start(); //启动媒体处理线程。
@@ -2906,8 +2973,22 @@ public class MainActivity extends AppCompatActivity
         m_LyotActivityCurViewPt = m_LyotActivityOpenH264CodecViewPt;
     }
 
-    //Opus编解码器设置界面的确定按钮。
+    //OpenH264编解码器设置界面的确定按钮。
     public void OnOpenH264CodecSettingOkClick( View BtnPt )
+    {
+        setContentView( m_LyotActivitySettingViewPt );
+        m_LyotActivityCurViewPt = m_LyotActivitySettingViewPt;
+    }
+
+    //系统自带H264编解码器设置按钮。
+    public void OnClickSystemH264CodecSetting( View BtnPt )
+    {
+        setContentView( m_LyotActivitySystemH264CodecViewPt );
+        m_LyotActivityCurViewPt = m_LyotActivitySystemH264CodecViewPt;
+    }
+
+    //系统自带H264编解码器设置界面的确定按钮。
+    public void OnSystemH264CodecSettingOkClick( View BtnPt )
     {
         setContentView( m_LyotActivitySettingViewPt );
         m_LyotActivityCurViewPt = m_LyotActivitySettingViewPt;
@@ -3008,6 +3089,10 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "12" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).setText( "0" );
+
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderBitrateControlModeEdit ) ).setText( "1" );
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderIDRFrameIntvlEdit ) ).setText( "1" );
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderComplexityEdit ) ).setText( "0" );
     }
 
     //效果等级：中。
@@ -3091,6 +3176,10 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "15" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).setText( "0" );
+
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderBitrateControlModeEdit ) ).setText( "1" );
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderIDRFrameIntvlEdit ) ).setText( "1" );
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderComplexityEdit ) ).setText( "1" );
     }
 
     //效果等级：高。
@@ -3174,6 +3263,10 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "15" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).setText( "0" );
+
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderBitrateControlModeEdit ) ).setText( "1" );
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderIDRFrameIntvlEdit ) ).setText( "1" );
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderComplexityEdit ) ).setText( "2" );
     }
 
     //效果等级：超。
@@ -3257,6 +3350,10 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "24" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).setText( "1" );
+
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderBitrateControlModeEdit ) ).setText( "1" );
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderIDRFrameIntvlEdit ) ).setText( "1" );
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderComplexityEdit ) ).setText( "2" );
     }
 
     //效果等级：特。
@@ -3340,6 +3437,10 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).setText( "3" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderIDRFrameIntvlEdit ) ).setText( "30" );
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderComplexityEdit ) ).setText( "2" );
+
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderBitrateControlModeEdit ) ).setText( "1" );
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderIDRFrameIntvlEdit ) ).setText( "1" );
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderComplexityEdit ) ).setText( "2" );
     }
 
     //比特率等级：低。
@@ -3350,7 +3451,9 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderQualityEdit ) ).setText( "1" );
         ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderPlcExpectedLossRateEdit ) ).setText( "1" );
 
-        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).setText( "1" );
+        ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).setText( "10" );
+
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderEncodedBitrateEdit ) ).setText( "10" );
     }
 
     //比特率等级：中。
@@ -3362,6 +3465,8 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderPlcExpectedLossRateEdit ) ).setText( "40" );
 
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).setText( "20" );
+
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderEncodedBitrateEdit ) ).setText( "20" );
     }
 
     //比特率等级：高。
@@ -3373,6 +3478,8 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderPlcExpectedLossRateEdit ) ).setText( "80" );
 
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).setText( "40" );
+
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderEncodedBitrateEdit ) ).setText( "40" );
     }
 
     //比特率等级：超。
@@ -3384,6 +3491,8 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderPlcExpectedLossRateEdit ) ).setText( "100" );
 
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).setText( "60" );
+
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderEncodedBitrateEdit ) ).setText( "60" );
     }
 
     //比特率等级：特。
@@ -3395,5 +3504,7 @@ public class MainActivity extends AppCompatActivity
         ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderPlcExpectedLossRateEdit ) ).setText( "100" );
 
         ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).setText( "80" );
+
+        ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderEncodedBitrateEdit ) ).setText( "80" );
     }
 }

@@ -828,6 +828,13 @@
                     android:layout_height="0dp"
                     android:text="OpenH264编解码器"/>
 
+                <RadioButton
+                    android:id="@+id/UseSystemH264CodecRadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:text="系统自带H264编解码器"/>
+
             </RadioGroup>
 
             <LinearLayout
@@ -848,6 +855,12 @@
                     android:layout_height="match_parent"
                     android:text="设置"
                     android:onClick="OnClickOpenH264CodecSetting" />
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="设置"
+                    android:onClick="OnClickSystemH264CodecSetting" />
 
             </LinearLayout>
 

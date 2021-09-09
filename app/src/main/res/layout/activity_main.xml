@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="Android下音视频对讲演示程序\n版本：2021年08月31日\n"
+            android:text="Android下音视频对讲演示程序\n版本：2021年09月09日\n"
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="normal|bold" />
@@ -241,22 +241,22 @@
             android:layout_height="wrap_content">
 
             <CheckBox
-                android:id="@+id/AudioInputDeviceIsMuteCheckBox"
+                android:id="@+id/AudioInputIsMuteCheckBox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:checked="false"
-                android:onClick="OnAudioInputDeviceIsMute"
-                android:text="音频输入设备静音"/>
+                android:onClick="OnAudioInputIsMute"
+                android:text="音频输入静音"/>
 
             <CheckBox
-                android:id="@+id/AudioOutputDeviceIsMuteCheckBox"
+                android:id="@+id/AudioOutputIsMuteCheckBox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:checked="false"
-                android:onClick="OnAudioOutputDeviceIsMute"
-                android:text="音频输出设备静音"/>
+                android:onClick="OnAudioOutputIsMute"
+                android:text="音频输出静音"/>
 
         </LinearLayout>
 
@@ -266,22 +266,22 @@
             android:layout_height="wrap_content">
 
             <CheckBox
-                android:id="@+id/VideoInputDeviceIsBlackCheckBox"
+                android:id="@+id/VideoInputIsBlackCheckBox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:checked="false"
-                android:onClick="OnVideoInputDeviceIsBlack"
-                android:text="视频输入设备黑屏"/>
+                android:onClick="OnVideoInputIsBlack"
+                android:text="视频输入黑屏"/>
 
             <CheckBox
-                android:id="@+id/VideoOutputDeviceIsBlackCheckBox"
+                android:id="@+id/VideoOutputIsBlackCheckBox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:checked="false"
-                android:onClick="OnVideoOutputDeviceIsBlack"
-                android:text="视频输出设备黑屏"/>
+                android:onClick="OnVideoOutputIsBlack"
+                android:text="视频输出黑屏"/>
 
         </LinearLayout>
 
