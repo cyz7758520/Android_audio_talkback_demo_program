@@ -1,4 +1,4 @@
-package com.example.Android_audio_talkback_demo_program;
+package com.example.Android_av_talkback_demo;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -1769,6 +1769,9 @@ public class MainActivity extends AppCompatActivity
         m_MainActivityHandlerPt = new MainActivityHandler();
         m_MainActivityHandlerPt.m_MainActivityPt = m_MainActivityPt;
 
+        //获取AppID。
+        ( ( TextView ) m_LyotActivityMainViewPt.findViewById( R.id.AppID ) ).setText( "AppID：" + getApplicationContext().getPackageName() );
+
         //获取本机IP地址。
         String p_pclString = null;
         try
@@ -1887,62 +1890,6 @@ public class MainActivity extends AppCompatActivity
         String p_InfoStrPt = "扩展目录完整绝对路径：" + m_ExternalDirFullAbsPathStrPt;
         Log.i( m_CurClsNameStrPt, p_InfoStrPt );
         Message p_MessagePt = new Message();p_MessagePt.what = 3;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-    }
-
-        /*p_Result = p_ErrInfoVarStrPt.Init();
-        p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
-
-        p_Result = p_OpenH264EncoderPt.Init( p_EncodedPictureWidth, p_EncodedPictureHeight, 0, 10 * 1024 * 8, 3, 30, p_ErrInfoVarStrPt );
-        p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
-
-        p_Result = p_OpenH264EncoderPt.GetEncodedBitrate( p_HTIntPt, p_ErrInfoVarStrPt );
-        p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
-
-        p_Result = p_OpenH264EncoderPt.SetEncodedBitrate( p_HTIntPt.m_Val * 2, p_ErrInfoVarStrPt );
-        p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
-
-        p_Result = p_OpenH264EncoderPt.GetEncodedBitrate( p_HTIntPt, p_ErrInfoVarStrPt );
-        p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
-
-        p_Result = p_OpenH264DecoderPt.Init( p_ErrInfoVarStrPt );
-        p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
-
-        try
-        {
-            p_TmpLong = SystemClock.currentThreadTimeMillis();
-            while( ( p_Result = p_YUV420PFilePt.read( p_YUV420PFrameBufPt, 0, p_EncodedPictureWidth * p_EncodedPictureHeight * 3 / 2 ) ) == p_EncodedPictureWidth * p_EncodedPictureHeight * 3 / 2 )
-            {
-                p_Result = p_OpenH264EncoderPt.Proc( p_YUV420PFrameBufPt, p_EncodedPictureWidth, p_EncodedPictureHeight, p_YUV420PFrameCount * 1000 / 30, p_H264FrameBufPt, p_H264FrameBufPt.length, p_HTLongPt, p_ErrInfoVarStrPt );
-                p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
-
-                p_Result = p_OpenH264DecoderPt.Proc( p_H264FrameBufPt, p_HTLongPt.m_Val, p_YUV420PFrameDecBufPt, p_YUV420PFrameDecBufPt.length, p_YUV420PWidth, p_YUV420PHeight, p_ErrInfoVarStrPt );
-                p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
-
-                p_H264FilePt.write( p_H264FrameBufPt, 0, ( int ) p_HTLongPt.m_Val );
-                p_YUV420PDecFilePt.write( p_YUV420PFrameDecBufPt, 0, p_YUV420PWidth.m_Val * p_YUV420PHeight.m_Val * 3 / 2 );
-                p_YUV420PFrameCount++;
-            }
-            Log.i( m_CurClsNameStrPt, "视频文件处理完毕，帧数：" + p_YUV420PFrameCount + " 编码耗时：" + ( SystemClock.currentThreadTimeMillis() - p_TmpLong ) );
-        }
-        catch( Exception e )
-        {
-
-        }
-
-        try
-        {
-            p_YUV420PFilePt.close();
-            p_H264FilePt.close();
-            p_YUV420PDecFilePt.close();
-            p_Result = p_OpenH264EncoderPt.Destroy( p_ErrInfoVarStrPt );
-            p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
-            p_Result = p_OpenH264DecoderPt.Destroy( p_ErrInfoVarStrPt );
-            p_ErrInfoStr = p_ErrInfoVarStrPt.GetStr();
-        }
-        catch( Exception e )
-        {
-
-        }*/
     }
 
     //Activity从遮挡恢复消息。
