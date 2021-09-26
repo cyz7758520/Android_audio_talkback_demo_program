@@ -5,13 +5,13 @@ android {
     buildToolsVersion = '30.0.3'
 
     defaultConfig {
-        applicationId "com.example.android_audio_talkback_demo_program"
+        applicationId "com.example.android_av_talkback_demo"
 
         minSdkVersion 14
         //minSdkVersion 9
         targetSdkVersion 30
         versionCode 1
-        versionName "2021.09.09"
+        versionName "2021.09.26"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

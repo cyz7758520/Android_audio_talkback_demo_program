@@ -9,7 +9,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.Android_audio_talkback_demo_program.MainActivity">
+    tools:context="com.example.Android_av_talkback_demo.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,7 +22,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="Android下音视频对讲演示程序\n版本：2021年09月09日\n"
+            android:text="Android下音视频对讲演示程序\n版本：2021年09月26日"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:textStyle="normal|bold" />
+
+        <TextView
+            android:id="@+id/AppID"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="AppID："
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:textStyle="normal|bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text=""
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="normal|bold" />

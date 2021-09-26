@@ -34,7 +34,7 @@ public class RNNoise
     }
 
     //创建并初始化RNNoise噪音抑制器。
-    public native int Init( int SamplingRate, int FrameLen );
+    public native int Init( int SamplingRate, int FrameLen, VarStr ErrInfoVarStrPt );
 
     //用RNNoise噪音抑制器对单声道16位有符号整型PCM格式帧进行RNNoise噪音抑制。
     public native int Proc( short FramePt[], short ResultFramePt[] );

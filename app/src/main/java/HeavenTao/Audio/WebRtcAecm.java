@@ -33,7 +33,7 @@ public class WebRtcAecm
     }
 
     //创建并初始化WebRtc定点版声学回音消除器。
-    public native int Init( int SamplingRate, int FrameLen, int IsUseCNGMode, int EchoMode, int Delay );
+    public native int Init( int SamplingRate, int FrameLen, int IsUseCNGMode, int EchoMode, int Delay, VarStr ErrInfoVarStrPt );
 
     //设置WebRtc定点版声学回音消除器的回音延迟。
     public native int SetDelay( int Delay );

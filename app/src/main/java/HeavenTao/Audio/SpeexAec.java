@@ -32,10 +32,10 @@ public class SpeexAec
     }
 
     //创建并初始化Speex声学回音消除器。
-    public native int Init( int SamplingRate, int FrameLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct );
+    public native int Init( int SamplingRate, int FrameLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, VarStr ErrInfoVarStrPt );
 
     //根据Speex声学回音消除器内存块来创建并初始化Speex声学回音消除器。
-    public native int InitByMem( int SamplingRate, int FrameLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, byte SpeexAecMemPt[], long SpeexAecMemLen );
+    public native int InitByMem( int SamplingRate, int FrameLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, byte SpeexAecMemPt[], long SpeexAecMemLen, VarStr ErrInfoVarStrPt );
 
     //根据Speex声学回音消除器内存块文件来创建并初始化Speex声学回音消除器。
     public native int InitByMemFile( int SamplingRate, int FrameLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, String SpeexAecMemFileFullPathStrPt, VarStr ErrInfoVarStrPt );

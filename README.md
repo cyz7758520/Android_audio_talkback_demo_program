@@ -59,7 +59,9 @@
 #### 本人QQ号：280604597    赤勇玄心行天道
 #### 本人博客：http://www.cnblogs.com/gaoyaguo
 #### Windows版源代码：https://github.com/cyz7758520/Windows_audio_talkback_demo_program
+####                  https://gitee.com/chen_yi_ze/Windows_audio_talkback_demo_program
 #### Android版源代码：https://github.com/cyz7758520/Android_audio_talkback_demo_program
+####                  https://gitee.com/chen_yi_ze/Android_audio_talkback_demo_program
 
 # 感谢
 #### 感谢 WELEN、善书、陈国福 对 Speex、WebRTC 的指点！

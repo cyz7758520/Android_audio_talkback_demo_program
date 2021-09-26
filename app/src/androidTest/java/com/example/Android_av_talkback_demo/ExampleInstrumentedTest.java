@@ -1,4 +1,4 @@
-package com.example.Android_audio_talkback_demo_program;
+package com.example.Android_av_talkback_demo;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

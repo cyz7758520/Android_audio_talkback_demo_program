@@ -33,7 +33,7 @@ public class WebRtcNsx
     }
 
     //创建并初始化WebRtc定点版噪音抑制器。
-    public native int Init( int SamplingRate, int FrameLen, int PolicyMode );
+    public native int Init( int SamplingRate, int FrameLen, int PolicyMode, VarStr ErrInfoVarStrPt );
 
     //用WebRtc定点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc定点版噪音抑制。
     public native int Proc( short FramePt[], short ResultFramePt[] );
