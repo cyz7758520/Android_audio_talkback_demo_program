@@ -65,5 +65,12 @@
 #### Android版源代码：https://github.com/cyz7758520/Android_audio_talkback_demo_program
 ####                  https://gitee.com/chen_yi_ze/Android_audio_talkback_demo_program
 
+# 版权
+#### Speex：https://gitlab.xiph.org/xiph/speex/-/blob/master/COPYING
+#### WebRtc：https://gitlab.com/webrtc-mirror/webrtc/-/blob/master/LICENSE
+#### RNNoise：https://gitlab.xiph.org/xiph/rnnoise/-/blob/master/COPYING
+#### OpenH264：https://github.com/cisco/openh264/blob/master/LICENSE
+#### LibYUV：https://github.com/lemenkov/libyuv/blob/master/LICENSE
+
 # 感谢
 #### 感谢 WELEN、善书、陈国福 对 Speex、WebRTC 的指点！
