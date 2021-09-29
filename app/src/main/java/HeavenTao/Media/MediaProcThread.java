@@ -13,6 +13,7 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.os.Process;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -149,6 +150,12 @@ public abstract class MediaProcThread extends Thread
         String m_AudioInputFileFullPathStrPt; //存放音频输入文件的完整路径字符串。
         String m_AudioResultFileFullPathStrPt; //存放音频结果文件的完整路径字符串。
 
+        public int m_IsDrawAudioOscilloToSurface; //存放是否绘制音频波形到Surface，为非0表示要绘制，为0表示不绘制。
+        SurfaceView m_AudioInputOscilloSurfacePt; //存放音频输入波形Surface对象的内存指针。
+        AudioOscillo m_AudioInputOscilloPt; //存放音频输入波形器对象的内存指针。
+        SurfaceView m_AudioResultOscilloSurfacePt; //存放音频结果波形Surface对象的内存指针。
+        AudioOscillo m_AudioResultOscilloPt; //存放音频结果波形器对象的内存指针。
+
         AudioRecord m_AudioInputDevicePt; //存放音频输入设备类对象的内存指针。
         int m_AudioInputDeviceBufSz; //存放音频输入设备缓冲区大小，单位字节。
         int m_AudioInputIsMute; //存放音频输入是否静音，为0表示有声音，为非0表示静音。
@@ -182,6 +189,10 @@ public abstract class MediaProcThread extends Thread
         public int m_IsSaveAudioToFile; //存放是否保存音频到文件，为非0表示要保存，为0表示不保存。
         WaveFileWriter m_AudioOutputWaveFileWriterPt; //存放音频输出Wave文件写入器对象的内存指针。
         String m_AudioOutputFileFullPathStrPt; //存放音频输出文件的完整路径字符串。
+
+        public int m_IsDrawAudioOscilloToSurface; //存放是否绘制音频波形到Surface，为非0表示要绘制，为0表示不绘制。
+        SurfaceView m_AudioOutputOscilloSurfacePt; //存放音频输出波形Surface对象的内存指针。
+        AudioOscillo m_AudioOutputOscilloPt; //存放音频输出波形器对象的内存指针。
 
         public AudioTrack m_AudioOutputDevicePt; //存放音频输出设备类对象的内存指针。
         int m_AudioOutputDeviceBufSz; //存放音频输出设备缓冲区大小，单位字节。
@@ -630,6 +641,14 @@ public abstract class MediaProcThread extends Thread
         m_AudioInputPt.m_AudioResultFileFullPathStrPt = AudioResultFileFullPathStrPt;
     }
 
+    //设置音频输入是否绘制音频波形到Surface。
+    public void SetAudioInputIsDrawAudioOscilloToSurface( int IsDrawAudioToSurface, SurfaceView AudioInputOscilloSurfacePt, SurfaceView AudioResultOscilloSurfacePt )
+    {
+        m_AudioInputPt.m_IsDrawAudioOscilloToSurface = IsDrawAudioToSurface;
+        m_AudioInputPt.m_AudioInputOscilloSurfacePt = AudioInputOscilloSurfacePt;
+        m_AudioInputPt.m_AudioResultOscilloSurfacePt = AudioResultOscilloSurfacePt;
+    }
+
     //设置音频输入是否静音。
     public void SetAudioInputIsMute( int IsMute )
     {
@@ -674,6 +693,13 @@ public abstract class MediaProcThread extends Thread
     {
         m_AudioOutputPt.m_IsSaveAudioToFile = IsSaveAudioToFile;
         m_AudioOutputPt.m_AudioOutputFileFullPathStrPt = AudioOutputFileFullPathStrPt;
+    }
+
+    //设置音频输出是否绘制音频波形到Surface。
+    public void SetAudioOutputIsDrawAudioOscilloToSurface( int IsDrawAudioToSurface, SurfaceView AudioOutputOscilloSurfacePt )
+    {
+        m_AudioOutputPt.m_IsDrawAudioOscilloToSurface = IsDrawAudioToSurface;
+        m_AudioOutputPt.m_AudioOutputOscilloSurfacePt = AudioOutputOscilloSurfacePt;
     }
 
     //设置音频输出使用的设备。
@@ -2051,6 +2077,33 @@ public abstract class MediaProcThread extends Thread
                         }
                     }
 
+                    //创建并初始化音频输入波形器、音频结果波形器。
+                    if( m_AudioInputPt.m_IsDrawAudioOscilloToSurface != 0 )
+                    {
+                        m_AudioInputPt.m_AudioInputOscilloPt = new AudioOscillo();
+                        if( m_AudioInputPt.m_AudioInputOscilloPt.Init( m_ErrInfoVarStrPt ) == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输入波形器类对象成功。" );
+                        }
+                        else
+                        {
+                            m_AudioInputPt.m_AudioInputOscilloPt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输入波形器类对象失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+                            break out;
+                        }
+                        m_AudioInputPt.m_AudioResultOscilloPt = new AudioOscillo();
+                        if( m_AudioInputPt.m_AudioResultOscilloPt.Init( m_ErrInfoVarStrPt ) == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频结果波形器类对象成功。" );
+                        }
+                        else
+                        {
+                            m_AudioInputPt.m_AudioResultOscilloPt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频结果波形器类对象失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+                            break out;
+                        }
+                    }
+
                     //创建并初始化音频输入设备类对象。
                     try
                     {
@@ -2153,6 +2206,22 @@ public abstract class MediaProcThread extends Thread
                         {
                             m_AudioOutputPt.m_AudioOutputWaveFileWriterPt = null;
                             if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输出文件 " + m_AudioOutputPt.m_AudioOutputFileFullPathStrPt + " 的Wave文件写入器类对象失败。" );
+                            break out;
+                        }
+                    }
+
+                    //创建并初始化音频输出波形器。
+                    if( m_AudioOutputPt.m_IsDrawAudioOscilloToSurface != 0 )
+                    {
+                        m_AudioOutputPt.m_AudioOutputOscilloPt = new AudioOscillo();
+                        if( m_AudioOutputPt.m_AudioOutputOscilloPt.Init( m_ErrInfoVarStrPt ) == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输出波形器类对象成功。" );
+                        }
+                        else
+                        {
+                            m_AudioOutputPt.m_AudioOutputOscilloPt = null;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输出波形器类对象失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
                             break out;
                         }
                     }
@@ -2977,6 +3046,27 @@ public abstract class MediaProcThread extends Thread
                                 if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频结果Wave文件写入器写入音频结果帧失败。" );
                             }
                         }
+
+                        //使用音频输入波形器绘制音频输入波形到Surface、音频结果波形器绘制音频结果波形到Surface。
+                        if( m_AudioInputPt.m_IsDrawAudioOscilloToSurface != 0 )
+                        {
+                            if( m_AudioInputPt.m_AudioInputOscilloPt.Draw( p_PcmAudioInputFramePt, p_PcmAudioInputFramePt.length, m_AudioInputPt.m_AudioInputOscilloSurfacePt.getHolder().getSurface(), m_ErrInfoVarStrPt ) == 0 )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频输入波形器绘制音频输入波形到Surface成功。" );
+                            }
+                            else
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输入波形器绘制音频输入波形到Surface失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+                            }
+                            if( m_AudioInputPt.m_AudioResultOscilloPt.Draw( p_PcmAudioResultFramePt, p_PcmAudioResultFramePt.length, m_AudioInputPt.m_AudioResultOscilloSurfacePt.getHolder().getSurface(), m_ErrInfoVarStrPt ) == 0 )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频结果波形器绘制音频结果波形到Surface成功。" );
+                            }
+                            else
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频结果波形器绘制音频结果波形到Surface失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+                            }
+                        }
                     }
 
                     if( m_IsPrintLogcat != 0 )
@@ -2999,6 +3089,19 @@ public abstract class MediaProcThread extends Thread
                             else
                             {
                                 if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输出Wave文件写入器写入音频输出帧失败。" );
+                            }
+                        }
+
+                        //使用音频输出波形器绘制音频输出波形到Surface。
+                        if( m_AudioOutputPt.m_IsDrawAudioOscilloToSurface != 0 )
+                        {
+                            if( m_AudioOutputPt.m_AudioOutputOscilloPt.Draw( p_PcmAudioOutputFramePt, p_PcmAudioOutputFramePt.length, m_AudioOutputPt.m_AudioOutputOscilloSurfacePt.getHolder().getSurface(), m_ErrInfoVarStrPt ) == 0 )
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频输出波形器绘制音频输入波形到Surface成功。" );
+                            }
+                            else
+                            {
+                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输出波形器绘制音频输出波形到Surface失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
                             }
                         }
                     }
@@ -3139,6 +3242,35 @@ public abstract class MediaProcThread extends Thread
                     m_AudioInputPt.m_AudioInputDevicePt.release();
                     m_AudioInputPt.m_AudioInputDevicePt = null;
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁音频输入设备类对象成功。" );
+                }
+
+                //销毁音频输入波形器、音频结果波形器。
+                if( m_AudioInputPt.m_IsDrawAudioOscilloToSurface != 0 )
+                {
+                    if( m_AudioInputPt.m_AudioInputOscilloPt != null )
+                    {
+                        if( m_AudioInputPt.m_AudioInputOscilloPt.Destroy( m_ErrInfoVarStrPt ) == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁音频输入波形器类对象成功。" );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁音频输入波形器类对象失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+                        }
+                        m_AudioInputPt.m_AudioInputOscilloPt = null;
+                    }
+                    if( m_AudioInputPt.m_AudioResultOscilloPt != null )
+                    {
+                        if( m_AudioInputPt.m_AudioResultOscilloPt.Destroy( m_ErrInfoVarStrPt ) == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁音频结果波形器类对象成功。" );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁音频结果波形器类对象失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+                        }
+                        m_AudioInputPt.m_AudioResultOscilloPt = null;
+                    }
                 }
 
                 //销毁音频输入Wave文件写入器类对象、音频结果Wave文件写入器类对象。
@@ -3410,6 +3542,23 @@ public abstract class MediaProcThread extends Thread
                     m_AudioOutputPt.m_AudioOutputDevicePt.release();
                     m_AudioOutputPt.m_AudioOutputDevicePt = null;
                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁音频输出设备类对象成功。" );
+                }
+
+                //销毁音频输出波形器。
+                if( m_AudioOutputPt.m_IsDrawAudioOscilloToSurface != 0 )
+                {
+                    if( m_AudioOutputPt.m_AudioOutputOscilloPt != null )
+                    {
+                        if( m_AudioOutputPt.m_AudioOutputOscilloPt.Destroy( m_ErrInfoVarStrPt ) == 0 )
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁音频输出波形器类对象成功。" );
+                        }
+                        else
+                        {
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁音频输出波形器类对象失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+                        }
+                        m_AudioOutputPt.m_AudioOutputOscilloPt = null;
+                    }
                 }
 
                 //销毁音频输出Wave文件写入器类对象。

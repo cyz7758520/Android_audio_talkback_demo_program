@@ -39,7 +39,7 @@ public class FrgndSrvc extends Service
                     new NotificationCompat.Builder( m_MainActivityPt, "status" ) //Android API 14及以上版本使用。
                     //new NotificationCompat.Builder( m_MainActivityPt ) //Android API 9~25版本使用。
                     .setSmallIcon( R.mipmap.ic_launcher )
-                    .setContentTitle("Android下音频对讲演示程序")
+                    .setContentTitle("Android下音视频对讲演示程序")
                     .setContentText( "前台服务" )
                     .setSound( null )
                     .setContentIntent( pendingIntent )

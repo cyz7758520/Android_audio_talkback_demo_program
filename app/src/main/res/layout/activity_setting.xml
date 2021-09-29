@@ -635,7 +635,13 @@
             android:id="@+id/IsSaveAudioToFileCheckBox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="将音频输入帧、音频输出帧、音频结果帧分别替换保存到扩展目录下的AudioInput.wav、AudioOutput.wav、AudioResult.wav文件中" />
+            android:text="将音频输入、音频输出、音频结果分别替换保存到扩展目录下的AudioInput.wav、AudioOutput.wav、AudioResult.wav文件中" />
+
+        <CheckBox
+            android:id="@+id/IsSaveDrawAudioOscilloToSurfaceCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="将音频输入、音频输出、音频结果的波形绘制到Surface中" />
 
         <TextView
             android:gravity="center_horizontal"

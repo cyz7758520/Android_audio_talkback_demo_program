@@ -23,6 +23,6 @@ public class ExampleInstrumentedTest
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.Android_audio_talkback_demo_program", appContext.getPackageName());
+        assertEquals("com.example.Android_av_talkback_demo", appContext.getPackageName());
     }
 }

@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -1874,8 +1875,27 @@ public class MainActivity extends AppCompatActivity
                 Log.i( m_CurClsNameStrPt, "VideoInputPreviewSurfaceView Destroyed" );
             }
         } );
+
+        //添加视频输出显示SurfaceView的回调函数。
         m_VideoOutputDisplaySurfaceViewPt = ( ( HTSurfaceView )findViewById( R.id.VideoOutputDisplaySurfaceView ) );
         m_VideoOutputDisplaySurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_NORMAL );
+        m_VideoOutputDisplaySurfaceViewPt.getHolder().addCallback( new SurfaceHolder.Callback()
+        {
+            @Override public void surfaceCreated( SurfaceHolder holder )
+            {
+                Log.i( m_CurClsNameStrPt, "VideoOutputDisplaySurfaceView Created" );
+            }
+
+            @Override public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
+            {
+                Log.i( m_CurClsNameStrPt, "VideoOutputDisplaySurfaceView Changed" );
+            }
+
+            @Override public void surfaceDestroyed( SurfaceHolder holder )
+            {
+                Log.i( m_CurClsNameStrPt, "VideoOutputDisplaySurfaceView Destroyed" );
+            }
+        } );
 
         //获取扩展目录完整绝对路径字符串。
         if( getExternalFilesDir( null ) != null )
@@ -2511,6 +2531,13 @@ public class MainActivity extends AppCompatActivity
                         m_MyMediaProcThreadPt.SetAudioInputIsSaveAudioToFile( 0, null, null );
                     }
 
+                    //判断音频输入是否绘制音频波形到Surface。
+                    m_MyMediaProcThreadPt.SetAudioInputIsDrawAudioOscilloToSurface(
+                            ( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).isChecked() ) ? 1 : 0,
+                            ( ( SurfaceView )findViewById( R.id.AudioInputOscilloSurfaceView ) ),
+                            ( ( SurfaceView )findViewById( R.id.AudioResultOscilloSurfaceView ) )
+                    );
+
                     //判断音频输入是否静音。
                     m_MyMediaProcThreadPt.SetAudioInputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
 
@@ -2563,9 +2590,6 @@ public class MainActivity extends AppCompatActivity
                         m_MyMediaProcThreadPt.SetAudioOutputUseDevice( 1, 0 );
                     }
 
-                    //判断音频输出是否静音。
-                    m_MyMediaProcThreadPt.SetAudioOutputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
-
                     //判断音频输出是否保存音频到文件。
                     if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).isChecked() )
                     {
@@ -2578,6 +2602,15 @@ public class MainActivity extends AppCompatActivity
                     {
                         m_MyMediaProcThreadPt.SetAudioOutputIsSaveAudioToFile( 0, null );
                     }
+
+                    //判断音频输出是否绘制音频波形到Surface。
+                    m_MyMediaProcThreadPt.SetAudioOutputIsDrawAudioOscilloToSurface(
+                            ( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).isChecked() ) ? 1 : 0,
+                            ( ( SurfaceView )findViewById( R.id.AudioOutputOscilloSurfaceView ) )
+                    );
+
+                    //判断音频输出是否静音。
+                    m_MyMediaProcThreadPt.SetAudioOutputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
 
                     //判断是否使用视频输入。
                     m_MyMediaProcThreadPt.SetIsUseVideoInput(
@@ -2690,16 +2723,16 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    //主界面视频输入预览SurfaceView按钮。
+    //主界面视频输入预览或视频输出显示SurfaceView按钮。
     public void onClickVideoSurfaceView( View BtnPt )
     {
-        if( ( ( LinearLayout )BtnPt.getParent() ).getOrientation() == LinearLayout.HORIZONTAL )
+        if( ( ( LinearLayout )BtnPt.getParent().getParent() ).getOrientation() == LinearLayout.HORIZONTAL )
         {
-            ( ( LinearLayout )BtnPt.getParent() ).setOrientation( LinearLayout.VERTICAL );
+            ( ( LinearLayout )BtnPt.getParent().getParent() ).setOrientation( LinearLayout.VERTICAL );
         }
         else
         {
-            ( ( LinearLayout )BtnPt.getParent() ).setOrientation( LinearLayout.HORIZONTAL );
+            ( ( LinearLayout )BtnPt.getParent().getParent() ).setOrientation( LinearLayout.HORIZONTAL );
         }
     }
 
@@ -2967,6 +3000,7 @@ public class MainActivity extends AppCompatActivity
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).setChecked( false );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate12RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize120_160RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
@@ -3054,6 +3088,7 @@ public class MainActivity extends AppCompatActivity
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).setChecked( false );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate15RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize240_320RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
@@ -3141,6 +3176,7 @@ public class MainActivity extends AppCompatActivity
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).setChecked( false );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate15RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
@@ -3228,6 +3264,7 @@ public class MainActivity extends AppCompatActivity
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).setChecked( false );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate24RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize480_640RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
@@ -3315,6 +3352,7 @@ public class MainActivity extends AppCompatActivity
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
         ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
+        ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).setChecked( false );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate30RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoFrameSize960_1280RadioBtn ) ).setChecked( true );
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseDisplayScale1_0RadioBtn ) ).setChecked( true );
