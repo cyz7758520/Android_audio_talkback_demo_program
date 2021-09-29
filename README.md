@@ -26,7 +26,7 @@
 #### 如果需要在自己的软件中使用本软件的音视频功能，只需要将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Media.MediaProcThread类，实现UserInit、UserProcess、UserDestroy、UserReadAudioVideoInputFrame、UserWriteAudioOutputFrame、UserGetPcmAudioOutputFrame、UserWriteVideoOutputFrame、UserGetYU12VideoOutputFrame这八个回调函数，再在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限即可。
 #### 如果用户要在JNI层处理音视频帧，则可以将那八个函数继承为native函数，然后在JNI层实现即可。
 #### 如果用户有不需要的部分功能，则只需要删除该功能对应的库文件即可，还可以进一步删除对应的类文件，并修改HeavenTao.Media.MediaProcThread类文件即可。
-#### 普通免费功能包括：WebRtc定点版声学回音消除器、Speex预处理器的噪音抑制、WebRtc定点版噪音抑制器、WebRtc浮点版噪音抑制器、Speex预处理器的其他功能、Speex编解码器、本端TCP协议服务端套接字、本端TCP协议客户端套接字、本端UDP协议套接字。
+#### 普通免费功能包括：WebRtc定点版声学回音消除器、Speex预处理器的噪音抑制、WebRtc定点版噪音抑制器、WebRtc浮点版噪音抑制器、Speex预处理器的其他功能、Speex编解码器、Wave文件读取器、Wave文件写入器、音频波形器、本端TCP协议服务端套接字、本端TCP协议客户端套接字、本端UDP协议套接字。
 #### 高级收费功能包括：Speex声学回音消除器、WebRtc浮点版声学回音消除器、SpeexWebRtc三重声学回音消除器、RNNoise噪音抑制器、OpenH264编解码器、系统自带H264编解码器、自己设计的自适应抖动缓冲器。
 #### Speex声学回音消除器对应：libFunc.so、libSpeexDsp.so、SpeexAec.java。
 #### WebRtc定点版声学回音消除器对应：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcAecm.java。
@@ -52,6 +52,7 @@
 #### 本软件不支持音乐，尤其是系统自带的噪音抑制器和RNNoise噪音抑制器可能对音乐的抑制非常强烈。
 #### 某些Android设备的软硬件环境可能存在问题，从而可能会导致声学回音消除失败，这种情况必须要先解决这些问题。
 #### 某些Android设备的系统自带的声学回音消除器、噪音抑制器和自动增益控制器使用后可能会导致音频输入出现问题，这种情况可以先关闭后再试试。
+#### 音频波形器占用CPU比较高，建议只在需要调试时临时打开。
 #### 系统自带H264编解码器需要Android 5.0（API 21）及以上系统，且在某些Android设备上使用可能会花屏，这种情况只能使用OpenH264编解码器。
 
 # 其他
