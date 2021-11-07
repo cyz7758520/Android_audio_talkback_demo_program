@@ -5,14 +5,14 @@ import HeavenTao.Data.*;
 //WebRtc定点版噪音抑制器类。
 public class WebRtcNsx
 {
-    private long m_WebRtcNsxPt; //WebRtc定点版噪音抑制器的内存指针。
-
     static
     {
         System.loadLibrary( "Func" ); //加载libFunc.so。
         System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
         System.loadLibrary( "WebRtc" ); //加载libWebRtc.so。
     }
+
+    public long m_WebRtcNsxPt; //WebRtc定点版噪音抑制器的内存指针。
 
     //构造函数。
     public WebRtcNsx()
@@ -26,18 +26,61 @@ public class WebRtcNsx
         Destroy();
     }
 
-    //获取WebRtc定点版噪音抑制器的内存指针。
-    public long GetWebRtcNsxPt()
+    //创建并初始化WebRtc定点版噪音抑制器。
+    public int Init( int SamplingRate, int FrameLen, int PolicyMode, VarStr ErrInfoVarStrPt )
     {
-        return m_WebRtcNsxPt;
+        if( m_WebRtcNsxPt == 0 )
+        {
+            HTLong p_WebRtcNsPt = new HTLong();
+            if( WebRtcNsxInit( p_WebRtcNsPt, SamplingRate, FrameLen, PolicyMode, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            {
+                m_WebRtcNsxPt = p_WebRtcNsPt.m_Val;
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    //用WebRtc定点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc定点版噪音抑制。
+    public int Proc( short FramePt[], short ResultFramePt[] )
+    {
+        return WebRtcNsxProc( m_WebRtcNsxPt, FramePt, ResultFramePt );
+    }
+
+    //销毁WebRtc定点版噪音抑制器。
+    public int Destroy()
+    {
+        if( m_WebRtcNsxPt != 0 )
+        {
+            if( WebRtcNsxDestroy( m_WebRtcNsxPt ) == 0 )
+            {
+                m_WebRtcNsxPt = 0;
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     //创建并初始化WebRtc定点版噪音抑制器。
-    public native int Init( int SamplingRate, int FrameLen, int PolicyMode, VarStr ErrInfoVarStrPt );
+    public native int WebRtcNsxInit( HTLong WebRtcNsxPt, int SamplingRate, int FrameLen, int PolicyMode, long ErrInfoVarStrPt );
 
     //用WebRtc定点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc定点版噪音抑制。
-    public native int Proc( short FramePt[], short ResultFramePt[] );
+    public native int WebRtcNsxProc( long WebRtcNsxPt, short FramePt[], short ResultFramePt[] );
 
     //销毁WebRtc定点版噪音抑制器。
-    public native int Destroy();
+    public native int WebRtcNsxDestroy( long WebRtcNsxPt );
 }

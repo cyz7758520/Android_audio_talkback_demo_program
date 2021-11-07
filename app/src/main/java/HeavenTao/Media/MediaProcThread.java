@@ -234,7 +234,7 @@ public abstract class MediaProcThread extends Thread
         int m_OpenH264EncoderIDRFrameIntvl; //存放OpenH264编码器的IDR帧间隔帧数，单位为个，为0表示仅第一帧为IDR帧，为大于0表示每隔这么帧就至少有一个IDR帧。
         int m_OpenH264EncoderComplexity; //存放OpenH264编码器的复杂度，复杂度越高压缩率不变、CPU使用率越高、画质越好，取值区间为[0,2]。
 
-        AndroidSystemH264Encoder m_SystemH264EncoderPt; //存放系统自带H264编码器类对象的内存指针。
+        SystemH264Encoder m_SystemH264EncoderPt; //存放系统自带H264编码器类对象的内存指针。
         int m_SystemH264EncoderEncodedBitrate; //存放系统自带H264编码器的编码后比特率，单位为bps。
         int m_SystemH264EncoderBitrateControlMode; //存放系统自带H264编码器的比特率控制模式，为MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CQ(0x00)表示质量模式，为MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR(0x01)表示动态比特率模式，为MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR(0x02)表示固定比特率模式。
         int m_SystemH264EncoderIDRFrameIntvlTimeSec; //存放系统自带H264编码器的IDR帧间隔时间，单位为秒，为负数表示仅第一帧为IDR帧，为0表示每一帧都为IDR帧，为大于0表示每这么多秒就有一个IDR帧。
@@ -307,7 +307,7 @@ public abstract class MediaProcThread extends Thread
         OpenH264Decoder m_OpenH264DecoderPt; //存放OpenH264解码器类对象的内存指针。
         int m_OpenH264DecoderDecodeThreadNum; //存放OpenH264解码器的解码线程数，单位为个，为0表示直接在调用线程解码，为1或2或3表示解码子线程的数量。
 
-        AndroidSystemH264Decoder m_SystemH264DecoderPt; //存放系统自带H264解码器类对象的内存指针。
+        SystemH264Decoder m_SystemH264DecoderPt; //存放系统自带H264解码器类对象的内存指针。
 
         HTSurfaceView m_VideoOutputDisplaySurfaceViewPt; //存放视频输出显示SurfaceView类对象的内存指针。
         float m_VideoOutputDisplayScale; //存放视频输出显示缩放倍数，为1.0f表示不缩放。
@@ -1467,19 +1467,17 @@ public abstract class MediaProcThread extends Thread
 
                             if( m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val != 0 ) //如果本次写入了视频输出帧。
                             {
-                                VarStr p_ErrInfoVarStrPt = new VarStr();
-                                p_ErrInfoVarStrPt.Init();
                                 //使用系统自带H264解码器。
                                 if( m_VideoOutputPt.m_SystemH264DecoderPt.Proc( m_VideoOutputPt.m_VideoOutputTmpFramePt, m_VideoOutputPt.m_VideoOutputResultFrameLenPt.m_Val,
                                                                                 m_VideoOutputPt.m_VideoOutputResultFramePt, m_VideoOutputPt.m_VideoOutputResultFramePt.length, m_VideoOutputPt.m_VideoOutputFrameWidthPt, m_VideoOutputPt.m_VideoOutputFrameHeightPt,
-                                                                                40, p_ErrInfoVarStrPt ) == 0 )
+                                                                                40, null ) == 0 )
                                 {
                                     if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "视频输出线程：使用系统自带H264解码器成功。已解码YU12格式帧宽度：" + m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val + "，已解码YU12格式帧高度：" + m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val + "。" );
                                     if( ( m_VideoOutputPt.m_VideoOutputFrameWidthPt.m_Val == 0 ) || ( m_VideoOutputPt.m_VideoOutputFrameHeightPt.m_Val == 0 ) ) break skip; //如果未解码出YU12格式帧，就把本次视频输出帧丢弃。
                                 }
                                 else
                                 {
-                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输出线程：使用系统自带H264解码器失败，本次视频输出帧丢弃。" + p_ErrInfoVarStrPt.GetStr() );
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输出线程：使用系统自带H264解码器失败，本次视频输出帧丢弃。" );
                                     break skip;
                                 }
                             }
@@ -2630,7 +2628,7 @@ public abstract class MediaProcThread extends Thread
                         }
                         case 2: //如果要使用系统自带H264编码器。
                         {
-                            m_VideoInputPt.m_SystemH264EncoderPt = new AndroidSystemH264Encoder();
+                            m_VideoInputPt.m_SystemH264EncoderPt = new SystemH264Encoder();
                             if( m_VideoInputPt.m_SystemH264EncoderPt.Init( m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth, m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight, m_VideoInputPt.m_SystemH264EncoderEncodedBitrate, m_VideoInputPt.m_SystemH264EncoderBitrateControlMode, m_VideoInputPt.m_MaxSamplingRate, m_VideoInputPt.m_SystemH264EncoderIDRFrameIntvlTimeSec, m_VideoInputPt.m_SystemH264EncoderComplexity, m_ErrInfoVarStrPt ) == 0 )
                             {
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化系统自带H264编码器类对象成功。" );
@@ -2708,7 +2706,7 @@ public abstract class MediaProcThread extends Thread
                         }
                         case 2: //如果要使用系统自带H264解码器。
                         {
-                            m_VideoOutputPt.m_SystemH264DecoderPt = new AndroidSystemH264Decoder();
+                            m_VideoOutputPt.m_SystemH264DecoderPt = new SystemH264Decoder();
                             if( m_VideoOutputPt.m_SystemH264DecoderPt.Init( null ) == 0 )
                             {
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化系统自带H264解码器类对象成功。" );

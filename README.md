@@ -11,6 +11,7 @@
 #### 支持保存音频到文件和绘制音频波形到Surface，可以直观且方便的调试音频。
 #### 支持视频软硬编解码，支持指定比特率，最低到10KB/s仍然可以进行视频对讲，还支持横竖屏切换。
 #### 支持音视频自适应抖动缓冲，当网络存在丢包、乱序、延时等抖动情况时，通过自适应调节缓冲深度来应对这些抖动。
+#### 支持与Windows下音视频对讲演示程序进行全双工实时音视频对讲。
 #### 声学回音消除器效果对比：
 #### ![image](https://user-images.githubusercontent.com/16315192/115977799-d0722980-a5ad-11eb-811e-92da4d4f32f9.png)
 
@@ -20,7 +21,7 @@
 # 开始
 #### 在一台设备上直接点击创建服务端，再在另一台设备上将IP地址改为服务端设备的IP地址，并点击连接服务端，即可开始对讲，在任意一端点击中断，即可中断对讲。
 #### 设置按钮提供了各项功能的参数设置，绝大部分情况下都不需要修改，当然你也可以根据需要自行修改。
-#### 特别注意：如果把两台设备放在同一房间里测试，有可能会出现啸叫、声音不完整、等问题，这是因为现在的麦克风都很灵敏了，一点小小的声音都会被录进去，两台设备会相互录音，导致软件无法正确识别回音，所以建议放在不同的房间里测试。
+#### 特别注意：如果把两台设备放在同一房间里测试，有可能会出现啸叫、声音不完整、等问题，这是因为现在的麦克风都很灵敏了，一点小小的声音都会被录进去，两台设备会相互录音，导致软件无法正确识别回音，所以建议放在不同的房间里测试。如果实在要测试这种情况，就在设置里，Speex预处理器的其他功能设置里，关闭“使用自动增益控制”后再测试。
 
 # 移植
 #### 如果需要在自己的软件中使用本软件的音视频功能，只需要将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Media.MediaProcThread类，实现UserInit、UserProcess、UserDestroy、UserReadAudioVideoInputFrame、UserWriteAudioOutputFrame、UserGetPcmAudioOutputFrame、UserWriteVideoOutputFrame、UserGetYU12VideoOutputFrame这八个回调函数，再在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限即可。
