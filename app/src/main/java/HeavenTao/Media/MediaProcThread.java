@@ -59,8 +59,8 @@ public abstract class MediaProcThread extends Thread
     {
         public int m_IsUseAudioInput; //存放是否使用音频输入，为0表示不使用，为非0表示要使用。
 
-        public int m_SamplingRate; //存放采样频率，取值只能为8000、16000、32000。
-        public int m_FrameLen; //存放帧的数据长度，单位采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960。
+        public int m_SamplingRate; //存放采样频率，取值只能为8000、16000、32000、48000。
+        public int m_FrameLen; //存放帧的数据长度，单位采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960，48000Hz的10毫秒为480、20毫秒为960、30毫秒为1440。
 
         public int m_IsUseSystemAecNsAgc; //存放是否使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带），为0表示不使用，为非0表示要使用。
 
@@ -178,8 +178,8 @@ public abstract class MediaProcThread extends Thread
     {
         public int m_IsUseAudioOutput; //存放是否使用音频输出，为0表示不使用，为非0表示要使用。
 
-        public int m_SamplingRate; //存放采样频率，取值只能为8000、16000、32000。
-        public int m_FrameLen; //存放帧的数据长度，单位采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960。
+        public int m_SamplingRate; //存放采样频率，取值只能为8000、16000、32000、48000。
+        public int m_FrameLen; //存放帧的数据长度，单位采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960，48000Hz的10毫秒为480、20毫秒为960、30毫秒为1440。
 
         public int m_UseWhatDecoder; //存放使用什么解码器，为0表示PCM原始数据，为1表示Speex解码器，为2表示Opus解码器。
 
@@ -478,7 +478,7 @@ public abstract class MediaProcThread extends Thread
     //设置是否使用音频输入。
     public void SetIsUseAudioInput( int IsUseAudioInput, int SamplingRate, int FrameLenMsec )
     {
-        if( ( ( IsUseAudioInput != 0 ) && ( ( SamplingRate != 8000 ) && ( SamplingRate != 16000 ) && ( SamplingRate != 32000 ) ) ) || //如果采样频率不正确。
+        if( ( ( IsUseAudioInput != 0 ) && ( ( SamplingRate != 8000 ) && ( SamplingRate != 16000 ) && ( SamplingRate != 32000 ) && ( SamplingRate != 48000 ) ) ) || //如果采样频率不正确。
             ( ( IsUseAudioInput != 0 ) && ( ( FrameLenMsec <= 0 ) || ( FrameLenMsec % 10 != 0 ) ) ) ) //如果帧的毫秒长度不正确。
         {
             return;
@@ -658,7 +658,7 @@ public abstract class MediaProcThread extends Thread
     //设置是否使用音频输出。
     public void SetIsUseAudioOutput( int IsUseAudioOutput, int SamplingRate, int FrameLenMsec )
     {
-        if( ( ( IsUseAudioOutput != 0 ) && ( ( SamplingRate != 8000 ) && ( SamplingRate != 16000 ) && ( SamplingRate != 32000 ) ) ) || //如果采样频率不正确。
+        if( ( ( IsUseAudioOutput != 0 ) && ( ( SamplingRate != 8000 ) && ( SamplingRate != 16000 ) && ( SamplingRate != 32000 ) && ( SamplingRate != 48000 ) ) ) || //如果采样频率不正确。
             ( ( IsUseAudioOutput != 0 ) && ( ( FrameLenMsec == 0 ) || ( FrameLenMsec % 10 != 0 ) ) ) ) //如果帧的毫秒长度不正确。
         {
             return;

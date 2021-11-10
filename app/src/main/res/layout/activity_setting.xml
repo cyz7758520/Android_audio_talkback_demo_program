@@ -272,22 +272,29 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:text="8000"
+                    android:text="8k"
                     android:id="@+id/UseAudioSamplingRate8000RadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
-                    android:text="16000"
+                    android:text="16k"
                     android:id="@+id/UseAudioSamplingRate16000RadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
-                    android:text="32000"
+                    android:text="32k"
                     android:id="@+id/UseAudioSamplingRate32000RadioBtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+                <RadioButton
+                    android:text="48k"
+                    android:id="@+id/UseAudioSamplingRate48000RadioBtn"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
