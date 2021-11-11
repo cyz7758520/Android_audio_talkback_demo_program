@@ -1740,7 +1740,7 @@ public class MainActivity extends AppCompatActivity
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseBitrateSuperRadioBtn ) ).performClick(); //默认比特率等级：超。
 
         //请求权限。
-        MediaProcThread.RequestPermissions( this, 1, 1, 1, 1, 1, 1 );
+        MediaProcThread.RequestPermissions( this, 1, 1, 1, 1, 1, 1, 1, 1 );
 
         //设置主界面类对象。
         m_MainActivityPt = this;

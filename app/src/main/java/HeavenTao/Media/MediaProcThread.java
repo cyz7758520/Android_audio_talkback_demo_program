@@ -833,54 +833,124 @@ public abstract class MediaProcThread extends Thread
     }
 
     //请求权限。
-    public static void RequestPermissions( Activity RequestActivity, int IsRequstInternet, int IsRequstModifyAudioSettings, int IsRequstForegroundService, int IsRequestWakeLock, int IsRequestRecordAudio, int IsRequestCamera )
+    public static void RequestPermissions( Activity RequestActivity, int IsRequstInternet, int IsRequstModifyAudioSettings, int IsRequstForegroundService, int IsRequestWakeLock, int IsRequestRecordAudio, int IsRequestCamera, int DeniedIsPrintLogcat, int DeniedIsShowToast )
     {
-        String[] p_PermissionStrArrPt = new String[6];
-        int p_CurPermissionNum = 0;
+        String[] p_RequestPermissionStrArrPt = new String[6];
+        String p_DeniedPermissionStrPt = "拒绝的权限：";
+        int p_PermissionNum;
 
-        //检测并请求网络权限。
-        if( ( IsRequstInternet != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.INTERNET ) != PackageManager.PERMISSION_GRANTED ) )
+        //请求权限。
         {
-            p_PermissionStrArrPt[p_CurPermissionNum] = Manifest.permission.INTERNET;
-            p_CurPermissionNum++;
+            p_PermissionNum = 0;
+
+            //检测网络权限。
+            if( ( IsRequstInternet != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.INTERNET ) != PackageManager.PERMISSION_GRANTED ) )
+            {
+                p_RequestPermissionStrArrPt[p_PermissionNum] = Manifest.permission.INTERNET;
+                p_PermissionNum++;
+            }
+
+            //检测修改音频设置权限。
+            if( ( IsRequstModifyAudioSettings != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.MODIFY_AUDIO_SETTINGS ) != PackageManager.PERMISSION_GRANTED ) )
+            {
+                p_RequestPermissionStrArrPt[p_PermissionNum] = Manifest.permission.MODIFY_AUDIO_SETTINGS;
+                p_PermissionNum++;
+            }
+
+            //检测前台服务权限。
+            if( ( IsRequstForegroundService != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.FOREGROUND_SERVICE ) != PackageManager.PERMISSION_GRANTED ) )
+            {
+                p_RequestPermissionStrArrPt[p_PermissionNum] = Manifest.permission.FOREGROUND_SERVICE;
+                p_PermissionNum++;
+            }
+
+            //检测唤醒锁权限。
+            if( ( IsRequestWakeLock != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.WAKE_LOCK ) != PackageManager.PERMISSION_GRANTED ) )
+            {
+                p_RequestPermissionStrArrPt[p_PermissionNum] = Manifest.permission.WAKE_LOCK;
+                p_PermissionNum++;
+            }
+
+            //检测录音权限。
+            if( ( IsRequestRecordAudio != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED ) )
+            {
+                p_RequestPermissionStrArrPt[p_PermissionNum] = Manifest.permission.RECORD_AUDIO;
+                p_PermissionNum++;
+            }
+
+            //检测摄像头权限。
+            if( ( IsRequestCamera != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.CAMERA ) != PackageManager.PERMISSION_GRANTED ) )
+            {
+                p_RequestPermissionStrArrPt[p_PermissionNum] = Manifest.permission.CAMERA;
+                p_PermissionNum++;
+            }
+
+            //请求权限。
+            if( p_PermissionNum > 0 ) ActivityCompat.requestPermissions( RequestActivity, p_RequestPermissionStrArrPt, 1 );
         }
 
-        //检测并请求修改音频设置权限。
-        if( ( IsRequstModifyAudioSettings != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.MODIFY_AUDIO_SETTINGS ) != PackageManager.PERMISSION_GRANTED ) )
+        //检测拒绝的权限。
+        if( ( DeniedIsPrintLogcat != 0 ) || ( DeniedIsShowToast != 0 ) )
         {
-            p_PermissionStrArrPt[p_CurPermissionNum] = Manifest.permission.MODIFY_AUDIO_SETTINGS;
-            p_CurPermissionNum++;
-        }
+            p_PermissionNum = 0;
 
-        //检测并请求前台服务权限。
-        if( ( IsRequstForegroundService != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.FOREGROUND_SERVICE ) != PackageManager.PERMISSION_GRANTED ) )
-        {
-            p_PermissionStrArrPt[p_CurPermissionNum] = Manifest.permission.FOREGROUND_SERVICE;
-            p_CurPermissionNum++;
-        }
+            //检测网络权限。
+            if( ( IsRequstInternet != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.INTERNET ) != PackageManager.PERMISSION_GRANTED ) )
+            {
+                p_DeniedPermissionStrPt += "网络  ";
+                p_PermissionNum++;
+            }
 
-        //检测并请求唤醒锁权限。
-        if( ( IsRequestWakeLock != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.WAKE_LOCK ) != PackageManager.PERMISSION_GRANTED ) )
-        {
-            p_PermissionStrArrPt[p_CurPermissionNum] = Manifest.permission.WAKE_LOCK;
-            p_CurPermissionNum++;
-        }
+            //检测修改音频设置权限。
+            if( ( IsRequstModifyAudioSettings != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.MODIFY_AUDIO_SETTINGS ) != PackageManager.PERMISSION_GRANTED ) )
+            {
+                p_DeniedPermissionStrPt += "修改音频设置  ";
+                p_PermissionNum++;
+            }
 
-        //检测并请求录音权限。
-        if( ( IsRequestRecordAudio != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED ) )
-        {
-            p_PermissionStrArrPt[p_CurPermissionNum] = Manifest.permission.RECORD_AUDIO;
-            p_CurPermissionNum++;
-        }
+            //检测前台服务权限。
+            if( ( IsRequstForegroundService != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.FOREGROUND_SERVICE ) != PackageManager.PERMISSION_GRANTED ) )
+            {
+                p_DeniedPermissionStrPt += "前台服务  ";
+                p_PermissionNum++;
+            }
 
-        //检测并请求摄像头权限。
-        if( ( IsRequestCamera != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.CAMERA ) != PackageManager.PERMISSION_GRANTED ) )
-        {
-            p_PermissionStrArrPt[p_CurPermissionNum] = Manifest.permission.CAMERA;
-            p_CurPermissionNum++;
-        }
+            //检测唤醒锁权限。
+            if( ( IsRequestWakeLock != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.WAKE_LOCK ) != PackageManager.PERMISSION_GRANTED ) )
+            {
+                p_DeniedPermissionStrPt += "唤醒锁  ";
+                p_PermissionNum++;
+            }
 
-        if( p_CurPermissionNum > 0 ) ActivityCompat.requestPermissions( RequestActivity, p_PermissionStrArrPt, 1 );
+            //检测录音权限。
+            if( ( IsRequestRecordAudio != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED ) )
+            {
+                p_DeniedPermissionStrPt += "录音  ";
+                p_PermissionNum++;
+            }
+
+            //检测摄像头权限。
+            if( ( IsRequestCamera != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.CAMERA ) != PackageManager.PERMISSION_GRANTED ) )
+            {
+                p_DeniedPermissionStrPt += "摄像头  ";
+                p_PermissionNum++;
+            }
+
+            if( p_PermissionNum > 0 )
+            {
+                //打印日志。
+                if (DeniedIsPrintLogcat != 0)
+                {
+                    Log.i(m_CurClsNameStrPt, p_DeniedPermissionStrPt);
+                }
+
+                //打印Toast。
+                if (DeniedIsShowToast != 0)
+                {
+                    Toast.makeText(RequestActivity, p_DeniedPermissionStrPt, Toast.LENGTH_LONG).show();
+                }
+            }
+        }
     }
 
     //请求本线程退出。
