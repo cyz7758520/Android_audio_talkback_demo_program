@@ -1739,29 +1739,8 @@ public class MainActivity extends AppCompatActivity
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseEffectSuperRadioBtn ) ).performClick(); //默认效果等级：超。
         ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseBitrateSuperRadioBtn ) ).performClick(); //默认比特率等级：超。
 
-        //检测并请求录音权限。
-        if( ContextCompat.checkSelfPermission( this, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED )
-            ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.RECORD_AUDIO}, 1 );
-
-        //检测并请求修改音频设置权限。
-        if( ContextCompat.checkSelfPermission( this, Manifest.permission.MODIFY_AUDIO_SETTINGS ) != PackageManager.PERMISSION_GRANTED )
-            ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.MODIFY_AUDIO_SETTINGS}, 1 );
-
-        //检测并请求摄像头权限。
-        if( ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA ) != PackageManager.PERMISSION_GRANTED )
-            ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.CAMERA}, 1 );
-
-        //检测并请求网络权限。
-        if( ContextCompat.checkSelfPermission( this, Manifest.permission.INTERNET ) != PackageManager.PERMISSION_GRANTED )
-            ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.INTERNET}, 1 );
-
-        //检测并请求唤醒锁权限。
-        if( ContextCompat.checkSelfPermission( this, Manifest.permission.WAKE_LOCK ) != PackageManager.PERMISSION_GRANTED )
-            ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.WAKE_LOCK}, 1 );
-
-        //检测并请求前台服务权限。
-        if( ContextCompat.checkSelfPermission( this, Manifest.permission.FOREGROUND_SERVICE ) != PackageManager.PERMISSION_GRANTED )
-            ActivityCompat.requestPermissions( this, new String[] {Manifest.permission.FOREGROUND_SERVICE}, 1 );
+        //请求权限。
+        MediaProcThread.RequestPermissions( this, 1, 1, 1, 1, 1, 1 );
 
         //设置主界面类对象。
         m_MainActivityPt = this;

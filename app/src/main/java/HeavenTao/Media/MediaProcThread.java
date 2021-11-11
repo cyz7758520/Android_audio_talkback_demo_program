@@ -1,7 +1,9 @@
 package HeavenTao.Media;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.media.AudioFormat;
@@ -12,6 +14,8 @@ import android.media.MediaRecorder;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.os.Process;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.widget.Toast;
@@ -31,7 +35,7 @@ import HeavenTao.Media.*;
 //媒体处理线程类。
 public abstract class MediaProcThread extends Thread
 {
-    public String m_CurClsNameStrPt = this.getClass().getSimpleName(); //存放当前类名称字符串。
+    public static String m_CurClsNameStrPt = "MediaProcThread"; //存放当前类名称字符串。
 
     public int m_RunFlag; //存放本线程运行标记。
     public static final int RUN_FLAG_NORUN = 0; //运行标记：未开始运行。
@@ -826,6 +830,57 @@ public abstract class MediaProcThread extends Thread
     public void SetVideoOutputIsBlack( int IsBlack )
     {
         m_VideoOutputPt.m_VideoOutputIsBlack = IsBlack;
+    }
+
+    //请求权限。
+    public static void RequestPermissions( Activity RequestActivity, int IsRequstInternet, int IsRequstModifyAudioSettings, int IsRequstForegroundService, int IsRequestWakeLock, int IsRequestRecordAudio, int IsRequestCamera )
+    {
+        String[] p_PermissionStrArrPt = new String[6];
+        int p_CurPermissionNum = 0;
+
+        //检测并请求网络权限。
+        if( ( IsRequstInternet != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.INTERNET ) != PackageManager.PERMISSION_GRANTED ) )
+        {
+            p_PermissionStrArrPt[p_CurPermissionNum] = Manifest.permission.INTERNET;
+            p_CurPermissionNum++;
+        }
+
+        //检测并请求修改音频设置权限。
+        if( ( IsRequstModifyAudioSettings != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.MODIFY_AUDIO_SETTINGS ) != PackageManager.PERMISSION_GRANTED ) )
+        {
+            p_PermissionStrArrPt[p_CurPermissionNum] = Manifest.permission.MODIFY_AUDIO_SETTINGS;
+            p_CurPermissionNum++;
+        }
+
+        //检测并请求前台服务权限。
+        if( ( IsRequstForegroundService != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.FOREGROUND_SERVICE ) != PackageManager.PERMISSION_GRANTED ) )
+        {
+            p_PermissionStrArrPt[p_CurPermissionNum] = Manifest.permission.FOREGROUND_SERVICE;
+            p_CurPermissionNum++;
+        }
+
+        //检测并请求唤醒锁权限。
+        if( ( IsRequestWakeLock != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.WAKE_LOCK ) != PackageManager.PERMISSION_GRANTED ) )
+        {
+            p_PermissionStrArrPt[p_CurPermissionNum] = Manifest.permission.WAKE_LOCK;
+            p_CurPermissionNum++;
+        }
+
+        //检测并请求录音权限。
+        if( ( IsRequestRecordAudio != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED ) )
+        {
+            p_PermissionStrArrPt[p_CurPermissionNum] = Manifest.permission.RECORD_AUDIO;
+            p_CurPermissionNum++;
+        }
+
+        //检测并请求摄像头权限。
+        if( ( IsRequestCamera != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.CAMERA ) != PackageManager.PERMISSION_GRANTED ) )
+        {
+            p_PermissionStrArrPt[p_CurPermissionNum] = Manifest.permission.CAMERA;
+            p_CurPermissionNum++;
+        }
+
+        if( p_CurPermissionNum > 0 ) ActivityCompat.requestPermissions( RequestActivity, p_PermissionStrArrPt, 1 );
     }
 
     //请求本线程退出。
