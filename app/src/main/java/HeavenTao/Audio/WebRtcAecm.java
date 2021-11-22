@@ -12,7 +12,7 @@ public class WebRtcAecm
         System.loadLibrary( "WebRtc" ); //加载libWebRtc.so。
     }
 
-    public long m_WebRtcAecmPt; //存放WebRtc定点版声学回音消除器的内存指针。
+    public long m_WebRtcAecmPt; //存放WebRtc定点版声学回音消除器的指针。
 
     //构造函数。
     public WebRtcAecm()

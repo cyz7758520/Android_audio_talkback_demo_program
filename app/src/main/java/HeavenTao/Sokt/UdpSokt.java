@@ -5,7 +5,7 @@ import HeavenTao.Data.*;
 //本端UDP协议套接字类。
 public class UdpSokt
 {
-    private long m_UdpSoktPt; //存放本端UDP协议套接字的内存指针。
+    private long m_UdpSoktPt; //存放本端UDP协议套接字的指针。
 
     static
     {
@@ -25,7 +25,7 @@ public class UdpSokt
         Destroy( null );
     }
 
-    //获取本端UDP协议套接字的内存指针。
+    //获取本端UDP协议套接字的指针。
     public long GetUdpSoktPt()
     {
         return m_UdpSoktPt;
@@ -103,9 +103,9 @@ public class UdpSokt
     }
 
     //用已监听或已连接的本端UDP协议套接字发送一个数据包到指定的或连接的远端UDP协议套接字。
-    public int SendPkt( int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte DataBufPt[], long DataBufLen, short TimeOutMsec, int IsAutoLockUnlock, VarStr ErrInfoVarStrPt )
+    public int SendPkt( int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte DataBufPt[], long DataBufLen, short TimeOutMsec, int Times, int IsAutoLockUnlock, VarStr ErrInfoVarStrPt )
     {
-        return UdpSoktSendPkt( m_UdpSoktPt, RmtNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, DataBufPt, DataBufLen, TimeOutMsec, IsAutoLockUnlock, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
+        return UdpSoktSendPkt( m_UdpSoktPt, RmtNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, DataBufPt, DataBufLen, TimeOutMsec, Times, IsAutoLockUnlock, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
     }
     //用已监听或已连接的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包。
     public int RecvPkt( HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TimeOutMsec, int IsAutoLockUnlock, VarStr ErrInfoVarStrPt )
@@ -160,7 +160,7 @@ public class UdpSokt
     public native int UdpSoktGetRecvBufLen( long UdpSoktPt, HTLong RecvBufLenPt, int IsAutoLockUnlock, long ErrInfoVarStrPt );
 
     //用已监听或已连接的本端UDP协议套接字发送一个数据包到指定的或连接的远端UDP协议套接字。
-    public native int UdpSoktSendPkt( long UdpSoktPt, int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte DataBufPt[], long DataBufLen, short TimeOutMsec, int IsAutoLockUnlock, long ErrInfoVarStrPt );
+    public native int UdpSoktSendPkt( long UdpSoktPt, int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte DataBufPt[], long DataBufLen, short TimeOutMsec, int Times, int IsAutoLockUnlock, long ErrInfoVarStrPt );
     //用已监听或已连接的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包。
     public native int UdpSoktRecvPkt( long UdpSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TimeOutMsec, int IsAutoLockUnlock, long ErrInfoVarStrPt );
 

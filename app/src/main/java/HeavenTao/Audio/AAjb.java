@@ -12,7 +12,7 @@ public class AAjb
         System.loadLibrary( "Ajb" ); //加载libAjb.so。
     }
 
-    public long m_AAjbPt; //存放音频自适应抖动缓冲器的内存指针。
+    public long m_AAjbPt; //存放音频自适应抖动缓冲器的指针。
 
     //构造函数。
     public AAjb()

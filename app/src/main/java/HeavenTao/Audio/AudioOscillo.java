@@ -13,7 +13,7 @@ public class AudioOscillo
         System.loadLibrary( "AudioOscillo" ); //加载libAudioOscillo.so。
     }
 
-    public long m_AudioOscilloPt; //存放音频波形器的内存指针。
+    public long m_AudioOscilloPt; //存放音频波形器的指针。
 
     //构造函数。
     public AudioOscillo()

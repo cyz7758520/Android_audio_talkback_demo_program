@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="Android下音视频对讲演示程序\n版本：2021年11月10日"
+            android:text="Android下音视频对讲演示程序\n版本：2021年11月22日"
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="normal|bold" />
@@ -65,19 +65,27 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:text="TCP协议"
+                    android:text="TCP"
                     android:id="@+id/UseTcpPrtclRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
 
                 <RadioButton
-                    android:text="UDP协议"
+                    android:text="UDP"
                     android:id="@+id/UseUdpPrtclRadioBtn"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:checked="true" />
+
+                <Button
+                    android:id="@+id/XfrPrtclBtn"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:text="设置"
+                    android:onClick="OnClickXfrPrtclSetting" />
 
             </RadioGroup>
 

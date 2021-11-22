@@ -11,7 +11,7 @@ public class OpenH264Encoder
         System.loadLibrary( "OpenH264" ); //加载libOpenH264.so。
     }
 
-    public long m_OpenH264EncoderPt; //存放OpenH264编码器的内存指针。
+    public long m_OpenH264EncoderPt; //存放OpenH264编码器的指针。
 
     //构造函数。
     public OpenH264Encoder()

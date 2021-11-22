@@ -11,7 +11,7 @@ public class SpeexDecoder
         System.loadLibrary( "Speex" ); //加载libSpeex.so。
     }
 
-    public long m_SpeexDecoderPt; //存放Speex解码器的内存指针。
+    public long m_SpeexDecoderPt; //存放Speex解码器的指针。
 
     //构造函数。
     public SpeexDecoder()

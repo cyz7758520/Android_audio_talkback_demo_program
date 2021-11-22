@@ -14,7 +14,7 @@ public class SpeexWebRtcAec
         System.loadLibrary( "SpeexWebRtcAec" ); //加载libSpeexWebRtcAec.so。
     }
 
-    public long m_SpeexWebRtcAecPt; //存放SpeexWebRtc三重声学回音消除器的内存指针。
+    public long m_SpeexWebRtcAecPt; //存放SpeexWebRtc三重声学回音消除器的指针。
 
     //构造函数。
     public SpeexWebRtcAec()

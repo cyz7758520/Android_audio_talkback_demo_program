@@ -11,7 +11,7 @@ public class WaveFileReader
         System.loadLibrary( "WaveFile" ); //加载libWaveFile.so。
     }
 
-    public long m_WaveFileReaderPt; //存放Wave文件读取器的内存指针。
+    public long m_WaveFileReaderPt; //存放Wave文件读取器的指针。
 
     //构造函数。
     public WaveFileReader()

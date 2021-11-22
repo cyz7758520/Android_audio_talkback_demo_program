@@ -15,7 +15,7 @@ import android.support.v4.app.NotificationCompat;
 //前台服务。
 public class FrgndSrvc extends Service
 {
-    MainActivity m_MainActivityPt; //存放主界面类对象的内存指针。
+    MainActivity m_MainActivityPt; //存放主界面类对象的指针。
 
     public class FrgndSrvcBinder extends Binder
     {
@@ -23,7 +23,7 @@ public class FrgndSrvc extends Service
         {
             m_MainActivityPt = MainActivityPt;
 
-            NotificationManager p_NotificationManagerPt = (NotificationManager) getSystemService( NOTIFICATION_SERVICE ); //存放通知管理器对象的内存指针。
+            NotificationManager p_NotificationManagerPt = (NotificationManager) getSystemService( NOTIFICATION_SERVICE ); //存放通知管理器对象的指针。
 
             if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ) //如果当前系统为Andoird 8.0及以上。
             {

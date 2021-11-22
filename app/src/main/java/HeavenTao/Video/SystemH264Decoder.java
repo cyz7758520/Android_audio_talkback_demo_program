@@ -11,7 +11,7 @@ public class SystemH264Decoder
         System.loadLibrary( "SystemH264" ); //加载libSystemH264.so。
     }
 
-    public long m_SystemH264DecoderPt; //存放系统自带H264解码器的内存指针。
+    public long m_SystemH264DecoderPt; //存放系统自带H264解码器的指针。
 
     //构造函数。
     public SystemH264Decoder()

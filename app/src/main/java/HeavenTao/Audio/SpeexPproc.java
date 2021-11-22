@@ -11,7 +11,7 @@ public class SpeexPproc
         System.loadLibrary( "SpeexDsp" ); //加载libSpeexDsp.so。
     }
 
-    public long m_SpeexPprocPt; //存放Speex预处理器的内存指针。
+    public long m_SpeexPprocPt; //存放Speex预处理器的指针。
 
     //构造函数。
     public SpeexPproc()

@@ -11,7 +11,7 @@ public class TcpClntSokt
         System.loadLibrary( "Sokt" ); //加载libSokt.so。
     }
 
-    public long m_TcpClntSoktPt; //存放本端TCP协议客户端套接字的内存指针。
+    public long m_TcpClntSoktPt; //存放本端TCP协议客户端套接字的指针。
 
     //构造函数。
     public TcpClntSokt()
@@ -97,9 +97,9 @@ public class TcpClntSokt
     }
 
     //用已连接的本端TCP协议客户端套接字发送一个数据包到连接的远端TCP协议客户端套接字。
-    public int SendPkt( byte DataBufPt[], long DataBufLen, short TimeOutMsec, int IsAutoLockUnlock, VarStr ErrInfoVarStrPt )
+    public int SendPkt( byte DataBufPt[], long DataBufLen, short TimeOutMsec, int Times, int IsAutoLockUnlock, VarStr ErrInfoVarStrPt )
     {
-        return TcpClntSoktSendPkt( m_TcpClntSoktPt, DataBufPt, DataBufLen, TimeOutMsec, IsAutoLockUnlock, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
+        return TcpClntSoktSendPkt( m_TcpClntSoktPt, DataBufPt, DataBufLen, TimeOutMsec, Times, IsAutoLockUnlock, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
     }
     //用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包。
     public int RecvPkt( byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TimeOutMsec, int IsAutoLockUnlock, VarStr ErrInfoVarStrPt )
@@ -154,7 +154,7 @@ public class TcpClntSokt
     public native int TcpClntSoktGetRecvBufLen( long TcpClntSoktPt, HTLong RecvBufLenPt, int IsAutoLockUnlock, long ErrInfoVarStrPt );
 
     //用已连接的本端TCP协议客户端套接字发送一个数据包到连接的远端TCP协议客户端套接字。
-    public native int TcpClntSoktSendPkt( long TcpClntSoktPt, byte DataBufPt[], long DataBufLen, short TimeOutMsec, int IsAutoLockUnlock, long ErrInfoVarStrPt );
+    public native int TcpClntSoktSendPkt( long TcpClntSoktPt, byte DataBufPt[], long DataBufLen, short TimeOutMsec, int Times, int IsAutoLockUnlock, long ErrInfoVarStrPt );
     //用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包。
     public native int TcpClntSoktRecvPkt( long TcpClntSoktPt, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TimeOutMsec, int IsAutoLockUnlock, long ErrInfoVarStrPt );
 

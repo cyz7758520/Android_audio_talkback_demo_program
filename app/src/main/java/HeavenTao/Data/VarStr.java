@@ -8,7 +8,7 @@ public class VarStr
         System.loadLibrary( "Func" ); //加载libFunc.so。
     }
 
-    public long m_VarStrPt; //存放动态字符串的内存指针。
+    public long m_VarStrPt; //存放动态字符串的指针。
 
     //构造函数。
     public VarStr()

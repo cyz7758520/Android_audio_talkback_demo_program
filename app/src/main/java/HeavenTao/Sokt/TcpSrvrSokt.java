@@ -11,7 +11,7 @@ public class TcpSrvrSokt
         System.loadLibrary( "Sokt" ); //加载libSokt.so。
     }
 
-    public long m_TcpSrvrSoktPt; //存放本端TCP协议服务端套接字的内存指针。
+    public long m_TcpSrvrSoktPt; //存放本端TCP协议服务端套接字的指针。
 
     //构造函数。
     public TcpSrvrSokt()

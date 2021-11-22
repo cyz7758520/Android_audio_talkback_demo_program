@@ -11,7 +11,7 @@ public class WaveFileWriter
         System.loadLibrary( "WaveFile" ); //加载libWaveFile.so。
     }
 
-    public long m_WaveFileWriterPt; //存放Wave文件写入器的内存指针。
+    public long m_WaveFileWriterPt; //存放Wave文件写入器的指针。
 
     //构造函数。
     public WaveFileWriter()

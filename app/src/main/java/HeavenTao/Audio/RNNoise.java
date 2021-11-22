@@ -13,7 +13,7 @@ public class RNNoise
         System.loadLibrary( "RNNoise" ); //加载libRNNoise.so。
     }
 
-    public long m_RNNoisePt; //RNNoise噪音抑制器的内存指针。
+    public long m_RNNoisePt; //RNNoise噪音抑制器的指针。
 
     //构造函数。
     public RNNoise()

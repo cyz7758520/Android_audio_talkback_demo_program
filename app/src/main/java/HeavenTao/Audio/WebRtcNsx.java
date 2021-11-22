@@ -12,7 +12,7 @@ public class WebRtcNsx
         System.loadLibrary( "WebRtc" ); //加载libWebRtc.so。
     }
 
-    public long m_WebRtcNsxPt; //WebRtc定点版噪音抑制器的内存指针。
+    public long m_WebRtcNsxPt; //WebRtc定点版噪音抑制器的指针。
 
     //构造函数。
     public WebRtcNsx()

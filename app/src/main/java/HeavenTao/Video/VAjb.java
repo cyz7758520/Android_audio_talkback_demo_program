@@ -12,7 +12,7 @@ public class VAjb
         System.loadLibrary( "Ajb" ); //加载libAjb.so。
     }
 
-    public long m_VAjbPt; //存放视频自适应抖动缓冲器的内存指针。
+    public long m_VAjbPt; //存放视频自适应抖动缓冲器的指针。
 
     //构造函数。
     public VAjb()

@@ -46,18 +46,18 @@ public abstract class MediaProcThread extends Thread
     public int m_ExitFlag; //存放本线程退出标记，为0表示保持运行，为1表示请求退出，为2表示请求重启，为3表示请求重启但不执行用户定义的UserInit初始化函数和UserDestroy销毁函数。
     public int m_ExitCode; //存放本线程退出代码，为0表示正常退出，为-1表示初始化失败，为-2表示处理失败。
 
-    public static Context m_AppContextPt; //存放应用程序上下文类对象的内存指针。
+    public static Context m_AppContextPt; //存放应用程序上下文类对象的指针。
 
     int m_IsSaveSettingToFile; //存放是否保存设置到文件，为非0表示要保存，为0表示不保存。
     String m_SettingFileFullPathStrPt; //存放设置文件的完整路径字符串。
 
     public int m_IsPrintLogcat; //存放是否打印Logcat日志，为非0表示要打印，为0表示不打印。
     public int m_IsShowToast; //存放是否显示Toast，为非0表示要显示，为0表示不显示。
-    public Activity m_ShowToastActivityPt; //存放显示Toast界面的内存指针。
+    public Activity m_ShowToastActivityPt; //存放显示Toast界面的指针。
 
     int m_IsUseWakeLock; //存放是否使用唤醒锁，非0表示要使用，0表示不使用。
-    PowerManager.WakeLock m_ProximityScreenOffWakeLockPt; //存放接近息屏唤醒锁类对象的内存指针。
-    PowerManager.WakeLock m_FullWakeLockPt; //存放屏幕键盘全亮唤醒锁类对象的内存指针。
+    PowerManager.WakeLock m_ProximityScreenOffWakeLockPt; //存放接近息屏唤醒锁类对象的指针。
+    PowerManager.WakeLock m_FullWakeLockPt; //存放屏幕键盘全亮唤醒锁类对象的指针。
 
     public class AudioInput //音频输入类。
     {
@@ -70,7 +70,7 @@ public abstract class MediaProcThread extends Thread
 
         public int m_UseWhatAec; //存放使用什么声学回音消除器，为0表示不使用，为1表示Speex声学回音消除器，为2表示WebRtc定点版声学回音消除器，为2表示WebRtc浮点版声学回音消除器，为4表示SpeexWebRtc三重声学回音消除器。
 
-        SpeexAec m_SpeexAecPt; //存放Speex声学回音消除器类对象的内存指针。
+        SpeexAec m_SpeexAecPt; //存放Speex声学回音消除器类对象的指针。
         int m_SpeexAecFilterLen; //存放Speex声学回音消除器的滤波器数据长度，单位毫秒。
         int m_SpeexAecIsUseRec; //存放Speex声学回音消除器是否使用残余回音消除，为非0表示要使用，为0表示不使用。
         float m_SpeexAecEchoMultiple; //存放Speex声学回音消除器在残余回音消除时，残余回音的倍数，倍数越大消除越强，取值区间为[0.0,100.0]。
@@ -78,14 +78,14 @@ public abstract class MediaProcThread extends Thread
         int m_SpeexAecEchoSupes; //存放Speex声学回音消除器在残余回音消除时，残余回音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]。
         int m_SpeexAecEchoSupesAct; //存放Speex声学回音消除器在残余回音消除时，有近端语音活动时残余回音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]。
         int m_SpeexAecIsSaveMemFile; //存放Speex声学回音消除器是否保存内存块到文件，为非0表示要保存，为0表示不保存。
-        String m_SpeexAecMemFileFullPathStrPt; //存放Speex声学回音消除器的内存块文件完整路径字符串类对象的内存指针。
+        String m_SpeexAecMemFileFullPathStrPt; //存放Speex声学回音消除器的内存块文件完整路径字符串类对象的指针。
 
-        WebRtcAecm m_WebRtcAecmPt; //存放WebRtc定点版声学回音消除器类对象的内存指针。
+        WebRtcAecm m_WebRtcAecmPt; //存放WebRtc定点版声学回音消除器类对象的指针。
         int m_WebRtcAecmIsUseCNGMode; //存放WebRtc定点版声学回音消除器是否使用舒适噪音生成模式，为非0表示要使用，为0表示不使用。
         int m_WebRtcAecmEchoMode; //存放WebRtc定点版声学回音消除器的消除模式，消除模式越高消除越强，取值区间为[0,4]。
         int m_WebRtcAecmDelay; //存放WebRtc定点版声学回音消除器的回音延迟，单位毫秒，取值区间为[-2147483648,2147483647]，为0表示自适应设置。
 
-        WebRtcAec m_WebRtcAecPt; //存放WebRtc浮点版声学回音消除器类对象的内存指针。
+        WebRtcAec m_WebRtcAecPt; //存放WebRtc浮点版声学回音消除器类对象的指针。
         int m_WebRtcAecEchoMode; //存放WebRtc浮点版声学回音消除器的消除模式，消除模式越高消除越强，取值区间为[0,2]。
         int m_WebRtcAecDelay; //存放WebRtc浮点版声学回音消除器的回音延迟，单位毫秒，取值区间为[-2147483648,2147483647]，为0表示自适应设置。
         int m_WebRtcAecIsUseDelayAgnosticMode; //存放WebRtc浮点版声学回音消除器是否使用回音延迟不可知模式，为非0表示要使用，为0表示不使用。
@@ -95,7 +95,7 @@ public abstract class MediaProcThread extends Thread
         int m_WebRtcAecIsSaveMemFile; //存放WebRtc浮点版声学回音消除器是否保存内存块到文件，为非0表示要保存，为0表示不保存。
         String m_WebRtcAecMemFileFullPathStrPt; //存放WebRtc浮点版声学回音消除器的内存块文件完整路径字符串。
 
-        SpeexWebRtcAec m_SpeexWebRtcAecPt; //存放SpeexWebRtc三重声学回音消除器类对象的内存指针。
+        SpeexWebRtcAec m_SpeexWebRtcAecPt; //存放SpeexWebRtc三重声学回音消除器类对象的指针。
         int m_SpeexWebRtcAecWorkMode; //存放SpeexWebRtc三重声学回音消除器的工作模式，为1表示Speex声学回音消除器+WebRtc定点版声学回音消除器，为2表示WebRtc定点版声学回音消除器+WebRtc浮点版声学回音消除器，为3表示Speex声学回音消除器+WebRtc定点版声学回音消除器+WebRtc浮点版声学回音消除器。
         int m_SpeexWebRtcAecSpeexAecFilterLen; //存放SpeexWebRtc三重声学回音消除器的Speex声学回音消除器的滤波器数据长度，单位毫秒。
         int m_SpeexWebRtcAecSpeexAecIsUseRec; //存放SpeexWebRtc三重声学回音消除器的Speex声学回音消除器是否使用残余回音消除，为非0表示要使用，为0表示不使用。
@@ -117,18 +117,18 @@ public abstract class MediaProcThread extends Thread
 
         public int m_UseWhatNs; //存放使用什么噪音抑制器，为0表示不使用，为1表示Speex预处理器的噪音抑制，为2表示WebRtc定点版噪音抑制器，为3表示WebRtc浮点版噪音抑制器，为4表示RNNoise噪音抑制器。
 
-        SpeexPproc m_SpeexPprocPt; //存放Speex预处理器类对象的内存指针。
+        SpeexPproc m_SpeexPprocPt; //存放Speex预处理器类对象的指针。
         int m_SpeexPprocIsUseNs; //存放Speex预处理器是否使用噪音抑制，为非0表示要使用，为0表示不使用。
         int m_SpeexPprocNoiseSupes; //存放Speex预处理器在噪音抑制时，噪音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]。
         int m_SpeexPprocIsUseDereverb; //存放Speex预处理器是否使用混响音消除，为非0表示要使用，为0表示不使用。
 
-        WebRtcNsx m_WebRtcNsxPt; //存放WebRtc定点版噪音抑制器类对象的内存指针。
+        WebRtcNsx m_WebRtcNsxPt; //存放WebRtc定点版噪音抑制器类对象的指针。
         int m_WebRtcNsxPolicyMode; //存放WebRtc定点版噪音抑制器的策略模式，策略模式越高抑制越强，取值区间为[0,3]。
 
-        WebRtcNs m_WebRtcNsPt; //存放WebRtc浮点版噪音抑制器类对象的内存指针。
+        WebRtcNs m_WebRtcNsPt; //存放WebRtc浮点版噪音抑制器类对象的指针。
         int m_WebRtcNsPolicyMode; //存放WebRtc浮点版噪音抑制器的策略模式，策略模式越高抑制越强，取值区间为[0,3]。
 
-        RNNoise m_RNNoisePt; //存放RNNoise噪音抑制器类对象的内存指针。
+        RNNoise m_RNNoisePt; //存放RNNoise噪音抑制器类对象的指针。
 
         int m_IsUseSpeexPprocOther; //存放Speex预处理器是否使用其他功能，为非0表示要使用，为0表示不使用。
         int m_SpeexPprocIsUseVad; //存放Speex预处理器是否使用语音活动检测，为非0表示要使用，为0表示不使用。
@@ -142,41 +142,41 @@ public abstract class MediaProcThread extends Thread
 
         public int m_UseWhatEncoder; //存放使用什么编码器，为0表示PCM原始数据，为1表示Speex编码器，为2表示Opus编码器。
 
-        SpeexEncoder m_SpeexEncoderPt; //存放Speex编码器类对象的内存指针。
+        SpeexEncoder m_SpeexEncoderPt; //存放Speex编码器类对象的指针。
         int m_SpeexEncoderUseCbrOrVbr; //存放Speex编码器使用固定比特率还是动态比特率进行编码，为0表示要使用固定比特率，为非0表示要使用动态比特率。
         int m_SpeexEncoderQuality; //存放Speex编码器的编码质量等级，质量等级越高音质越好、压缩率越低，取值区间为[0,10]。
         int m_SpeexEncoderComplexity; //存放Speex编码器的编码复杂度，复杂度越高压缩率不变、CPU使用率越高、音质越好，取值区间为[0,10]。
         int m_SpeexEncoderPlcExpectedLossRate; //存放Speex编码器在数据包丢失隐藏时，数据包的预计丢失概率，预计丢失概率越高抗网络抖动越强、压缩率越低，取值区间为[0,100]。
 
         public int m_IsSaveAudioToFile; //存放是否保存音频到文件，为非0表示要保存，为0表示不保存。
-        WaveFileWriter m_AudioInputWaveFileWriterPt; //存放音频输入Wave文件写入器对象的内存指针。
-        WaveFileWriter m_AudioResultWaveFileWriterPt; //存放音频结果Wave文件写入器对象的内存指针。
+        WaveFileWriter m_AudioInputWaveFileWriterPt; //存放音频输入Wave文件写入器对象的指针。
+        WaveFileWriter m_AudioResultWaveFileWriterPt; //存放音频结果Wave文件写入器对象的指针。
         String m_AudioInputFileFullPathStrPt; //存放音频输入文件的完整路径字符串。
         String m_AudioResultFileFullPathStrPt; //存放音频结果文件的完整路径字符串。
 
         public int m_IsDrawAudioOscilloToSurface; //存放是否绘制音频波形到Surface，为非0表示要绘制，为0表示不绘制。
-        SurfaceView m_AudioInputOscilloSurfacePt; //存放音频输入波形Surface对象的内存指针。
-        AudioOscillo m_AudioInputOscilloPt; //存放音频输入波形器对象的内存指针。
-        SurfaceView m_AudioResultOscilloSurfacePt; //存放音频结果波形Surface对象的内存指针。
-        AudioOscillo m_AudioResultOscilloPt; //存放音频结果波形器对象的内存指针。
+        SurfaceView m_AudioInputOscilloSurfacePt; //存放音频输入波形Surface对象的指针。
+        AudioOscillo m_AudioInputOscilloPt; //存放音频输入波形器对象的指针。
+        SurfaceView m_AudioResultOscilloSurfacePt; //存放音频结果波形Surface对象的指针。
+        AudioOscillo m_AudioResultOscilloPt; //存放音频结果波形器对象的指针。
 
-        AudioRecord m_AudioInputDevicePt; //存放音频输入设备类对象的内存指针。
+        AudioRecord m_AudioInputDevicePt; //存放音频输入设备类对象的指针。
         int m_AudioInputDeviceBufSz; //存放音频输入设备缓冲区大小，单位字节。
         int m_AudioInputIsMute; //存放音频输入是否静音，为0表示有声音，为非0表示静音。
 
-        public LinkedList< short[] > m_AudioInputFrameLnkLstPt; //存放音频输入帧链表类对象的内存指针。
-        public LinkedList< short[] > m_AudioInputIdleFrameLnkLstPt; //存放音频输入空闲帧链表类对象的内存指针。
+        public LinkedList< short[] > m_AudioInputFrameLnkLstPt; //存放音频输入帧链表类对象的指针。
+        public LinkedList< short[] > m_AudioInputIdleFrameLnkLstPt; //存放音频输入空闲帧链表类对象的指针。
 
         //音频输入线程的临时变量。
-        short m_AudioInputFramePt[]; //存放音频输入帧的内存指针。
+        short m_AudioInputFramePt[]; //存放音频输入帧的指针。
         int m_AudioInputFrameLnkLstElmTotal; //存放音频输入帧链表的元数总数。
         long m_LastTimeMsec; //存放上次时间的毫秒数。
         long m_NowTimeMsec; //存放本次时间的毫秒数。
 
-        AudioInputThread m_AudioInputThreadPt; //存放音频输入线程类对象的内存指针。
+        AudioInputThread m_AudioInputThreadPt; //存放音频输入线程类对象的指针。
     }
 
-    public AudioInput m_AudioInputPt = new AudioInput(); //存放音频输入类对象的内存指针。
+    public AudioInput m_AudioInputPt = new AudioInput(); //存放音频输入类对象的指针。
 
     public class AudioOutput //音频输出类。
     {
@@ -187,38 +187,38 @@ public abstract class MediaProcThread extends Thread
 
         public int m_UseWhatDecoder; //存放使用什么解码器，为0表示PCM原始数据，为1表示Speex解码器，为2表示Opus解码器。
 
-        SpeexDecoder m_SpeexDecoderPt; //存放Speex解码器类对象的内存指针。
+        SpeexDecoder m_SpeexDecoderPt; //存放Speex解码器类对象的指针。
         int m_SpeexDecoderIsUsePerceptualEnhancement; //存放Speex解码器是否使用知觉增强，为非0表示要使用，为0表示不使用。
 
         public int m_IsSaveAudioToFile; //存放是否保存音频到文件，为非0表示要保存，为0表示不保存。
-        WaveFileWriter m_AudioOutputWaveFileWriterPt; //存放音频输出Wave文件写入器对象的内存指针。
+        WaveFileWriter m_AudioOutputWaveFileWriterPt; //存放音频输出Wave文件写入器对象的指针。
         String m_AudioOutputFileFullPathStrPt; //存放音频输出文件的完整路径字符串。
 
         public int m_IsDrawAudioOscilloToSurface; //存放是否绘制音频波形到Surface，为非0表示要绘制，为0表示不绘制。
-        SurfaceView m_AudioOutputOscilloSurfacePt; //存放音频输出波形Surface对象的内存指针。
-        AudioOscillo m_AudioOutputOscilloPt; //存放音频输出波形器对象的内存指针。
+        SurfaceView m_AudioOutputOscilloSurfacePt; //存放音频输出波形Surface对象的指针。
+        AudioOscillo m_AudioOutputOscilloPt; //存放音频输出波形器对象的指针。
 
-        public AudioTrack m_AudioOutputDevicePt; //存放音频输出设备类对象的内存指针。
+        public AudioTrack m_AudioOutputDevicePt; //存放音频输出设备类对象的指针。
         int m_AudioOutputDeviceBufSz; //存放音频输出设备缓冲区大小，单位字节。
         public int m_UseWhatAudioOutputDevice; //存放使用什么音频输出设备，为0表示扬声器，为非0表示听筒。
         public int m_UseWhatAudioOutputStreamType; //存放使用什么音频输出流类型，为0表示通话类型，为非0表示媒体类型。
         int m_AudioOutputIsMute; //存放音频输出是否静音，为0表示有声音，为非0表示静音。
 
-        public LinkedList< short[] > m_AudioOutputFrameLnkLstPt; //存放音频输出帧链表类对象的内存指针。
-        public LinkedList< short[] > m_AudioOutputIdleFrameLnkLstPt; //存放音频输出空闲帧链表类对象的内存指针。
+        public LinkedList< short[] > m_AudioOutputFrameLnkLstPt; //存放音频输出帧链表类对象的指针。
+        public LinkedList< short[] > m_AudioOutputIdleFrameLnkLstPt; //存放音频输出空闲帧链表类对象的指针。
 
         //音频输出线程的临时变量。
-        short m_AudioOutputFramePt[]; //存放音频输出帧的内存指针。
-        byte m_EncodedAudioOutputFramePt[]; //存放已编码格式音频输出帧的内存指针。
+        short m_AudioOutputFramePt[]; //存放音频输出帧的指针。
+        byte m_EncodedAudioOutputFramePt[]; //存放已编码格式音频输出帧的指针。
         HTLong m_AudioOutputFrameLenPt; //存放音频输出帧的数据长度，单位字节。
         int m_AudioOutputFrameLnkLstElmTotal; //存放音频输出帧链表的元数总数。
         long m_LastTimeMsec; //存放上次时间的毫秒数。
         long m_NowTimeMsec; //存放本次时间的毫秒数。
 
-        AudioOutputThread m_AudioOutputThreadPt; //存放音频输出线程类对象的内存指针。
+        AudioOutputThread m_AudioOutputThreadPt; //存放音频输出线程类对象的指针。
     }
 
-    public AudioOutput m_AudioOutputPt = new AudioOutput(); //存放音频输出类对象的内存指针。
+    public AudioOutput m_AudioOutputPt = new AudioOutput(); //存放音频输出类对象的指针。
 
     public class VideoInput //视频输入类。
     {
@@ -231,25 +231,25 @@ public abstract class MediaProcThread extends Thread
 
         public int m_UseWhatEncoder; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264编码器，为2表示系统自带H264编码器。
 
-        OpenH264Encoder m_OpenH264EncoderPt; //存放OpenH264编码器类对象的内存指针。
+        OpenH264Encoder m_OpenH264EncoderPt; //存放OpenH264编码器类对象的指针。
         int m_OpenH264EncoderVideoType;//存放OpenH264编码器的视频类型，为0表示实时摄像头视频，为1表示实时屏幕内容视频，为2表示非实时摄像头视频，为3表示非实时屏幕内容视频，为4表示其他视频。
         int m_OpenH264EncoderEncodedBitrate; //存放OpenH264编码器的编码后比特率，单位为bps。
         int m_OpenH264EncoderBitrateControlMode; //存放OpenH264编码器的比特率控制模式，为0表示质量优先模式，为1表示比特率优先模式，为2表示缓冲区优先模式，为3表示时间戳优先模式。
         int m_OpenH264EncoderIDRFrameIntvl; //存放OpenH264编码器的IDR帧间隔帧数，单位为个，为0表示仅第一帧为IDR帧，为大于0表示每隔这么帧就至少有一个IDR帧。
         int m_OpenH264EncoderComplexity; //存放OpenH264编码器的复杂度，复杂度越高压缩率不变、CPU使用率越高、画质越好，取值区间为[0,2]。
 
-        SystemH264Encoder m_SystemH264EncoderPt; //存放系统自带H264编码器类对象的内存指针。
+        SystemH264Encoder m_SystemH264EncoderPt; //存放系统自带H264编码器类对象的指针。
         int m_SystemH264EncoderEncodedBitrate; //存放系统自带H264编码器的编码后比特率，单位为bps。
         int m_SystemH264EncoderBitrateControlMode; //存放系统自带H264编码器的比特率控制模式，为MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CQ(0x00)表示质量模式，为MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR(0x01)表示动态比特率模式，为MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR(0x02)表示固定比特率模式。
         int m_SystemH264EncoderIDRFrameIntvlTimeSec; //存放系统自带H264编码器的IDR帧间隔时间，单位为秒，为负数表示仅第一帧为IDR帧，为0表示每一帧都为IDR帧，为大于0表示每这么多秒就有一个IDR帧。
         int m_SystemH264EncoderComplexity; //存放系统自带H264编码器的复杂度，复杂度越高压缩率不变、CPU使用率越高、画质越好，取值区间为[0,2]。
 
-        public Camera m_VideoInputDevicePt; //存放视频输入设备类对象的内存指针。
+        public Camera m_VideoInputDevicePt; //存放视频输入设备类对象的指针。
         public int m_UseWhatVideoInputDevice; //存放使用什么视频输入设备，为0表示前置摄像头，为1表示后置摄像头。
         int m_FrontCameraDeviceId = -1; //存放前置摄像头的设备ID，为-1表示自动查找。
         int m_BackCameraDeviceId = -1; //存放后置摄像头的设备ID，为-1表示自动查找。
-        public HTSurfaceView m_VideoInputPreviewSurfaceViewPt; //存放视频输入预览SurfaceView类对象的内存指针。
-        public byte m_VideoInputPreviewCallbackBufferPtPt[][]; //存放视频输入预览回调函数缓冲区的内存指针。
+        public HTSurfaceView m_VideoInputPreviewSurfaceViewPt; //存放视频输入预览SurfaceView类对象的指针。
+        public byte m_VideoInputPreviewCallbackBufferPtPt[][]; //存放视频输入预览回调函数缓冲区的指针。
         int m_VideoInputDeviceFrameWidth; //存放视频输入设备帧的宽度，单位为像素。
         int m_VideoInputDeviceFrameHeight; //存放视频输入设备帧的高度，单位为像素。
         int m_VideoInputDeviceFrameIsCrop; //存放视频输入设备帧是否裁剪，为0表示不裁剪，为非0表示要裁剪。
@@ -275,32 +275,32 @@ public abstract class MediaProcThread extends Thread
                 m_EncodedVideoInputFramePt = ( m_VideoInputPt.m_IsUseVideoInput != 0 && m_VideoInputPt.m_UseWhatEncoder != 0 ) ? new byte[ m_VideoInputPt.m_VideoInputDeviceFrameScaleWidth * m_VideoInputPt.m_VideoInputDeviceFrameScaleHeight * 3 / 2 ] : null;
                 m_EncodedVideoInputFrameLenPt = ( m_VideoInputPt.m_IsUseVideoInput != 0 && m_VideoInputPt.m_UseWhatEncoder != 0 ) ? new HTLong( 0 ) : null;
             }
-            byte m_YU12VideoInputFramePt[]; //存放YU12格式视频输入帧的内存指针。
+            byte m_YU12VideoInputFramePt[]; //存放YU12格式视频输入帧的指针。
             HTInt m_YU12VideoInputFrameWidthPt; //存放YU12格式视频输入帧的宽度。
             HTInt m_YU12VideoInputFrameHeightPt; //存放YU12格式视频输入帧的高度。
             byte m_EncodedVideoInputFramePt[]; //存放已编码格式视频输入帧。
             HTLong m_EncodedVideoInputFrameLenPt; //存放已编码格式视频输入帧的数据长度，单位字节。
         }
-        public LinkedList< byte[] > m_NV21VideoInputFrameLnkLstPt; //存放NV21格式视频输入帧链表类对象的内存指针。
-        public LinkedList< VideoInputFrameElm > m_VideoInputFrameLnkLstPt; //存放视频输入帧链表类对象的内存指针。
-        public LinkedList< VideoInputFrameElm > m_VideoInputIdleFrameLnkLstPt; //存放视频输入空闲帧链表类对象的内存指针。
+        public LinkedList< byte[] > m_NV21VideoInputFrameLnkLstPt; //存放NV21格式视频输入帧链表类对象的指针。
+        public LinkedList< VideoInputFrameElm > m_VideoInputFrameLnkLstPt; //存放视频输入帧链表类对象的指针。
+        public LinkedList< VideoInputFrameElm > m_VideoInputIdleFrameLnkLstPt; //存放视频输入空闲帧链表类对象的指针。
 
         //视频输入线程的临时变量。
-        byte m_VideoInputFramePt[]; //存放视频输入帧的内存指针。
-        byte m_VideoInputResultFramePt[]; //存放视频输入结果帧的内存指针。
-        byte m_VideoInputTmpFramePt[]; //存放视频输入临时帧的内存指针。
-        byte m_VideoInputSwapFramePt[]; //存放视频输入交换帧的内存指针。
+        byte m_VideoInputFramePt[]; //存放视频输入帧的指针。
+        byte m_VideoInputResultFramePt[]; //存放视频输入结果帧的指针。
+        byte m_VideoInputTmpFramePt[]; //存放视频输入临时帧的指针。
+        byte m_VideoInputSwapFramePt[]; //存放视频输入交换帧的指针。
         long m_VideoInputResultFrameSz; //存放视频输入结果帧的内存大小，单位字节。
         HTLong m_VideoInputResultFrameLenPt; //存放视频输入结果帧的数据长度，单位字节。
-        VideoInputFrameElm m_VideoInputFrameElmPt; //存放视频输入帧元素的内存指针。
+        VideoInputFrameElm m_VideoInputFrameElmPt; //存放视频输入帧元素的指针。
         int m_VideoInputFrameLnkLstElmTotal; //存放视频输入帧链表的元数总数。
         long m_LastTimeMsec; //存放上次时间的毫秒数。
         long m_NowTimeMsec; //存放本次时间的毫秒数。
 
-        VideoInputThread m_VideoInputThreadPt; //存放视频输入线程类对象的内存指针。
+        VideoInputThread m_VideoInputThreadPt; //存放视频输入线程类对象的指针。
     }
 
-    public VideoInput m_VideoInputPt = new VideoInput(); //存放视频输入类对象的内存指针。
+    public VideoInput m_VideoInputPt = new VideoInput(); //存放视频输入类对象的指针。
 
     public class VideoOutput //视频输出类。
     {
@@ -308,31 +308,31 @@ public abstract class MediaProcThread extends Thread
 
         public int m_UseWhatDecoder; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264解码器，为2表示系统自带H264解码器。
 
-        OpenH264Decoder m_OpenH264DecoderPt; //存放OpenH264解码器类对象的内存指针。
+        OpenH264Decoder m_OpenH264DecoderPt; //存放OpenH264解码器类对象的指针。
         int m_OpenH264DecoderDecodeThreadNum; //存放OpenH264解码器的解码线程数，单位为个，为0表示直接在调用线程解码，为1或2或3表示解码子线程的数量。
 
-        SystemH264Decoder m_SystemH264DecoderPt; //存放系统自带H264解码器类对象的内存指针。
+        SystemH264Decoder m_SystemH264DecoderPt; //存放系统自带H264解码器类对象的指针。
 
-        HTSurfaceView m_VideoOutputDisplaySurfaceViewPt; //存放视频输出显示SurfaceView类对象的内存指针。
+        HTSurfaceView m_VideoOutputDisplaySurfaceViewPt; //存放视频输出显示SurfaceView类对象的指针。
         float m_VideoOutputDisplayScale; //存放视频输出显示缩放倍数，为1.0f表示不缩放。
         int m_VideoOutputIsBlack; //存放视频输出是否黑屏，为0表示有图像，为非0表示黑屏。
 
         //视频输出线程的临时变量。
-        byte m_VideoOutputResultFramePt[]; //存放视频输出结果帧的内存指针。
-        byte m_VideoOutputTmpFramePt[]; //存放视频输出临时帧的内存指针。
-        byte m_VideoOutputSwapFramePt[]; //存放视频输出交换帧的内存指针。
+        byte m_VideoOutputResultFramePt[]; //存放视频输出结果帧的指针。
+        byte m_VideoOutputTmpFramePt[]; //存放视频输出临时帧的指针。
+        byte m_VideoOutputSwapFramePt[]; //存放视频输出交换帧的指针。
         HTLong m_VideoOutputResultFrameLenPt; //存放视频输出结果帧的数据长度，单位字节。
         HTInt m_VideoOutputFrameWidthPt; //存放视频输出帧的宽度，单位为像素。
         HTInt m_VideoOutputFrameHeightPt; //存放视频输出帧的高度，单位为像素。
         long m_LastTimeMsec; //存放上次时间的毫秒数。
         long m_NowTimeMsec; //存放本次时间的毫秒数。
 
-        VideoOutputThread m_VideoOutputThreadPt; //存放视频输出线程类对象的内存指针。
+        VideoOutputThread m_VideoOutputThreadPt; //存放视频输出线程类对象的指针。
     }
 
-    public VideoOutput m_VideoOutputPt = new VideoOutput(); //存放视频输出类对象的内存指针。
+    public VideoOutput m_VideoOutputPt = new VideoOutput(); //存放视频输出类对象的指针。
 
-    public VarStr m_ErrInfoVarStrPt; //存放错误信息动态字符串的内存指针。
+    public VarStr m_ErrInfoVarStrPt; //存放错误信息动态字符串的指针。
 
     //用户定义的相关回调函数。
 
@@ -364,7 +364,7 @@ public abstract class MediaProcThread extends Thread
     //构造函数。
     public MediaProcThread( Context AppContextPt )
     {
-        m_AppContextPt = AppContextPt; //设置应用程序上下文类对象的内存指针。
+        m_AppContextPt = AppContextPt; //设置应用程序上下文类对象的指针。
     }
 
     //设置是否保存设置到文件。
@@ -377,7 +377,7 @@ public abstract class MediaProcThread extends Thread
     //设置是否打印Logcat日志，并显示Toast。
     public void SetIsPrintLogcatShowToast( int IsPrintLogcat, int IsShowToast, Activity ShowToastActivityPt )
     {
-        if( ( IsShowToast != 0 ) && ( ShowToastActivityPt == null ) ) //如果显示Toast界面的内存指针不正确。
+        if( ( IsShowToast != 0 ) && ( ShowToastActivityPt == null ) ) //如果显示Toast界面的指针不正确。
         {
             return;
         }
@@ -646,9 +646,9 @@ public abstract class MediaProcThread extends Thread
     }
 
     //设置音频输入是否绘制音频波形到Surface。
-    public void SetAudioInputIsDrawAudioOscilloToSurface( int IsDrawAudioToSurface, SurfaceView AudioInputOscilloSurfacePt, SurfaceView AudioResultOscilloSurfacePt )
+    public void SetAudioInputIsDrawAudioOscilloToSurface( int IsDrawAudioOscilloToSurface, SurfaceView AudioInputOscilloSurfacePt, SurfaceView AudioResultOscilloSurfacePt )
     {
-        m_AudioInputPt.m_IsDrawAudioOscilloToSurface = IsDrawAudioToSurface;
+        m_AudioInputPt.m_IsDrawAudioOscilloToSurface = IsDrawAudioOscilloToSurface;
         m_AudioInputPt.m_AudioInputOscilloSurfacePt = AudioInputOscilloSurfacePt;
         m_AudioInputPt.m_AudioResultOscilloSurfacePt = AudioResultOscilloSurfacePt;
     }
@@ -732,7 +732,7 @@ public abstract class MediaProcThread extends Thread
             ( ( IsUseVideoInput != 0 ) && ( ( FrameWidth <= 0 ) || ( ( FrameWidth & 1 ) != 0 ) ) ) || //如果帧的宽度不正确。
             ( ( IsUseVideoInput != 0 ) && ( ( FrameHeight <= 0 ) || ( ( FrameHeight & 1 ) != 0 ) ) ) || //如果帧的高度不正确。
             ( ( IsUseVideoInput != 0 ) && ( ScreenRotate != 0 ) && ( ScreenRotate != 90 ) && ( ScreenRotate != 180 ) && ( ScreenRotate != 270 ) ) || //如果屏幕旋转的角度不正确。
-            ( ( IsUseVideoInput != 0 ) && ( VideoInputPreviewSurfaceViewPt == null ) ) ) //如果视频预览SurfaceView类对象的内存指针不正确。
+            ( ( IsUseVideoInput != 0 ) && ( VideoInputPreviewSurfaceViewPt == null ) ) ) //如果视频预览SurfaceView类对象的指针不正确。
         {
             return;
         }
@@ -796,7 +796,7 @@ public abstract class MediaProcThread extends Thread
     //设置是否使用视频输出。
     public void SetIsUseVideoOutput( int IsUseVideoOutput, HTSurfaceView VideoOutputDisplaySurfaceViewPt, float VideoDisplayScale )
     {
-        if( ( ( IsUseVideoOutput != 0 ) && ( VideoOutputDisplaySurfaceViewPt == null ) ) || //如果视频显示SurfaceView类对象的内存指针不正确。
+        if( ( ( IsUseVideoOutput != 0 ) && ( VideoOutputDisplaySurfaceViewPt == null ) ) || //如果视频显示SurfaceView类对象的指针不正确。
             ( ( IsUseVideoOutput != 0 ) && ( VideoDisplayScale <= 0 ) ) ) //如果视频显示缩放倍数不正确。
         {
             return;
@@ -858,7 +858,7 @@ public abstract class MediaProcThread extends Thread
             }
 
             //检测前台服务权限。
-            if( ( IsRequstForegroundService != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.FOREGROUND_SERVICE ) != PackageManager.PERMISSION_GRANTED ) )
+            if( ( IsRequstForegroundService != 0 ) && ( android.os.Build.VERSION.SDK_INT >= 28 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.FOREGROUND_SERVICE ) != PackageManager.PERMISSION_GRANTED ) )
             {
                 p_RequestPermissionStrArrPt[p_PermissionNum] = Manifest.permission.FOREGROUND_SERVICE;
                 p_PermissionNum++;
@@ -909,7 +909,7 @@ public abstract class MediaProcThread extends Thread
             }
 
             //检测前台服务权限。
-            if( ( IsRequstForegroundService != 0 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.FOREGROUND_SERVICE ) != PackageManager.PERMISSION_GRANTED ) )
+            if( ( IsRequstForegroundService != 0 ) && ( android.os.Build.VERSION.SDK_INT >= 28 ) && ( ContextCompat.checkSelfPermission( RequestActivity, Manifest.permission.FOREGROUND_SERVICE ) != PackageManager.PERMISSION_GRANTED ) )
             {
                 p_DeniedPermissionStrPt += "前台服务  ";
                 p_PermissionNum++;
@@ -2267,7 +2267,7 @@ public abstract class MediaProcThread extends Thread
 
                     //初始化音频输入线程的临时变量。
                     {
-                        m_AudioInputPt.m_AudioInputFramePt = null; //初始化音频输入帧的内存指针。
+                        m_AudioInputPt.m_AudioInputFramePt = null; //初始化音频输入帧的指针。
                         m_AudioInputPt.m_AudioInputFrameLnkLstElmTotal = 0; //初始化音频输入帧链表的元数总数。
                         m_AudioInputPt.m_LastTimeMsec = 0; //初始化上次时间的毫秒数。
                         m_AudioInputPt.m_NowTimeMsec = 0; //初始化本次时间的毫秒数。
@@ -2424,8 +2424,8 @@ public abstract class MediaProcThread extends Thread
 
                     //初始化音频输出线程的临时变量。
                     {
-                        m_AudioOutputPt.m_AudioOutputFramePt = null; //初始化音频输出帧的内存指针。
-                        m_AudioOutputPt.m_EncodedAudioOutputFramePt = ( m_AudioOutputPt.m_UseWhatDecoder != 0 ) ? new byte[ m_AudioOutputPt.m_FrameLen ] : null; //初始化已编码格式音频输出帧的内存指针。
+                        m_AudioOutputPt.m_AudioOutputFramePt = null; //初始化音频输出帧的指针。
+                        m_AudioOutputPt.m_EncodedAudioOutputFramePt = ( m_AudioOutputPt.m_UseWhatDecoder != 0 ) ? new byte[ m_AudioOutputPt.m_FrameLen ] : null; //初始化已编码格式音频输出帧的指针。
                         m_AudioOutputPt.m_AudioOutputFrameLenPt = new HTLong(); //初始化音频输出帧的数据长度，单位字节。
                         m_AudioOutputPt.m_AudioOutputFrameLnkLstElmTotal = 0; //初始化音频输出帧链表的元数总数。
                         m_AudioOutputPt.m_LastTimeMsec = 0; //初始化上次时间的毫秒数。
@@ -2718,7 +2718,7 @@ public abstract class MediaProcThread extends Thread
                         }
                         m_VideoInputPt.m_VideoInputDevicePt.setDisplayOrientation( ( 450 - m_VideoInputPt.m_ScreenRotate ) % 360 ); //调整相机拍到的图像旋转，不然竖着拿手机，图像是横着的。
 
-                        //设置视频输入预览回调函数缓冲区的内存指针。
+                        //设置视频输入预览回调函数缓冲区的指针。
                         m_VideoInputPt.m_VideoInputPreviewCallbackBufferPtPt = new byte[ m_VideoInputPt.m_MaxSamplingRate ][ m_VideoInputPt.m_VideoInputDeviceFrameWidth * m_VideoInputPt.m_VideoInputDeviceFrameHeight * 3 / 2 ];
                         for( p_TmpInt321 = 0; p_TmpInt321 < m_VideoInputPt.m_MaxSamplingRate; p_TmpInt321++ )
                             m_VideoInputPt.m_VideoInputDevicePt.addCallbackBuffer( m_VideoInputPt.m_VideoInputPreviewCallbackBufferPtPt[p_TmpInt321] );
@@ -2770,7 +2770,7 @@ public abstract class MediaProcThread extends Thread
 
                     //初始化视频输入线程的临时变量。
                     {
-                        m_VideoInputPt.m_VideoInputFramePt = null; //初始化视频输入帧的内存指针。
+                        m_VideoInputPt.m_VideoInputFramePt = null; //初始化视频输入帧的指针。
                         if( m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight >= m_VideoInputPt.m_VideoInputDeviceFrameWidth * m_VideoInputPt.m_VideoInputDeviceFrameHeight ) //如果视频输入帧指定的大小大于等于视频输入设备帧的大小。
                         {
                             m_VideoInputPt.m_VideoInputResultFrameSz = m_VideoInputPt.m_FrameWidth * m_VideoInputPt.m_FrameHeight * 3 / 2; //初始化视频输入结果帧的内存大小。
@@ -2779,11 +2779,11 @@ public abstract class MediaProcThread extends Thread
                         {
                             m_VideoInputPt.m_VideoInputResultFrameSz = m_VideoInputPt.m_VideoInputDeviceFrameWidth * m_VideoInputPt.m_VideoInputDeviceFrameHeight * 3 / 2; //初始化视频输入结果帧的内存大小。
                         }
-                        m_VideoInputPt.m_VideoInputResultFramePt = new byte[( int )m_VideoInputPt.m_VideoInputResultFrameSz]; //初始化视频输入结果帧的内存指针。
-                        m_VideoInputPt.m_VideoInputTmpFramePt = new byte[( int )m_VideoInputPt.m_VideoInputResultFrameSz]; //初始化视频输入临时帧的内存指针。
-                        m_VideoInputPt.m_VideoInputSwapFramePt = null; //初始化视频输入交换帧的内存指针。
+                        m_VideoInputPt.m_VideoInputResultFramePt = new byte[( int )m_VideoInputPt.m_VideoInputResultFrameSz]; //初始化视频输入结果帧的指针。
+                        m_VideoInputPt.m_VideoInputTmpFramePt = new byte[( int )m_VideoInputPt.m_VideoInputResultFrameSz]; //初始化视频输入临时帧的指针。
+                        m_VideoInputPt.m_VideoInputSwapFramePt = null; //初始化视频输入交换帧的指针。
                         m_VideoInputPt.m_VideoInputResultFrameLenPt = new HTLong(); //初始化视频输入结果帧的数据长度。
-                        m_VideoInputPt.m_VideoInputFrameElmPt = null; //初始化视频输入帧元素的内存指针。
+                        m_VideoInputPt.m_VideoInputFrameElmPt = null; //初始化视频输入帧元素的指针。
                         m_VideoInputPt.m_VideoInputFrameLnkLstElmTotal = 0; //初始化视频输入帧链表的元数总数。
                         m_VideoInputPt.m_LastTimeMsec = 0; //初始化上次时间的毫秒数。
                         m_VideoInputPt.m_NowTimeMsec = 0; //初始化本次时间的毫秒数。
@@ -2848,9 +2848,9 @@ public abstract class MediaProcThread extends Thread
 
                     //初始化视频输出线程的临时变量。
                     {
-                        m_VideoOutputPt.m_VideoOutputResultFramePt = new byte[ 960 * 1280 * 3 / 2 * 3 ]; //初始化视频输出结果帧的内存指针。
-                        m_VideoOutputPt.m_VideoOutputTmpFramePt = new byte[ 960 * 1280 * 3 / 2 * 3 ]; //初始化视频输出临时帧的内存指针。
-                        m_VideoOutputPt.m_VideoOutputSwapFramePt = null; //初始化视频输出交换帧的内存指针。
+                        m_VideoOutputPt.m_VideoOutputResultFramePt = new byte[ 960 * 1280 * 3 / 2 * 3 ]; //初始化视频输出结果帧的指针。
+                        m_VideoOutputPt.m_VideoOutputTmpFramePt = new byte[ 960 * 1280 * 3 / 2 * 3 ]; //初始化视频输出临时帧的指针。
+                        m_VideoOutputPt.m_VideoOutputSwapFramePt = null; //初始化视频输出交换帧的指针。
                         m_VideoOutputPt.m_VideoOutputResultFrameLenPt = new HTLong(); //初始化视频输出结果帧的数据长度。
                         m_VideoOutputPt.m_VideoOutputFrameWidthPt = new HTInt(); //初始化视频输出帧的宽度。
                         m_VideoOutputPt.m_VideoOutputFrameHeightPt = new HTInt(); //初始化视频输出帧的高度。
@@ -3749,13 +3749,13 @@ public abstract class MediaProcThread extends Thread
 
                 //销毁视频输入线程的临时变量。
                 {
-                    m_VideoInputPt.m_VideoInputFramePt = null; //销毁视频输入帧的内存指针。
-                    m_VideoInputPt.m_VideoInputResultFramePt = null; //初始化视频输入结果帧的内存指针。
-                    m_VideoInputPt.m_VideoInputTmpFramePt = null; //初始化视频输入临时帧的内存指针。
-                    m_VideoInputPt.m_VideoInputSwapFramePt = null; //初始化视频输入交换帧的内存指针。
+                    m_VideoInputPt.m_VideoInputFramePt = null; //销毁视频输入帧的指针。
+                    m_VideoInputPt.m_VideoInputResultFramePt = null; //初始化视频输入结果帧的指针。
+                    m_VideoInputPt.m_VideoInputTmpFramePt = null; //初始化视频输入临时帧的指针。
+                    m_VideoInputPt.m_VideoInputSwapFramePt = null; //初始化视频输入交换帧的指针。
                     m_VideoInputPt.m_VideoInputResultFrameLenPt = null; //初始化视频输入结果帧的数据长度。
                     m_VideoInputPt.m_VideoInputResultFrameSz = 0; //销毁视频输入结果帧的内存大小。
-                    m_VideoInputPt.m_VideoInputFrameElmPt = null; //销毁视频输入帧元素的内存指针。
+                    m_VideoInputPt.m_VideoInputFrameElmPt = null; //销毁视频输入帧元素的指针。
                     m_VideoInputPt.m_VideoInputFrameLnkLstElmTotal = 0; //销毁视频输入帧链表的元数总数。
                     m_VideoInputPt.m_LastTimeMsec = 0; //销毁上次时间的毫秒数。
                     m_VideoInputPt.m_NowTimeMsec = 0; //销毁本次时间的毫秒数。
@@ -3866,9 +3866,9 @@ public abstract class MediaProcThread extends Thread
 
                 //销毁视频输出线程的临时变量。
                 {
-                    m_VideoOutputPt.m_VideoOutputResultFramePt = null; //销毁视频输出结果帧的内存指针。
-                    m_VideoOutputPt.m_VideoOutputTmpFramePt = null; //销毁视频输出临时帧的内存指针。
-                    m_VideoOutputPt.m_VideoOutputSwapFramePt = null; //销毁视频输出交换帧的内存指针。
+                    m_VideoOutputPt.m_VideoOutputResultFramePt = null; //销毁视频输出结果帧的指针。
+                    m_VideoOutputPt.m_VideoOutputTmpFramePt = null; //销毁视频输出临时帧的指针。
+                    m_VideoOutputPt.m_VideoOutputSwapFramePt = null; //销毁视频输出交换帧的指针。
                     m_VideoOutputPt.m_VideoOutputResultFrameLenPt = null; //销毁视频输出结果帧的数据长度。
                     m_VideoOutputPt.m_VideoOutputFrameWidthPt = null; //销毁视频输出帧的宽度。
                     m_VideoOutputPt.m_VideoOutputFrameHeightPt = null; //销毁视频输出帧的高度。

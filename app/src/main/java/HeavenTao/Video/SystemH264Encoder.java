@@ -12,7 +12,7 @@ public class SystemH264Encoder
         System.loadLibrary( "SystemH264" ); //加载libSystemH264.so。
     }
 
-    public long m_SystemH264EncoderPt; //存放系统自带H264编码器的内存指针。
+    public long m_SystemH264EncoderPt; //存放系统自带H264编码器的指针。
 
     //构造函数。
     public SystemH264Encoder()

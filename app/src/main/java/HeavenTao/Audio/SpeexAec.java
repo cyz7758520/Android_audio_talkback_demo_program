@@ -11,7 +11,7 @@ public class SpeexAec
         System.loadLibrary( "SpeexDsp" ); //加载libSpeexDsp.so。
     }
 
-    public long m_SpeexAecPt; //存放Speex声学回音消除器的内存指针。
+    public long m_SpeexAecPt; //存放Speex声学回音消除器的指针。
 
     //构造函数。
     public SpeexAec()
