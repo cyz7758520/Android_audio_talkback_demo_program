@@ -222,11 +222,11 @@ class MyMediaProcThread extends MediaProcThread
 	long m_LastPktSendTime; //存放最后一个数据包的发送时间，用于判断连接是否中断。
 	long m_LastPktRecvTime; //存放最后一个数据包的接收时间，用于判断连接是否中断。
 	public static final byte PKT_TYP_RQST_CNCT = 0x00; //数据包类型：请求连接包。
-	public static final byte PKT_TYP_ALLOW_CNCT = 0x01; //数据包类型：允许连接包。
-	public static final byte PKT_TYP_REFUSE_CNCT = 0x02; //数据包类型：拒绝连接包。
-	public static final byte PKT_TYP_AFRAME = 0x03; //数据包类型：音频输入输出帧。
-	public static final byte PKT_TYP_VFRAME = 0x04; //数据包类型：视频输入输出帧。
-	public static final byte PKT_TYP_ACK = 0x05; //数据包类型：连接应答包、或音频输入输出帧应答包、或视频输入输出帧应答包。
+	public static final byte PKT_TYP_CNCT_ACK = 0x01; //数据包类型：连接应答包。
+	public static final byte PKT_TYP_ALLOW_CNCT = 0x02; //数据包类型：允许连接包。
+	public static final byte PKT_TYP_REFUSE_CNCT = 0x03; //数据包类型：拒绝连接包。
+	public static final byte PKT_TYP_AFRAME = 0x04; //数据包类型：音频输入输出帧。
+	public static final byte PKT_TYP_VFRAME = 0x05; //数据包类型：视频输入输出帧。
 	public static final byte PKT_TYP_HTBT = 0x06; //数据包类型：心跳包。
 	public static final byte PKT_TYP_EXIT = 0x07; //数据包类型：退出包。
 
@@ -234,7 +234,6 @@ class MyMediaProcThread extends MediaProcThread
 	int m_RequestCnctResult; //存放请求连接的结果，为0表示没有选择，为1表示允许，为2表示拒绝。
 
 	int m_LastSendAudioInputFrameIsAct; //存放最后一个发送的音频输入帧有无语音活动，为1表示有语音活动，为0表示无语音活动。
-	int m_LastSendAudioInputFrameIsRecv; //存放最后一个发送的音频输入帧远端是否接收到，为0表示没有收到，为非0表示已经收到。
 	int m_LastSendAudioInputFrameTimeStamp; //存放最后一个发送音频输入帧的时间戳。
 	int m_LastSendVideoInputFrameTimeStamp; //存放最后一个发送视频输入帧的时间戳。
 	byte m_IsRecvExitPkt; //存放是否接收到退出包，为0表示否，为1表示是。
@@ -698,7 +697,7 @@ class MyMediaProcThread extends MediaProcThread
 										if( ( m_TmpHTLongPt.m_Val == 1 ) && ( m_TmpBytePt[0] == PKT_TYP_RQST_CNCT ) ) //如果是请求连接包。
 										{
 											//发送连接应答包。
-											m_TmpBytePt[0] = PKT_TYP_ACK; //设置连接应答包。
+											m_TmpBytePt[0] = PKT_TYP_CNCT_ACK; //设置连接应答包。
 											if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) != 0 )
 											{
 												String p_InfoStrPt = "用已监听的本端UDP协议套接字发送连接应答包到已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
@@ -1029,7 +1028,6 @@ class MyMediaProcThread extends MediaProcThread
 			m_LastPktRecvTime = m_LastPktSendTime; //设置最后一个数据包的接收时间为当前时间。
 
 			m_LastSendAudioInputFrameIsAct = 0; //设置最后发送的一个音频输入帧为无语音活动。
-			m_LastSendAudioInputFrameIsRecv = 1; //设置最后一个发送的音频输入帧远端已经接收到。
 			m_LastSendAudioInputFrameTimeStamp = 0 - 1; //设置最后一个发送音频输入帧的时间戳为0的前一个，因为第一次发送音频输入帧时会递增一个步进。
 			m_LastSendVideoInputFrameTimeStamp = 0 - 1; //设置最后一个发送视频输入帧的时间戳为0的前一个，因为第一次发送视频输入帧时会递增一个步进。
 
@@ -1147,30 +1145,6 @@ class MyMediaProcThread extends MediaProcThread
 								Log.i( m_CurClsNameStrPt, "接收到一个无语音活动的音频输出帧包成功，但不使用音频输出。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
 							}
 						}
-
-						if( ( m_UseWhatXfrPrtcl == 1 ) && ( m_TmpHTLongPt.m_Val == 1 + 4 ) ) //如果是使用UDP协议，且本音频输出帧为无语音活动。
-						{
-							//设置音频输出帧应答包。
-							m_TmpBytePt[0] = PKT_TYP_ACK;
-							//设置音频输出帧时间戳。
-							m_TmpBytePt[1] = ( byte ) ( p_TmpInt & 0xFF );
-							m_TmpBytePt[2] = ( byte ) ( ( p_TmpInt & 0xFF00 ) >> 8 );
-							m_TmpBytePt[3] = ( byte ) ( ( p_TmpInt & 0xFF0000 ) >> 16 );
-							m_TmpBytePt[4] = ( byte ) ( ( p_TmpInt & 0xFF000000 ) >> 24 );
-
-							if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1 + 4, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 )
-							{
-								m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
-								Log.i( m_CurClsNameStrPt, "发送一个音频输出帧应答包成功。时间戳：" + p_TmpInt + "，总长度：" + 1 + 4 + "。" );
-							}
-							else
-							{
-								String p_InfoStrPt = "发送一个音频输出帧应答包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-								Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-								break out;
-							}
-						}
 					}
 					else if( m_TmpBytePt[0] == PKT_TYP_VFRAME ) //如果是视频输出帧包。
 					{
@@ -1237,29 +1211,6 @@ class MyMediaProcThread extends MediaProcThread
 							{
 								Log.i( m_CurClsNameStrPt, "接收到一个无图像活动的视频输出帧包成功，但不使用视频输出。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
 							}
-						}
-					}
-					else if( m_TmpBytePt[0] == PKT_TYP_ACK ) //如果是连接应答包或音视频输入输出帧应答包。
-					{
-						if( m_TmpHTLongPt.m_Val == 1 ) //如果数据包的数据长度等于1，表示是连接应答包，就不管。
-						{
-
-						}
-						else //如果数据包的数据长度大于1，表示是音视频输入输出帧应答包。
-						{
-							if( m_TmpHTLongPt.m_Val != 1 + 4 )
-							{
-								Log.e( m_CurClsNameStrPt, "接收到一个音视频输入输出帧应答包的数据长度为" + m_TmpHTLongPt.m_Val + "不等于1 + 4，表示格式不正确，无法继续接收。" );
-								break out;
-							}
-
-							//读取时间戳。
-							p_TmpInt = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
-
-							Log.i( m_CurClsNameStrPt, "接收到一个音视频输入输出帧应答包。时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
-
-							//设置最后一个发送的音频输入帧远端是否接收到。
-							if( m_LastSendAudioInputFrameTimeStamp == p_TmpInt ) m_LastSendAudioInputFrameIsRecv = 1;
 						}
 					}
 					else if( m_TmpBytePt[0] == PKT_TYP_EXIT ) //如果是退出包。
@@ -1576,7 +1527,6 @@ class MyMediaProcThread extends MediaProcThread
 					}
 
 					m_LastSendAudioInputFrameIsAct = 1; //设置最后一个发送的音频输入帧有语音活动。
-					m_LastSendAudioInputFrameIsRecv = 1; //设置最后一个发送的音频输入帧远端已经接收到。
 				}
 				else if( ( p_FramePktLen == 1 + 4 ) && ( m_LastSendAudioInputFrameIsAct != 0 ) ) //如果本音频输入帧为无语音活动，但最后一个发送的音频输入帧为有语音活动，就发送。
 				{
@@ -1591,7 +1541,7 @@ class MyMediaProcThread extends MediaProcThread
 					m_TmpBytePt[4] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF000000 ) >> 24 );
 
 					if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_FramePktLen, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
-						( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_FramePktLen, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
+						( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_FramePktLen, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
 					{
 						m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
 						Log.i( m_CurClsNameStrPt, "发送一个无语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAudioInputFrameTimeStamp + "，总长度：" + p_FramePktLen + "。" );
@@ -1605,35 +1555,10 @@ class MyMediaProcThread extends MediaProcThread
 					}
 
 					m_LastSendAudioInputFrameIsAct = 0; //设置最后一个发送的音频输入帧无语音活动。
-					m_LastSendAudioInputFrameIsRecv = 0; //设置最后一个发送的音频输入帧远端没有接收到。
 				}
 				else //如果本音频输入帧为无语音活动，且最后一个发送的音频输入帧为无语音活动，无需发送。
 				{
 					Log.i( m_CurClsNameStrPt, "本音频输入帧为无语音活动，且最后一个发送的音频输入帧为无语音活动，无需发送。" );
-
-					if( ( m_UseWhatXfrPrtcl == 1 ) && ( m_LastSendAudioInputFrameIsRecv == 0 ) ) //如果是使用UDP协议，且本音频输入帧为无语音活动，且最后一个发送的音频输入帧为无语音活动，且最后一个发送的音频输入帧远端没有接收到。
-					{
-						//设置音频输入帧包。
-						m_TmpBytePt[0] = PKT_TYP_AFRAME;
-						//设置音频输入帧时间戳。
-						m_TmpBytePt[1] = ( byte ) ( m_LastSendAudioInputFrameTimeStamp & 0xFF );
-						m_TmpBytePt[2] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF00 ) >> 8 );
-						m_TmpBytePt[3] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF0000 ) >> 16 );
-						m_TmpBytePt[4] = ( byte ) ( ( m_LastSendAudioInputFrameTimeStamp & 0xFF000000 ) >> 24 );
-
-						if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_FramePktLen, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 )
-						{
-							m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
-							Log.i( m_CurClsNameStrPt, "重新发送最后一个无语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAudioInputFrameTimeStamp + "，总长度：" + p_FramePktLen + "。" );
-						}
-						else
-						{
-							String p_InfoStrPt = "重新发送最后一个无语音活动的音频输入帧包失败。原因：" + m_ErrInfoVarStrPt.GetStr() + "音频输入帧时间戳：" + m_LastSendAudioInputFrameTimeStamp + "，总长度：" + p_FramePktLen + "。";
-							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-							break out;
-						}
-					}
 				}
 			}
 
