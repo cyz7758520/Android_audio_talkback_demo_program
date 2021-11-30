@@ -22,7 +22,7 @@ public class SpeexDecoder
     //析构函数。
     public void finalize()
     {
-        Destroy();
+        Dstoy();
     }
 
     //创建并初始化Speex解码器。
@@ -48,17 +48,17 @@ public class SpeexDecoder
     }
 
     //用Speex解码器对单声道16位有符号整型20毫秒PCM格式帧进行Speex格式编码。
-    public int Proc( byte SpeexFramePt[], long SpeexFrameLen, short PcmFramePt[] )
+    public int Pocs( byte SpeexFramePt[], long SpeexFrameLen, short PcmFramePt[] )
     {
-        return SpeexDecoderProc( m_SpeexDecoderPt, SpeexFramePt, SpeexFrameLen, PcmFramePt );
+        return SpeexDecoderPocs( m_SpeexDecoderPt, SpeexFramePt, SpeexFrameLen, PcmFramePt );
     }
 
     //销毁Speex解码器。
-    public int Destroy()
+    public int Dstoy()
     {
         if( m_SpeexDecoderPt != 0 )
         {
-            if( SpeexDecoderDestroy( m_SpeexDecoderPt ) == 0 )
+            if( SpeexDecoderDstoy( m_SpeexDecoderPt ) == 0 )
             {
                 m_SpeexDecoderPt = 0;
                 return 0;
@@ -78,8 +78,8 @@ public class SpeexDecoder
     public native int SpeexDecoderInit( HTLong SpeexDecoderPt, int SamplingRate, int IsUsePerceptualEnhancement );
 
     //用Speex解码器对单声道16位有符号整型20毫秒Speex格式帧进行PCM格式解码。
-    public native int SpeexDecoderProc( long SpeexDecoderPt, byte SpeexFramePt[], long SpeexFrameLen, short PcmFramePt[] );
+    public native int SpeexDecoderPocs( long SpeexDecoderPt, byte SpeexFramePt[], long SpeexFrameLen, short PcmFramePt[] );
 
     //销毁Speex解码器。
-    public native int SpeexDecoderDestroy( long SpeexDecoderPt );
+    public native int SpeexDecoderDstoy( long SpeexDecoderPt );
 }

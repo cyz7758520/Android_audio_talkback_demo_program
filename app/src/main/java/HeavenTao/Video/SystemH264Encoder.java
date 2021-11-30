@@ -23,7 +23,7 @@ public class SystemH264Encoder
     //析构函数。
     public void finalize()
     {
-        Destroy( null );
+        Dstoy( null );
     }
 
     //创建并初始化系统自带H264编码器。
@@ -49,17 +49,17 @@ public class SystemH264Encoder
     }
 
     //用系统自带H264编码器对8位无符号整型YU12格式帧进行H264格式编码。
-    public int Proc( byte YU12FramePt[], long YU12FrameTimeStampMsec, byte H264FramePt[], long H264FrameSz, HTLong H264FrameLenPt, long TimeOutMsec, VarStr ErrInfoVarStrPt )
+    public int Pocs( byte YU12FramePt[], long YU12FrameTimeStampMsec, byte H264FramePt[], long H264FrameSz, HTLong H264FrameLenPt, long TimeOutMsec, VarStr ErrInfoVarStrPt )
     {
-        return SystemH264EncoderProc( m_SystemH264EncoderPt, YU12FramePt, YU12FrameTimeStampMsec, H264FramePt, H264FrameSz, H264FrameLenPt, TimeOutMsec, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
+        return SystemH264EncoderPocs( m_SystemH264EncoderPt, YU12FramePt, YU12FrameTimeStampMsec, H264FramePt, H264FrameSz, H264FrameLenPt, TimeOutMsec, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
     }
 
     //销毁系统自带H264编码器。
-    public int Destroy( VarStr ErrInfoVarStrPt )
+    public int Dstoy( VarStr ErrInfoVarStrPt )
     {
         if( m_SystemH264EncoderPt != 0 )
         {
-            if( SystemH264EncoderDestroy( m_SystemH264EncoderPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( SystemH264EncoderDstoy( m_SystemH264EncoderPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
             {
                 m_SystemH264EncoderPt = 0;
                 return 0;
@@ -76,11 +76,11 @@ public class SystemH264Encoder
     }
 
     //创建并初始化系统自带H264编码器。
-    public native int SystemH264EncoderInit( HTLong SystemH264EncoderPt, int YU12FrameWidth, int YU12FrameHeight, int EncodedBitrate, int BitrateControlMode, int MaxFrameRate, int IDRFrameIntvlTimeSec, int Complexity, long ErrInfoVarStrPt );
+    public native int SystemH264EncoderInit( HTLong SystemH264EncoderPt, int YU12FrameWidth, int YU12FrameHeight, int EncodedBitrate, int BitrateControlMode, int MaxFrameRate, int IDRFrameIntvlTimeSec, int Cmplxt, long ErrInfoVarStrPt );
 
     //用系统自带H264编码器对8位无符号整型YU12格式帧进行H264格式编码。
-    public native int SystemH264EncoderProc( long SystemH264EncoderPt, byte YU12FramePt[], long YU12FrameTimeStampMsec, byte H264FramePt[], long H264FrameSz, HTLong H264FrameLenPt, long TimeOutMsec, long ErrInfoVarStrPt );
+    public native int SystemH264EncoderPocs( long SystemH264EncoderPt, byte YU12FramePt[], long YU12FrameTimeStampMsec, byte H264FramePt[], long H264FrameSz, HTLong H264FrameLenPt, long TimeOutMsec, long ErrInfoVarStrPt );
 
     //销毁系统自带H264编码器。
-    public native int SystemH264EncoderDestroy( long SystemH264EncoderPt, long ErrInfoVarStrPt );
+    public native int SystemH264EncoderDstoy( long SystemH264EncoderPt, long ErrInfoVarStrPt );
 }

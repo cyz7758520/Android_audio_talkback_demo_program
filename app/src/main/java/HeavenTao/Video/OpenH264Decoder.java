@@ -22,16 +22,16 @@ public class OpenH264Decoder
     //析构函数。
     public void finalize()
     {
-        Destroy( null );
+        Dstoy( null );
     }
 
     //创建并初始化OpenH264解码器。
-    public int Init( int DecodeThreadNum, VarStr ErrInfoVarStrPt )
+    public int Init( int DecodeThrdNum, VarStr ErrInfoVarStrPt )
     {
         if( m_OpenH264DecoderPt == 0 )
         {
             HTLong p_OpenH264DecoderPt = new HTLong();
-            if( OpenH264DecoderInit( p_OpenH264DecoderPt, DecodeThreadNum, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( OpenH264DecoderInit( p_OpenH264DecoderPt, DecodeThrdNum, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
             {
                 m_OpenH264DecoderPt = p_OpenH264DecoderPt.m_Val;
                 return 0;
@@ -48,22 +48,22 @@ public class OpenH264Decoder
     }
 
     //用OpenH264解码器对H264格式进行8位无符号整型YU12格式帧解码。
-    public int Proc( byte H264FramePt[], long H264FrameLen,
+    public int Pocs( byte H264FramePt[], long H264FrameLen,
                      byte YU12FramePt[], long YU12FrameSz, HTInt YU12FrameWidth, HTInt YU12FrameHeight,
                      VarStr ErrInfoVarStrPt )
     {
-        return OpenH264DecoderProc( m_OpenH264DecoderPt,
+        return OpenH264DecoderPocs( m_OpenH264DecoderPt,
                                     H264FramePt, H264FrameLen,
                                     YU12FramePt, YU12FrameSz, YU12FrameWidth, YU12FrameHeight,
                                     ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
     }
 
     //销毁OpenH264解码器。
-    public int Destroy( VarStr ErrInfoVarStrPt )
+    public int Dstoy( VarStr ErrInfoVarStrPt )
     {
         if( m_OpenH264DecoderPt != 0 )
         {
-            if( OpenH264DecoderDestroy( m_OpenH264DecoderPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( OpenH264DecoderDstoy( m_OpenH264DecoderPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
             {
                 m_OpenH264DecoderPt = 0;
                 return 0;
@@ -80,14 +80,14 @@ public class OpenH264Decoder
     }
 
     //创建并初始化OpenH264解码器。
-    public native int OpenH264DecoderInit( HTLong OpenH264DecoderPt, int DecodeThreadNum, long ErrInfoVarStrPt );
+    public native int OpenH264DecoderInit( HTLong OpenH264DecoderPt, int DecodeThrdNum, long ErrInfoVarStrPt );
 
     //用OpenH264解码器对H264格式进行8位无符号整型YU12格式帧解码。
-    public native int OpenH264DecoderProc( long OpenH264DecoderPt,
+    public native int OpenH264DecoderPocs( long OpenH264DecoderPt,
                                            byte H264FramePt[], long H264FrameLen,
                                            byte YU12FramePt[], long YU12FrameSz, HTInt YU12FrameWidth, HTInt YU12FrameHeight,
                                            long ErrInfoVarStrPt );
 
     //销毁OpenH264解码器。
-    public native int OpenH264DecoderDestroy( long OpenH264DecoderPt, long ErrInfoVarStrPt );
+    public native int OpenH264DecoderDstoy( long OpenH264DecoderPt, long ErrInfoVarStrPt );
 }

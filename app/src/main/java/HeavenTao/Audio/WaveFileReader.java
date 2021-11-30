@@ -22,7 +22,7 @@ public class WaveFileReader
     //析构函数。
     public void finalize()
     {
-        Destroy();
+        Dstoy();
     }
 
     //创建并初始化Wave文件读取器。
@@ -54,11 +54,11 @@ public class WaveFileReader
     }
 
     //销毁Wave文件读取器。
-    public int Destroy()
+    public int Dstoy()
     {
         if( m_WaveFileReaderPt != 0 )
         {
-            if( WaveFileReaderDestroy( m_WaveFileReaderPt ) == 0 )
+            if( WaveFileReaderDstoy( m_WaveFileReaderPt ) == 0 )
             {
                 m_WaveFileReaderPt = 0;
                 return 0;
@@ -81,5 +81,5 @@ public class WaveFileReader
     public native int WaveFileReaderReadData( long WaveFileReaderPt, short DataPt[], long DataSz, HTLong DataLenPt );
 
     //销毁Wave文件读取器。
-    public native int WaveFileReaderDestroy( long WaveFileReaderPt );
+    public native int WaveFileReaderDstoy( long WaveFileReaderPt );
 }

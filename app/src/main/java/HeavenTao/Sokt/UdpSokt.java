@@ -22,7 +22,7 @@ public class UdpSokt
     //析构函数。
     public void finalize()
     {
-        Destroy( null );
+        Dstoy( null );
     }
 
     //获取本端UDP协议套接字的指针。
@@ -107,18 +107,18 @@ public class UdpSokt
     {
         return UdpSoktSendPkt( m_UdpSoktPt, RmtNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, DataBufPt, DataBufLen, TimeOutMsec, Times, IsAutoLockUnlock, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
     }
-    //用已监听或已连接的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包。
+    //用已监听或已连接的本端UDP协议套接字接收一个远端UDP协议套接字发送的数据包。
     public int RecvPkt( HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TimeOutMsec, int IsAutoLockUnlock, VarStr ErrInfoVarStrPt )
     {
         return UdpSoktRecvPkt( m_UdpSoktPt, RmtNodeAddrFmlyPt, RmtNodeAddrPt, RmtNodePortPt, DataBufPt, DataBufSz, DataBufLenPt, TimeOutMsec, IsAutoLockUnlock, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
     }
 
     //关闭并销毁已创建的本端UDP协议套接字。
-    public int Destroy( VarStr ErrInfoVarStrPt )
+    public int Dstoy( VarStr ErrInfoVarStrPt )
     {
         if( m_UdpSoktPt != 0 )
         {
-            if( UdpSoktDestroy( m_UdpSoktPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( UdpSoktDstoy( m_UdpSoktPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
             {
                 m_UdpSoktPt = 0;
                 return 0;
@@ -165,5 +165,5 @@ public class UdpSokt
     public native int UdpSoktRecvPkt( long UdpSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TimeOutMsec, int IsAutoLockUnlock, long ErrInfoVarStrPt );
 
     //关闭并销毁已创建的本端UDP协议套接字。
-    public native int UdpSoktDestroy( long UdpSoktPt, long ErrInfoVarStrPt );
+    public native int UdpSoktDstoy( long UdpSoktPt, long ErrInfoVarStrPt );
 }

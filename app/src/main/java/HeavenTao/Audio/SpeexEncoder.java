@@ -22,7 +22,7 @@ public class SpeexEncoder
     //析构函数。
     public void finalize()
     {
-        Destroy();
+        Dstoy();
     }
 
     //创建并初始化Speex编码器。
@@ -48,17 +48,17 @@ public class SpeexEncoder
     }
 
     //用Speex编码器对单声道16位有符号整型20毫秒PCM格式帧进行Speex格式编码。
-    public int Proc( short PcmFramePt[], byte SpeexFramePt[], long SpeexFrameSz, HTLong SpeexFrameLenPt, HTInt IsNeedTransPt )
+    public int Pocs( short PcmFramePt[], byte SpeexFramePt[], long SpeexFrameSz, HTLong SpeexFrameLenPt, HTInt IsNeedTransPt )
     {
-        return SpeexEncoderProc( m_SpeexEncoderPt, PcmFramePt, SpeexFramePt, SpeexFrameSz, SpeexFrameLenPt, IsNeedTransPt );
+        return SpeexEncoderPocs( m_SpeexEncoderPt, PcmFramePt, SpeexFramePt, SpeexFrameSz, SpeexFrameLenPt, IsNeedTransPt );
     }
 
     //销毁Speex编码器。
-    public int Destroy()
+    public int Dstoy()
     {
         if( m_SpeexEncoderPt != 0 )
         {
-            if( SpeexEncoderDestroy( m_SpeexEncoderPt ) == 0 )
+            if( SpeexEncoderDstoy( m_SpeexEncoderPt ) == 0 )
             {
                 m_SpeexEncoderPt = 0;
                 return 0;
@@ -75,11 +75,11 @@ public class SpeexEncoder
     }
 
     //创建并初始化Speex编码器。
-    public native int SpeexEncoderInit( HTLong SpeexEncoderPt, int SamplingRate, int UseCbrOrVbr, int Quality, int Complexity, int PlcExpectedLossRate );
+    public native int SpeexEncoderInit( HTLong SpeexEncoderPt, int SamplingRate, int UseCbrOrVbr, int Qualt, int Cmplxt, int PlcExpectedLossRate );
 
     //用Speex编码器对单声道16位有符号整型20毫秒PCM格式帧进行Speex格式编码。
-    public native int SpeexEncoderProc( long SpeexEncoderPt, short PcmFramePt[], byte SpeexFramePt[], long SpeexFrameSz, HTLong SpeexFrameLenPt, HTInt IsNeedTransPt );
+    public native int SpeexEncoderPocs( long SpeexEncoderPt, short PcmFramePt[], byte SpeexFramePt[], long SpeexFrameSz, HTLong SpeexFrameLenPt, HTInt IsNeedTransPt );
 
     //销毁Speex编码器。
-    public native int SpeexEncoderDestroy( long SpeexEncoderPt );
+    public native int SpeexEncoderDstoy( long SpeexEncoderPt );
 }

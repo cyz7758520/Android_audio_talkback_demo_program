@@ -23,7 +23,7 @@ public class WebRtcAec
     //析构函数。
     public void finalize()
     {
-        Destroy();
+        Dstoy();
     }
 
     //创建并初始化WebRtc浮点版声学回音消除器。
@@ -123,17 +123,17 @@ public class WebRtcAec
     }
 
     //用WebRtc浮点版声学回音消除器对单声道16位有符号整型PCM格式输入帧进行WebRtc浮点版声学回音消除。
-    public int Proc( short InputFramePt[], short OutputFramePt[], short ResultFramePt[] )
+    public int Pocs( short InputFramePt[], short OutputFramePt[], short ResultFramePt[] )
     {
-        return WebRtcAecProc( m_WebRtcAecPt, InputFramePt, OutputFramePt, ResultFramePt );
+        return WebRtcAecPocs( m_WebRtcAecPt, InputFramePt, OutputFramePt, ResultFramePt );
     }
 
     //销毁WebRtc浮点版声学回音消除器。
-    public int Destroy()
+    public int Dstoy()
     {
         if( m_WebRtcAecPt != 0 )
         {
-            if( WebRtcAecDestroy( m_WebRtcAecPt ) == 0 )
+            if( WebRtcAecDstoy( m_WebRtcAecPt ) == 0 )
             {
                 m_WebRtcAecPt = 0;
                 return 0;
@@ -174,8 +174,8 @@ public class WebRtcAec
     public native int WebRtcAecGetDelay( long WebRtcAecPt, HTInt DelayPt );
 
     //用WebRtc浮点版声学回音消除器对单声道16位有符号整型PCM格式输入帧进行WebRtc浮点版声学回音消除。
-    public native int WebRtcAecProc( long WebRtcAecPt, short InputFramePt[], short OutputFramePt[], short ResultFramePt[] );
+    public native int WebRtcAecPocs( long WebRtcAecPt, short InputFramePt[], short OutputFramePt[], short ResultFramePt[] );
 
     //销毁WebRtc浮点版声学回音消除器。
-    public native int WebRtcAecDestroy( long WebRtcAecPt );
+    public native int WebRtcAecDstoy( long WebRtcAecPt );
 }

@@ -19,7 +19,7 @@ public class VarStr
     //析构函数。
     public void finalize()
     {
-        Destroy();
+        Dstoy();
     }
 
     //创建并初始化动态字符串。
@@ -87,11 +87,11 @@ public class VarStr
     }
 
     //销毁动态字符串。
-    public int Destroy()
+    public int Dstoy()
     {
         if( m_VarStrPt != 0 )
         {
-            if( VarStrDestroy( m_VarStrPt ) == 0 )
+            if( VarStrDstoy( m_VarStrPt ) == 0 )
             {
                 m_VarStrPt = 0;
                 return 0;
@@ -132,5 +132,5 @@ public class VarStr
     public native String VarStrGetStr( long VarStrPt );
 
     //销毁动态字符串。
-    public native int VarStrDestroy( long VarStrPt );
+    public native int VarStrDstoy( long VarStrPt );
 }

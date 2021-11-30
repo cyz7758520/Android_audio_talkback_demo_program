@@ -22,7 +22,7 @@ public class SystemH264Decoder
     //析构函数。
     public void finalize()
     {
-        Destroy( null );
+        Dstoy( null );
     }
 
     //创建并初始化系统自带H264解码器。
@@ -48,17 +48,17 @@ public class SystemH264Decoder
     }
 
     //用系统自带H264解码器对H264格式进行8位无符号整型YU12格式帧解码。
-    public int Proc( byte H264FramePt[], long H264FrameLen, byte YU12FramePt[], long YU12FrameSz, HTInt YU12FrameWidth, HTInt YU12FrameHeight, long TimeOutMsec, VarStr ErrInfoVarStrPt )
+    public int Pocs( byte H264FramePt[], long H264FrameLen, byte YU12FramePt[], long YU12FrameSz, HTInt YU12FrameWidth, HTInt YU12FrameHeight, long TimeOutMsec, VarStr ErrInfoVarStrPt )
     {
-        return SystemH264DecoderProc( m_SystemH264DecoderPt, H264FramePt, H264FrameLen, YU12FramePt, YU12FrameSz, YU12FrameWidth, YU12FrameHeight, TimeOutMsec, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
+        return SystemH264DecoderPocs( m_SystemH264DecoderPt, H264FramePt, H264FrameLen, YU12FramePt, YU12FrameSz, YU12FrameWidth, YU12FrameHeight, TimeOutMsec, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
     }
 
     //销毁系统自带H264解码器。
-    public int Destroy( VarStr ErrInfoVarStrPt )
+    public int Dstoy( VarStr ErrInfoVarStrPt )
     {
         if( m_SystemH264DecoderPt != 0 )
         {
-            if( SystemH264DecoderDestroy( m_SystemH264DecoderPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( SystemH264DecoderDstoy( m_SystemH264DecoderPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
             {
                 m_SystemH264DecoderPt = 0;
                 return 0;
@@ -78,8 +78,8 @@ public class SystemH264Decoder
     public native int SystemH264DecoderInit( HTLong SystemH264DecoderPt, long ErrInfoVarStrPt );
 
     //用系统自带H264解码器对H264格式进行8位无符号整型YU12格式帧解码。
-    public native int SystemH264DecoderProc( long SystemH264DecoderPt, byte H264FramePt[], long H264FrameLen, byte YU12FramePt[], long YU12FrameSz, HTInt YU12FrameWidth, HTInt YU12FrameHeight, long TimeOutMsec, long ErrInfoVarStrPt );
+    public native int SystemH264DecoderPocs( long SystemH264DecoderPt, byte H264FramePt[], long H264FrameLen, byte YU12FramePt[], long YU12FrameSz, HTInt YU12FrameWidth, HTInt YU12FrameHeight, long TimeOutMsec, long ErrInfoVarStrPt );
 
     //销毁系统自带H264解码器。
-    public native int SystemH264DecoderDestroy( long SystemH264DecoderPt, long ErrInfoVarStrPt );
+    public native int SystemH264DecoderDstoy( long SystemH264DecoderPt, long ErrInfoVarStrPt );
 }

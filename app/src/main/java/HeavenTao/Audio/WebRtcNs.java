@@ -23,7 +23,7 @@ public class WebRtcNs
     //析构函数。
     public void finalize()
     {
-        Destroy();
+        Dstoy();
     }
 
     //创建并初始化WebRtc浮点版噪音抑制器。
@@ -49,17 +49,17 @@ public class WebRtcNs
     }
 
     //用WebRtc浮点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc浮点版噪音抑制。
-    public int Proc( short FrameObj[], short ResultFrameObj[] )
+    public int Pocs( short FrameObj[], short ResultFrameObj[] )
     {
-        return WebRtcNsProc( m_WebRtcNsPt, FrameObj, ResultFrameObj );
+        return WebRtcNsPocs( m_WebRtcNsPt, FrameObj, ResultFrameObj );
     }
 
     //销毁WebRtc浮点版噪音抑制器。
-    public int Destroy()
+    public int Dstoy()
     {
         if( m_WebRtcNsPt != 0 )
         {
-            if( WebRtcNsDestroy( m_WebRtcNsPt ) == 0 )
+            if( WebRtcNsDstoy( m_WebRtcNsPt ) == 0 )
             {
                 m_WebRtcNsPt = 0;
                 return 0;
@@ -79,8 +79,8 @@ public class WebRtcNs
     public native int WebRtcNsInit( HTLong WebRtcNsPt, int SamplingRate, int FrameLen, int PolicyMode, long ErrInfoVarStrPt );
 
     //用WebRtc浮点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc浮点版噪音抑制。
-    public native int WebRtcNsProc( long WebRtcNsPt, short FrameObj[], short ResultFrameObj[] );
+    public native int WebRtcNsPocs( long WebRtcNsPt, short FrameObj[], short ResultFrameObj[] );
 
     //销毁WebRtc浮点版噪音抑制器。
-    public native int WebRtcNsDestroy( long WebRtcNsPt );
+    public native int WebRtcNsDstoy( long WebRtcNsPt );
 }

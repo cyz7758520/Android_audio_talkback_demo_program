@@ -23,7 +23,7 @@ public class WebRtcNsx
     //析构函数。
     public void finalize()
     {
-        Destroy();
+        Dstoy();
     }
 
     //创建并初始化WebRtc定点版噪音抑制器。
@@ -49,17 +49,17 @@ public class WebRtcNsx
     }
 
     //用WebRtc定点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc定点版噪音抑制。
-    public int Proc( short FramePt[], short ResultFramePt[] )
+    public int Pocs( short FramePt[], short ResultFramePt[] )
     {
-        return WebRtcNsxProc( m_WebRtcNsxPt, FramePt, ResultFramePt );
+        return WebRtcNsxPocs( m_WebRtcNsxPt, FramePt, ResultFramePt );
     }
 
     //销毁WebRtc定点版噪音抑制器。
-    public int Destroy()
+    public int Dstoy()
     {
         if( m_WebRtcNsxPt != 0 )
         {
-            if( WebRtcNsxDestroy( m_WebRtcNsxPt ) == 0 )
+            if( WebRtcNsxDstoy( m_WebRtcNsxPt ) == 0 )
             {
                 m_WebRtcNsxPt = 0;
                 return 0;
@@ -79,8 +79,8 @@ public class WebRtcNsx
     public native int WebRtcNsxInit( HTLong WebRtcNsxPt, int SamplingRate, int FrameLen, int PolicyMode, long ErrInfoVarStrPt );
 
     //用WebRtc定点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc定点版噪音抑制。
-    public native int WebRtcNsxProc( long WebRtcNsxPt, short FramePt[], short ResultFramePt[] );
+    public native int WebRtcNsxPocs( long WebRtcNsxPt, short FramePt[], short ResultFramePt[] );
 
     //销毁WebRtc定点版噪音抑制器。
-    public native int WebRtcNsxDestroy( long WebRtcNsxPt );
+    public native int WebRtcNsxDstoy( long WebRtcNsxPt );
 }

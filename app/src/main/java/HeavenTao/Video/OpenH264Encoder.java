@@ -22,7 +22,7 @@ public class OpenH264Encoder
     //析构函数。
     public void finalize()
     {
-        Destroy( null );
+        Dstoy( null );
     }
 
     //创建并初始化OpenH264编码器。
@@ -60,22 +60,22 @@ public class OpenH264Encoder
     }
 
     //用OpenH264编码器对8位无符号整型YU12格式帧进行H264格式编码。
-    public int Proc( byte YU12FramePt[], int YU12FrameWidth, int YU12FrameHeight, long YU12FrameTimeStampMsec,
+    public int Pocs( byte YU12FramePt[], int YU12FrameWidth, int YU12FrameHeight, long YU12FrameTimeStampMsec,
                      byte H264FramePt[], long H264FrameSz, HTLong H264FrameLenPt,
                      VarStr ErrInfoVarStrPt )
     {
-        return OpenH264EncoderProc( m_OpenH264EncoderPt,
+        return OpenH264EncoderPocs( m_OpenH264EncoderPt,
                                     YU12FramePt, YU12FrameWidth, YU12FrameHeight, YU12FrameTimeStampMsec,
                                     H264FramePt, H264FrameSz, H264FrameLenPt,
                                     ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
     }
 
     //销毁OpenH264编码器。
-    public int Destroy( VarStr ErrInfoVarStrPt )
+    public int Dstoy( VarStr ErrInfoVarStrPt )
     {
         if( m_OpenH264EncoderPt != 0 )
         {
-            if( OpenH264EncoderDestroy( m_OpenH264EncoderPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( OpenH264EncoderDstoy( m_OpenH264EncoderPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
             {
                 m_OpenH264EncoderPt = 0;
                 return 0;
@@ -92,7 +92,7 @@ public class OpenH264Encoder
     }
 
     //创建并初始化OpenH264编码器。
-    public native int OpenH264EncoderInit( HTLong OpenH264EncoderPt, int EncodedPictrWidth, int EncodedPictrHeight, int VideoType, int EncodedBitrate, int BitrateControlMode, int MaxFrameRate, int IDRFrameIntvlFrameCnt, int Complexity, long ErrInfoVarStrPt );
+    public native int OpenH264EncoderInit( HTLong OpenH264EncoderPt, int EncodedPictrWidth, int EncodedPictrHeight, int VideoType, int EncodedBitrate, int BitrateControlMode, int MaxFrameRate, int IDRFrameIntvlFrameCnt, int Cmplxt, long ErrInfoVarStrPt );
 
     //设置OpenH264编码器的编码后比特率。
     public native int OpenH264EncoderSetEncodedBitrate( long OpenH264EncoderPt, int EncodedBitrate, long ErrInfoVarStrPt );
@@ -101,11 +101,11 @@ public class OpenH264Encoder
     public native int OpenH264EncoderGetEncodedBitrate( long OpenH264EncoderPt, HTInt EncodedBitratePt, long ErrInfoVarStrPt );
 
     //用OpenH264编码器对8位无符号整型YU12格式帧进行H264格式编码。
-    public native int OpenH264EncoderProc( long OpenH264EncoderPt,
+    public native int OpenH264EncoderPocs( long OpenH264EncoderPt,
                                            byte YU12FramePt[], int YU12FrameWidth, int YU12FrameHeight, long YU12FrameTimeStampMsec,
                                            byte H264FramePt[], long H264FrameSz, HTLong H264FrameLenPt,
                                            long ErrInfoVarStrPt );
 
     //销毁OpenH264编码器。
-    public native int OpenH264EncoderDestroy( long OpenH264EncoderPt, long ErrInfoVarStrPt );
+    public native int OpenH264EncoderDstoy( long OpenH264EncoderPt, long ErrInfoVarStrPt );
 }

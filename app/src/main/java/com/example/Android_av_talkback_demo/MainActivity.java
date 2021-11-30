@@ -51,24 +51,24 @@ import HeavenTao.Sokt.*;
 //主界面消息处理类。
 class MainActivityHandler extends Handler
 {
-	static String m_CurClsNameStrPt = "MainActivityHandler"; //当前类名称字符串类对象的指针。
+	static String m_CurClsNameStrPt = "MainActivityHandler"; //当前类名称字符串的指针。
 
-	MainActivity m_MainActivityPt; //存放主界面类对象的指针。
-	ServiceConnection m_FrgndSrvcCnctPt; //存放前台服务连接器类对象的指针。
-	AlertDialog m_RequestCnctDialogPt; //存放请求连接对话框类对象的指针。
+	MainActivity m_MainActivityPt; //存放主界面的指针。
+	ServiceConnection m_FrgndSrvcCnctPt; //存放前台服务连接器的指针。
+	AlertDialog m_RequestCnctDialogPt; //存放请求连接对话框的指针。
 
-	public static final int MEDIA_PROC_THREAD_INIT = 1; //媒体处理线程初始化的消息。
-	public static final int MEDIA_PROC_THREAD_DESTROY = 2; //媒体处理线程销毁的消息。
+	public static final int INIT_MEDIA_PROC_THREAD = 1; //初始化媒体处理线程的消息。
+	public static final int DSTOY_MEDIA_PROC_THREAD = 2; //媒体处理线程销毁的消息。
 	public static final int SHOW_REQUEST_CNCT_DIALOG = 3; //显示请求连接对话框的消息。
-	public static final int DESTROY_REQUEST_CNCT_DIALOG = 4; //销毁请求连接对话框的消息。
+	public static final int DSTOY_REQUEST_CNCT_DIALOG = 4; //销毁请求连接对话框的消息。
 	public static final int SHOW_LOG = 5; //显示日志的消息。
 	public static final int REBUILD_SURFACE_VIEW = 6; //重建SurfaceView控件的消息。
 
 	public void handleMessage( Message MessagePt )
 	{
-		if( MessagePt.what == MEDIA_PROC_THREAD_INIT ) //如果是媒体处理线程启动的消息。
+		if( MessagePt.what == INIT_MEDIA_PROC_THREAD ) //如果是媒体处理线程启动的消息。
 		{
-			if( m_MainActivityPt.m_MyMediaProcThreadPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
+			if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
 			{
 				( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseTcpPrtclRadioBtn ) ).setEnabled( false ); //设置TCP协议按钮为不可用。
 				( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseUdpPrtclRadioBtn ) ).setEnabled( false ); //设置UDP协议按钮为不可用。
@@ -91,7 +91,7 @@ class MainActivityHandler extends Handler
 				( ( Button ) m_MainActivityPt.findViewById( R.id.SettingBtn ) ).setEnabled( false ); //设置设置按钮为不可用。
 			}
 
-			//创建并绑定前台服务，从而确保本进程在转入后台或系统锁屏时不会被系统限制运行，且只能放在主线程中执行，因为要使用界面类对象。
+			//创建并绑定前台服务，从而确保本进程在转入后台或系统锁屏时不会被系统限制运行，且只能放在主线程中执行，因为要使用界面。
 			if( ( ( CheckBox ) m_MainActivityPt.m_LyotActivitySettingViewPt.findViewById( R.id.IsUseFrgndSrvcCheckBox ) ).isChecked() && m_FrgndSrvcCnctPt == null )
 			{
 				m_FrgndSrvcCnctPt = new ServiceConnection() //创建存放前台服务连接器。
@@ -116,7 +116,7 @@ class MainActivityHandler extends Handler
 			builder.setCancelable( false ); //点击对话框以外的区域是否让对话框消失
 			builder.setTitle( R.string.app_name );
 
-			if( m_MainActivityPt.m_MyMediaProcThreadPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
+			if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
 			{
 				builder.setMessage( "您是否允许远端[" + MessagePt.obj + "]的连接？" );
 
@@ -126,7 +126,7 @@ class MainActivityHandler extends Handler
 					@Override
 					public void onClick( DialogInterface dialog, int which )
 					{
-						m_MainActivityPt.m_MyMediaProcThreadPt.m_RequestCnctResult = 1;
+						m_MainActivityPt.m_MyMediaPocsThrdPt.m_RequestCnctResult = 1;
 						m_RequestCnctDialogPt = null;
 					}
 				} );
@@ -136,7 +136,7 @@ class MainActivityHandler extends Handler
 					@Override
 					public void onClick( DialogInterface dialog, int which )
 					{
-						m_MainActivityPt.m_MyMediaProcThreadPt.m_RequestCnctResult = 2;
+						m_MainActivityPt.m_MyMediaPocsThrdPt.m_RequestCnctResult = 2;
 						m_RequestCnctDialogPt = null;
 					}
 				} );
@@ -151,7 +151,7 @@ class MainActivityHandler extends Handler
 					@Override
 					public void onClick( DialogInterface dialog, int which )
 					{
-						m_MainActivityPt.m_MyMediaProcThreadPt.m_RequestCnctResult = 2;
+						m_MainActivityPt.m_MyMediaPocsThrdPt.m_RequestCnctResult = 2;
 						m_RequestCnctDialogPt = null;
 					}
 				} );
@@ -160,7 +160,7 @@ class MainActivityHandler extends Handler
 			m_RequestCnctDialogPt = builder.create(); //创建AlertDialog对象
 			m_RequestCnctDialogPt.show();
 		}
-		else if( MessagePt.what == DESTROY_REQUEST_CNCT_DIALOG ) //如果是销毁请求连接对话框的消息。
+		else if( MessagePt.what == DSTOY_REQUEST_CNCT_DIALOG ) //如果是销毁请求连接对话框的消息。
 		{
 			if( m_RequestCnctDialogPt != null )
 			{
@@ -168,9 +168,9 @@ class MainActivityHandler extends Handler
 				m_RequestCnctDialogPt = null;
 			}
 		}
-		else if( MessagePt.what == MEDIA_PROC_THREAD_DESTROY ) //如果是媒体处理线程退出的消息。
+		else if( MessagePt.what == DSTOY_MEDIA_PROC_THREAD ) //如果是媒体处理线程退出的消息。
 		{
-			m_MainActivityPt.m_MyMediaProcThreadPt = null;
+			m_MainActivityPt.m_MyMediaPocsThrdPt = null;
 
 			if( m_FrgndSrvcCnctPt != null ) //如果已经创建并绑定了前台服务。
 			{
@@ -206,29 +206,29 @@ class MainActivityHandler extends Handler
 }
 
 //我的媒体处理线程类。
-class MyMediaProcThread extends MediaProcThread
+class MyMediaPocsThrd extends MediaPocsThrd
 {
-	Activity m_MainActivityPt; //存放主界面类对象的指针。
-	Handler m_MainActivityHandlerPt; //存放主界面消息处理类对象的指针。
+	Activity m_MainActivityPt; //存放主界面的指针。
+	Handler m_MainActivityHandlerPt; //存放主界面消息处理的指针。
 
-	String m_IPAddrStrPt; //存放IP地址字符串类对象的指针。
-	String m_PortStrPt; //存放端口字符串类对象的指针。
+	String m_IPAddrStrPt; //存放IP地址字符串的指针。
+	String m_PortStrPt; //存放端口字符串的指针。
 	int m_MaxCnctTimes; //存放最大连接次数，取值区间为[1,2147483647]。
 	int m_UseWhatXfrPrtcl; //存放使用什么传输协议，为0表示TCP协议，为1表示UDP协议。
 	int m_IsCreateSrvrOrClnt; //存放创建服务端或者客户端标记，为1表示创建服务端，为0表示创建客户端。
-	TcpSrvrSokt m_TcpSrvrSoktPt; //存放本端TCP协议服务端套接字类对象的指针。
-	TcpClntSokt m_TcpClntSoktPt; //存放本端TCP协议客户端套接字类对象的指针。
-	UdpSokt m_UdpSoktPt; //存放本端UDP协议套接字类对象的指针。
+	TcpSrvrSokt m_TcpSrvrSoktPt; //存放本端TCP协议服务端套接字的指针。
+	TcpClntSokt m_TcpClntSoktPt; //存放本端TCP协议客户端套接字的指针。
+	UdpSokt m_UdpSoktPt; //存放本端UDP协议套接字的指针。
 	long m_LastPktSendTime; //存放最后一个数据包的发送时间，用于判断连接是否中断。
 	long m_LastPktRecvTime; //存放最后一个数据包的接收时间，用于判断连接是否中断。
-	public static final byte PKT_TYP_RQST_CNCT = 0x00; //数据包类型：请求连接包。
-	public static final byte PKT_TYP_CNCT_ACK = 0x01; //数据包类型：连接应答包。
-	public static final byte PKT_TYP_ALLOW_CNCT = 0x02; //数据包类型：允许连接包。
-	public static final byte PKT_TYP_REFUSE_CNCT = 0x03; //数据包类型：拒绝连接包。
-	public static final byte PKT_TYP_AFRAME = 0x04; //数据包类型：音频输入输出帧。
-	public static final byte PKT_TYP_VFRAME = 0x05; //数据包类型：视频输入输出帧。
-	public static final byte PKT_TYP_HTBT = 0x06; //数据包类型：心跳包。
-	public static final byte PKT_TYP_EXIT = 0x07; //数据包类型：退出包。
+	public static final byte PKT_TYP_RQST_CNCT   = 1; //数据包类型：请求连接包。
+	public static final byte PKT_TYP_CNCT_ACK    = 2; //数据包类型：连接应答包。
+	public static final byte PKT_TYP_ALLOW_CNCT  = 3; //数据包类型：允许连接包。
+	public static final byte PKT_TYP_REFUSE_CNCT = 4; //数据包类型：拒绝连接包。
+	public static final byte PKT_TYP_AFRAME      = 5; //数据包类型：音频输入输出帧。
+	public static final byte PKT_TYP_VFRAME      = 6; //数据包类型：视频输入输出帧。
+	public static final byte PKT_TYP_HTBT        = 7; //数据包类型：心跳包。
+	public static final byte PKT_TYP_EXIT        = 8; //数据包类型：退出包。
 
 	int m_IsAutoAllowCnct; //存放是否自动允许连接，为0表示手动，为1表示自动。
 	int m_RequestCnctResult; //存放请求连接的结果，为0表示没有选择，为1表示允许，为2表示拒绝。
@@ -242,14 +242,14 @@ class MyMediaProcThread extends MediaProcThread
 	int m_LastGetAudioOutputFrameIsAct; //存放最后一个取出的音频输出帧是否为有语音活动，为0表示否，为非0表示是。
 	int m_LastGetAudioOutputFrameVideoOutputFrameTimeStamp; //存放最后一个取出的音频输出帧对应视频输出帧的时间戳。
 
-	LinkedList< byte[] > m_RecvAudioOutputFrameLnkLstPt; //存放接收音频输出帧链表类对象的指针。
-	LinkedList< byte[] > m_RecvVideoOutputFrameLnkLstPt; //存放接收视频输出帧链表类对象的指针。
+	LinkedList< byte[] > m_RecvAudioOutputFrameLnkLstPt; //存放接收音频输出帧链表的指针。
+	LinkedList< byte[] > m_RecvVideoOutputFrameLnkLstPt; //存放接收视频输出帧链表的指针。
 
-	AAjb m_AAjbPt; //存放音频自适应抖动缓冲器类对象的指针。
+	AAjb m_AAjbPt; //存放音频自适应抖动缓冲器的指针。
 	int m_AAjbMinNeedBufFrameCnt; //存放音频自适应抖动缓冲器的最小需缓冲帧数量，单位个，必须大于0。
 	int m_AAjbMaxNeedBufFrameCnt; //存放音频自适应抖动缓冲器的最大需缓冲帧数量，单位个，必须大于最小需缓冲数据帧的数量。
 	float m_AAjbAdaptSensitivity; //存放音频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0.0,127.0]。
-	VAjb m_VAjbPt; //存放视频自适应抖动缓冲器类对象的指针。
+	VAjb m_VAjbPt; //存放视频自适应抖动缓冲器的指针。
 	int m_VAjbMinNeedBufFrameCnt; //存放视频自适应抖动缓冲器的最小需缓冲帧数量，单位个，必须大于0。
 	int m_VAjbMaxNeedBufFrameCnt; //存放视频自适应抖动缓冲器的最大需缓冲帧数量，单位个，必须大于最小需缓冲数据帧的数量。
 	float m_VAjbAdaptSensitivity; //存放视频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0.0,127.0]。
@@ -264,14 +264,12 @@ class MyMediaProcThread extends MediaProcThread
 	HTLong m_TmpHTLong2Pt; //存放临时数据。
 	HTLong m_TmpHTLong3Pt; //存放临时数据。
 
-	VarStr m_ErrInfoVarStrPt; //存放错误信息动态字符串类对象的指针，可以为NULL。
-
-	MyMediaProcThread( Activity MainActivityPt, Handler MainActivityHandlerPt )
+	MyMediaPocsThrd( Activity MainActivityPt, Handler MainActivityHandlerPt )
 	{
 		super( MainActivityPt.getApplicationContext() );
 
-		m_MainActivityPt = MainActivityPt; //设置主界面类对象的指针。
-		m_MainActivityHandlerPt = MainActivityHandlerPt; //设置主界面消息处理类对象的指针。
+		m_MainActivityPt = MainActivityPt; //设置主界面的指针。
+		m_MainActivityHandlerPt = MainActivityHandlerPt; //设置主界面消息处理的指针。
 	}
 
 	//用户定义的初始化函数，在本线程刚启动时回调一次，返回值表示是否成功，为0表示成功，为非0表示失败。
@@ -285,7 +283,7 @@ class MyMediaProcThread extends MediaProcThread
 
 		out:
 		{
-			{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.MEDIA_PROC_THREAD_INIT;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送媒体处理线程启动的消息。
+			{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.INIT_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送媒体处理线程启动的消息。
 
 			m_RequestCnctResult = 0; //设置请求连接的结果为没有选择。
 			m_IsRecvExitPkt = 0; //设置没有接收到退出包。
@@ -298,14 +296,6 @@ class MyMediaProcThread extends MediaProcThread
 			if( m_TmpHTLongPt == null ) m_TmpHTLongPt = new HTLong(); //初始化临时数据。
 			if( m_TmpHTLong2Pt == null ) m_TmpHTLong2Pt = new HTLong(); //初始化临时数据。
 			if( m_TmpHTLong3Pt == null ) m_TmpHTLong3Pt = new HTLong(); //初始化临时数据。
-			if( m_ErrInfoVarStrPt == null ) //创建并初始化错误信息动态字符串类对象。
-			{
-				m_ErrInfoVarStrPt = new VarStr();
-				if( m_ErrInfoVarStrPt.Init() != 0 )
-				{
-					m_ErrInfoVarStrPt = null;
-				}
-			}
 
 			if( m_UseWhatXfrPrtcl == 0 ) //如果使用TCP协议。
 			{
@@ -343,7 +333,7 @@ class MyMediaProcThread extends MediaProcThread
 						{
 							if( m_TcpClntSoktPt.m_TcpClntSoktPt != 0 ) //如果用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接成功。
 							{
-								m_TcpSrvrSoktPt.Destroy( null ); //关闭并销毁已创建的本端TCP协议服务端套接字，防止还有其他远端TCP协议客户端套接字继续连接。
+								m_TcpSrvrSoktPt.Dstoy( null ); //关闭并销毁已创建的本端TCP协议服务端套接字，防止还有其他远端TCP协议客户端套接字继续连接。
 								m_TcpSrvrSoktPt = null;
 
 								String p_InfoStrPt = "用已监听的本端TCP协议服务端套接字接受远端TCP协议客户端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]的连接成功。";
@@ -388,10 +378,9 @@ class MyMediaProcThread extends MediaProcThread
 
 					m_TcpClntSoktPt = new TcpClntSokt();
 
-					//循环连接。
 					int p_CurCnctTimes = 1;
 					LoopCnct:
-					while( true )
+					while( true ) //循环连接已监听的远端TCP协议服务端套接字。
 					{
 						//连接远端。
 						{
@@ -509,14 +498,14 @@ class MyMediaProcThread extends MediaProcThread
 					{
 						if( m_UdpSoktPt.RecvPkt( null, p_RmtNodeAddrPt, p_RmtNodePortPt, m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 1, 0, m_ErrInfoVarStrPt ) == 0 )
 						{
-							if( m_TmpHTLongPt.m_Val != -1 ) //如果用已监听的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包成功。
+							if( m_TmpHTLongPt.m_Val != -1 ) //如果用已监听的本端UDP协议套接字接收一个远端UDP协议套接字发送的数据包成功。
 							{
 								if( ( m_TmpHTLongPt.m_Val == 1 ) && ( m_TmpBytePt[0] == PKT_TYP_RQST_CNCT ) ) //如果是请求连接包。
 								{
 									m_UdpSoktPt.Connect( 4, p_RmtNodeAddrPt.m_Val, p_RmtNodePortPt.m_Val, 0, null ); //用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字，已连接的本端UDP协议套接字只能接收连接的远端UDP协议套接字发送的数据包。
 
 									//连接远端。
-									CnctRmt:
+									UdpSrvrCnctRmt:
 									{
 										//发送请求连接包。
 										m_TmpBytePt[0] = PKT_TYP_RQST_CNCT; //设置请求连接包。
@@ -525,7 +514,7 @@ class MyMediaProcThread extends MediaProcThread
 											String p_InfoStrPt = "用已监听的本端UDP协议套接字发送请求连接包到远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 											Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 											Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-											break CnctRmt;
+											break UdpSrvrCnctRmt;
 										}
 
 										//接收连接应答包。
@@ -534,7 +523,7 @@ class MyMediaProcThread extends MediaProcThread
 										{
 											if( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 1, 0, m_ErrInfoVarStrPt ) == 0 )
 											{
-												if( m_TmpHTLongPt.m_Val != -1 ) //如果用已监听的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包成功。
+												if( m_TmpHTLongPt.m_Val != -1 ) //如果用已监听的本端UDP协议套接字接收一个远端UDP协议套接字发送的数据包成功。
 												{
 													if( ( m_TmpHTLongPt.m_Val == 1 ) && ( m_TmpBytePt[0] != PKT_TYP_RQST_CNCT ) ) //如果不是请求连接包。
 													{
@@ -546,7 +535,7 @@ class MyMediaProcThread extends MediaProcThread
 														//就重新接收连接应答包。
 													}
 												}
-												else //如果用已监听的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包超时。
+												else //如果用已监听的本端UDP协议套接字接收一个远端UDP协议套接字发送的数据包超时。
 												{
 													//就重新接收连接应答包。
 												}
@@ -556,7 +545,7 @@ class MyMediaProcThread extends MediaProcThread
 												String p_InfoStrPt = "用已监听的本端UDP协议套接字接收远端UDP协议套接字发送的连接应答包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 												Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 												Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-												break CnctRmt;
+												break UdpSrvrCnctRmt;
 											}
 
 											if( System.currentTimeMillis() - m_LastPktRecvTime > 5000 )
@@ -564,7 +553,7 @@ class MyMediaProcThread extends MediaProcThread
 												String p_InfoStrPt = "用已监听的本端UDP协议套接字接收远端UDP协议套接字发送的连接应答包失败。原因：接收超时。";
 												Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 												Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-												break CnctRmt;
+												break UdpSrvrCnctRmt;
 											}
 
 											if( m_ExitFlag != 0 ) //如果本线程接收到退出请求。
@@ -662,13 +651,12 @@ class MyMediaProcThread extends MediaProcThread
 						break out;
 					}
 
-					//循环连接。
 					int p_CurCnctTimes = 1;
-					LoopCnct:
-					while( true )
+					UdpClntLoopCnct:
+					while( true ) //循环连接已监听的远端UDP协议套接字。
 					{
 						//连接远端。
-						CnctRmt:
+						UdpClntCnctRmt:
 						{
 							{
 								String p_InfoStrPt = "开始第 " + p_CurCnctTimes + "次连接。";
@@ -681,9 +669,9 @@ class MyMediaProcThread extends MediaProcThread
 							if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) != 0 )
 							{
 								String p_InfoStrPt = "用已监听的本端UDP协议套接字发送请求连接包到已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-								Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+								Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-								break CnctRmt;
+								break UdpClntCnctRmt;
 							}
 
 							//接收请求连接包。
@@ -692,7 +680,7 @@ class MyMediaProcThread extends MediaProcThread
 							{
 								if( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 1, 0, m_ErrInfoVarStrPt ) == 0 )
 								{
-									if( m_TmpHTLongPt.m_Val != -1 ) //如果用已监听的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包成功。
+									if( m_TmpHTLongPt.m_Val != -1 ) //如果用已监听的本端UDP协议套接字接收一个远端UDP协议套接字发送的数据包成功。
 									{
 										if( ( m_TmpHTLongPt.m_Val == 1 ) && ( m_TmpBytePt[0] == PKT_TYP_RQST_CNCT ) ) //如果是请求连接包。
 										{
@@ -703,7 +691,7 @@ class MyMediaProcThread extends MediaProcThread
 												String p_InfoStrPt = "用已监听的本端UDP协议套接字发送连接应答包到已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 												Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 												Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-												break CnctRmt;
+												break UdpClntCnctRmt;
 											}
 											break;
 										}
@@ -712,14 +700,14 @@ class MyMediaProcThread extends MediaProcThread
 											//就重新接收请求连接包。
 										}
 									}
-									else //如果用已监听的本端UDP协议套接字开始接收远端UDP协议套接字发送的一个数据包超时。
+									else //如果用已监听的本端UDP协议套接字接收一个远端UDP协议套接字发送的数据包超时。
 									{
 										//就重新接收请求连接包。
 									}
 								}
 								else
 								{
-									m_UdpSoktPt.Disconnect( 0, null );
+									m_UdpSoktPt.Disconnect( 0, null ); //将已连接的本端UDP协议套接字断开连接的远端UDP协议套接字，已连接的本端UDP协议套接字将变成已监听的本端UDP协议套接字。
 
 									String p_InfoStrPt = "用已监听的本端UDP协议套接字接收已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]发送的请求连接包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 									Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -732,12 +720,12 @@ class MyMediaProcThread extends MediaProcThread
 									String p_InfoStrPt = "用已监听的本端UDP协议套接字接收已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]发送的请求连接包失败。原因：接收超时。";
 									Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 									Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-									break CnctRmt;
+									break UdpClntCnctRmt;
 								}
 
 								if( m_ExitFlag != 0 ) //如果本线程接收到退出请求。
 								{
-									m_UdpSoktPt.Disconnect( 0, null );
+									m_UdpSoktPt.Disconnect( 0, null ); //将已连接的本端UDP协议套接字断开连接的远端UDP协议套接字，已连接的本端UDP协议套接字将变成已监听的本端UDP协议套接字。
 
 									Log.i( m_CurClsNameStrPt, "本线程接收到退出请求，开始准备退出。" );
 									break out;
@@ -747,7 +735,7 @@ class MyMediaProcThread extends MediaProcThread
 							String p_InfoStrPt = "用已监听的本端UDP协议套接字连接已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]成功。";
 							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-							break LoopCnct;
+							break UdpClntLoopCnct;
 						}
 
 						p_CurCnctTimes++;
@@ -793,27 +781,21 @@ class MyMediaProcThread extends MediaProcThread
 				{
 					if( m_RequestCnctResult == 1 ) //如果允许连接。
 					{
-						{
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DESTROY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
-
-							String p_InfoStrPt = "允许连接。";
-							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-							if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
-						}
-
 						m_TmpBytePt[0] = PKT_TYP_ALLOW_CNCT; //设置允许连接包。
 						if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
 							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
 						{
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+
 							String p_InfoStrPt = "发送一个允许连接包成功。";
 							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 							break WaitAllowCnct;
 						}
 						else
 						{
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DESTROY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 							String p_InfoStrPt = "发送一个允许连接包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -823,27 +805,21 @@ class MyMediaProcThread extends MediaProcThread
 					}
 					else if( m_RequestCnctResult == 2 ) //如果拒绝连接。
 					{
-						{
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DESTROY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
-
-							String p_InfoStrPt = "拒绝连接。";
-							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-							if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
-						}
-
 						m_TmpBytePt[0] = PKT_TYP_REFUSE_CNCT; //设置拒绝连接包。
 						if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
 							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
 						{
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+
 							String p_InfoStrPt = "发送一个拒绝连接包成功。";
 							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 							break out;
 						}
 						else
 						{
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DESTROY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 							String p_InfoStrPt = "发送一个拒绝连接包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -856,27 +832,21 @@ class MyMediaProcThread extends MediaProcThread
 				{
 					if( m_RequestCnctResult == 2 ) //如果中断等待。
 					{
-						{
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DESTROY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
-
-							String p_InfoStrPt = "中断等待。";
-							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-							if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
-						}
-
 						m_TmpBytePt[0] = PKT_TYP_REFUSE_CNCT; //设置拒绝连接包。
 						if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
 							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
 						{
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+
 							String p_InfoStrPt = "发送一个拒绝连接包成功。";
 							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 							break out;
 						}
 						else
 						{
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DESTROY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 							String p_InfoStrPt = "发送一个拒绝连接包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -886,6 +856,7 @@ class MyMediaProcThread extends MediaProcThread
 					}
 				}
 
+				//发送心跳包。
 				if( System.currentTimeMillis() - m_LastPktSendTime >= 100 )
 				{
 					m_TmpBytePt[0] = PKT_TYP_HTBT; //设置心跳包。
@@ -897,7 +868,7 @@ class MyMediaProcThread extends MediaProcThread
 					}
 					else
 					{
-						{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DESTROY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+						{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 						String p_InfoStrPt = "发送一个心跳包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -906,10 +877,11 @@ class MyMediaProcThread extends MediaProcThread
 					}
 				}
 
+				//接收一个远端发送的数据包。
 				if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
 					( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
 				{
-					if( m_TmpHTLongPt.m_Val != -1 ) //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包成功。
+					if( m_TmpHTLongPt.m_Val != -1 ) //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包成功。
 					{
 						m_LastPktRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间。
 
@@ -923,11 +895,12 @@ class MyMediaProcThread extends MediaProcThread
 							{
 								m_RequestCnctResult = 1;
 
-								{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DESTROY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+								{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 								String p_InfoStrPt = "接收到一个允许连接包。";
 								Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+								if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 								break WaitAllowCnct;
 							}
 							else //如果是服务端。
@@ -939,11 +912,12 @@ class MyMediaProcThread extends MediaProcThread
 						{
 							m_RequestCnctResult = 2;
 
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DESTROY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 							String p_InfoStrPt = "接收到一个拒绝连接包。";
 							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 							break out;
 						}
 						else //如果是其他包。
@@ -951,14 +925,14 @@ class MyMediaProcThread extends MediaProcThread
 							//就重新接收。
 						}
 					}
-					else //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包超时。
+					else //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包超时。
 					{
 						//就重新接收。
 					}
 				}
 				else //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包失败。
 				{
-					{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DESTROY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁请求连接对话框的消息。
+					{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁请求连接对话框的消息。
 
 					String p_InfoStrPt = "用已连接的本端套接字接收一个连接的远端套接字发送的数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -969,7 +943,7 @@ class MyMediaProcThread extends MediaProcThread
 				//判断套接字连接是否中断。
 				if( System.currentTimeMillis() - m_LastPktRecvTime > 5000 ) //如果超过5000毫秒没有接收任何数据包，就判定连接已经断开了。
 				{
-					{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DESTROY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁请求连接对话框的消息。
+					{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁请求连接对话框的消息。
 
 					String p_InfoStrPt = "超过5000毫秒没有接收任何数据包，判定套接字连接已经断开了。";
 					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -982,40 +956,40 @@ class MyMediaProcThread extends MediaProcThread
 			{
 				case 0: //如果使用链表。
 				{
-					//初始化接收音频输出帧链表类对象。
-					m_RecvAudioOutputFrameLnkLstPt = new LinkedList< byte[] >(); //创建接收音频输出帧链表类对象。
+					//初始化接收音频输出帧链表。
+					m_RecvAudioOutputFrameLnkLstPt = new LinkedList< byte[] >(); //创建接收音频输出帧链表。
 					Log.i( m_CurClsNameStrPt, "创建并初始化接收音频输出帧链表对象成功。" );
 
-					//初始化接收视频输出帧链表类对象。
-					m_RecvVideoOutputFrameLnkLstPt = new LinkedList< byte[] >(); //创建接收视频输出帧链表类对象。
+					//初始化接收视频输出帧链表。
+					m_RecvVideoOutputFrameLnkLstPt = new LinkedList< byte[] >(); //创建接收视频输出帧链表。
 					Log.i( m_CurClsNameStrPt, "创建并初始化接收视频输出帧链表对象成功。" );
 					break;
 				}
 				case 1: //如果使用自适应抖动缓冲器。
 				{
-					//初始化音频自适应抖动缓冲器类对象。
+					//初始化音频自适应抖动缓冲器。
 					m_AAjbPt = new AAjb();
 					if( m_AAjbPt.Init( m_AudioOutputPt.m_SamplingRate, m_AudioOutputPt.m_FrameLen, 1, 1, 0, m_AAjbMinNeedBufFrameCnt, m_AAjbMaxNeedBufFrameCnt, m_AAjbAdaptSensitivity, m_ErrInfoVarStrPt ) == 0 )
 					{
-						Log.i( m_CurClsNameStrPt, "创建并初始化音频自适应抖动缓冲器类对象成功。" );
+						Log.i( m_CurClsNameStrPt, "创建并初始化音频自适应抖动缓冲器成功。" );
 					}
 					else
 					{
-						String p_InfoStrPt = "创建并初始化音频自适应抖动缓冲器类对象失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+						String p_InfoStrPt = "创建并初始化音频自适应抖动缓冲器失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 						break out;
 					}
 
-					//初始化视频自适应抖动缓冲器类对象。
+					//初始化视频自适应抖动缓冲器。
 					m_VAjbPt = new VAjb();
 					if( m_VAjbPt.Init( 1, m_VAjbMinNeedBufFrameCnt, m_VAjbMaxNeedBufFrameCnt, m_VAjbAdaptSensitivity, m_ErrInfoVarStrPt ) == 0 )
 					{
-						Log.i( m_CurClsNameStrPt, "创建并初始化视频自适应抖动缓冲器类对象成功。" );
+						Log.i( m_CurClsNameStrPt, "创建并初始化视频自适应抖动缓冲器成功。" );
 					}
 					else
 					{
-						String p_InfoStrPt = "创建并初始化视频自适应抖动缓冲器类对象失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+						String p_InfoStrPt = "创建并初始化视频自适应抖动缓冲器失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 						break out;
@@ -1046,7 +1020,7 @@ class MyMediaProcThread extends MediaProcThread
 	}
 
 	//用户定义的处理函数，在本线程运行时每隔1毫秒就回调一次，返回值表示是否成功，为0表示成功，为非0表示失败。
-	@Override public int UserProcess()
+	@Override public int UserPocs()
 	{
 		int p_Result = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
 		int p_TmpInt;
@@ -1057,7 +1031,7 @@ class MyMediaProcThread extends MediaProcThread
 			if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 0, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
 				( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 0, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
 			{
-				if( m_TmpHTLongPt.m_Val != -1 ) //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包成功。
+				if( m_TmpHTLongPt.m_Val != -1 ) //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包成功。
 				{
 					m_LastPktRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间。
 
@@ -1222,21 +1196,22 @@ class MyMediaProcThread extends MediaProcThread
 						}
 
 						m_IsRecvExitPkt = 1; //设置已经接收到退出包。
-						RequireExit( 1, 0 ); //请求退出。
+						RqirExit( 1, 0 ); //请求退出。
 
 						String p_InfoStrPt = "接收到一个退出包。";
 						Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+						if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 					}
 				}
-				else //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包超时。
+				else //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包超时。
 				{
 
 				}
 			}
-			else //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包失败。
+			else //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包失败。
 			{
-				String p_InfoStrPt = "用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+				String p_InfoStrPt = "用已连接的本端套接字接收一个连接的远端套接字发送的数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 				Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 				Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 				break out;
@@ -1247,7 +1222,7 @@ class MyMediaProcThread extends MediaProcThread
 			{
 				m_TmpBytePt[0] = PKT_TYP_HTBT; //设置心跳包。
 				if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
-						( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
+					( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
 				{
 					m_LastPktSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间。
 					Log.i( m_CurClsNameStrPt, "发送一个心跳包成功。" );
@@ -1277,12 +1252,12 @@ class MyMediaProcThread extends MediaProcThread
 	}
 
 	//用户定义的销毁函数，在本线程退出时回调一次。
-	@Override public void UserDestroy()
+	@Override public void UserDstoy()
 	{
 		SendExitPkt:
-		if( ( m_ExitFlag == 1 ) && ( ( m_TcpClntSoktPt != null ) || ( ( m_UdpSoktPt != null ) && ( m_UdpSoktPt.GetRmtAddr( null, null, null, 0, null ) == 0 ) ) ) ) //如果本线程接收到退出请求，且本端TCP协议客户端套接字类对象不为空或本端UDP协议套接字类对象不为空且已连接远端。
+		if( ( m_ExitFlag == 1 ) && ( ( m_TcpClntSoktPt != null ) || ( ( m_UdpSoktPt != null ) && ( m_UdpSoktPt.GetRmtAddr( null, null, null, 0, null ) == 0 ) ) ) ) //如果本线程接收到退出请求，且本端TCP协议客户端套接字不为空或本端UDP协议套接字不为空且已连接远端。
 		{
-			//循环发送退出包。
+			//发送退出包。
 			m_TmpBytePt[0] = PKT_TYP_EXIT; //设置退出包。
 			if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) != 0 ) ) ||
 				( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) != 0 ) ) )
@@ -1295,16 +1270,20 @@ class MyMediaProcThread extends MediaProcThread
 
 			m_LastPktSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间。
 
-			{String p_InfoStrPt = "发送一个退出包成功。";Log.i( m_CurClsNameStrPt, p_InfoStrPt );Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
+			{
+				String p_InfoStrPt = "发送一个退出包成功。";
+				Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+				Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+			}
 
 			if( m_IsRecvExitPkt == 0 ) //如果没有接收到退出包。
 			{
 				while( true ) //循环接收退出包。
 				{
 					if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 5000, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
-							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 5000, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
+						( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 5000, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
 					{
-						if( m_TmpHTLongPt.m_Val != -1 ) //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包成功。
+						if( m_TmpHTLongPt.m_Val != -1 ) //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包成功。
 						{
 							m_LastPktRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间。
 
@@ -1320,17 +1299,17 @@ class MyMediaProcThread extends MediaProcThread
 
 							}
 						}
-						else //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包超时。
+						else //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包超时。
 						{
-							String p_InfoStrPt = "用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+							String p_InfoStrPt = "用已连接的本端套接字接收一个连接的远端套接字发送的数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							break SendExitPkt;
 						}
 					}
-					else //如果用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包失败。
+					else //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包失败。
 					{
-						String p_InfoStrPt = "用已连接的本端套接字开始接收连接的远端套接字发送的一个数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+						String p_InfoStrPt = "用已连接的本端套接字接收一个连接的远端套接字发送的数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 						break SendExitPkt;
@@ -1342,7 +1321,7 @@ class MyMediaProcThread extends MediaProcThread
 		//销毁本端TCP协议服务端套接字。
 		if( m_TcpSrvrSoktPt != null )
 		{
-			m_TcpSrvrSoktPt.Destroy( null ); //关闭并销毁已创建的本端TCP协议服务端套接字。
+			m_TcpSrvrSoktPt.Dstoy( null ); //关闭并销毁已创建的本端TCP协议服务端套接字。
 			m_TcpSrvrSoktPt = null;
 
 			String p_InfoStrPt = "关闭并销毁已创建的本端TCP协议服务端套接字成功。";
@@ -1353,7 +1332,7 @@ class MyMediaProcThread extends MediaProcThread
 		//销毁本端TCP协议客户端套接字。
 		if( m_TcpClntSoktPt != null )
 		{
-			m_TcpClntSoktPt.Destroy( ( short ) -1, null ); //关闭并销毁已创建的本端TCP协议客户端套接字。
+			m_TcpClntSoktPt.Dstoy( ( short ) -1, null ); //关闭并销毁已创建的本端TCP协议客户端套接字。
 			m_TcpClntSoktPt = null;
 
 			String p_InfoStrPt = "关闭并销毁已创建的本端TCP协议客户端套接字成功。";
@@ -1364,7 +1343,7 @@ class MyMediaProcThread extends MediaProcThread
 		//销毁本端UDP协议套接字。
 		if( m_UdpSoktPt != null )
 		{
-			m_UdpSoktPt.Destroy( null ); //关闭并销毁已创建的本端UDP协议套接字。
+			m_UdpSoktPt.Dstoy( null ); //关闭并销毁已创建的本端UDP协议套接字。
 			m_UdpSoktPt = null;
 
 			String p_InfoStrPt = "关闭并销毁已创建的本端UDP协议套接字成功。";
@@ -1372,31 +1351,31 @@ class MyMediaProcThread extends MediaProcThread
 			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 		}
 
-		//销毁接收音频输出帧的链表类对象。
+		//销毁接收音频输出帧的链表。
 		if( m_RecvAudioOutputFrameLnkLstPt != null )
 		{
 			m_RecvAudioOutputFrameLnkLstPt.clear();
 			m_RecvAudioOutputFrameLnkLstPt = null;
 
-			Log.i( m_CurClsNameStrPt, "销毁接收输出帧链表类对象成功。" );
+			Log.i( m_CurClsNameStrPt, "销毁接收输出帧链表成功。" );
 		}
 
-		//销毁视频自适应抖动缓冲器类对象。
+		//销毁视频自适应抖动缓冲器。
 		if( m_VAjbPt != null )
 		{
-			m_VAjbPt.Destroy( null );
+			m_VAjbPt.Dstoy( null );
 			m_VAjbPt = null;
 
-			Log.i( m_CurClsNameStrPt, "销毁视频自适应抖动缓冲器类对象成功。" );
+			Log.i( m_CurClsNameStrPt, "销毁视频自适应抖动缓冲器成功。" );
 		}
 
-		//销毁音频自适应抖动缓冲器类对象。
+		//销毁音频自适应抖动缓冲器。
 		if( m_AAjbPt != null )
 		{
-			m_AAjbPt.Destroy( null );
+			m_AAjbPt.Dstoy( null );
 			m_AAjbPt = null;
 
-			Log.i( m_CurClsNameStrPt, "销毁音频自适应抖动缓冲器类对象成功。" );
+			Log.i( m_CurClsNameStrPt, "销毁音频自适应抖动缓冲器成功。" );
 		}
 
 		if( m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
@@ -1407,7 +1386,7 @@ class MyMediaProcThread extends MediaProcThread
 				Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
-				RequireExit( 2, 0 ); //请求重启。
+				RqirExit( 2, 0 ); //请求重启。
 				{Message clMessage = new Message();clMessage.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建SurfaceView控件消息。
 			}
 			else if( ( m_ExitFlag == 0 ) && ( m_ExitCode == -1 ) && ( m_RequestCnctResult == 2 ) ) //如果本线程没收到退出请求，且退出代码为初始化失败，且请求连接的结果为拒绝。
@@ -1416,7 +1395,7 @@ class MyMediaProcThread extends MediaProcThread
 				Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
-				RequireExit( 2, 0 ); //请求重启。
+				RqirExit( 2, 0 ); //请求重启。
 				{Message clMessage = new Message();clMessage.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建SurfaceView控件消息。
 			}
 			else if( ( m_ExitFlag == 0 ) && ( m_ExitCode == -2 ) ) //如果本线程没收到退出请求，且退出代码为处理失败。
@@ -1425,12 +1404,12 @@ class MyMediaProcThread extends MediaProcThread
 				Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
-				RequireExit( 2, 0 ); //请求重启。
+				RqirExit( 2, 0 ); //请求重启。
 				{Message clMessage = new Message();clMessage.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建SurfaceView控件消息。
 			}
 			else //其他情况，本线程直接退出。
 			{
-				{Message clMessage = new Message();clMessage.what = MainActivityHandler.MEDIA_PROC_THREAD_DESTROY;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送媒体处理线程退出的消息。
+				{Message clMessage = new Message();clMessage.what = MainActivityHandler.DSTOY_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送媒体处理线程退出的消息。
 				{Message clMessage = new Message();clMessage.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建SurfaceView控件消息。
 			}
 		}
@@ -1442,11 +1421,11 @@ class MyMediaProcThread extends MediaProcThread
 				Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
-				RequireExit( 2, 0 ); //请求重启。
+				RqirExit( 2, 0 ); //请求重启。
 			}
 			else //其他情况，本线程直接退出。
 			{
-				{Message clMessage = new Message();clMessage.what = MainActivityHandler.MEDIA_PROC_THREAD_DESTROY;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送媒体处理线程退出的消息。
+				{Message clMessage = new Message();clMessage.what = MainActivityHandler.DSTOY_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送媒体处理线程退出的消息。
 				{Message clMessage = new Message();clMessage.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建SurfaceView控件消息。
 			}
 		}
@@ -1920,19 +1899,19 @@ public class MainActivity extends AppCompatActivity
 	View m_LyotActivityWebRtcAecmViewPt; //存放WebRtc定点版声学回音消除器设置布局控件的指针。
 	View m_LyotActivityWebRtcAecViewPt; //存放WebRtc浮点版声学回音消除器设置布局控件的指针。
 	View m_LyotActivitySpeexWebRtcAecViewPt; //存放SpeexWebRtc三重声学回音消除器设置布局控件的指针。
-	View m_LyotActivitySpeexPprocNsViewPt; //存放Speex预处理器的噪音抑制设置布局控件的指针。
+	View m_LyotActivitySpeexPrpocsNsViewPt; //存放Speex预处理器的噪音抑制设置布局控件的指针。
 	View m_LyotActivityWebRtcNsxViewPt; //存放WebRtc定点版噪音抑制器设置布局控件的指针。
 	View m_LyotActivityWebRtcNsViewPt; //存放WebRtc浮点版噪音抑制器设置布局控件的指针。
-	View m_LyotActivitySpeexPprocOtherViewPt; //存放Speex预处理器的其他功能设置布局控件的指针。
+	View m_LyotActivitySpeexPrpocsOtherViewPt; //存放Speex预处理器的其他功能设置布局控件的指针。
 	View m_LyotActivitySpeexCodecViewPt; //存放Speex编解码器设置布局控件的指针。
 	View m_LyotActivityOpenH264CodecViewPt; //存放OpenH264编解码器设置布局控件的指针。
 	View m_LyotActivitySystemH264CodecViewPt; //存放系统自带H264编解码器设置布局控件的指针。
 	View m_LyotActivityAjbViewPt; //存放音频自适应抖动缓冲器设置布局控件的指针。
 	View m_LyotActivityCurViewPt; //存放当前界面布局控件的指针。
 
-	MainActivity m_MainActivityPt; //存放主界面类对象的指针。
-	MyMediaProcThread m_MyMediaProcThreadPt; //存放媒体处理线程类对象的指针。
-	MainActivityHandler m_MainActivityHandlerPt; //存放主界面消息处理类对象的指针。
+	MainActivity m_MainActivityPt; //存放主界面的指针。
+	MyMediaPocsThrd m_MyMediaPocsThrdPt; //存放媒体处理线程的指针。
+	MainActivityHandler m_MainActivityHandlerPt; //存放主界面消息处理的指针。
 
 	HTSurfaceView m_VideoInputPreviewSurfaceViewPt; //存放视频输入预览SurfaceView控件的指针。
 	HTSurfaceView m_VideoOutputDisplaySurfaceViewPt; //存放视频输出显示SurfaceView控件的指针。
@@ -1954,10 +1933,10 @@ public class MainActivity extends AppCompatActivity
 		m_LyotActivityWebRtcAecmViewPt = layoutInflater.inflate( R.layout.activity_webrtcaecm, null );
 		m_LyotActivityWebRtcAecViewPt = layoutInflater.inflate( R.layout.activity_webrtcaec, null );
 		m_LyotActivitySpeexWebRtcAecViewPt = layoutInflater.inflate( R.layout.activity_speexwebrtcaec, null );
-		m_LyotActivitySpeexPprocNsViewPt = layoutInflater.inflate( R.layout.activity_speexpprocns, null );
+		m_LyotActivitySpeexPrpocsNsViewPt = layoutInflater.inflate( R.layout.activity_speexprpocsns, null );
 		m_LyotActivityWebRtcNsxViewPt = layoutInflater.inflate( R.layout.activity_webrtcnsx, null );
 		m_LyotActivityWebRtcNsViewPt = layoutInflater.inflate( R.layout.activity_webrtcns, null );
-		m_LyotActivitySpeexPprocOtherViewPt = layoutInflater.inflate( R.layout.activity_speexpprocother, null );
+		m_LyotActivitySpeexPrpocsOtherViewPt = layoutInflater.inflate( R.layout.activity_speexprpocsother, null );
 		m_LyotActivitySpeexCodecViewPt = layoutInflater.inflate( R.layout.activity_speexcodec, null );
 		m_LyotActivityOpenH264CodecViewPt = layoutInflater.inflate( R.layout.activity_openh264codec, null );
 		m_LyotActivitySystemH264CodecViewPt = layoutInflater.inflate( R.layout.activity_systemh264codec, null );
@@ -1971,12 +1950,12 @@ public class MainActivity extends AppCompatActivity
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseBitrateSuperRadioBtn ) ).performClick(); //默认比特率等级：超。
 
 		//请求权限。
-		MediaProcThread.RequestPermissions( this, 1, 1, 1, 1, 1, 1, 1, 1 );
+		MediaPocsThrd.RqstPrmsn( this, 1, 1, 1, 1, 1, 1, 1, 1 );
 
-		//设置主界面类对象。
+		//设置主界面。
 		m_MainActivityPt = this;
 
-		//初始化消息处理类对象。
+		//初始化消息处理。
 		m_MainActivityHandlerPt = new MainActivityHandler();
 		m_MainActivityHandlerPt.m_MainActivityPt = m_MainActivityPt;
 
@@ -2069,9 +2048,9 @@ public class MainActivity extends AppCompatActivity
 			@Override public void surfaceCreated( SurfaceHolder holder )
 			{
 				Log.i( m_CurClsNameStrPt, "VideoInputPreviewSurfaceView Created" );
-				if( m_MyMediaProcThreadPt != null && m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaProcThreadPt.m_RunFlag == MediaProcThread.RUN_FLAG_PROC ) //如果SurfaceView已经重新创建，且媒体处理线程已经启动，且要使用视频输入，并处于初始化完毕正在循环处理帧。
+				if( m_MyMediaPocsThrdPt != null && m_MyMediaPocsThrdPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaPocsThrdPt.m_RunFlag == MediaPocsThrd.RUN_FLAG_PROC ) //如果SurfaceView已经重新创建，且媒体处理线程已经启动，且要使用视频输入，并处于初始化完毕正在循环处理帧。
 				{
-					m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启媒体处理线程，来保证正常的视频输入，否则视频输入会中断。
+					m_MyMediaPocsThrdPt.RqirExit( 3, 1 ); //请求重启媒体处理线程，来保证正常的视频输入，否则视频输入会中断。
 				}
 			}
 
@@ -2172,10 +2151,10 @@ public class MainActivity extends AppCompatActivity
 		if( m_LyotActivityCurViewPt == m_LyotActivityMainViewPt )
 		{
 			Log.i( m_CurClsNameStrPt, "用户在主界面按下返回键，本软件退出。" );
-			if( m_MyMediaProcThreadPt != null )
+			if( m_MyMediaPocsThrdPt != null )
 			{
 				Log.i( m_CurClsNameStrPt, "开始请求并等待媒体处理线程退出。" );
-				m_MyMediaProcThreadPt.RequireExit( 1, 1 );
+				m_MyMediaPocsThrdPt.RqirExit( 1, 1 );
 				Log.i( m_CurClsNameStrPt, "结束请求并等待媒体处理线程退出。" );
 			}
 			System.exit(0);
@@ -2189,10 +2168,10 @@ public class MainActivity extends AppCompatActivity
 				( m_LyotActivityCurViewPt == m_LyotActivityWebRtcAecmViewPt ) ||
 				( m_LyotActivityCurViewPt == m_LyotActivityWebRtcAecViewPt ) ||
 				( m_LyotActivityCurViewPt == m_LyotActivitySpeexWebRtcAecViewPt ) ||
-				( m_LyotActivityCurViewPt == m_LyotActivitySpeexPprocNsViewPt ) ||
+				( m_LyotActivityCurViewPt == m_LyotActivitySpeexPrpocsNsViewPt ) ||
 				( m_LyotActivityCurViewPt == m_LyotActivityWebRtcNsxViewPt ) ||
 				( m_LyotActivityCurViewPt == m_LyotActivityWebRtcNsViewPt ) ||
-				( m_LyotActivityCurViewPt == m_LyotActivitySpeexPprocOtherViewPt ) ||
+				( m_LyotActivityCurViewPt == m_LyotActivitySpeexPrpocsOtherViewPt ) ||
 				( m_LyotActivityCurViewPt == m_LyotActivitySpeexCodecViewPt ) ||
 				( m_LyotActivityCurViewPt == m_LyotActivityOpenH264CodecViewPt ) ||
 				( m_LyotActivityCurViewPt == m_LyotActivitySystemH264CodecViewPt ) ||
@@ -2207,9 +2186,9 @@ public class MainActivity extends AppCompatActivity
 	{
 		super.onConfigurationChanged( newConfig );
 
-		if( m_MyMediaProcThreadPt != null && m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaProcThreadPt.m_RunFlag == MediaProcThread.RUN_FLAG_PROC ) //如果SurfaceView已经重新创建，且媒体处理线程已经启动，且要使用视频输入，并处于初始化完毕正在循环处理帧。
+		if( m_MyMediaPocsThrdPt != null && m_MyMediaPocsThrdPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaPocsThrdPt.m_RunFlag == MediaPocsThrd.RUN_FLAG_PROC ) //如果SurfaceView已经重新创建，且媒体处理线程已经启动，且要使用视频输入，并处于初始化完毕正在循环处理帧。
 		{
-			m_MyMediaProcThreadPt.SetIsUseVideoInput(
+			m_MyMediaPocsThrdPt.SetIsUseVideoInput(
 					( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 :
 							( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
 					( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate12RadioBtn ) ).isChecked() ) ? 12 :
@@ -2228,23 +2207,23 @@ public class MainActivity extends AppCompatActivity
 					m_VideoInputPreviewSurfaceViewPt
 			);
 
-			m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启媒体处理线程，来保证正常的视频输入，否则视频输入会中断。
+			m_MyMediaPocsThrdPt.RqirExit( 3, 1 ); //请求重启媒体处理线程，来保证正常的视频输入，否则视频输入会中断。
 		}
 	}
 
 	//使用音频按钮。
 	public void OnUseAudio( View BtnPt )
 	{
-		if( m_MyMediaProcThreadPt != null )
+		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaProcThreadPt.m_AudioInputPt.m_IsUseAudioInput = 1;
-			m_MyMediaProcThreadPt.m_AudioOutputPt.m_IsUseAudioOutput = 1;
-			m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput = 0;
-			m_MyMediaProcThreadPt.m_VideoOutputPt.m_IsUseVideoOutput = 0;
+			m_MyMediaPocsThrdPt.m_AudioInputPt.m_IsUseAudioInput = 1;
+			m_MyMediaPocsThrdPt.m_AudioOutputPt.m_IsUseAudioOutput = 1;
+			m_MyMediaPocsThrdPt.m_VideoInputPt.m_IsUseVideoInput = 0;
+			m_MyMediaPocsThrdPt.m_VideoOutputPt.m_IsUseVideoOutput = 0;
 
-			if( m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
+			if( m_MyMediaPocsThrdPt.m_RunFlag > MediaPocsThrd.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
 			{
-				m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+				m_MyMediaPocsThrdPt.RqirExit( 3, 1 ); //请求重启并阻塞等待。
 			}
 		}
 	}
@@ -2252,16 +2231,16 @@ public class MainActivity extends AppCompatActivity
 	//使用视频按钮。
 	public void OnUseVideo( View BtnPt )
 	{
-		if( m_MyMediaProcThreadPt != null )
+		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaProcThreadPt.m_AudioInputPt.m_IsUseAudioInput = 0;
-			m_MyMediaProcThreadPt.m_AudioOutputPt.m_IsUseAudioOutput = 0;
-			m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput = 1;
-			m_MyMediaProcThreadPt.m_VideoOutputPt.m_IsUseVideoOutput = 1;
+			m_MyMediaPocsThrdPt.m_AudioInputPt.m_IsUseAudioInput = 0;
+			m_MyMediaPocsThrdPt.m_AudioOutputPt.m_IsUseAudioOutput = 0;
+			m_MyMediaPocsThrdPt.m_VideoInputPt.m_IsUseVideoInput = 1;
+			m_MyMediaPocsThrdPt.m_VideoOutputPt.m_IsUseVideoOutput = 1;
 
-			if( m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
+			if( m_MyMediaPocsThrdPt.m_RunFlag > MediaPocsThrd.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
 			{
-				m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+				m_MyMediaPocsThrdPt.RqirExit( 3, 1 ); //请求重启并阻塞等待。
 			}
 		}
 	}
@@ -2269,16 +2248,16 @@ public class MainActivity extends AppCompatActivity
 	//使用音视频按钮。
 	public void OnUseAudioVideo( View BtnPt )
 	{
-		if( m_MyMediaProcThreadPt != null )
+		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaProcThreadPt.m_AudioInputPt.m_IsUseAudioInput = 1;
-			m_MyMediaProcThreadPt.m_AudioOutputPt.m_IsUseAudioOutput = 1;
-			m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput = 1;
-			m_MyMediaProcThreadPt.m_VideoOutputPt.m_IsUseVideoOutput = 1;
+			m_MyMediaPocsThrdPt.m_AudioInputPt.m_IsUseAudioInput = 1;
+			m_MyMediaPocsThrdPt.m_AudioOutputPt.m_IsUseAudioOutput = 1;
+			m_MyMediaPocsThrdPt.m_VideoInputPt.m_IsUseVideoInput = 1;
+			m_MyMediaPocsThrdPt.m_VideoOutputPt.m_IsUseVideoOutput = 1;
 
-			if( m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
+			if( m_MyMediaPocsThrdPt.m_RunFlag > MediaPocsThrd.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
 			{
-				m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+				m_MyMediaPocsThrdPt.RqirExit( 3, 1 ); //请求重启并阻塞等待。
 			}
 		}
 	}
@@ -2286,13 +2265,13 @@ public class MainActivity extends AppCompatActivity
 	//使用扬声器按钮。
 	public void OnUseSpeaker( View BtnPt )
 	{
-		if( m_MyMediaProcThreadPt != null )
+		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaProcThreadPt.SetAudioOutputUseDevice( 0, 0 );
+			m_MyMediaPocsThrdPt.SetAudioOutputUseDvc( 0, 0 );
 
-			if( m_MyMediaProcThreadPt.m_AudioOutputPt.m_IsUseAudioOutput != 0 && m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
+			if( m_MyMediaPocsThrdPt.m_AudioOutputPt.m_IsUseAudioOutput != 0 && m_MyMediaPocsThrdPt.m_RunFlag > MediaPocsThrd.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
 			{
-				m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+				m_MyMediaPocsThrdPt.RqirExit( 3, 1 ); //请求重启并阻塞等待。
 			}
 		}
 	}
@@ -2300,13 +2279,13 @@ public class MainActivity extends AppCompatActivity
 	//使用听筒按钮。
 	public void OnUseHeadset( View BtnPt )
 	{
-		if( m_MyMediaProcThreadPt != null )
+		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaProcThreadPt.SetAudioOutputUseDevice( 1, 0 );
+			m_MyMediaPocsThrdPt.SetAudioOutputUseDvc( 1, 0 );
 
-			if( m_MyMediaProcThreadPt.m_AudioOutputPt.m_IsUseAudioOutput != 0 && m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
+			if( m_MyMediaPocsThrdPt.m_AudioOutputPt.m_IsUseAudioOutput != 0 && m_MyMediaPocsThrdPt.m_RunFlag > MediaPocsThrd.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
 			{
-				m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+				m_MyMediaPocsThrdPt.RqirExit( 3, 1 ); //请求重启并阻塞等待。
 			}
 		}
 	}
@@ -2314,13 +2293,13 @@ public class MainActivity extends AppCompatActivity
 	//使用前置摄像头按钮。
 	public void OnUseFrontCamere( View BtnPt )
 	{
-		if( m_MyMediaProcThreadPt != null )
+		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaProcThreadPt.SetVideoInputUseDevice( 0, -1, -1 );
+			m_MyMediaPocsThrdPt.SetVideoInputUseDvc( 0, -1, -1 );
 
-			if( m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
+			if( m_MyMediaPocsThrdPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaPocsThrdPt.m_RunFlag > MediaPocsThrd.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
 			{
-				m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+				m_MyMediaPocsThrdPt.RqirExit( 3, 1 ); //请求重启并阻塞等待。
 			}
 		}
 	}
@@ -2328,13 +2307,13 @@ public class MainActivity extends AppCompatActivity
 	//使用后置摄像头按钮。
 	public void OnUseBackCamere( View BtnPt )
 	{
-		if( m_MyMediaProcThreadPt != null )
+		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaProcThreadPt.SetVideoInputUseDevice( 1, -1, -1 );
+			m_MyMediaPocsThrdPt.SetVideoInputUseDvc( 1, -1, -1 );
 
-			if( m_MyMediaProcThreadPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaProcThreadPt.m_RunFlag > MediaProcThread.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
+			if( m_MyMediaPocsThrdPt.m_VideoInputPt.m_IsUseVideoInput != 0 && m_MyMediaPocsThrdPt.m_RunFlag > MediaPocsThrd.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
 			{
-				m_MyMediaProcThreadPt.RequireExit( 3, 1 ); //请求重启并阻塞等待。
+				m_MyMediaPocsThrdPt.RqirExit( 3, 1 ); //请求重启并阻塞等待。
 			}
 		}
 	}
@@ -2342,36 +2321,36 @@ public class MainActivity extends AppCompatActivity
 	//音频输入设备静音按钮。
 	public void OnAudioInputIsMute( View BtnPt )
 	{
-		if( m_MyMediaProcThreadPt != null )
+		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaProcThreadPt.SetAudioInputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+			m_MyMediaPocsThrdPt.SetAudioInputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
 		}
 	}
 
 	//音频输出设备静音按钮。
 	public void OnAudioOutputIsMute( View BtnPt )
 	{
-		if( m_MyMediaProcThreadPt != null )
+		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaProcThreadPt.SetAudioOutputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+			m_MyMediaPocsThrdPt.SetAudioOutputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
 		}
 	}
 
 	//视频输入设备黑屏按钮。
 	public void OnVideoInputIsBlack( View BtnPt )
 	{
-		if( m_MyMediaProcThreadPt != null )
+		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaProcThreadPt.SetVideoInputIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoInputIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
+			m_MyMediaPocsThrdPt.SetVideoInputIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoInputIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
 		}
 	}
 
 	//视频输出设备黑屏按钮。
 	public void OnVideoOutputIsBlack( View BtnPt )
 	{
-		if( m_MyMediaProcThreadPt != null )
+		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaProcThreadPt.SetVideoOutputIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoOutputIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
+			m_MyMediaPocsThrdPt.SetVideoOutputIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoOutputIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
 		}
 	}
 
@@ -2396,68 +2375,67 @@ public class MainActivity extends AppCompatActivity
 
 		out:
 		{
-			if( m_MyMediaProcThreadPt == null ) //如果媒体处理线程还没有启动。
+			if( m_MyMediaPocsThrdPt == null ) //如果媒体处理线程还没有启动。
 			{
 				Log.i( m_CurClsNameStrPt, "开始启动媒体处理线程。" );
 
-				//创建并初始化媒体处理线程类对象。
+				//创建并初始化媒体处理线程。
 				{
-					m_MyMediaProcThreadPt = new MyMediaProcThread( m_MainActivityPt, m_MainActivityHandlerPt ); //创建媒体处理线程类对象。
+					m_MyMediaPocsThrdPt = new MyMediaPocsThrd( m_MainActivityPt, m_MainActivityHandlerPt ); //创建媒体处理线程。
 
 					if( BtnPt.getId() == R.id.CreateSrvrBtn )
 					{
-						m_MyMediaProcThreadPt.m_IsCreateSrvrOrClnt = 1; //标记创建服务端接受客户端。
+						m_MyMediaPocsThrdPt.m_IsCreateSrvrOrClnt = 1; //标记创建服务端接受客户端。
 					}
 					else if( BtnPt.getId() == R.id.ConnectSrvrBtn )
 					{
-						m_MyMediaProcThreadPt.m_IsCreateSrvrOrClnt = 0; //标记创建客户端连接服务端。
+						m_MyMediaPocsThrdPt.m_IsCreateSrvrOrClnt = 0; //标记创建客户端连接服务端。
 					}
 
 					//设置IP地址字符串、端口。
-					m_MyMediaProcThreadPt.m_IPAddrStrPt = ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.IPAddrEdit ) ).getText().toString();
-					m_MyMediaProcThreadPt.m_PortStrPt = ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.PortEdit ) ).getText().toString();
-					m_MyMediaProcThreadPt.m_MaxCnctTimes = 5;
+					m_MyMediaPocsThrdPt.m_IPAddrStrPt = ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.IPAddrEdit ) ).getText().toString();
+					m_MyMediaPocsThrdPt.m_PortStrPt = ( ( EditText ) m_LyotActivityMainViewPt.findViewById( R.id.PortEdit ) ).getText().toString();
 
 					//判断是否使用什么传输协议。
 					if( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseTcpPrtclRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.m_UseWhatXfrPrtcl = 0;
+						m_MyMediaPocsThrdPt.m_UseWhatXfrPrtcl = 0;
 					}
 					else
 					{
-						m_MyMediaProcThreadPt.m_UseWhatXfrPrtcl = 1;
+						m_MyMediaPocsThrdPt.m_UseWhatXfrPrtcl = 1;
 					}
 					try
 					{
-						m_MyMediaProcThreadPt.m_MaxCnctTimes = Integer.parseInt( ( ( TextView ) m_LyotActivityXfrPrtclViewPt.findViewById( R.id.XfrPrtclMaxCnctTimes ) ).getText().toString() );
+						m_MyMediaPocsThrdPt.m_MaxCnctTimes = Integer.parseInt( ( ( TextView ) m_LyotActivityXfrPrtclViewPt.findViewById( R.id.XfrPrtclMaxCnctTimes ) ).getText().toString() );
 					}
 					catch( NumberFormatException e )
 					{
 						Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
 						break out;
 					}
-					m_MyMediaProcThreadPt.m_IsAutoAllowCnct = ( ( ( CheckBox ) m_LyotActivityXfrPrtclViewPt.findViewById( R.id.XfrPrtclIsAutoAllowCnctCheckBox ) ).isChecked() ) ? 1 : 0;
+					m_MyMediaPocsThrdPt.m_IsAutoAllowCnct = ( ( ( CheckBox ) m_LyotActivityXfrPrtclViewPt.findViewById( R.id.XfrPrtclIsAutoAllowCnctCheckBox ) ).isChecked() ) ? 1 : 0;
 
 					//判断是否使用链表。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseLnkLstRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.m_UseWhatRecvOutputFrame = 0;
+						m_MyMediaPocsThrdPt.m_UseWhatRecvOutputFrame = 0;
 					}
 
 					//判断是否使用自己设计的音频自适应抖动缓冲器。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAjbRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.m_UseWhatRecvOutputFrame = 1;
+						m_MyMediaPocsThrdPt.m_UseWhatRecvOutputFrame = 1;
 
 						try
 						{
-							m_MyMediaProcThreadPt.m_AAjbMinNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.AAjbMinNeedBufFrameCnt ) ).getText().toString() );
-							m_MyMediaProcThreadPt.m_AAjbMaxNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.AAjbMaxNeedBufFrameCnt ) ).getText().toString() );
-							m_MyMediaProcThreadPt.m_AAjbAdaptSensitivity = Float.parseFloat( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.AAjbAdaptSensitivity ) ).getText().toString() );
+							m_MyMediaPocsThrdPt.m_AAjbMinNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.AAjbMinNeedBufFrameCnt ) ).getText().toString() );
+							m_MyMediaPocsThrdPt.m_AAjbMaxNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.AAjbMaxNeedBufFrameCnt ) ).getText().toString() );
+							m_MyMediaPocsThrdPt.m_AAjbAdaptSensitivity = Float.parseFloat( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.AAjbAdaptSensitivity ) ).getText().toString() );
 
-							m_MyMediaProcThreadPt.m_VAjbMinNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.VAjbMinNeedBufFrameCnt ) ).getText().toString() );
-							m_MyMediaProcThreadPt.m_VAjbMaxNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.VAjbMaxNeedBufFrameCnt ) ).getText().toString() );
-							m_MyMediaProcThreadPt.m_VAjbAdaptSensitivity = Float.parseFloat( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.VAjbAdaptSensitivity ) ).getText().toString() );
+							m_MyMediaPocsThrdPt.m_VAjbMinNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.VAjbMinNeedBufFrameCnt ) ).getText().toString() );
+							m_MyMediaPocsThrdPt.m_VAjbMaxNeedBufFrameCnt = Integer.parseInt( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.VAjbMaxNeedBufFrameCnt ) ).getText().toString() );
+							m_MyMediaPocsThrdPt.m_VAjbAdaptSensitivity = Float.parseFloat( ( ( TextView ) m_LyotActivityAjbViewPt.findViewById( R.id.VAjbAdaptSensitivity ) ).getText().toString() );
 						}
 						catch( NumberFormatException e )
 						{
@@ -2469,35 +2447,35 @@ public class MainActivity extends AppCompatActivity
 					//判断是否保存设置到文件。
 					if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveSettingToFileCheckBox ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetIsSaveSettingToFile( 1, m_ExternalDirFullAbsPathStrPt + "/Setting.txt" );
+						m_MyMediaPocsThrdPt.SetIsSaveStngToFile( 1, m_ExternalDirFullAbsPathStrPt + "/Setting.txt" );
 					}
 					else
 					{
-						m_MyMediaProcThreadPt.SetIsSaveSettingToFile( 0, null );
+						m_MyMediaPocsThrdPt.SetIsSaveStngToFile( 0, null );
 					}
 
 					//判断是否打印Logcat日志，并显示Toast。
 					if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsPrintLogcatShowToastCheckBox ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetIsPrintLogcatShowToast( 1, 1, this );
+						m_MyMediaPocsThrdPt.SetIsPrintLogcatShowToast( 1, 1, this );
 					}
 					else
 					{
-						m_MyMediaProcThreadPt.SetIsPrintLogcatShowToast( 0, 0, null );
+						m_MyMediaPocsThrdPt.SetIsPrintLogcatShowToast( 0, 0, null );
 					}
 
 					//判断是否使用唤醒锁。
 					if( ( ( CheckBox ) m_MainActivityPt.m_LyotActivitySettingViewPt.findViewById( R.id.IsUseWakeLockCheckBox ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetIsUseWakeLock( 1 );
+						m_MyMediaPocsThrdPt.SetIsUseWakeLock( 1 );
 					}
 					else
 					{
-						m_MyMediaProcThreadPt.SetIsUseWakeLock( 0 );
+						m_MyMediaPocsThrdPt.SetIsUseWakeLock( 0 );
 					}
 
 					//判断是否使用音频输入。
-					m_MyMediaProcThreadPt.SetIsUseAudioInput(
+					m_MyMediaPocsThrdPt.SetIsUseAudioInput(
 							( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioTalkbackRadioBtn ) ).isChecked() ) ? 1 :
 									( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
 							( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate8000RadioBtn ) ).isChecked() ) ? 8000 :
@@ -2511,17 +2489,17 @@ public class MainActivity extends AppCompatActivity
 					//判断音频输入是否使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器。
 					if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetAudioInputIsUseSystemAecNsAgc( 1 );
+						m_MyMediaPocsThrdPt.SetAudioInputIsUseSystemAecNsAgc( 1 );
 					}
 					else
 					{
-						m_MyMediaProcThreadPt.SetAudioInputIsUseSystemAecNsAgc( 0 );
+						m_MyMediaPocsThrdPt.SetAudioInputIsUseSystemAecNsAgc( 0 );
 					}
 
 					//判断音频输入是否不使用声学回音消除器。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseNoAecRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetAudioInputUseNoAec();
+						m_MyMediaPocsThrdPt.SetAudioInputUseNoAec();
 					}
 
 					//判断音频输入是否使用Speex声学回音消除器。
@@ -2529,7 +2507,7 @@ public class MainActivity extends AppCompatActivity
 					{
 						try
 						{
-							m_MyMediaProcThreadPt.SetAudioInputUseSpeexAec(
+							m_MyMediaPocsThrdPt.SetAudioInputUseSpeexAec(
 									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecFilterLenEdit ) ).getText().toString() ),
 									( ( ( CheckBox ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecIsUseRecCheckBox ) ).isChecked() ) ? 1 : 0,
 									Float.parseFloat( ( ( TextView ) m_LyotActivitySpeexAecViewPt.findViewById( R.id.SpeexAecEchoMultipleEdit ) ).getText().toString() ),
@@ -2552,7 +2530,7 @@ public class MainActivity extends AppCompatActivity
 					{
 						try
 						{
-							m_MyMediaProcThreadPt.SetAudioInputUseWebRtcAecm(
+							m_MyMediaPocsThrdPt.SetAudioInputUseWebRtcAecm(
 									( ( ( CheckBox ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmIsUseCNGModeCheckBox ) ).isChecked() ) ? 1 : 0,
 									Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmEchoModeEdit ) ).getText().toString() ),
 									Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcAecmViewPt.findViewById( R.id.WebRtcAecmDelayEdit ) ).getText().toString() )
@@ -2570,7 +2548,7 @@ public class MainActivity extends AppCompatActivity
 					{
 						try
 						{
-							m_MyMediaProcThreadPt.SetAudioInputUseWebRtcAec(
+							m_MyMediaPocsThrdPt.SetAudioInputUseWebRtcAec(
 									Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecEchoModeEdit ) ).getText().toString() ),
 									Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecDelayEdit ) ).getText().toString() ),
 									( ( ( CheckBox ) m_LyotActivityWebRtcAecViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgnosticModeCheckBox ) ).isChecked() ) ? 1 : 0,
@@ -2593,7 +2571,7 @@ public class MainActivity extends AppCompatActivity
 					{
 						try
 						{
-							m_MyMediaProcThreadPt.SetAudioInputUseSpeexWebRtcAec(
+							m_MyMediaPocsThrdPt.SetAudioInputUseSpeexWebRtcAec(
 									( ( RadioButton ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRadioBtn ) ).isChecked() ? 1 :
 											( ( RadioButton ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRadioBtn ) ).isChecked() ? 2 :
 													( ( RadioButton ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRadioBtn ) ).isChecked() ? 3 : 0,
@@ -2626,18 +2604,18 @@ public class MainActivity extends AppCompatActivity
 					//判断音频输入是否不使用噪音抑制器。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseNoNsRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetAudioInputUseNoNs();
+						m_MyMediaPocsThrdPt.SetAudioInputUseNoNs();
 					}
 
 					//判断音频输入是否使用Speex预处理器的噪音抑制。
-					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexPprocNsRadioBtn ) ).isChecked() )
+					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexPrpocsNsRadioBtn ) ).isChecked() )
 					{
 						try
 						{
-							m_MyMediaProcThreadPt.SetAudioInputUseSpeexPprocNs(
-									( ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).isChecked() ) ? 1 : 0,
-									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).getText().toString() ),
-									( ( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).isChecked() ) ? 1 : 0
+							m_MyMediaPocsThrdPt.SetAudioInputUseSpeexPrpocsNs(
+									( ( ( CheckBox ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsIsUseNsCheckBox ) ).isChecked() ) ? 1 : 0,
+									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsNoiseSupesEdit ) ).getText().toString() ),
+									( ( ( CheckBox ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsIsUseDereverbCheckBox ) ).isChecked() ) ? 1 : 0
 							);
 						}
 						catch( NumberFormatException e )
@@ -2652,7 +2630,7 @@ public class MainActivity extends AppCompatActivity
 					{
 						try
 						{
-							m_MyMediaProcThreadPt.SetAudioInputUseWebRtcNsx(
+							m_MyMediaPocsThrdPt.SetAudioInputUseWebRtcNsx(
 									Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdit ) ).getText().toString() )
 							);
 						}
@@ -2668,7 +2646,7 @@ public class MainActivity extends AppCompatActivity
 					{
 						try
 						{
-							m_MyMediaProcThreadPt.SetAudioInputUseWebRtcNs(
+							m_MyMediaPocsThrdPt.SetAudioInputUseWebRtcNs(
 									Integer.parseInt( ( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).getText().toString() )
 							);
 						}
@@ -2684,7 +2662,7 @@ public class MainActivity extends AppCompatActivity
 					{
 						try
 						{
-							m_MyMediaProcThreadPt.SetAudioInputUseRNNoise();
+							m_MyMediaPocsThrdPt.SetAudioInputUseRNNoise();
 						}
 						catch( NumberFormatException e )
 						{
@@ -2694,20 +2672,20 @@ public class MainActivity extends AppCompatActivity
 					}
 
 					//判断音频输入是否使用Speex预处理器的其他功能。
-					if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).isChecked() )
+					if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPrpocsOtherCheckBox ) ).isChecked() )
 					{
 						try
 						{
-							m_MyMediaProcThreadPt.SetAudioInputIsUseSpeexPprocOther(
+							m_MyMediaPocsThrdPt.SetAudioInputIsUseSpeexPrpocsOther(
 									1,
-									( ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).isChecked() ) ? 1 : 0,
-									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).getText().toString() ),
-									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).getText().toString() ),
-									( ( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseAgcCheckBox ) ).isChecked() ) ? 1 : 0,
-									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcLevelEdit ) ).getText().toString() ),
-									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcIncrementEdit ) ).getText().toString() ),
-									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).getText().toString() ),
-									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).getText().toString() )
+									( ( ( CheckBox ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCheckBox ) ).isChecked() ) ? 1 : 0,
+									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdit ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsVadProbContEdit ) ).getText().toString() ),
+									( ( ( CheckBox ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCheckBox ) ).isChecked() ) ? 1 : 0,
+									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdit ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdit ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdit ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdit ) ).getText().toString() )
 							);
 						}
 						catch( NumberFormatException e )
@@ -2718,13 +2696,13 @@ public class MainActivity extends AppCompatActivity
 					}
 					else
 					{
-						m_MyMediaProcThreadPt.SetAudioInputIsUseSpeexPprocOther( 0, 0, 0, 0, 0, 0, 0, 0, 0 );
+						m_MyMediaPocsThrdPt.SetAudioInputIsUseSpeexPrpocsOther( 0, 0, 0, 0, 0, 0, 0, 0, 0 );
 					}
 
 					//判断音频输入是否使用PCM原始数据。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UsePcmRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetAudioInputUsePcm();
+						m_MyMediaPocsThrdPt.SetAudioInputUsePcm();
 					}
 
 					//判断音频输入是否使用Speex编码器。
@@ -2732,7 +2710,7 @@ public class MainActivity extends AppCompatActivity
 					{
 						try
 						{
-							m_MyMediaProcThreadPt.SetAudioInputUseSpeexEncoder(
+							m_MyMediaPocsThrdPt.SetAudioInputUseSpeexEncoder(
 									( ( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseCbrRadioBtn ) ).isChecked() ) ? 0 : 1,
 									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderQualityEdit ) ).getText().toString() ),
 									Integer.parseInt( ( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).getText().toString() ),
@@ -2749,13 +2727,13 @@ public class MainActivity extends AppCompatActivity
 					//判断音频输入是否使用Opus编码器。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpusCodecRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetAudioInputUseOpusEncoder();
+						m_MyMediaPocsThrdPt.SetAudioInputUseOpusEncoder();
 					}
 
 					//判断音频输入是否保存音频到文件。
 					if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetAudioInputIsSaveAudioToFile(
+						m_MyMediaPocsThrdPt.SetAudioInputIsSaveAudioToFile(
 								1,
 								m_ExternalDirFullAbsPathStrPt + "/AudioInput.wav",
 								m_ExternalDirFullAbsPathStrPt + "/AudioResult.wav"
@@ -2763,21 +2741,21 @@ public class MainActivity extends AppCompatActivity
 					}
 					else
 					{
-						m_MyMediaProcThreadPt.SetAudioInputIsSaveAudioToFile( 0, null, null );
+						m_MyMediaPocsThrdPt.SetAudioInputIsSaveAudioToFile( 0, null, null );
 					}
 
 					//判断音频输入是否绘制音频波形到Surface。
-					m_MyMediaProcThreadPt.SetAudioInputIsDrawAudioOscilloToSurface(
+					m_MyMediaPocsThrdPt.SetAudioInputIsDrawAudioOscilloToSurface(
 							( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).isChecked() ) ? 1 : 0,
 							( ( SurfaceView )findViewById( R.id.AudioInputOscilloSurfaceView ) ),
 							( ( SurfaceView )findViewById( R.id.AudioResultOscilloSurfaceView ) )
 					);
 
 					//判断音频输入是否静音。
-					m_MyMediaProcThreadPt.SetAudioInputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+					m_MyMediaPocsThrdPt.SetAudioInputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioInputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
 
 					//判断是否使用音频输出。
-					m_MyMediaProcThreadPt.SetIsUseAudioOutput(
+					m_MyMediaPocsThrdPt.SetIsUseAudioOutput(
 							( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioTalkbackRadioBtn ) ).isChecked() ) ? 1 :
 									( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
 							( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioSamplingRate8000RadioBtn ) ).isChecked() ) ? 8000 :
@@ -2791,7 +2769,7 @@ public class MainActivity extends AppCompatActivity
 					//判断音频输出是否使用PCM原始数据。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UsePcmRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetAudioOutputUsePcm();
+						m_MyMediaPocsThrdPt.SetAudioOutputUsePcm();
 					}
 
 					//判断音频输出是否使用Speex解码器。
@@ -2799,7 +2777,7 @@ public class MainActivity extends AppCompatActivity
 					{
 						try
 						{
-							m_MyMediaProcThreadPt.SetAudioOutputUseSpeexDecoder(
+							m_MyMediaPocsThrdPt.SetAudioOutputUseSpeexDecoder(
 									( ( ( CheckBox ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecIsUsePerceptualEnhancementCheckBox ) ).isChecked() ) ? 1 : 0
 							);
 						}
@@ -2813,43 +2791,43 @@ public class MainActivity extends AppCompatActivity
 					//判断音频输出是否使用Opus解码器。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpusCodecRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetAudioOutputUseOpusDecoder();
+						m_MyMediaPocsThrdPt.SetAudioOutputUseOpusDecoder();
 					}
 
 					//判断使用的音频输出设备。
 					if( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseSpeakerRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetAudioOutputUseDevice( 0, 0 );
+						m_MyMediaPocsThrdPt.SetAudioOutputUseDvc( 0, 0 );
 					}
 					else
 					{
-						m_MyMediaProcThreadPt.SetAudioOutputUseDevice( 1, 0 );
+						m_MyMediaPocsThrdPt.SetAudioOutputUseDvc( 1, 0 );
 					}
 
 					//判断音频输出是否保存音频到文件。
 					if( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetAudioOutputIsSaveAudioToFile(
+						m_MyMediaPocsThrdPt.SetAudioOutputIsSaveAudioToFile(
 								1,
 								m_ExternalDirFullAbsPathStrPt + "/AudioOutput.wav"
 						);
 					}
 					else
 					{
-						m_MyMediaProcThreadPt.SetAudioOutputIsSaveAudioToFile( 0, null );
+						m_MyMediaPocsThrdPt.SetAudioOutputIsSaveAudioToFile( 0, null );
 					}
 
 					//判断音频输出是否绘制音频波形到Surface。
-					m_MyMediaProcThreadPt.SetAudioOutputIsDrawAudioOscilloToSurface(
+					m_MyMediaPocsThrdPt.SetAudioOutputIsDrawAudioOscilloToSurface(
 							( ( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).isChecked() ) ? 1 : 0,
 							( ( SurfaceView )findViewById( R.id.AudioOutputOscilloSurfaceView ) )
 					);
 
 					//判断音频输出是否静音。
-					m_MyMediaProcThreadPt.SetAudioOutputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
+					m_MyMediaPocsThrdPt.SetAudioOutputIsMute( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.AudioOutputIsMuteCheckBox ) ).isChecked() ) ? 1 : 0 );
 
 					//判断是否使用视频输入。
-					m_MyMediaProcThreadPt.SetIsUseVideoInput(
+					m_MyMediaPocsThrdPt.SetIsUseVideoInput(
 							( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 :
 									( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
 							( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseVideoSamplingRate12RadioBtn ) ).isChecked() ) ? 12 :
@@ -2871,13 +2849,13 @@ public class MainActivity extends AppCompatActivity
 					//判断视频输入是否使用YU12原始数据。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseYU12RadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetVideoInputUseYU12();
+						m_MyMediaPocsThrdPt.SetVideoInputUseYU12();
 					}
 
 					//判断视频输入是否使用OpenH264编码器。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetVideoInputUseOpenH264Encoder(
+						m_MyMediaPocsThrdPt.SetVideoInputUseOpenH264Encoder(
 								Integer.parseInt( ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderVideoTypeEdit ) ).getText().toString() ),
 								Integer.parseInt( ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderEncodedBitrateEdit ) ).getText().toString() ) * 1024 * 8,
 								Integer.parseInt( ( ( TextView ) m_LyotActivityOpenH264CodecViewPt.findViewById( R.id.OpenH264EncoderBitrateControlModeEdit ) ).getText().toString() ),
@@ -2889,7 +2867,7 @@ public class MainActivity extends AppCompatActivity
 					//判断视频输入是否使用系统自带H264编码器。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSystemH264CodecRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetVideoInputUseSystemH264Encoder(
+						m_MyMediaPocsThrdPt.SetVideoInputUseSystemH264Encoder(
 								Integer.parseInt( ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderEncodedBitrateEdit ) ).getText().toString() ) * 1024 * 8,
 								Integer.parseInt( ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderBitrateControlModeEdit ) ).getText().toString() ),
 								Integer.parseInt( ( ( TextView ) m_LyotActivitySystemH264CodecViewPt.findViewById( R.id.SystemH264EncoderIDRFrameIntvlEdit ) ).getText().toString() ),
@@ -2898,14 +2876,14 @@ public class MainActivity extends AppCompatActivity
 					}
 
 					//判断使用的视频输入设备。
-					m_MyMediaProcThreadPt.SetVideoInputUseDevice( ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseFrontCamereRadioBtn ) ).isChecked() ) ? 0 : 1,
+					m_MyMediaPocsThrdPt.SetVideoInputUseDvc( ( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseFrontCamereRadioBtn ) ).isChecked() ) ? 0 : 1,
 							-1, -1 );
 
 					//判断视频输入是否黑屏。
-					m_MyMediaProcThreadPt.SetVideoInputIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoInputIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
+					m_MyMediaPocsThrdPt.SetVideoInputIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoInputIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
 
 					//判断是否使用视频输出。
-					m_MyMediaProcThreadPt.SetIsUseVideoOutput(
+					m_MyMediaPocsThrdPt.SetIsUseVideoOutput(
 							( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 :
 									( ( ( RadioButton ) m_LyotActivityMainViewPt.findViewById( R.id.UseAudioVideoTalkbackRadioBtn ) ).isChecked() ) ? 1 : 0,
 							m_VideoOutputDisplaySurfaceViewPt,
@@ -2918,33 +2896,33 @@ public class MainActivity extends AppCompatActivity
 					//判断视频输出是否使用YU12原始数据。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseYU12RadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetVideoOutputUseYU12();
+						m_MyMediaPocsThrdPt.SetVideoOutputUseYU12();
 					}
 
 					//判断视频输出是否使用OpenH264解码器。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseOpenH264CodecRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetVideoOutputUseOpenH264Decoder( 0 );
+						m_MyMediaPocsThrdPt.SetVideoOutputUseOpenH264Decoder( 0 );
 					}
 
 					//判断视频输出是否使用系统自带H264解码器。
 					if( ( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSystemH264CodecRadioBtn ) ).isChecked() )
 					{
-						m_MyMediaProcThreadPt.SetVideoOutputUseSystemH264Decoder();
+						m_MyMediaPocsThrdPt.SetVideoOutputUseSystemH264Decoder();
 					}
 
 					//判断视频输出是否黑屏。
-					m_MyMediaProcThreadPt.SetVideoOutputIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoOutputIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
+					m_MyMediaPocsThrdPt.SetVideoOutputIsBlack( ( ( ( CheckBox ) m_LyotActivityMainViewPt.findViewById( R.id.VideoOutputIsBlackCheckBox ) ).isChecked() ) ? 1 : 0 );
 				}
 
-				m_MyMediaProcThreadPt.start(); //启动媒体处理线程。
+				m_MyMediaPocsThrdPt.start(); //启动媒体处理线程。
 
 				Log.i( m_CurClsNameStrPt, "启动媒体处理线程完毕。" );
 			}
 			else
 			{
 				Log.i( m_CurClsNameStrPt, "开始请求并等待媒体处理线程退出。" );
-				m_MyMediaProcThreadPt.RequireExit( 1, 1 );
+				m_MyMediaPocsThrdPt.RqirExit( 1, 1 );
 				Log.i( m_CurClsNameStrPt, "结束请求并等待媒体处理线程退出。" );
 			}
 
@@ -2955,7 +2933,7 @@ public class MainActivity extends AppCompatActivity
 
 		if( p_Result != 0 ) //如果媒体处理线程启动失败。
 		{
-			m_MyMediaProcThreadPt = null;
+			m_MyMediaPocsThrdPt = null;
 		}
 	}
 
@@ -3099,14 +3077,14 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	//Speex预处理器的噪音抑制设置按钮。
-	public void OnClickSpeexPprocNsSetting( View BtnPt )
+	public void OnClickSpeexPrpocsNsSetting( View BtnPt )
 	{
-		setContentView( m_LyotActivitySpeexPprocNsViewPt );
-		m_LyotActivityCurViewPt = m_LyotActivitySpeexPprocNsViewPt;
+		setContentView( m_LyotActivitySpeexPrpocsNsViewPt );
+		m_LyotActivityCurViewPt = m_LyotActivitySpeexPrpocsNsViewPt;
 	}
 
 	//Speex预处理器的噪音抑制设置界面的确定按钮。
-	public void OnClickSpeexPprocNsSettingOk( View BtnPt )
+	public void OnClickSpeexPrpocsNsSettingOk( View BtnPt )
 	{
 		setContentView( m_LyotActivitySettingViewPt );
 		m_LyotActivityCurViewPt = m_LyotActivitySettingViewPt;
@@ -3141,14 +3119,14 @@ public class MainActivity extends AppCompatActivity
 	}
 
 	//Speex预处理器的其他功能设置按钮。
-	public void OnClickSpeexPprocOtherSetting( View BtnPt )
+	public void OnClickSpeexPrpocsOtherSetting( View BtnPt )
 	{
-		setContentView( m_LyotActivitySpeexPprocOtherViewPt );
-		m_LyotActivityCurViewPt = m_LyotActivitySpeexPprocOtherViewPt;
+		setContentView( m_LyotActivitySpeexPrpocsOtherViewPt );
+		m_LyotActivityCurViewPt = m_LyotActivitySpeexPrpocsOtherViewPt;
 	}
 
 	//Speex预处理器的其他功能设置界面的确定按钮。
-	public void OnClickSpeexPprocOtherSettingOk( View BtnPt )
+	public void OnClickSpeexPrpocsOtherSettingOk( View BtnPt )
 	{
 		setContentView( m_LyotActivitySettingViewPt );
 		m_LyotActivityCurViewPt = m_LyotActivitySettingViewPt;
@@ -3232,8 +3210,8 @@ public class MainActivity extends AppCompatActivity
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseAudioFrameLen20msRadioBtn ) ).setChecked( true );
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcAecmRadioBtn ) ).setChecked( true );
-		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexPprocNsRadioBtn ) ).setChecked( true );
-		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexPrpocsNsRadioBtn ) ).setChecked( true );
+		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPrpocsOtherCheckBox ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).setChecked( false );
@@ -3281,22 +3259,22 @@ public class MainActivity extends AppCompatActivity
 		( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( false );
 		( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "380" );
 
-		( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
-		( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsIsUseNsCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsNoiseSupesEdit ) ).setText( "-32768" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsIsUseDereverbCheckBox ) ).setChecked( true );
 
 		( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdit ) ).setText( "3" );
 
 		( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
 
-		( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
-		( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseAgcCheckBox ) ).setChecked( false );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcLevelEdit ) ).setText( "30000" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcIncrementEdit ) ).setText( "10" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdit ) ).setText( "95" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsVadProbContEdit ) ).setText( "95" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCheckBox ) ).setChecked( false );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdit ) ).setText( "30000" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdit ) ).setText( "10" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdit ) ).setText( "-30000" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdit ) ).setText( "25" );
 
 		( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseCbrRadioBtn ) ).setChecked( true );
 		( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "1" );
@@ -3321,7 +3299,7 @@ public class MainActivity extends AppCompatActivity
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcAecRadioBtn ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcNsxRadioBtn ) ).setChecked( true );
-		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPrpocsOtherCheckBox ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).setChecked( false );
@@ -3369,22 +3347,22 @@ public class MainActivity extends AppCompatActivity
 		( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( false );
 		( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "380" );
 
-		( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
-		( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsIsUseNsCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsNoiseSupesEdit ) ).setText( "-32768" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsIsUseDereverbCheckBox ) ).setChecked( true );
 
 		( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdit ) ).setText( "3" );
 
 		( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
 
-		( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
-		( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseAgcCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcLevelEdit ) ).setText( "30000" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcIncrementEdit ) ).setText( "10" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdit ) ).setText( "95" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsVadProbContEdit ) ).setText( "95" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdit ) ).setText( "30000" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdit ) ).setText( "10" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdit ) ).setText( "-30000" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdit ) ).setText( "25" );
 
 		( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseCbrRadioBtn ) ).setChecked( true );
 		( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "4" );
@@ -3409,7 +3387,7 @@ public class MainActivity extends AppCompatActivity
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexWebRtcAecRadioBtn ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseWebRtcNsRadioBtn ) ).setChecked( true );
-		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPrpocsOtherCheckBox ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).setChecked( false );
@@ -3457,22 +3435,22 @@ public class MainActivity extends AppCompatActivity
 		( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( false );
 		( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "380" );
 
-		( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
-		( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsIsUseNsCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsNoiseSupesEdit ) ).setText( "-32768" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsIsUseDereverbCheckBox ) ).setChecked( true );
 
 		( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdit ) ).setText( "3" );
 
 		( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
 
-		( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
-		( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseAgcCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcLevelEdit ) ).setText( "30000" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcIncrementEdit ) ).setText( "10" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdit ) ).setText( "95" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsVadProbContEdit ) ).setText( "95" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdit ) ).setText( "30000" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdit ) ).setText( "10" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdit ) ).setText( "-30000" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdit ) ).setText( "25" );
 
 		( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseVbrRadioBtn ) ).setChecked( true );
 		( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "8" );
@@ -3497,7 +3475,7 @@ public class MainActivity extends AppCompatActivity
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexWebRtcAecRadioBtn ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseRNNoiseRadioBtn ) ).setChecked( true );
-		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPrpocsOtherCheckBox ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).setChecked( false );
@@ -3545,22 +3523,22 @@ public class MainActivity extends AppCompatActivity
 		( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( true );
 		( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "380" );
 
-		( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
-		( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsIsUseNsCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsNoiseSupesEdit ) ).setText( "-32768" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsIsUseDereverbCheckBox ) ).setChecked( true );
 
 		( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdit ) ).setText( "3" );
 
 		( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
 
-		( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
-		( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseAgcCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcLevelEdit ) ).setText( "30000" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcIncrementEdit ) ).setText( "10" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdit ) ).setText( "95" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsVadProbContEdit ) ).setText( "95" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdit ) ).setText( "30000" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdit ) ).setText( "10" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdit ) ).setText( "-30000" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdit ) ).setText( "25" );
 
 		( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseVbrRadioBtn ) ).setChecked( true );
 		( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "10" );
@@ -3585,7 +3563,7 @@ public class MainActivity extends AppCompatActivity
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSystemAecNsAgcCheckBox ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexWebRtcAecRadioBtn ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseRNNoiseRadioBtn ) ).setChecked( true );
-		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPprocOtherCheckBox ) ).setChecked( true );
+		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsUseSpeexPrpocsOtherCheckBox ) ).setChecked( true );
 		( ( RadioButton ) m_LyotActivitySettingViewPt.findViewById( R.id.UseSpeexCodecRadioBtn ) ).setChecked( true );
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveAudioToFileCheckBox ) ).setChecked( true );
 		( ( CheckBox ) m_LyotActivitySettingViewPt.findViewById( R.id.IsSaveDrawAudioOscilloToSurfaceCheckBox ) ).setChecked( false );
@@ -3633,22 +3611,22 @@ public class MainActivity extends AppCompatActivity
 		( ( CheckBox ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox ) ).setChecked( true );
 		( ( TextView ) m_LyotActivitySpeexWebRtcAecViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdit ) ).setText( "380" );
 
-		( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseNsCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocNoiseSupesEdit ) ).setText( "-32768" );
-		( ( CheckBox ) m_LyotActivitySpeexPprocNsViewPt.findViewById( R.id.SpeexPprocIsUseDereverbCheckBox ) ).setChecked( true );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsIsUseNsCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsNoiseSupesEdit ) ).setText( "-32768" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsNsViewPt.findViewById( R.id.SpeexPrpocsIsUseDereverbCheckBox ) ).setChecked( true );
 
 		( ( TextView ) m_LyotActivityWebRtcNsxViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdit ) ).setText( "3" );
 
 		( ( TextView ) m_LyotActivityWebRtcNsViewPt.findViewById( R.id.WebRtcNsPolicyModeEdit ) ).setText( "3" );
 
-		( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseVadCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbStartEdit ) ).setText( "95" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocVadProbContEdit ) ).setText( "95" );
-		( ( CheckBox ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocIsUseAgcCheckBox ) ).setChecked( true );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcLevelEdit ) ).setText( "30000" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcIncrementEdit ) ).setText( "10" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcDecrementEdit ) ).setText( "-30000" );
-		( ( TextView ) m_LyotActivitySpeexPprocOtherViewPt.findViewById( R.id.SpeexPprocAgcMaxGainEdit ) ).setText( "25" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdit ) ).setText( "95" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsVadProbContEdit ) ).setText( "95" );
+		( ( CheckBox ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCheckBox ) ).setChecked( true );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdit ) ).setText( "30000" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdit ) ).setText( "10" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdit ) ).setText( "-30000" );
+		( ( TextView ) m_LyotActivitySpeexPrpocsOtherViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdit ) ).setText( "25" );
 
 		( ( RadioButton ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderUseVbrRadioBtn ) ).setChecked( true );
 		( ( TextView ) m_LyotActivitySpeexCodecViewPt.findViewById( R.id.SpeexCodecEncoderComplexityEdit ) ).setText( "10" );

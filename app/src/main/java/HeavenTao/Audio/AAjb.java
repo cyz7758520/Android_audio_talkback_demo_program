@@ -23,7 +23,7 @@ public class AAjb
     //析构函数。
     public void finalize()
     {
-        Destroy( null );
+        Dstoy( null );
     }
 
     //创建并初始化音频自适应抖动缓冲器。
@@ -85,11 +85,11 @@ public class AAjb
     }
 
     //销毁音频自适应抖动缓冲器。
-    public int Destroy( VarStr ErrInfoVarStrPt)
+    public int Dstoy( VarStr ErrInfoVarStrPt)
     {
         if( m_AAjbPt != 0 )
         {
-            if( AAjbDestroy( m_AAjbPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( AAjbDstoy( m_AAjbPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
             {
                 m_AAjbPt = 0;
                 return 0;
@@ -127,5 +127,5 @@ public class AAjb
     public native int AAjbClear( long AAjbPt, int IsAutoLockUnlock, long ErrInfoVarStrPt);
 
     //销毁音频自适应抖动缓冲器。
-    public native int AAjbDestroy( long AAjbPt, long ErrInfoVarStrPt);
+    public native int AAjbDstoy( long AAjbPt, long ErrInfoVarStrPt);
 }

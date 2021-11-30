@@ -22,7 +22,7 @@ public class TcpClntSokt
     //析构函数。
     public void finalize()
     {
-        Destroy( ( short )-1, null );
+        Dstoy( ( short )-1, null );
     }
 
     //创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字。
@@ -101,18 +101,18 @@ public class TcpClntSokt
     {
         return TcpClntSoktSendPkt( m_TcpClntSoktPt, DataBufPt, DataBufLen, TimeOutMsec, Times, IsAutoLockUnlock, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
     }
-    //用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包。
+    //用已连接的本端TCP协议客户端套接字接收一个连接的远端TCP协议客户端套接字发送的数据包。
     public int RecvPkt( byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TimeOutMsec, int IsAutoLockUnlock, VarStr ErrInfoVarStrPt )
     {
         return TcpClntSoktRecvPkt( m_TcpClntSoktPt, DataBufPt, DataBufSz, DataBufLenPt, TimeOutMsec, IsAutoLockUnlock, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
     }
 
     //关闭并销毁已创建的本端TCP协议客户端套接字。
-    public int Destroy( short TimeOutSec, VarStr ErrInfoVarStrPt )
+    public int Dstoy( short TimeOutSec, VarStr ErrInfoVarStrPt )
     {
         if( m_TcpClntSoktPt != 0 )
         {
-            if( TcpClntSoktDestroy( m_TcpClntSoktPt, TimeOutSec, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( TcpClntSoktDstoy( m_TcpClntSoktPt, TimeOutSec, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
             {
                 m_TcpClntSoktPt = 0;
                 return 0;
@@ -159,5 +159,5 @@ public class TcpClntSokt
     public native int TcpClntSoktRecvPkt( long TcpClntSoktPt, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TimeOutMsec, int IsAutoLockUnlock, long ErrInfoVarStrPt );
 
     //关闭并销毁已创建的本端TCP协议客户端套接字。
-    public native int TcpClntSoktDestroy( long TcpClntSoktPt, short TimeOutSec, long ErrInfoVarStrPt );
+    public native int TcpClntSoktDstoy( long TcpClntSoktPt, short TimeOutSec, long ErrInfoVarStrPt );
 }

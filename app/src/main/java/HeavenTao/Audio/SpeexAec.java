@@ -22,7 +22,7 @@ public class SpeexAec
     //析构函数。
     public void finalize()
     {
-        Destroy();
+        Dstoy();
     }
 
     //创建并初始化Speex声学回音消除器。
@@ -110,17 +110,17 @@ public class SpeexAec
     }
 
     //用Speex声学回音消除器对单声道16位有符号整型PCM格式输入帧进行Speex声学回音消除。
-    public int Proc( short InputFramePt[], short OutputFramePt[], short ResultFramePt[] )
+    public int Pocs( short InputFramePt[], short OutputFramePt[], short ResultFramePt[] )
     {
-        return SpeexAecProc( m_SpeexAecPt, InputFramePt, OutputFramePt, ResultFramePt );
+        return SpeexAecPocs( m_SpeexAecPt, InputFramePt, OutputFramePt, ResultFramePt );
     }
 
     //销毁Speex声学回音消除器。
-    public int Destroy()
+    public int Dstoy()
     {
         if( m_SpeexAecPt != 0 )
         {
-            if( SpeexAecDestroy( m_SpeexAecPt ) == 0 )
+            if( SpeexAecDstoy( m_SpeexAecPt ) == 0 )
             {
                 m_SpeexAecPt = 0;
                 return 0;
@@ -155,8 +155,8 @@ public class SpeexAec
     public native int SpeexAecSaveMemFile( long SpeexAecPt, int SamplingRate, int FrameLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, String SpeexAecMemFileFullPathStrPt, long ErrInfoVarStrPt );
 
     //用Speex声学回音消除器对单声道16位有符号整型PCM格式输入帧进行Speex声学回音消除。
-    public native int SpeexAecProc( long SpeexAecPt, short InputFramePt[], short OutputFramePt[], short ResultFramePt[] );
+    public native int SpeexAecPocs( long SpeexAecPt, short InputFramePt[], short OutputFramePt[], short ResultFramePt[] );
 
     //销毁Speex声学回音消除器。
-    public native int SpeexAecDestroy( long SpeexAecPt );
+    public native int SpeexAecDstoy( long SpeexAecPt );
 }

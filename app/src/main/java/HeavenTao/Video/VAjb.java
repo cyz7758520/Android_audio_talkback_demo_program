@@ -23,7 +23,7 @@ public class VAjb
     //析构函数。
     public void finalize()
     {
-        Destroy( null );
+        Dstoy( null );
     }
 
     //创建并初始化视频自适应抖动缓冲器。
@@ -97,11 +97,11 @@ public class VAjb
     }
 
     //销毁视频自适应抖动缓冲器。
-    public int Destroy( VarStr ErrInfoVarStrPt)
+    public int Dstoy( VarStr ErrInfoVarStrPt)
     {
         if( m_VAjbPt != 0 )
         {
-            if( VAjbDestroy( m_VAjbPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( VAjbDstoy( m_VAjbPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
             {
                 m_VAjbPt = 0;
                 return 0;
@@ -145,5 +145,5 @@ public class VAjb
     public native int VAjbClear( long VAjbPt, int IsAutoLockUnlock, long ErrInfoVarStrPt);
 
     //销毁视频自适应抖动缓冲器。
-    public native int VAjbDestroy( long VAjbPt, long ErrInfoVarStrPt);
+    public native int VAjbDstoy( long VAjbPt, long ErrInfoVarStrPt);
 }

@@ -22,7 +22,7 @@ public class WaveFileWriter
     //析构函数。
     public void finalize()
     {
-        Destroy();
+        Dstoy();
     }
 
     //创建并初始化Wave文件写入器。
@@ -54,11 +54,11 @@ public class WaveFileWriter
     }
 
     //销毁Wave文件写入器。
-    public int Destroy()
+    public int Dstoy()
     {
         if( m_WaveFileWriterPt != 0 )
         {
-            if( WaveFileWriterDestroy( m_WaveFileWriterPt ) == 0 )
+            if( WaveFileWriterDstoy( m_WaveFileWriterPt ) == 0 )
             {
                 m_WaveFileWriterPt = 0;
                 return 0;
@@ -81,5 +81,5 @@ public class WaveFileWriter
     public native int WaveFileWriterWriteData( long WaveFileWriterPt, short DataPt[], long DataLen );
 
     //销毁Wave文件写入器。
-    public native int WaveFileWriterDestroy( long WaveFileWriterPt );
+    public native int WaveFileWriterDstoy( long WaveFileWriterPt );
 }

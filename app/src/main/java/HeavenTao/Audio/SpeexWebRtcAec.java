@@ -25,7 +25,7 @@ public class SpeexWebRtcAec
     //析构函数。
     public void finalize()
     {
-        Destroy();
+        Dstoy();
     }
 
     //创建并初始化SpeexWebRtc三重声学回音消除器。
@@ -75,17 +75,17 @@ public class SpeexWebRtcAec
     }
 
     //用SpeexWebRtc三重声学回音消除器对单声道16位有符号整型PCM格式输入帧进行SpeexWebRtc三重声学回音消除。
-    public int Proc( short InputFramePt[], short OutputFramePt[], short ResultFramePt[] )
+    public int Pocs( short InputFramePt[], short OutputFramePt[], short ResultFramePt[] )
     {
-        return SpeexWebRtcAecProc( m_SpeexWebRtcAecPt, InputFramePt, OutputFramePt, ResultFramePt );
+        return SpeexWebRtcAecPocs( m_SpeexWebRtcAecPt, InputFramePt, OutputFramePt, ResultFramePt );
     }
 
     //销毁SpeexWebRtc三重声学回音消除器。
-    public int Destroy()
+    public int Dstoy()
     {
         if( m_SpeexWebRtcAecPt != 0 )
         {
-            if( SpeexWebRtcAecDestroy( m_SpeexWebRtcAecPt ) == 0 )
+            if( SpeexWebRtcAecDstoy( m_SpeexWebRtcAecPt ) == 0 )
             {
                 m_SpeexWebRtcAecPt = 0;
                 return 0;
@@ -117,8 +117,8 @@ public class SpeexWebRtcAec
     public native int SpeexWebRtcAecGetWebRtcAecDelay( long SpeexWebRtcAecPt, HTInt WebRtcAecDelayPt );
 
     //用SpeexWebRtc三重声学回音消除器对单声道16位有符号整型PCM格式输入帧进行SpeexWebRtc三重声学回音消除。
-    public native int SpeexWebRtcAecProc( long SpeexWebRtcAecPt, short InputFramePt[], short OutputFramePt[], short ResultFramePt[] );
+    public native int SpeexWebRtcAecPocs( long SpeexWebRtcAecPt, short InputFramePt[], short OutputFramePt[], short ResultFramePt[] );
 
     //销毁SpeexWebRtc三重声学回音消除器。
-    public native int SpeexWebRtcAecDestroy( long SpeexWebRtcAecPt );
+    public native int SpeexWebRtcAecDstoy( long SpeexWebRtcAecPt );
 }

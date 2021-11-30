@@ -24,7 +24,7 @@ public class RNNoise
     //析构函数。
     public void finalize()
     {
-        Destroy();
+        Dstoy();
     }
 
     //创建并初始化RNNoise噪音抑制器。
@@ -50,17 +50,17 @@ public class RNNoise
     }
 
     //用RNNoise噪音抑制器对单声道16位有符号整型PCM格式帧进行RNNoise噪音抑制。
-    public int Proc( short FramePt[], short ResultFramePt[] )
+    public int Pocs( short FramePt[], short ResultFramePt[] )
     {
-        return RNNoiseProc( m_RNNoisePt, FramePt, ResultFramePt );
+        return RNNoisePocs( m_RNNoisePt, FramePt, ResultFramePt );
     }
 
     //销毁RNNoise噪音抑制器。
-    public int Destroy()
+    public int Dstoy()
     {
         if( m_RNNoisePt != 0 )
         {
-            if( RNNoiseDestroy( m_RNNoisePt ) == 0 )
+            if( RNNoiseDstoy( m_RNNoisePt ) == 0 )
             {
                 m_RNNoisePt = 0;
                 return 0;
@@ -80,8 +80,8 @@ public class RNNoise
     public native int RNNoiseInit( HTLong RNNoisePt, int SamplingRate, int FrameLen, long ErrInfoVarStrPt );
 
     //用RNNoise噪音抑制器对单声道16位有符号整型PCM格式帧进行RNNoise噪音抑制。
-    public native int RNNoiseProc( long RNNoisePt, short FramePt[], short ResultFramePt[] );
+    public native int RNNoisePocs( long RNNoisePt, short FramePt[], short ResultFramePt[] );
 
     //销毁RNNoise噪音抑制器。
-    public native int RNNoiseDestroy( long RNNoisePt );
+    public native int RNNoiseDstoy( long RNNoisePt );
 }

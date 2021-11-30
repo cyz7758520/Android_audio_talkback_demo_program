@@ -22,7 +22,7 @@ public class TcpSrvrSokt
     //析构函数。
     public void finalize()
     {
-        Destroy( null );
+        Dstoy( null );
     }
 
     //创建并初始化已监听的本端TCP协议服务端套接字。
@@ -60,11 +60,11 @@ public class TcpSrvrSokt
     }
 
     //关闭并销毁已创建的本端TCP协议服务端套接字。
-    public int Destroy( VarStr ErrInfoVarStrPt )
+    public int Dstoy( VarStr ErrInfoVarStrPt )
     {
         if( m_TcpSrvrSoktPt != 0 )
         {
-            if( TcpSrvrSoktDestroy( m_TcpSrvrSoktPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( TcpSrvrSoktDstoy( m_TcpSrvrSoktPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
             {
                 m_TcpSrvrSoktPt = 0;
                 return 0;
@@ -90,5 +90,5 @@ public class TcpSrvrSokt
     public native int TcpSrvrSoktAccept( long TcpSrvrSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, short TimeOutMsec, TcpClntSokt TcpClntSoktPt, int IsAutoLockUnlock, long ErrInfoVarStrPt );
 
     //关闭并销毁已创建的本端TCP协议服务端套接字。
-    public native int TcpSrvrSoktDestroy( long TcpSrvrSoktPt, long ErrInfoVarStrPt );
+    public native int TcpSrvrSoktDstoy( long TcpSrvrSoktPt, long ErrInfoVarStrPt );
 }
