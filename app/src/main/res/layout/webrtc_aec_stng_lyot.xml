@@ -37,7 +37,7 @@
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/WebRtcAecEchoModeEdit"
+                android:id="@+id/WebRtcAecEchoModeEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -58,7 +58,7 @@
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/WebRtcAecDelayEdit"
+                android:id="@+id/WebRtcAecDelayEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -67,28 +67,28 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/WebRtcAecIsUseDelayAgnosticModeCheckBox"
+            android:id="@+id/WebRtcAecIsUseDelayAgstcModeCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:text="使用回音延迟不可知模式" />
 
         <CheckBox
-            android:id="@+id/WebRtcAecIsUseExtdFilterModeCheckBox"
+            android:id="@+id/WebRtcAecIsUseExtdFilterModeCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:text="使用扩展滤波器模式" />
 
         <CheckBox
-            android:id="@+id/WebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox"
+            android:id="@+id/WebRtcAecIsUseRefinedFilterAdaptAecModeCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:text="使用精制滤波器自适应Aec模式" />
 
         <CheckBox
-            android:id="@+id/WebRtcAecIsUseAdaptAdjDelayCheckBox"
+            android:id="@+id/WebRtcAecIsUseAdaptAdjDelayCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
@@ -100,7 +100,7 @@
             android:layout_height="wrap_content" >
 
             <CheckBox
-                android:id="@+id/WebRtcAecIsSaveMemFileCheckBox"
+                android:id="@+id/WebRtcAecIsSaveMemFileCkBoxId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="4"
@@ -111,7 +111,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:text="删除内存块文件"
-                android:onClick="OnClickWebRtcAecDelMemFile" />
+                android:onClick="OnClickWebRtcAecDelMemFileBtn" />
 
         </LinearLayout>
 
@@ -119,7 +119,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="确定"
-            android:onClick="OnClickWebRtcAecSettingOk" />
+            android:onClick="OnClickWebRtcAecStngOkBtn" />
 
     </LinearLayout>
 

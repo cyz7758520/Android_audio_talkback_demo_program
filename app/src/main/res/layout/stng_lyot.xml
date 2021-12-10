@@ -43,7 +43,7 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:id="@+id/UseLnkLstRadioBtn"
+                    android:id="@+id/UseLnkLstRecvOtptFrmRdBtnId"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
@@ -51,7 +51,7 @@
                     android:text="链表" />
 
                 <RadioButton
-                    android:id="@+id/UseAjbRadioBtn"
+                    android:id="@+id/UseAjbRecvOtptFrmRdBtnId"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
@@ -77,35 +77,35 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnClickAjbSetting" />
+                    android:onClick="OnClickAjbStngBtn" />
 
             </LinearLayout>
 
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/IsUseFrgndSrvcCheckBox"
+            android:id="@+id/IsUseFrgndSrvcCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="使用前台服务" />
 
         <CheckBox
-            android:id="@+id/IsSaveSettingToFileCheckBox"
+            android:id="@+id/IsSaveStngToFileCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="保存设置到扩展目录下的Setting.txt文件中" />
 
         <CheckBox
-            android:id="@+id/IsPrintLogcatShowToastCheckBox"
+            android:id="@+id/IsPrintLogcatShowToastCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="打印Logcat日志，并显示Toast" />
 
         <CheckBox
-            android:id="@+id/IsUseWakeLockCheckBox"
+            android:id="@+id/IsUseWakeLockCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="true"
@@ -140,43 +140,43 @@
 
                 <RadioButton
                     android:text="低"
-                    android:id="@+id/UseEffectLowRadioBtn"
+                    android:id="@+id/UseEffectLowRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectLowRadioBtn"/>
+                    android:onClick="OnClickUseEffectLowRdBtn"/>
 
                 <RadioButton
                     android:text="中"
-                    android:id="@+id/UseEffectMidRadioBtn"
+                    android:id="@+id/UseEffectMidRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectMidRadioBtn"/>
+                    android:onClick="OnClickUseEffectMidRdBtn"/>
 
                 <RadioButton
                     android:text="高"
-                    android:id="@+id/UseEffectHighRadioBtn"
+                    android:id="@+id/UseEffectHighRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectHighRadioBtn"/>
+                    android:onClick="OnClickUseEffectHighRdBtn"/>
 
                 <RadioButton
                     android:text="超"
-                    android:id="@+id/UseEffectSuperRadioBtn"
+                    android:id="@+id/UseEffectSuperRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectSuperRadioBtn"/>
+                    android:onClick="OnClickUseEffectSuperRdBtn"/>
 
                 <RadioButton
                     android:text="特"
-                    android:id="@+id/UseEffectPremiumRadioBtn"
+                    android:id="@+id/UseEffectPremiumRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectPremiumRadioBtn"/>
+                    android:onClick="OnClickUseEffectPremiumRdBtn"/>
 
             </RadioGroup>
 
@@ -202,43 +202,43 @@
 
                 <RadioButton
                     android:text="低"
-                    android:id="@+id/UseBitrateLowRadioBtn"
+                    android:id="@+id/UseBitrateLowRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickUseBitrateLowRadioBtn"/>
+                    android:onClick="OnClickUseBitrateLowRdBtn"/>
 
                 <RadioButton
                     android:text="中"
-                    android:id="@+id/UseBitrateMidRadioBtn"
+                    android:id="@+id/UseBitrateMidRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickUseBitrateMidRadioBtn"/>
+                    android:onClick="OnClickUseBitrateMidRdBtn"/>
 
                 <RadioButton
                     android:text="高"
-                    android:id="@+id/UseBitrateHighRadioBtn"
+                    android:id="@+id/UseBitrateHighRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickUseBitrateHighRadioBtn"/>
+                    android:onClick="OnClickUseBitrateHighRdBtn"/>
 
                 <RadioButton
                     android:text="超"
-                    android:id="@+id/UseBitrateSuperRadioBtn"
+                    android:id="@+id/UseBitrateSuperRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickUseBitrateSuperRadioBtn"/>
+                    android:onClick="OnClickUseBitrateSuperRdBtn"/>
 
                 <RadioButton
                     android:text="特"
-                    android:id="@+id/UseBitratePremiumRadioBtn"
+                    android:id="@+id/UseBitratePremiumRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickUseBitratePremiumRadioBtn"/>
+                    android:onClick="OnClickUseBitratePremiumRdBtn"/>
 
             </RadioGroup>
 
@@ -273,28 +273,28 @@
 
                 <RadioButton
                     android:text="8k"
-                    android:id="@+id/UseAudioSamplingRate8000RadioBtn"
+                    android:id="@+id/UseAdoSmplRate8000RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="16k"
-                    android:id="@+id/UseAudioSamplingRate16000RadioBtn"
+                    android:id="@+id/UseAdoSmplRate16000RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="32k"
-                    android:id="@+id/UseAudioSamplingRate32000RadioBtn"
+                    android:id="@+id/UseAdoSmplRate32000RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="48k"
-                    android:id="@+id/UseAudioSamplingRate48000RadioBtn"
+                    android:id="@+id/UseAdoSmplRate48000RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
@@ -323,21 +323,21 @@
 
                 <RadioButton
                     android:text="10ms"
-                    android:id="@+id/UseAudioFrameLen10msRadioBtn"
+                    android:id="@+id/UseAdoFrmLen10msRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="20ms"
-                    android:id="@+id/UseAudioFrameLen20msRadioBtn"
+                    android:id="@+id/UseAdoFrmLen20msRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="30ms"
-                    android:id="@+id/UseAudioFrameLen30msRadioBtn"
+                    android:id="@+id/UseAdoFrmLen30msRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
@@ -347,7 +347,7 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/IsUseSystemAecNsAgcCheckBox"
+            android:id="@+id/IsUseSystemAecNsAgcCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带）"/>
@@ -371,21 +371,21 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:id="@+id/UseNoAecRadioBtn"
+                    android:id="@+id/UseNoAecRdBtnId"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:text="不使用" />
 
                 <RadioButton
-                    android:id="@+id/UseSpeexAecRadioBtn"
+                    android:id="@+id/UseSpeexAecRdBtnId"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:text="Speex声学回音消除器" />
 
                 <RadioButton
-                    android:id="@+id/UseWebRtcAecmRadioBtn"
+                    android:id="@+id/UseWebRtcAecmRdBtnId"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
@@ -393,13 +393,13 @@
 
                 <RadioButton
                     android:text="WebRtc浮点版声学回音消除器"
-                    android:id="@+id/UseWebRtcAecRadioBtn"
+                    android:id="@+id/UseWebRtcAecRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"/>
 
                 <RadioButton
-                    android:id="@+id/UseSpeexWebRtcAecRadioBtn"
+                    android:id="@+id/UseSpeexWebRtcAecRdBtnId"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
@@ -424,25 +424,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnClickSpeexAecSetting"/>
+                    android:onClick="OnClickSpeexAecStngBtn"/>
 
                 <Button
                     android:text="设置"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickWebRtcAecmSetting"/>
+                    android:onClick="OnClickWebRtcAecmStngBtn"/>
 
                 <Button
                     android:text="设置"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickWebRtcAecSetting"/>
+                    android:onClick="OnClickWebRtcAecStngBtn"/>
 
                 <Button
                     android:text="设置"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickSpeexWebRtcAecSetting"/>
+                    android:onClick="OnClickSpeexWebRtcAecStngBtn"/>
 
             </LinearLayout>
 
@@ -468,13 +468,13 @@
 
                     <RadioButton
                         android:text="不使用"
-                        android:id="@+id/UseNoNsRadioBtn"
+                        android:id="@+id/UseNoNsRdBtnId"
                         android:layout_weight="1"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"/>
 
                     <RadioButton
-                        android:id="@+id/UseSpeexPrpocsNsRadioBtn"
+                        android:id="@+id/UseSpeexPrpocsNsRdBtnId"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
@@ -482,20 +482,20 @@
 
                     <RadioButton
                         android:text="WebRtc定点版噪音抑制器"
-                        android:id="@+id/UseWebRtcNsxRadioBtn"
+                        android:id="@+id/UseWebRtcNsxRdBtnId"
                         android:layout_weight="1"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"/>
 
                     <RadioButton
                         android:text="WebRtc浮点版噪音抑制器"
-                        android:id="@+id/UseWebRtcNsRadioBtn"
+                        android:id="@+id/UseWebRtcNsRdBtnId"
                         android:layout_weight="1"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"/>
 
                     <RadioButton
-                        android:id="@+id/UseRNNoiseRadioBtn"
+                        android:id="@+id/UseRNNoiseRdBtnId"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
@@ -520,19 +520,19 @@
                     android:text="设置"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnClickSpeexPrpocsNsSetting" />
+                    android:onClick="OnClickSpeexPrpocsNsStngBtn" />
 
                 <Button
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnClickWebRtcNsxSetting"/>
+                    android:onClick="OnClickWebRtcNsxStngBtn"/>
 
                 <Button
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnClickWebRtcNsSetting" />
+                    android:onClick="OnClickWebRtcNsStngBtn" />
 
                 <Button
                     android:layout_width="match_parent"
@@ -551,7 +551,7 @@
             android:layout_height="wrap_content" >
 
             <CheckBox
-                android:id="@+id/IsUseSpeexPrpocsOtherCheckBox"
+                android:id="@+id/IsUseSpeexPrpocsOtherCkBoxId"
                 android:layout_weight="10"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -562,7 +562,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:text="设置"
-                android:onClick="OnClickSpeexPrpocsOtherSetting"/>
+                android:onClick="OnClickSpeexPrpocsOtherStngBtn"/>
 
         </LinearLayout>
 
@@ -585,21 +585,21 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:id="@+id/UsePcmRadioBtn"
+                    android:id="@+id/UsePcmRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:text="PCM原始数据"/>
 
                 <RadioButton
-                    android:id="@+id/UseSpeexCodecRadioBtn"
+                    android:id="@+id/UseSpeexCodecRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:text="Speex编解码器"/>
 
                 <RadioButton
-                    android:id="@+id/UseOpusCodecRadioBtn"
+                    android:id="@+id/UseOpusCodecRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
@@ -625,13 +625,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnClickSpeexCodecSetting" />
+                    android:onClick="OnClickSpeexCodecStngBtn" />
 
                 <Button
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnClickOpusCodecSetting"
+                    android:onClick="OnClickOpusCodecStngBtn"
                     android:enabled="false"/>
 
             </LinearLayout>
@@ -639,13 +639,13 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/IsSaveAudioToFileCheckBox"
+            android:id="@+id/IsSaveAdoToFileCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="将音频输入、音频输出、音频结果分别替换保存到扩展目录下的AudioInput.wav、AudioOutput.wav、AudioResult.wav文件中" />
+            android:text="将音频输入、音频输出、音频结果分别替换保存到扩展目录下的AdoInpt.wav、AdoOtpt.wav、AdoRslt.wav文件中" />
 
         <CheckBox
-            android:id="@+id/IsSaveDrawAudioOscilloToSurfaceCheckBox"
+            android:id="@+id/IsDrawAdoWavfmToSurfaceCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="将音频输入、音频输出、音频结果的波形绘制到Surface中" />
@@ -679,28 +679,28 @@
 
                 <RadioButton
                     android:text="12"
-                    android:id="@+id/UseVideoSamplingRate12RadioBtn"
+                    android:id="@+id/UseVdoSmplRate12RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="15"
-                    android:id="@+id/UseVideoSamplingRate15RadioBtn"
+                    android:id="@+id/UseVdoSmplRate15RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="24"
-                    android:id="@+id/UseVideoSamplingRate24RadioBtn"
+                    android:id="@+id/UseVdoSmplRate24RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="30"
-                    android:id="@+id/UseVideoSamplingRate30RadioBtn"
+                    android:id="@+id/UseVdoSmplRate30RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
@@ -728,29 +728,29 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:text="120*160"
-                    android:id="@+id/UseVideoFrameSize120_160RadioBtn"
+                    android:text="120×160"
+                    android:id="@+id/UseVdoFrmSize120_160RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
-                    android:text="240*320"
-                    android:id="@+id/UseVideoFrameSize240_320RadioBtn"
+                    android:text="240×320"
+                    android:id="@+id/UseVdoFrmSize240_320RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
-                    android:text="480*640"
-                    android:id="@+id/UseVideoFrameSize480_640RadioBtn"
+                    android:text="480×640"
+                    android:id="@+id/UseVdoFrmSize480_640RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
-                    android:text="960*1280"
-                    android:id="@+id/UseVideoFrameSize960_1280RadioBtn"
+                    android:text="960×1280"
+                    android:id="@+id/UseVdoFrmSize960_1280RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
@@ -779,28 +779,28 @@
 
                 <RadioButton
                     android:text="不缩放"
-                    android:id="@+id/UseDisplayScale1_0RadioBtn"
+                    android:id="@+id/UseVdoDspyScale1_0RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="1.5倍"
-                    android:id="@+id/UseDisplayScale1_5RadioBtn"
+                    android:id="@+id/UseVdoDspyScale1_5RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="2倍"
-                    android:id="@+id/UseDisplayScale2_0RadioBtn"
+                    android:id="@+id/UseVdoDspyScale2_0RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
                 <RadioButton
                     android:text="3倍"
-                    android:id="@+id/UseDisplayScale3_0RadioBtn"
+                    android:id="@+id/UseVdoDspyScale3_0RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
@@ -828,21 +828,21 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:id="@+id/UseYU12RadioBtn"
+                    android:id="@+id/UseYU12RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:text="YU12原始数据"/>
 
                 <RadioButton
-                    android:id="@+id/UseOpenH264CodecRadioBtn"
+                    android:id="@+id/UseOpenH264CodecRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:text="OpenH264编解码器"/>
 
                 <RadioButton
-                    android:id="@+id/UseSystemH264CodecRadioBtn"
+                    android:id="@+id/UseSystemH264CodecRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
@@ -867,13 +867,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnClickOpenH264CodecSetting" />
+                    android:onClick="OnClickOpenH264CodecStngBtn" />
 
                 <Button
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="设置"
-                    android:onClick="OnClickSystemH264CodecSetting" />
+                    android:onClick="OnClickSystemH264CodecStngBtn" />
 
             </LinearLayout>
 
@@ -883,7 +883,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="确定"
-            android:onClick="OnClickSettingOk" />
+            android:onClick="OnClickStngOkBtn" />
 
     </LinearLayout>
 

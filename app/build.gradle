@@ -2,16 +2,16 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 30
-    buildToolsVersion = '30.0.3'
+    buildToolsVersion = '32.0.0'
 
     defaultConfig {
-        applicationId "com.example.android_av_talkback_demo"
+        applicationId "com.example.andrd_ado_vdo_tkbk_demo"
 
         minSdkVersion 14
         //minSdkVersion 9
         targetSdkVersion 30
         versionCode 1
-        versionName "2021.11.30"
+        versionName "2021.12.10"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

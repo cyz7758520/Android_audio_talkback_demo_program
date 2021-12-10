@@ -43,14 +43,14 @@
                 android:layout_height="wrap_content">
 
                 <RadioButton
-                    android:id="@+id/SpeexCodecEncoderUseCbrRadioBtn"
+                    android:id="@+id/SpeexEncdUseCbrRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:text="固定比特率"/>
 
                 <RadioButton
-                    android:id="@+id/SpeexCodecEncoderUseVbrRadioBtn"
+                    android:id="@+id/SpeexEncdUseVbrRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -73,7 +73,7 @@
                 android:text="Speex编码器的编码质量等级，质量等级越高音质越好、压缩率越低，取值区间为[0,10]：" />
 
             <EditText
-                android:id="@+id/SpeexCodecEncoderQualityEdit"
+                android:id="@+id/SpeexEncdQualtEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -94,7 +94,7 @@
                 android:text="Speex编码器的编码复杂度，复杂度越高压缩率不变、CPU使用率越高、音质越好，取值区间为[0,10]：" />
 
             <EditText
-                android:id="@+id/SpeexCodecEncoderComplexityEdit"
+                android:id="@+id/SpeexEncdCmplxtEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -115,7 +115,7 @@
                 android:text="Speex编码器在数据包丢失隐藏时，数据包的预计丢失概率，预计丢失概率越高抗网络抖动越强、压缩率越低，取值区间为[0,100]：" />
 
             <EditText
-                android:id="@+id/SpeexCodecEncoderPlcExpectedLossRateEdit"
+                android:id="@+id/SpeexEncdPlcExptLossRateEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -124,7 +124,7 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/SpeexCodecIsUsePerceptualEnhancementCheckBox"
+            android:id="@+id/SpeexDecdIsUsePrcplEnhsmtCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Speex解码器使用知觉增强"/>
@@ -133,7 +133,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="确定"
-            android:onClick="OnClickSpeexCodecSettingOk" />
+            android:onClick="OnClickSpeexCodecStngOkBtn" />
 
     </LinearLayout>
 

@@ -16,7 +16,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:text="WebRtc移动版声学回音消除器\n设置\n"
+            android:text="WebRtc定点版声学回音消除器\n设置\n"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
@@ -25,7 +25,7 @@
             android:textSize="20sp" />
 
         <CheckBox
-            android:id="@+id/WebRtcAecmIsUseCNGModeCheckBox"
+            android:id="@+id/WebRtcAecmIsUseCNGModeCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="false"
@@ -44,7 +44,7 @@
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/WebRtcAecmEchoModeEdit"
+                android:id="@+id/WebRtcAecmEchoModeEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -65,7 +65,7 @@
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/WebRtcAecmDelayEdit"
+                android:id="@+id/WebRtcAecmDelayEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -77,7 +77,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="确定"
-            android:onClick="OnClickWebRtcAecmSettingOk" />
+            android:onClick="OnClickWebRtcAecmStngOkBtn" />
 
     </LinearLayout>
 

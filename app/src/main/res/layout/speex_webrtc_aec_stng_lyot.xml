@@ -44,21 +44,21 @@
 
             <RadioButton
                 android:text="Speex声学回音消除器+WebRtc定点版声学回音消除器"
-                android:id="@+id/SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRadioBtn"
+                android:id="@+id/SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRdBtnId"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
             <RadioButton
                 android:text="WebRtc定点版声学回音消除器+WebRtc浮点版声学回音消除器"
-                android:id="@+id/SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRadioBtn"
+                android:id="@+id/SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRdBtnId"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
             <RadioButton
                 android:text="Speex声学回音消除器+WebRtc定点版声学回音消除器+WebRtc浮点版声学回音消除器"
-                android:id="@+id/SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRadioBtn"
+                android:id="@+id/SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRdBtnId"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
@@ -80,7 +80,7 @@
                 android:text="Speex声学回音消除器的滤波器数据长度，单位毫秒：" />
 
             <EditText
-                android:id="@+id/SpeexWebRtcAecSpeexAecFilterLenEdit"
+                android:id="@+id/SpeexWebRtcAecSpeexAecFilterLenEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -89,7 +89,7 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/SpeexWebRtcAecSpeexAecIsUseRecCheckBox"
+            android:id="@+id/SpeexWebRtcAecSpeexAecIsUseRecCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="Speex声学回音消除器使用残余回音消除" />
@@ -107,7 +107,7 @@
                 android:gravity="center_vertical"/>
 
             <EditText
-                android:id="@+id/SpeexWebRtcAecSpeexAecEchoMultipleEdit"
+                android:id="@+id/SpeexWebRtcAecSpeexAecEchoMutpEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -128,7 +128,7 @@
                 android:gravity="center_vertical"/>
 
             <EditText
-                android:id="@+id/SpeexWebRtcAecSpeexAecEchoContEdit"
+                android:id="@+id/SpeexWebRtcAecSpeexAecEchoCntuEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -149,7 +149,7 @@
                 android:gravity="center_vertical"/>
 
             <EditText
-                android:id="@+id/SpeexWebRtcAecSpeexAecEchoSupesEdit"
+                android:id="@+id/SpeexWebRtcAecSpeexAecEchoSupesEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -170,7 +170,7 @@
                 android:gravity="center_vertical"/>
 
             <EditText
-                android:id="@+id/SpeexWebRtcAecSpeexAecEchoSupesActEdit"
+                android:id="@+id/SpeexWebRtcAecSpeexAecEchoSupesActEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -179,7 +179,7 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/SpeexWebRtcAecWebRtcAecmIsUseCNGModeCheckBox"
+            android:id="@+id/SpeexWebRtcAecWebRtcAecmIsUseCNGModeCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="false"
@@ -198,7 +198,7 @@
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/SpeexWebRtcAecWebRtcAecmEchoModeEdit"
+                android:id="@+id/SpeexWebRtcAecWebRtcAecmEchoModeEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -219,7 +219,7 @@
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/SpeexWebRtcAecWebRtcAecmDelayEdit"
+                android:id="@+id/SpeexWebRtcAecWebRtcAecmDelayEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -240,7 +240,7 @@
                 android:gravity="center_vertical" />
 
             <EditText
-                android:id="@+id/SpeexWebRtcAecWebRtcAecEchoModeEdit"
+                android:id="@+id/SpeexWebRtcAecWebRtcAecEchoModeEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -261,7 +261,7 @@
                 android:text="WebRtc浮点版声学回音消除器的回音延迟，单位毫秒，取值区间为[-2147483648,2147483647]，为0表示自适应设置：" />
 
             <EditText
-                android:id="@+id/SpeexWebRtcAecWebRtcAecDelayEdit"
+                android:id="@+id/SpeexWebRtcAecWebRtcAecDelayEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -270,35 +270,35 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseDelayAgnosticModeCheckBox"
+            android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseDelayAgstcModeCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:text="WebRtc浮点版声学回音消除器使用回音延迟不可知模式" />
 
         <CheckBox
-            android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCheckBox"
+            android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:text="WebRtc浮点版声学回音消除器使用扩展滤波器模式" />
 
         <CheckBox
-            android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCheckBox"
+            android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:text="WebRtc浮点版声学回音消除器使用精制滤波器自适应Aec模式" />
 
         <CheckBox
-            android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCheckBox"
+            android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:text="WebRtc浮点版声学回音消除器使用自适应调节回音的延迟" />
 
         <CheckBox
-            android:id="@+id/SpeexWebRtcAecWebRtcAecIsUseSameRoomAecCheckBox"
+            android:id="@+id/SpeexWebRtcAecIsUseSameRoomAecCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -317,7 +317,7 @@
                 android:text="同一房间回音最小延迟，单位毫秒，取值区间为[1,2147483647]：" />
 
             <EditText
-                android:id="@+id/SpeexWebRtcAecSameRoomEchoMinDelayEdit"
+                android:id="@+id/SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -329,7 +329,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="确定"
-            android:onClick="OnClickSpeexWebRtcAecSettingOk" />
+            android:onClick="OnClickSpeexWebRtcAecStngOkBtn" />
 
     </LinearLayout>
 

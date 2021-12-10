@@ -37,7 +37,7 @@
                 android:text="最大连接次数，取值区间为[1,2147483647]：" />
 
             <EditText
-                android:id="@+id/XfrPrtclMaxCnctTimes"
+                android:id="@+id/MaxCnctTimesEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -47,7 +47,7 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/XfrPrtclIsAutoAllowCnctCheckBox"
+            android:id="@+id/IsAutoAllowCnctCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:checked="true"
@@ -57,7 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="确定"
-            android:onClick="OnClickXfrPrtclSettingOk" />
+            android:onClick="OnClickXfrPrtclStngOkBtn" />
 
     </LinearLayout>
 

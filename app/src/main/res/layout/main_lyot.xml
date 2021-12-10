@@ -9,7 +9,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.Android_av_talkback_demo.MainActivity">
+    tools:context="com.example.andrd_ado_vdo_tkbk_demo.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,13 +22,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="Android下音视频对讲演示程序\n版本：2021年11月30日"
+            android:text="Android下音视频对讲演示程序\n版本：2021年12月10日"
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="normal|bold" />
 
         <TextView
-            android:id="@+id/AppID"
+            android:id="@+id/AppIDTxtId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
@@ -66,26 +66,26 @@
 
                 <RadioButton
                     android:text="TCP"
-                    android:id="@+id/UseTcpPrtclRadioBtn"
+                    android:id="@+id/UseTcpPrtclRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
 
                 <RadioButton
                     android:text="UDP"
-                    android:id="@+id/UseUdpPrtclRadioBtn"
+                    android:id="@+id/UseUdpPrtclRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:checked="true" />
 
                 <Button
-                    android:id="@+id/XfrPrtclBtn"
+                    android:id="@+id/XfrPrtclStngBtnId"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:text="设置"
-                    android:onClick="OnClickXfrPrtclSetting" />
+                    android:onClick="OnClickXfrPrtclStngBtn" />
 
             </RadioGroup>
 
@@ -104,7 +104,7 @@
                 android:text="IP地址或域名：" />
 
             <EditText
-                android:id="@+id/IPAddrEdit"
+                android:id="@+id/IPAddrEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="7"
@@ -127,7 +127,7 @@
                 android:text="端口："/>
 
             <EditText
-                android:id="@+id/PortEdit"
+                android:id="@+id/PortEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="7"
@@ -157,28 +157,28 @@
 
                 <RadioButton
                     android:text="音频"
-                    android:id="@+id/UseAudioTalkbackRadioBtn"
+                    android:id="@+id/UseAdoTkbkModeRdBtnId"
                     android:layout_weight="10"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnUseAudio"
+                    android:onClick="OnClickUseAdoTkbkModeRdBtn"
                     android:checked="true"/>
 
                 <RadioButton
                     android:text="视频"
-                    android:id="@+id/UseVideoTalkbackRadioBtn"
+                    android:id="@+id/UseVdoTkbkModeRdBtnId"
                     android:layout_weight="10"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnUseVideo"/>
+                    android:onClick="OnClickUseVdoTkbkModeRdBtn"/>
 
                 <RadioButton
                     android:text="音视频"
-                    android:id="@+id/UseAudioVideoTalkbackRadioBtn"
+                    android:id="@+id/UseAdoVdoTkbkModeRdBtnId"
                     android:layout_weight="9"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnUseAudioVideo"/>
+                    android:onClick="OnClickUseAdoVdoTkbkModeRdBtn"/>
 
             </RadioGroup>
 
@@ -204,20 +204,20 @@
 
                 <RadioButton
                     android:text="扬声器"
-                    android:id="@+id/UseSpeakerRadioBtn"
+                    android:id="@+id/UseSpeakerRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnUseSpeaker"
+                    android:onClick="onClickUseSpeakerRdBtn"
                     android:checked="true"/>
 
                 <RadioButton
-                    android:text="听筒"
-                    android:id="@+id/UseHeadsetRadioBtn"
+                    android:text="听筒或耳机"
+                    android:id="@+id/UseHeadsetRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnUseHeadset"/>
+                    android:onClick="onClickUseHeadsetRdBtn"/>
 
             </RadioGroup>
 
@@ -243,20 +243,20 @@
 
                 <RadioButton
                     android:text="前置摄像头"
-                    android:id="@+id/UseFrontCamereRadioBtn"
+                    android:id="@+id/UseFrontCamereRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnUseFrontCamere"
+                    android:onClick="onClickUseFrontCamereRdBtn"
                     android:checked="true"/>
 
                 <RadioButton
                     android:text="后置摄像头"
-                    android:id="@+id/UseBackCamereRadioBtn"
+                    android:id="@+id/UseBackCamereRdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:onClick="OnUseBackCamere"/>
+                    android:onClick="onClickUseBackCamereRdBtn"/>
 
             </RadioGroup>
 
@@ -268,21 +268,21 @@
             android:layout_height="wrap_content">
 
             <CheckBox
-                android:id="@+id/AudioInputIsMuteCheckBox"
+                android:id="@+id/AdoInptIsMuteCkBoxId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:checked="false"
-                android:onClick="OnAudioInputIsMute"
+                android:onClick="onClickAdoInptIsMuteCkBox"
                 android:text="音频输入静音"/>
 
             <CheckBox
-                android:id="@+id/AudioOutputIsMuteCheckBox"
+                android:id="@+id/AdoOtptIsMuteCkBoxId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:checked="false"
-                android:onClick="OnAudioOutputIsMute"
+                android:onClick="onClickAdoOtptIsMuteCkBox"
                 android:text="音频输出静音"/>
 
         </LinearLayout>
@@ -293,21 +293,21 @@
             android:layout_height="wrap_content">
 
             <CheckBox
-                android:id="@+id/VideoInputIsBlackCheckBox"
+                android:id="@+id/VdoInptIsBlackCkBoxId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:checked="false"
-                android:onClick="OnVideoInputIsBlack"
+                android:onClick="onClickVdoInptIsBlackCkBox"
                 android:text="视频输入黑屏"/>
 
             <CheckBox
-                android:id="@+id/VideoOutputIsBlackCheckBox"
+                android:id="@+id/VdoOtptIsBlackCkBoxId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:checked="false"
-                android:onClick="OnVideoOutputIsBlack"
+                android:onClick="onClickVdoOtptIsBlackCkBox"
                 android:text="视频输出黑屏"/>
 
         </LinearLayout>
@@ -325,7 +325,7 @@
                 android:text="系统音频输出音量：" />
 
             <SeekBar
-                android:id="@+id/SystemAudioOutputVolume"
+                android:id="@+id/SystemAdoOtptVolmSkBarId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="7"
@@ -349,8 +349,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="11"
                 android:text="创建服务端"
-                android:id="@+id/CreateSrvrBtn"
-                android:onClick="OnClickCreateSrvrAndConnectSrvr" />
+                android:id="@+id/CreateSrvrBtnId"
+                android:onClick="OnClickCreateSrvrAndCnctSrvrBtn" />
 
             <TextView
                 android:layout_weight="1"
@@ -363,8 +363,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="11"
                 android:text="连接服务端"
-                android:id="@+id/ConnectSrvrBtn"
-                android:onClick="OnClickCreateSrvrAndConnectSrvr" />
+                android:id="@+id/CnctSrvrBtnId"
+                android:onClick="OnClickCreateSrvrAndCnctSrvrBtn" />
 
             <TextView
                 android:layout_weight="1"
@@ -377,8 +377,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="6"
                 android:text="设置"
-                android:id="@+id/SettingBtn"
-                android:onClick="OnClickSetting" />
+                android:id="@+id/StngBtnId"
+                android:onClick="OnClickStngBtn" />
 
             <TextView
                 android:layout_weight="1"
@@ -400,11 +400,11 @@
                 android:text="" />
 
             <Button
-                android:id="@+id/ReadMeBtn"
+                android:id="@+id/ReadMeBtnId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="4"
-                android:onClick="OnClickReadMe"
+                android:onClick="OnClickReadMeBtn"
                 android:text="必读说明" />
 
             <TextView
@@ -428,7 +428,7 @@
                 android:text="音频输入波形："/>
 
             <SurfaceView
-                android:id="@+id/AudioInputOscilloSurfaceView"
+                android:id="@+id/AdoInptOscilloSurfaceId"
                 android:layout_width="0dp"
                 android:layout_height="65dp"
                 android:layout_weight="7" />
@@ -448,7 +448,7 @@
                 android:text="音频输出波形："/>
 
             <SurfaceView
-                android:id="@+id/AudioOutputOscilloSurfaceView"
+                android:id="@+id/AdoOtptOscilloSurfaceId"
                 android:layout_width="0dp"
                 android:layout_height="65dp"
                 android:layout_weight="7" />
@@ -468,7 +468,7 @@
                 android:text="音频结果波形："/>
 
             <SurfaceView
-                android:id="@+id/AudioResultOscilloSurfaceView"
+                android:id="@+id/AdoRsltOscilloSurfaceId"
                 android:layout_width="0dp"
                 android:layout_height="65dp"
                 android:layout_weight="7" />
@@ -493,11 +493,11 @@
                     android:text="视频输入预览"/>
 
                 <HeavenTao.Media.HTSurfaceView
-                    android:id="@+id/VideoInputPreviewSurfaceView"
+                    android:id="@+id/VdoInptPrvwSurfaceId"
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:background="@android:color/transparent"
-                    android:onClick="onClickVideoSurfaceView" />
+                    android:onClick="onClickVdoInptPrvwAndVdoOtptDspySurface" />
 
             </LinearLayout>
 
@@ -514,12 +514,12 @@
                     android:text="视频输出显示"/>
 
                 <HeavenTao.Media.HTSurfaceView
-                    android:id="@+id/VideoOutputDisplaySurfaceView"
+                    android:id="@+id/VdoOtptDspySurfaceId"
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    android:onClick="onClickVideoSurfaceView" />
+                    android:onClick="onClickVdoInptPrvwAndVdoOtptDspySurface" />
 
             </LinearLayout>
 
@@ -541,14 +541,14 @@
                 android:layout_weight="1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/ClearLogBtn"
+                android:id="@+id/ClearLogBtnId"
                 android:text="清空日志"
-                android:onClick="OnClickClearLog"/>
+                android:onClick="OnClickClearLogBtn"/>
 
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/LogLinearLyot"
+            android:id="@+id/LogLinearLyotId"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >

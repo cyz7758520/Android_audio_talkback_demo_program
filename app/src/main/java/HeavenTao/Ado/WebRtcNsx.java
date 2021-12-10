@@ -1,0 +1,86 @@
+package HeavenTao.Ado;
+
+import HeavenTao.Data.*;
+
+//WebRtc定点版噪音抑制器类。
+public class WebRtcNsx
+{
+    static
+    {
+        System.loadLibrary( "Func" ); //加载libFunc.so。
+        System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
+        System.loadLibrary( "WebRtc" ); //加载libWebRtc.so。
+    }
+
+    public long m_WebRtcNsxPt; //WebRtc定点版噪音抑制器的指针。
+
+    //构造函数。
+    public WebRtcNsx()
+    {
+        m_WebRtcNsxPt = 0;
+    }
+
+    //析构函数。
+    public void finalize()
+    {
+        Dstoy();
+    }
+
+    //创建并初始化WebRtc定点版噪音抑制器。
+    public int Init( int SmplRate, int FrmLen, int PolicyMode, VarStr ErrInfoVarStrPt )
+    {
+        if( m_WebRtcNsxPt == 0 )
+        {
+            HTLong p_WebRtcNsPt = new HTLong();
+            if( WebRtcNsxInit( p_WebRtcNsPt, SmplRate, FrmLen, PolicyMode, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            {
+                m_WebRtcNsxPt = p_WebRtcNsPt.m_Val;
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    //用WebRtc定点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc定点版噪音抑制。
+    public int Pocs( short FrmPt[], short RsltFrmPt[] )
+    {
+        return WebRtcNsxPocs( m_WebRtcNsxPt, FrmPt, RsltFrmPt );
+    }
+
+    //销毁WebRtc定点版噪音抑制器。
+    public int Dstoy()
+    {
+        if( m_WebRtcNsxPt != 0 )
+        {
+            if( WebRtcNsxDstoy( m_WebRtcNsxPt ) == 0 )
+            {
+                m_WebRtcNsxPt = 0;
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    //创建并初始化WebRtc定点版噪音抑制器。
+    public native int WebRtcNsxInit( HTLong WebRtcNsxPt, int SmplRate, int FrmLen, int PolicyMode, long ErrInfoVarStrPt );
+
+    //用WebRtc定点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc定点版噪音抑制。
+    public native int WebRtcNsxPocs( long WebRtcNsxPt, short FrmPt[], short RsltFrmPt[] );
+
+    //销毁WebRtc定点版噪音抑制器。
+    public native int WebRtcNsxDstoy( long WebRtcNsxPt );
+}

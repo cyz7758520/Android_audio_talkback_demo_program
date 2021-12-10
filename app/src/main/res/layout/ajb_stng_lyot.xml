@@ -37,7 +37,7 @@
                 android:text="音频自适应抖动缓冲器的最小需缓冲帧的数量，单位个，必须大于0：" />
 
             <EditText
-                android:id="@+id/AAjbMinNeedBufFrameCnt"
+                android:id="@+id/AAjbMinNeedBufFrmCntEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -59,12 +59,12 @@
                 android:text="音频自适应抖动缓冲器的最大需缓冲帧的数量，单位个，必须大于最小需缓冲帧的数量：" />
 
             <EditText
-                android:id="@+id/AAjbMaxNeedBufFrameCnt"
+                android:id="@+id/AAjbMaxNeedBufFrmCntEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:inputType="number"
-                android:text="50" />
+                android:text="20" />
 
         </LinearLayout>
 
@@ -81,7 +81,7 @@
                 android:text="音频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0.0,127.0]：" />
 
             <EditText
-                android:id="@+id/AAjbAdaptSensitivity"
+                android:id="@+id/AAjbAdaptSensitivityEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -103,7 +103,7 @@
                 android:text="视频自适应抖动缓冲器的最小需缓冲帧的数量，单位个，必须大于0：" />
 
             <EditText
-                android:id="@+id/VAjbMinNeedBufFrameCnt"
+                android:id="@+id/VAjbMinNeedBufFrmCntEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -125,7 +125,7 @@
                 android:text="视频自适应抖动缓冲器的最大需缓冲帧的数量，单位个，必须大于最小需缓冲帧的数量：" />
 
             <EditText
-                android:id="@+id/VAjbMaxNeedBufFrameCnt"
+                android:id="@+id/VAjbMaxNeedBufFrmCntEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -147,7 +147,7 @@
                 android:text="视频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0.0,127.0]：" />
 
             <EditText
-                android:id="@+id/VAjbAdaptSensitivity"
+                android:id="@+id/VAjbAdaptSensitivityEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -160,7 +160,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="确定"
-            android:onClick="OnClickAjbSettingOk" />
+            android:onClick="OnClickAjbStngOkBtn" />
 
     </LinearLayout>
 

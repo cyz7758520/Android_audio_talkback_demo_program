@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.Android_av_talkback_demo"
+    package="com.example.andrd_ado_vdo_tkbk_demo"
     android:installLocation="auto">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
@@ -16,13 +16,13 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/tkbk_icon"
+        android:roundIcon="@mipmap/tkbk_round_icon"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.example.Android_av_talkback_demo.MainActivity"
+            android:name="com.example.andrd_ado_vdo_tkbk_demo.MainActivity"
             android:label="@string/app_name"
             android:launchMode = "singleTask"
             android:configChanges="orientation|screenSize">
@@ -31,7 +31,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name=".FrgndSrvc" android:exported ="false" />
+        <service android:name="com.example.andrd_ado_vdo_tkbk_demo.FrgndSrvc" android:exported ="false" />
     </application>
 
 </manifest>
