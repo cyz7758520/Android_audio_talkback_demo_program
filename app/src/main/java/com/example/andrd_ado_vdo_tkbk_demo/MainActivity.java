@@ -225,8 +225,8 @@ class MyMediaPocsThrd extends MediaPocsThrd
 	public static final byte PKT_TYP_CNCT_ACK    = 2; //数据包类型：连接应答包。
 	public static final byte PKT_TYP_ALLOW_CNCT  = 3; //数据包类型：允许连接包。
 	public static final byte PKT_TYP_REFUSE_CNCT = 4; //数据包类型：拒绝连接包。
-	public static final byte PKT_TYP_AFRAME      = 5; //数据包类型：音频输入输出帧。
-	public static final byte PKT_TYP_VFRAME      = 6; //数据包类型：视频输入输出帧。
+	public static final byte PKT_TYP_ADO_FRM     = 5; //数据包类型：音频输入输出帧。
+	public static final byte PKT_TYP_VDO_FRM     = 6; //数据包类型：视频输入输出帧。
 	public static final byte PKT_TYP_HTBT        = 7; //数据包类型：心跳包。
 	public static final byte PKT_TYP_EXIT        = 8; //数据包类型：退出包。
 
@@ -509,7 +509,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 									{
 										//发送请求连接包。
 										m_TmpBytePt[0] = PKT_TYP_RQST_CNCT; //设置请求连接包。
-										if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) != 0 )
+										if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 10, 0, m_ErrInfoVarStrPt ) != 0 )
 										{
 											String p_InfoStrPt = "用已监听的本端UDP协议套接字发送请求连接包到远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 											Log.i( m_CurClsNameStrPt, p_InfoStrPt );
@@ -666,7 +666,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 							//发送请求连接包。
 							m_TmpBytePt[0] = PKT_TYP_RQST_CNCT; //设置请求连接包。
-							if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) != 0 )
+							if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 10, 0, m_ErrInfoVarStrPt ) != 0 )
 							{
 								String p_InfoStrPt = "用已监听的本端UDP协议套接字发送请求连接包到已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 								Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -686,7 +686,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 										{
 											//发送连接应答包。
 											m_TmpBytePt[0] = PKT_TYP_CNCT_ACK; //设置连接应答包。
-											if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) != 0 )
+											if( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 10, 0, m_ErrInfoVarStrPt ) != 0 )
 											{
 												String p_InfoStrPt = "用已监听的本端UDP协议套接字发送连接应答包到已监听的远端UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 												Log.i( m_CurClsNameStrPt, p_InfoStrPt );
@@ -783,7 +783,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					{
 						m_TmpBytePt[0] = PKT_TYP_ALLOW_CNCT; //设置允许连接包。
 						if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
-							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
+							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 10, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
 						{
 							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
@@ -807,7 +807,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					{
 						m_TmpBytePt[0] = PKT_TYP_REFUSE_CNCT; //设置拒绝连接包。
 						if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
-							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
+							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 10, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
 						{
 							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
@@ -834,7 +834,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					{
 						m_TmpBytePt[0] = PKT_TYP_REFUSE_CNCT; //设置拒绝连接包。
 						if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
-							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
+							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 10, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
 						{
 							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
@@ -1050,7 +1050,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 						Log.i( m_CurClsNameStrPt, "接收到一个心跳包。" );
 					}
-					else if( m_TmpBytePt[0] == PKT_TYP_AFRAME ) //如果是音频输出帧包。
+					else if( m_TmpBytePt[0] == PKT_TYP_ADO_FRM ) //如果是音频输出帧包。
 					{
 						if( m_TmpHTLongPt.m_Val < 1 + 4 ) //如果音频输出帧包的数据长度小于1 + 4，表示没有音频输出帧时间戳。
 						{
@@ -1120,7 +1120,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 							}
 						}
 					}
-					else if( m_TmpBytePt[0] == PKT_TYP_VFRAME ) //如果是视频输出帧包。
+					else if( m_TmpBytePt[0] == PKT_TYP_VDO_FRM ) //如果是视频输出帧包。
 					{
 						if( m_TmpHTLongPt.m_Val < 1 + 4 ) //如果视频输出帧包的数据长度小于1 + 4，表示没有视频输出帧时间戳。
 						{
@@ -1260,7 +1260,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 			//发送退出包。
 			m_TmpBytePt[0] = PKT_TYP_EXIT; //设置退出包。
 			if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) != 0 ) ) ||
-				( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) != 0 ) ) )
+				( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 10, 0, m_ErrInfoVarStrPt ) != 0 ) ) )
 			{
 				String p_InfoStrPt = "发送一个退出包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 				Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -1479,7 +1479,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					m_LastSendAdoInptFrmTimeStamp += 1; //音频输入帧的时间戳递增一个步进。
 
 					//设置数据包类型为音频输入帧包。
-					m_TmpBytePt[0] = PKT_TYP_AFRAME;
+					m_TmpBytePt[0] = PKT_TYP_ADO_FRM;
 					//设置音频输入帧时间戳。
 					m_TmpBytePt[1] = ( byte ) ( m_LastSendAdoInptFrmTimeStamp & 0xFF );
 					m_TmpBytePt[2] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
@@ -1512,7 +1512,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					m_LastSendAdoInptFrmTimeStamp += 1; //音频输入帧的时间戳递增一个步进。
 
 					//设置数据包类型为音频输入帧包。
-					m_TmpBytePt[0] = PKT_TYP_AFRAME;
+					m_TmpBytePt[0] = PKT_TYP_ADO_FRM;
 					//设置音频输入帧时间戳。
 					m_TmpBytePt[1] = ( byte ) ( m_LastSendAdoInptFrmTimeStamp & 0xFF );
 					m_TmpBytePt[2] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
@@ -1520,7 +1520,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					m_TmpBytePt[4] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
 
 					if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_FrmPktLen, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
-						( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_FrmPktLen, ( short ) 0, 5, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
+						( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, p_FrmPktLen, ( short ) 0, 10, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
 					{
 						m_LastPktSendTime = System.currentTimeMillis(); //设置最后一个数据包的发送时间。
 						Log.i( m_CurClsNameStrPt, "发送一个无语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。" );
@@ -1579,7 +1579,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					m_LastSendVdoInptFrmTimeStamp += 1; //视频输入帧的时间戳递增一个步进。
 
 					//设置数据包类型为视频输入帧包。
-					m_TmpBytePt[0] = PKT_TYP_VFRAME;
+					m_TmpBytePt[0] = PKT_TYP_VDO_FRM;
 					//设置视频输入帧时间戳。
 					m_TmpBytePt[1] = ( byte ) ( m_LastSendVdoInptFrmTimeStamp & 0xFF );
 					m_TmpBytePt[2] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
