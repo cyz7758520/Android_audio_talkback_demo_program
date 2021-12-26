@@ -25,7 +25,11 @@
 #### 特别注意：如果把两台设备放在同一房间里测试，有可能会出现啸叫、声音不完整、等问题，这是因为现在的麦克风都很灵敏了，一点小小的声音都会被录进去，两台设备会相互录音，导致软件无法正确识别回音，所以建议放在不同的房间里测试。如果实在要测试这种情况，就在设置里，Speex预处理器的其他功能设置里，关闭“使用自动增益控制”后再测试。
 
 # 移植
-#### 如果需要在自己的软件中使用本软件的音视频功能，只需要将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中，然后继承HeavenTao.Media.MediaPocsThrd类，实现UserInit、UserPocs、UserDstoy、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetPcmAdoOtptFrm、UserWriteVdoOtptFrm、UserGetYU12VdoOtptFrm这八个回调函数，再在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限即可。
+#### 如果需要在自己的软件中使用本软件的音视频功能，需要以下几个步骤：
+###### 1、在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限。
+###### 2、将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中。
+###### 3、继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserPocs、UserDstoy、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetPcmAdoOtptFrm、UserWriteVdoOtptFrm、UserGetYU12VdoOtptFrm这八个回调函数。
+###### 4、new这个继承的类，然后调用类的相关设置成员函数，最后调用start()成员函数启动媒体处理线程即可。
 #### 如果用户要在JNI层处理音视频帧，则可以将那八个函数继承为native函数，然后在JNI层实现即可。
 #### 如果用户有不需要的部分功能，则只需要删除该功能对应的库文件即可，还可以进一步删除对应的类文件，并修改HeavenTao.Media.MediaPocsThrd类文件即可。
 #### 普通免费功能包括：WebRtc定点版声学回音消除器、Speex预处理器的噪音抑制、WebRtc定点版噪音抑制器、WebRtc浮点版噪音抑制器、Speex预处理器的其他功能、Speex编解码器、Wave文件读取器、Wave文件写入器、音频波形器、本端TCP协议服务端套接字、本端TCP协议客户端套接字、本端UDP协议套接字。
