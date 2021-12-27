@@ -347,7 +347,7 @@ public abstract class MediaPocsThrd extends Thread
 	short m_PcmAdoSwapFrmPt[] = null; //存放PCM格式音频交换帧的指针。
 	HTInt m_VoiceActStsPt = null; //存放语音活动状态，为1表示有语音活动，为0表示无语音活动。
 	byte m_EncdAdoInptFrmPt[] = null; //存放已编码格式音频输入帧的指针。
-	HTLong m_EncdAdoInptFrmLenPt = null; //存放已编码格式音频输入帧的长度，单位字节。
+	HTLong m_EncdAdoInptFrmLenPt = null; //存放已编码格式音频输入帧长度的指针，单位字节。
 	HTInt m_EncdAdoInptFrmIsNeedTransPt = null; //存放已编码格式音频输入帧是否需要传输的指针，为1表示需要传输，为0表示不需要传输。
 	VdoInpt.VdoInptFrmElm m_VdoInptFrmPt = null; //存放视频输入帧的指针。
 
