@@ -16,13 +16,31 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:text="Android下音视频对讲演示程序\n设置\n"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="@string/app_name"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:textStyle="normal|bold" />
+
+        <TextView
+            android:text="设置"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_horizontal"
             android:textAlignment="center"
             android:textStyle="normal|bold"
             android:textSize="20sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text=""
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:textStyle="normal|bold" />
 
         <LinearLayout
             android:orientation="horizontal"

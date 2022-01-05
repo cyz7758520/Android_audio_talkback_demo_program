@@ -355,29 +355,29 @@ public abstract class MediaPocsThrd extends Thread
 
 	//用户定义的相关回调函数。
 
-	//用户定义的初始化函数，在本线程刚启动时回调一次，返回值表示是否成功，为0表示成功，为非0表示失败。
+	//用户定义的初始化函数。
 	public abstract int UserInit();
 
-	//用户定义的处理函数，在本线程运行时每隔1毫秒就回调一次，返回值表示是否成功，为0表示成功，为非0表示失败。
+	//用户定义的处理函数。
 	public abstract int UserPocs();
 
-	//用户定义的销毁函数，在本线程退出时回调一次。
+	//用户定义的销毁函数。
 	public abstract void UserDstoy();
 
-	//用户定义的读取音视频输入帧函数，在读取到一个音频输入帧或视频输入帧并处理完后回调一次，为0表示成功，为非0表示失败。
+	//用户定义的读取音视频输入帧函数。
 	public abstract int UserReadAdoVdoInptFrm( short PcmAdoInptFrmPt[], short PcmAdoRsltFrmPt[], HTInt VoiceActStsPt, byte EncdAdoInptFrmPt[], HTLong EncdAdoInptFrmLenPt, HTInt EncdAdoInptFrmIsNeedTransPt,
 											   byte YU12VdoInptFrmPt[], HTInt YU12VdoInptFrmWidthPt, HTInt YU12VdoInptFrmHeightPt, byte EncdVdoInptFrmPt[], HTLong EncdVdoInptFrmLenPt );
 
-	//用户定义的写入音频输出帧函数，在需要写入一个音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
+	//用户定义的写入音频输出帧函数。
 	public abstract void UserWriteAdoOtptFrm( short PcmAdoOtptFrmPt[], byte EncdAdoOtptFrmPt[], HTLong AdoOtptFrmLenPt );
 
-	//用户定义的获取PCM格式音频输出帧函数，在解码完一个已编码音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
+	//用户定义的获取PCM格式音频输出帧函数。
 	public abstract void UserGetPcmAdoOtptFrm( short PcmAdoOtptFrmPt[], long PcmAdoOtptFrmLen );
 
-	//用户定义的写入视频输出帧函数，在可以显示一个视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
+	//用户定义的写入视频输出帧函数。
 	public abstract void UserWriteVdoOtptFrm( byte YU12VdoOtptFrmPt[], HTInt YU12VdoInptFrmWidthPt, HTInt YU12VdoInptFrmHeightPt, byte EncdVdoOtptFrmPt[], HTLong VdoOtptFrmLenPt );
 
-	//用户定义的获取YU12格式视频输出帧函数，在解码完一个已编码视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
+	//用户定义的获取YU12格式视频输出帧函数。
 	public abstract void UserGetYU12VdoOtptFrm( byte YU12VdoOtptFrmPt[], int YU12VdoOtptFrmWidth, int YU12VdoOtptFrmHeight );
 
 	//构造函数。

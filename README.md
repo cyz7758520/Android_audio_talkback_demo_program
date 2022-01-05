@@ -88,7 +88,7 @@
 &emsp;&emsp;LibYUV：https://github.com/lemenkov/libyuv/blob/master/LICENSE  
 
 # 感谢
-&emsp;&emsp;感谢 WELEN、善书、陈国福 对 Speex、WebRTC 的指点！
+&emsp;&emsp;感谢 WELEN、善书、陈国福 对 Speex、WebRTC 的指点！  
 
 # 函数
 ### 八个回调函数
@@ -117,12 +117,12 @@ ___
 &emsp;&emsp;&emsp;&emsp;&emsp;VoiceActStsPt：\[输入\]，存放语音活动状态的指针，为非0表示有语音活动，为0表示无语音活动。如果没有使用音频输入，则本参数为null。  
 &emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoInptFrmPt：\[输入\]，存放已编码格式音频输入帧的指针。如果没有使用音频输入，或音频输入编码器使用PCM原始数据，则本参数为null。  
 &emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoInptFrmLenPt：\[输入\]，存放已编码格式音频输入帧长度的指针，单位为字节。如果没有使用音频输入，或音频输入编码器使用PCM原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoInptFrmIsNeedTransPt：\[输入\]，存放已编码格式音频输入帧是否需要传输的指针，为1表示需要传输，为0表示不需要传输。如果没有使用音频输入，或音频输入编码器使用PCM原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptFrmPt：\[输入\]，存放YU12格式视频输入帧的指针。如果没有使用视频输入，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptFrmWidthPt：\[输入\]，存放YU12格式视频输入帧宽度的指针。如果没有使用视频输入，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptFrmHeightPt：\[输入\]，存放YU12格式视频输入帧宽度的指针。如果没有使用视频输入，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoInptFrmPt：\[输入\]，存放已编码格式视频输入帧的指针。如果没有使用视频输入，或视频输入编码器使用YU12原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoInptFrmLenPt：\[输入\]，存放已编码格式视频输入帧长度的指针，单位为字节。如果没有使用视频输入，或视频输入编码器使用YU12原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoInptFrmIsNeedTransPt：\[输入\]，存放已编码格式音频输入帧是否需要传输的指针，为非0表示需要传输，为0表示不需要传输。如果没有使用音频输入，或音频输入编码器使用PCM原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptFrmPt：\[输入\]，存放YU12格式视频输入帧的指针。如果没有使用视频输入，或本次没有读取到视频输入帧，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptFrmWidthPt：\[输入\]，存放YU12格式视频输入帧宽度的指针。如果没有使用视频输入，或本次没有读取到视频输入帧，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptFrmHeightPt：\[输入\]，存放YU12格式视频输入帧高度的指针。如果没有使用视频输入，或本次没有读取到视频输入帧，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoInptFrmPt：\[输入\]，存放已编码格式视频输入帧的指针。如果没有使用视频输入，或本次没有读取到视频输入帧，或视频输入编码器使用YU12原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoInptFrmLenPt：\[输入\]，存放已编码格式视频输入帧长度的指针，单位为字节。如果没有使用视频输入，或本次没有读取到视频输入帧，或视频输入编码器使用YU12原始数据，则本参数为null。  
 返回说明：0：成功。  
 &emsp;&emsp;&emsp;&emsp;&emsp;非0：失败。  
 ___

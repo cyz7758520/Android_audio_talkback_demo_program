@@ -272,7 +272,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 		m_MainActivityHandlerPt = MainActivityHandlerPt; //设置主界面消息处理的指针。
 	}
 
-	//用户定义的初始化函数，在本线程刚启动时回调一次，返回值表示是否成功，为0表示成功，为非0表示失败。
+	//用户定义的初始化函数。
 	@Override public int UserInit()
 	{
 		int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
@@ -1008,7 +1008,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 			m_LastGetAdoOtptFrmIsAct = 0; //设置最后一个取出的音频输出帧为无语音活动，因为如果不使用音频输出，只使用视频输出时，可以保证视频正常输出。
 			m_LastGetAdoOtptFrmVdoOtptFrmTimeStamp = 0; //设置最后一个取出的音频输出帧对应视频输出帧的时间戳为0。
 
-			String p_InfoStrPt = "开始进行对讲。";
+			String p_InfoStrPt = "开始对讲。";
 			Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 			if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
@@ -1019,7 +1019,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 		return p_Rslt;
 	}
 
-	//用户定义的处理函数，在本线程运行时每隔1毫秒就回调一次，返回值表示是否成功，为0表示成功，为非0表示失败。
+	//用户定义的处理函数。
 	@Override public int UserPocs()
 	{
 		int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
@@ -1251,55 +1251,64 @@ class MyMediaPocsThrd extends MediaPocsThrd
 		return p_Rslt;
 	}
 
-	//用户定义的销毁函数，在本线程退出时回调一次。
+	//用户定义的销毁函数。
 	@Override public void UserDstoy()
 	{
-		SendExitPkt:
 		if( ( m_ExitFlag == 1 ) && ( ( m_TcpClntSoktPt != null ) || ( ( m_UdpSoktPt != null ) && ( m_UdpSoktPt.GetRmtAddr( null, null, null, 0, null ) == 0 ) ) ) ) //如果本线程接收到退出请求，且本端TCP协议客户端套接字不为空或本端UDP协议套接字不为空且已连接远端。
 		{
-			//发送退出包。
-			m_TmpBytePt[0] = PKT_TYP_EXIT; //设置退出包。
-			if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) != 0 ) ) ||
-				( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 10, 0, m_ErrInfoVarStrPt ) != 0 ) ) )
+			SendExitPkt:
 			{
-				String p_InfoStrPt = "发送一个退出包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-				Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-				Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-				break SendExitPkt;
-			}
-
-			m_LastPktSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间。
-
-			{
-				String p_InfoStrPt = "发送一个退出包成功。";
-				Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-				Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-			}
-
-			if( m_IsRecvExitPkt == 0 ) //如果没有接收到退出包。
-			{
-				while( true ) //循环接收退出包。
+				//发送退出包。
+				m_TmpBytePt[0] = PKT_TYP_EXIT; //设置退出包。
+				if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVarStrPt ) != 0 ) ) ||
+					( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.SendPkt( 4, null, null, m_TmpBytePt, 1, ( short ) 0, 10, 0, m_ErrInfoVarStrPt ) != 0 ) ) )
 				{
-					if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 5000, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
-						( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 5000, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
-					{
-						if( m_TmpHTLongPt.m_Val != -1 ) //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包成功。
-						{
-							m_LastPktRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间。
+					String p_InfoStrPt = "发送一个退出包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+					break SendExitPkt;
+				}
 
-							if( ( m_TmpHTLongPt.m_Val == 1 ) && ( m_TmpBytePt[0] == PKT_TYP_EXIT ) ) //如果是退出包。
+				m_LastPktSendTime = System.currentTimeMillis(); //记录最后一个数据包的发送时间。
+
+				{
+					String p_InfoStrPt = "发送一个退出包成功。";
+					Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+				}
+
+				if( m_IsRecvExitPkt == 0 ) //如果没有接收到退出包。
+				{
+					while( true ) //循环接收退出包。
+					{
+						if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.RecvPkt( m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 5000, 0, m_ErrInfoVarStrPt ) == 0 ) ) ||
+							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_UdpSoktPt.RecvPkt( null, null, null, m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 5000, 0, m_ErrInfoVarStrPt ) == 0 ) ) )
+						{
+							if( m_TmpHTLongPt.m_Val != -1 ) //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包成功。
 							{
-								String p_InfoStrPt = "接收到一个退出包。";
-								Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+								m_LastPktRecvTime = System.currentTimeMillis(); //记录最后一个数据包的接收时间。
+
+								if( ( m_TmpHTLongPt.m_Val == 1 ) && ( m_TmpBytePt[0] == PKT_TYP_EXIT ) ) //如果是退出包。
+								{
+									String p_InfoStrPt = "接收到一个退出包。";
+									Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+									Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+									break SendExitPkt;
+								}
+								else //如果是其他包，继续接收。
+								{
+
+								}
+							}
+							else //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包超时。
+							{
+								String p_InfoStrPt = "用已连接的本端套接字接收一个连接的远端套接字发送的数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+								Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 								break SendExitPkt;
 							}
-							else //如果是其他包，继续接收。
-							{
-
-							}
 						}
-						else //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包超时。
+						else //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包失败。
 						{
 							String p_InfoStrPt = "用已连接的本端套接字接收一个连接的远端套接字发送的数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -1307,15 +1316,13 @@ class MyMediaPocsThrd extends MediaPocsThrd
 							break SendExitPkt;
 						}
 					}
-					else //如果用已连接的本端套接字接收一个连接的远端套接字发送的数据包失败。
-					{
-						String p_InfoStrPt = "用已连接的本端套接字接收一个连接的远端套接字发送的数据包失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-						break SendExitPkt;
-					}
 				}
 			}
+
+			String p_InfoStrPt = "中断对讲。";
+			Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+			if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 		}
 
 		//销毁本端TCP协议服务端套接字。
@@ -1431,9 +1438,9 @@ class MyMediaPocsThrd extends MediaPocsThrd
 		}
 	}
 
-	//用户定义的读取音视频输入帧函数，在读取到一个音频输入帧或视频输入帧并处理完后回调一次，为0表示成功，为非0表示失败。
+	//用户定义的读取音视频输入帧函数。
 	@Override public int UserReadAdoVdoInptFrm( short PcmAdoInptFrmPt[], short PcmAdoRsltFrmPt[], HTInt VoiceActStsPt, byte EncdAdoInptFrmPt[], HTLong EncdAdoInptFrmLenPt, HTInt EncdAdoInptFrmIsNeedTransPt,
-													   byte YU12VdoInptFrmPt[], HTInt YU12VdoInptFrmWidthPt, HTInt YU12VdoInptFrmHeightPt, byte EncdVdoInptFrmPt[], HTLong EncdVdoInptFrmLenPt )
+												byte YU12VdoInptFrmPt[], HTInt YU12VdoInptFrmWidthPt, HTInt YU12VdoInptFrmHeightPt, byte EncdVdoInptFrmPt[], HTLong EncdVdoInptFrmLenPt )
 	{
 		int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
 		int p_FrmPktLen = 0; //存放输入输出帧数据包的数据长度，单位字节。
@@ -1617,8 +1624,8 @@ class MyMediaPocsThrd extends MediaPocsThrd
 		return p_Rslt;
 	}
 
-	//用户定义的写入音频输出帧函数，在需要写入一个音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
-	@Override public void UserWriteAdoOtptFrm( short PcmAdoOtptFrmPt[], byte EncdAdoOtptFrmPt[], HTLong EncdAdoOtptFrmLen )
+	//用户定义的写入音频输出帧函数。
+	@Override public void UserWriteAdoOtptFrm( short PcmAdoOtptFrmPt[], byte EncdAdoOtptFrmPt[], HTLong AdoOtptFrmLenPt )
 	{
 		int p_AdoOtptFrmTimeStamp = 0;
 		byte p_AdoOtptFrmPt[] = null;
@@ -1715,14 +1722,14 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					{
 						if( p_AdoOtptFrmLen - 4 > EncdAdoOtptFrmPt.length )
 						{
-							EncdAdoOtptFrmLen.m_Val = 0;
+							AdoOtptFrmLenPt.m_Val = 0;
 							Log.e( m_CurClsNameStrPt, "视频输出帧的数据长度已超过已编码格式的数据长度。音频输出帧：" + ( p_AdoOtptFrmLen - 4 ) + "，已编码格式：" + EncdAdoOtptFrmPt.length + "。" );
 							break Out;
 						}
 
 						//写入已编码格式音频输出帧。
 						System.arraycopy( p_AdoOtptFrmPt, 4, EncdAdoOtptFrmPt, 0, ( int ) ( p_AdoOtptFrmLen - 4 ) );
-						EncdAdoOtptFrmLen.m_Val = p_AdoOtptFrmLen - 4;
+						AdoOtptFrmLenPt.m_Val = p_AdoOtptFrmLen - 4;
 					}
 				}
 				else if( p_AdoOtptFrmLen == 0 ) //如果音频输出帧为无语音活动。
@@ -1733,7 +1740,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					}
 					else //如果要使用已编码格式音频输出帧。
 					{
-						EncdAdoOtptFrmLen.m_Val = 0;
+						AdoOtptFrmLenPt.m_Val = 0;
 					}
 				}
 				else //如果音频输出帧为丢失。
@@ -1744,20 +1751,20 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					}
 					else //如果要使用已编码格式音频输出帧。
 					{
-						EncdAdoOtptFrmLen.m_Val = p_AdoOtptFrmLen;
+						AdoOtptFrmLenPt.m_Val = p_AdoOtptFrmLen;
 					}
 				}
 			}
 		}
 	}
 
-	//用户定义的获取PCM格式音频输出帧函数，在解码完一个已编码音频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。
+	//用户定义的获取PCM格式音频输出帧函数。
 	@Override public void UserGetPcmAdoOtptFrm( short PcmOtptFrmPt[], long PcmAdoOtptFrmLen )
 	{
 
 	}
 
-	//用户定义的写入视频输出帧函数，在可以显示一个视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
+	//用户定义的写入视频输出帧函数。
 	@Override public void UserWriteVdoOtptFrm( byte YU12VdoOtptFrmPt[], HTInt YU12VdoInptFrmWidthPt, HTInt YU12VdoInptFrmHeightPt, byte EncdVdoOtptFrmPt[], HTLong VdoOtptFrmLen )
 	{
 		int p_VdoOtptFrmTimeStamp = 0;
@@ -1881,7 +1888,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 		}
 	}
 
-	//用户定义的获取YU12格式视频输出帧函数，在解码完一个已编码视频输出帧时回调一次。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。
+	//用户定义的获取YU12格式视频输出帧函数。
 	@Override public void UserGetYU12VdoOtptFrm( byte YU12VdoOtptFrmPt[], int YU12VdoOtptFrmWidth, int YU12VdoOtptFrmHeight )
 	{
 
