@@ -16,10 +16,12 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -63,6 +65,7 @@ class MainActivityHandler extends Handler
 	public static final int DSTOY_REQUEST_CNCT_DIALOG = 4; //销毁请求连接对话框的消息。
 	public static final int SHOW_LOG = 5; //显示日志的消息。
 	public static final int REBUILD_SURFACE_VIEW = 6; //重建Surface视图的消息。
+	public static final int VIBRATE = 7; //振动的消息。
 
 	public void handleMessage( Message MessagePt )
 	{
@@ -78,6 +81,10 @@ class MainActivityHandler extends Handler
 				( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setText( "中断" ); //设置创建服务端按钮的内容为“中断”。
 				( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setEnabled( false ); //设置连接服务端按钮为不可用。
 				( ( Button ) m_MainActivityPt.findViewById( R.id.StngBtnId ) ).setEnabled( false ); //设置设置按钮为不可用。
+				if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_XfrMode == 0 )
+				{
+					( ( Button ) m_MainActivityPt.findViewById( R.id.PttBtnId ) ).setVisibility( Button.VISIBLE ); //设置一键即按即通按钮为可见。
+				}
 			}
 			else //如果是创建客户端。
 			{
@@ -89,6 +96,10 @@ class MainActivityHandler extends Handler
 				( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setEnabled( false ); //设置创建服务端按钮为不可用。
 				( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setText( "中断" ); //设置连接服务端按钮的内容为“中断”。
 				( ( Button ) m_MainActivityPt.findViewById( R.id.StngBtnId ) ).setEnabled( false ); //设置设置按钮为不可用。
+				if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_XfrMode == 0 )
+				{
+					( ( Button ) m_MainActivityPt.findViewById( R.id.PttBtnId ) ).setVisibility( Button.VISIBLE ); //设置一键即按即通按钮为可见。
+				}
 			}
 
 			//创建并绑定前台服务，从而确保本进程在转入后台或系统锁屏时不会被系统限制运行，且只能放在主线程中执行，因为要使用界面。
@@ -188,6 +199,7 @@ class MainActivityHandler extends Handler
 			( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setText( "连接服务端" ); //设置连接服务端按钮的内容为“连接服务端”。
 			( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setEnabled( true ); //设置创建服务端按钮为可用。
 			( ( Button ) m_MainActivityPt.findViewById( R.id.StngBtnId ) ).setEnabled( true ); //设置设置按钮为可用。
+			( ( Button ) m_MainActivityPt.findViewById( R.id.PttBtnId ) ).setVisibility( Button.INVISIBLE ); //设置一键即按即通按钮为不可见。
 		}
 		else if( MessagePt.what == SHOW_LOG ) //如果是显示日志的消息。
 		{
@@ -195,12 +207,16 @@ class MainActivityHandler extends Handler
 			p_LogTextView.setText( ( new SimpleDateFormat( "HH:mm:ss SSS" ) ).format( new Date() ) + "：" + MessagePt.obj );
 			( ( LinearLayout ) m_MainActivityPt.m_MainLyotViewPt.findViewById( R.id.LogLinearLyotId ) ).addView( p_LogTextView );
 		}
-		else if( MessagePt.what == REBUILD_SURFACE_VIEW ) //如果是重建Surface视图消息，用来清空残余画面。
+		else if( MessagePt.what == REBUILD_SURFACE_VIEW ) //如果是重建Surface视图的消息，用来清空残余画面。
 		{
 			m_MainActivityPt.m_VdoInptPrvwSurfaceViewPt.setVisibility( View.GONE ); //销毁视频输入预览Surface视图。
 			m_MainActivityPt.m_VdoInptPrvwSurfaceViewPt.setVisibility( View.VISIBLE ); //创建视频输入预览Surface视图。
 			m_MainActivityPt.m_VdoOtptDspySurfaceViewPt.setVisibility( View.GONE ); //销毁视频输出显示Surface视图。
 			m_MainActivityPt.m_VdoOtptDspySurfaceViewPt.setVisibility( View.VISIBLE ); //创建视频输出显示Surface视图。
+		}
+		else if( MessagePt.what == VIBRATE ) //如果是振动消息。
+		{
+			( ( Vibrator ) m_MainActivityPt.getSystemService( m_MainActivityPt.VIBRATOR_SERVICE ) ).vibrate( 100 );
 		}
 	}
 }
@@ -213,6 +229,9 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 	String m_IPAddrStrPt; //存放IP地址字符串的指针。
 	String m_PortStrPt; //存放端口字符串的指针。
+	int m_XfrMode; //存放传输模式，为0表示实时半双工（一键通），为1表示实时全双工。
+	int m_PttBtnIsDown; //存放一键即按即通按钮是否按下，为0表示弹起，为1表示按下。
+	int m_PttDownIsNoVibrate; //存放一键即按即通按钮按下后是否没有振动，为0表示已经振动，为1表示没有振动。
 	int m_MaxCnctTimes; //存放最大连接次数，取值区间为[1,2147483647]。
 	int m_UseWhatXfrPrtcl; //存放使用什么传输协议，为0表示TCP协议，为1表示UDP协议。
 	int m_IsCreateSrvrOrClnt; //存放创建服务端或者客户端标记，为1表示创建服务端，为0表示创建客户端。
@@ -382,53 +401,42 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					LoopCnct:
 					while( true ) //循环连接已监听的远端TCP协议服务端套接字。
 					{
-						//连接远端。
 						{
-							{
-								String p_InfoStrPt = "开始第 " + p_CurCnctTimes + "次连接。";
-								Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-							}
+							String p_InfoStrPt = "开始第 " + p_CurCnctTimes + "次连接。";
+							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+						}
 
-							if( m_TcpClntSoktPt.Init( 4, m_IPAddrStrPt, m_PortStrPt, null, null, ( short ) 5000, m_ErrInfoVarStrPt ) == 0 ) //如果创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字成功。
+						if( m_TcpClntSoktPt.Init( 4, m_IPAddrStrPt, m_PortStrPt, null, null, ( short ) 5000, m_ErrInfoVarStrPt ) == 0 ) //如果创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字成功。
+						{
+							if( m_TcpClntSoktPt.GetLclAddr( null, p_LclNodeAddrPt, p_LclNodePortPt, 0, m_ErrInfoVarStrPt ) != 0 )
 							{
-								if( m_TcpClntSoktPt.GetLclAddr( null, p_LclNodeAddrPt, p_LclNodePortPt, 0, m_ErrInfoVarStrPt ) != 0 )
-								{
-									String p_InfoStrPt = "获取已连接的本端TCP协议客户端套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-									Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-									Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-									break Out;
-								}
-								if( m_TcpClntSoktPt.GetRmtAddr( null, p_RmtNodeAddrPt, p_RmtNodePortPt, 0, m_ErrInfoVarStrPt ) != 0 )
-								{
-									String p_InfoStrPt = "获取已连接的本端TCP协议客户端套接字连接的远端TCP协议客户端套接字绑定的远程节点地址和端口失败。原因：" + m_ErrInfoVarStrPt.GetStr();
-									Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-									Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-									break Out;
-								}
-
-								String p_InfoStrPt = "创建并初始化本端TCP协议客户端套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]，并连接已监听的远端TCP协议服务端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]成功。";
-								Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-								break LoopCnct; //跳出重连。
-							}
-							else
-							{
-								String p_InfoStrPt = "创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+								String p_InfoStrPt = "获取已连接的本端TCP协议客户端套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVarStrPt.GetStr();
 								Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+								break Out;
 							}
-						}
+							if( m_TcpClntSoktPt.GetRmtAddr( null, p_RmtNodeAddrPt, p_RmtNodePortPt, 0, m_ErrInfoVarStrPt ) != 0 )
+							{
+								String p_InfoStrPt = "获取已连接的本端TCP协议客户端套接字连接的远端TCP协议客户端套接字绑定的远程节点地址和端口失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+								Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+								break Out;
+							}
 
-						if( m_ExitFlag != 0 ) //如果本线程接收到退出请求。
+							String p_InfoStrPt = "创建并初始化本端TCP协议客户端套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]，并连接已监听的远端TCP协议服务端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]成功。";
+							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							break LoopCnct; //跳出重连。
+						}
+						else
 						{
-							m_TcpClntSoktPt = null;
-
-							Log.i( m_CurClsNameStrPt, "本线程接收到退出请求，开始准备退出。" );
-							break Out;
+							String p_InfoStrPt = "创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVarStrPt.GetStr();
+							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 						}
 
-						p_CurCnctTimes++;
+						p_CurCnctTimes++; //递增当前连接次数。
 						if( p_CurCnctTimes > m_MaxCnctTimes )
 						{
 							m_TcpClntSoktPt = null;
@@ -436,6 +444,14 @@ class MyMediaPocsThrd extends MediaPocsThrd
 							String p_InfoStrPt = "达到最大连接次数，中断连接。";
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							break Out;
+						}
+
+						if( m_ExitFlag != 0 ) //如果本线程接收到退出请求。
+						{
+							m_TcpClntSoktPt = null;
+
+							Log.i( m_CurClsNameStrPt, "本线程接收到退出请求，开始准备退出。" );
 							break Out;
 						}
 					}
@@ -738,7 +754,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 							break UdpClntLoopCnct;
 						}
 
-						p_CurCnctTimes++;
+						p_CurCnctTimes++; //递增当前连接次数。
 						if( p_CurCnctTimes > m_MaxCnctTimes )
 						{
 							m_UdpSoktPt.Disconnect( 0, null );
@@ -900,7 +916,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 								String p_InfoStrPt = "接收到一个允许连接包。";
 								Log.i( m_CurClsNameStrPt, p_InfoStrPt );
 								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-								if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+								//if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 								break WaitAllowCnct;
 							}
 							else //如果是服务端。
@@ -1008,10 +1024,14 @@ class MyMediaPocsThrd extends MediaPocsThrd
 			m_LastGetAdoOtptFrmIsAct = 0; //设置最后一个取出的音频输出帧为无语音活动，因为如果不使用音频输出，只使用视频输出时，可以保证视频正常输出。
 			m_LastGetAdoOtptFrmVdoOtptFrmTimeStamp = 0; //设置最后一个取出的音频输出帧对应视频输出帧的时间戳为0。
 
-			String p_InfoStrPt = "开始对讲。";
-			Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-			if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+			{
+				String p_InfoStrPt = "开始对讲。";
+				Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+				Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+				if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+			}
+
+			{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.VIBRATE;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
 
 			p_Rslt = 0; //设置本函数执行成功。
 		}
@@ -1061,14 +1081,14 @@ class MyMediaPocsThrd extends MediaPocsThrd
 						//读取音频输出帧时间戳。
 						p_TmpInt = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
 
-						if( m_AdoOtptPt.m_IsUseAdoOtpt != 0 ) //如果要使用音频输出。
+						//将音频输出帧放入链表或自适应抖动缓冲器。
+						switch( m_UseWhatRecvOtptFrm ) //使用什么接收输出帧。
 						{
-							//将音频输出帧放入链表或自适应抖动缓冲器。
-							switch( m_UseWhatRecvOtptFrm ) //使用什么接收输出帧。
+							case 0: //如果使用链表。
 							{
-								case 0: //如果使用链表。
+								if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该音频输出帧为有语音活动。
 								{
-									if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该音频输出帧为有语音活动。
+									if( m_RecvAdoOtptFrmLnkLstPt.size() <= 50 )
 									{
 										synchronized( m_RecvAdoOtptFrmLnkLstPt )
 										{
@@ -1076,47 +1096,40 @@ class MyMediaPocsThrd extends MediaPocsThrd
 										}
 										Log.i( m_CurClsNameStrPt, "接收到一个有语音活动的音频输出帧包，并放入接收音频输出帧链表成功。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
 									}
-									else //如果该音频输出帧为无语音活动。
+									else
 									{
-										Log.i( m_CurClsNameStrPt, "接收到一个无语音活动的音频输出帧包，无需放入接收音频输出帧链表。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+										Log.i( m_CurClsNameStrPt, "接收到一个有语音活动的音频输出帧包，但接收音频输出帧链表已满。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
 									}
-									break;
 								}
-								case 1: //如果使用自适应抖动缓冲器。
+								else //如果该音频输出帧为无语音活动。
 								{
-									if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该音频输出帧为有语音活动。
-									{
-										m_AAjbPt.PutOneByteFrm( p_TmpInt, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4, 1, null );
-										Log.i( m_CurClsNameStrPt, "接收到一个有语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
-									}
-									else //如果该音频输出帧为无语音活动。
-									{
-										m_AAjbPt.PutOneByteFrm( p_TmpInt, m_TmpBytePt, 1 + 4, 0, 1, null );
-										Log.i( m_CurClsNameStrPt, "接收到一个无语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
-									}
-
-									HTInt p_CurHaveBufActFrmCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
-									HTInt p_CurHaveBufInactFrmCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
-									HTInt p_CurHaveBufFrmCntPt = new HTInt(); //存放当前已缓冲帧的数量。
-									HTInt p_MinNeedBufFrmCntPt = new HTInt(); //存放最小需缓冲帧的数量。
-									HTInt p_MaxNeedBufFrmCntPt = new HTInt(); //存放最大需缓冲帧的数量。
-									HTInt p_CurNeedBufFrmCntPt = new HTInt(); //存放当前需缓冲帧的数量。
-									m_AAjbPt.GetBufFrmCnt( p_CurHaveBufActFrmCntPt, p_CurHaveBufInactFrmCntPt, p_CurHaveBufFrmCntPt, p_MinNeedBufFrmCntPt, p_MaxNeedBufFrmCntPt, p_CurNeedBufFrmCntPt, 1, null );
-									Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrmCntPt.m_Val + "，无活动帧：" + p_CurHaveBufInactFrmCntPt.m_Val + "，帧：" + p_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrmCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrmCntPt.m_Val + "。" );
-
-									break;
+									Log.i( m_CurClsNameStrPt, "接收到一个无语音活动的音频输出帧包，无需放入接收音频输出帧链表。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
 								}
+								break;
 							}
-						}
-						else //如果不使用音频输出。
-						{
-							if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该音频输出帧为有语音活动。
+							case 1: //如果使用自适应抖动缓冲器。
 							{
-								Log.i( m_CurClsNameStrPt, "接收到一个有语音活动的音频输出帧包成功，但不使用音频输出。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
-							}
-							else //如果该音频输出帧为无语音活动。
-							{
-								Log.i( m_CurClsNameStrPt, "接收到一个无语音活动的音频输出帧包成功，但不使用音频输出。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+								if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该音频输出帧为有语音活动。
+								{
+									m_AAjbPt.PutOneByteFrm( p_TmpInt, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4, 1, null );
+									Log.i( m_CurClsNameStrPt, "接收到一个有语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+								}
+								else //如果该音频输出帧为无语音活动。
+								{
+									m_AAjbPt.PutOneByteFrm( p_TmpInt, m_TmpBytePt, 1 + 4, 0, 1, null );
+									Log.i( m_CurClsNameStrPt, "接收到一个无语音活动的音频输出帧包，并放入音频自适应抖动缓冲器成功。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+								}
+
+								HTInt p_CurHaveBufActFrmCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
+								HTInt p_CurHaveBufInactFrmCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
+								HTInt p_CurHaveBufFrmCntPt = new HTInt(); //存放当前已缓冲帧的数量。
+								HTInt p_MinNeedBufFrmCntPt = new HTInt(); //存放最小需缓冲帧的数量。
+								HTInt p_MaxNeedBufFrmCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+								HTInt p_CurNeedBufFrmCntPt = new HTInt(); //存放当前需缓冲帧的数量。
+								m_AAjbPt.GetBufFrmCnt( p_CurHaveBufActFrmCntPt, p_CurHaveBufInactFrmCntPt, p_CurHaveBufFrmCntPt, p_MinNeedBufFrmCntPt, p_MaxNeedBufFrmCntPt, p_CurNeedBufFrmCntPt, 1, null );
+								Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrmCntPt.m_Val + "，无活动帧：" + p_CurHaveBufInactFrmCntPt.m_Val + "，帧：" + p_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrmCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrmCntPt.m_Val + "。" );
+
+								break;
 							}
 						}
 					}
@@ -1131,14 +1144,14 @@ class MyMediaPocsThrd extends MediaPocsThrd
 						//读取视频输出帧时间戳。
 						p_TmpInt = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
 
-						if( m_VdoOtptPt.m_IsUseVdoOtpt != 0 ) //如果要使用视频输出。
+						//将视频输出帧放入链表或自适应抖动缓冲器。
+						switch( m_UseWhatRecvOtptFrm ) //使用什么接收输出帧。
 						{
-							//将视频输出帧放入链表或自适应抖动缓冲器。
-							switch( m_UseWhatRecvOtptFrm ) //使用什么接收输出帧。
+							case 0: //如果使用链表。
 							{
-								case 0: //如果使用链表。
+								if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
 								{
-									if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
+									if( m_RecvVdoOtptFrmLnkLstPt.size() <= 50 )
 									{
 										synchronized( m_RecvVdoOtptFrmLnkLstPt )
 										{
@@ -1146,44 +1159,37 @@ class MyMediaPocsThrd extends MediaPocsThrd
 										}
 										Log.i( m_CurClsNameStrPt, "接收到一个有图像活动的视频输出帧包，并放入接收视频输出帧链表成功。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
 									}
-									else //如果该视频输出帧为无图像活动。
+									else
 									{
-										Log.i( m_CurClsNameStrPt, "接收到一个无图像活动的视频输出帧包，无需放入接收视频输出帧链表。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+										Log.i( m_CurClsNameStrPt, "接收到一个有图像活动的视频输出帧包，但接收视频输出帧链表已满。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
 									}
-									break;
 								}
-								case 1: //如果使用自适应抖动缓冲器。
+								else //如果该视频输出帧为无图像活动。
 								{
-									if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
-									{
-										m_VAjbPt.PutOneByteFrm( System.currentTimeMillis(), p_TmpInt, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4, 1, null );
-										Log.i( m_CurClsNameStrPt, "接收到一个有图像活动的视频输出帧包，并放入视频自适应抖动缓冲器成功。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。" );
-									}
-									else //如果该视频输出帧为无图像活动。
-									{
-										Log.i( m_CurClsNameStrPt, "接收到一个无图像活动的视频输出帧包，无需放入视频自适应抖动缓冲器。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
-									}
-
-									HTInt p_CurHaveBufFrmCntPt = new HTInt(); //存放当前已缓冲帧的数量。
-									HTInt p_MinNeedBufFrmCntPt = new HTInt(); //存放最小需缓冲帧的数量。
-									HTInt p_MaxNeedBufFrmCntPt = new HTInt(); //存放最大需缓冲帧的数量。
-									HTInt p_CurNeedBufFrmCntPt = new HTInt(); //存放当前需缓冲帧的数量。
-									m_VAjbPt.GetBufFrmCnt( p_CurHaveBufFrmCntPt, p_MinNeedBufFrmCntPt, p_MaxNeedBufFrmCntPt, p_CurNeedBufFrmCntPt, 1, null );
-									Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器：帧：" + p_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrmCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrmCntPt.m_Val + "。" );
-
-									break;
+									Log.i( m_CurClsNameStrPt, "接收到一个无图像活动的视频输出帧包，无需放入接收视频输出帧链表。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
 								}
+								break;
 							}
-						}
-						else //如果不使用视频输出。
-						{
-							if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
+							case 1: //如果使用自适应抖动缓冲器。
 							{
-								Log.i( m_CurClsNameStrPt, "接收到一个有图像活动的视频输出帧包成功，但不使用视频输出。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
-							}
-							else //如果该视频输出帧为无图像活动。
-							{
-								Log.i( m_CurClsNameStrPt, "接收到一个无图像活动的视频输出帧包成功，但不使用视频输出。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+								if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
+								{
+									m_VAjbPt.PutOneByteFrm( System.currentTimeMillis(), p_TmpInt, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4, 1, null );
+									Log.i( m_CurClsNameStrPt, "接收到一个有图像活动的视频输出帧包，并放入视频自适应抖动缓冲器成功。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。" );
+								}
+								else //如果该视频输出帧为无图像活动。
+								{
+									Log.i( m_CurClsNameStrPt, "接收到一个无图像活动的视频输出帧包，无需放入视频自适应抖动缓冲器。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+								}
+
+								HTInt p_CurHaveBufFrmCntPt = new HTInt(); //存放当前已缓冲帧的数量。
+								HTInt p_MinNeedBufFrmCntPt = new HTInt(); //存放最小需缓冲帧的数量。
+								HTInt p_MaxNeedBufFrmCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+								HTInt p_CurNeedBufFrmCntPt = new HTInt(); //存放当前需缓冲帧的数量。
+								m_VAjbPt.GetBufFrmCnt( p_CurHaveBufFrmCntPt, p_MinNeedBufFrmCntPt, p_MaxNeedBufFrmCntPt, p_CurNeedBufFrmCntPt, 1, null );
+								Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器：帧：" + p_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrmCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrmCntPt.m_Val + "。" );
+
+								break;
 							}
 						}
 					}
@@ -1243,6 +1249,52 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 				Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 				break Out;
+			}
+
+			if( m_XfrMode == 0 ) //如果传输模式为实时半双工（一键通）。
+			{
+				if( m_PttBtnIsDown == 0 ) //如果一键即按即通按钮为弹起。
+				{
+					if( ( m_AdoInptPt.m_IsUseAdoInpt != 0 ) && ( m_AdoOtptPt.m_IsUseAdoOtpt == 0 ) ) //如果要使用音频输入，且不使用音频输出。
+					{
+						m_AdoInptPt.m_IsUseAdoInpt = 0;
+						m_AdoOtptPt.m_IsUseAdoOtpt = 1;
+						RqirExit( 3, 0 ); //请求重启。
+					}
+
+					if( ( m_VdoInptPt.m_IsUseVdoInpt != 0 ) && ( m_VdoOtptPt.m_IsUseVdoOtpt == 0 ) ) //如果要使用视频输入，且不使用视频输出。
+					{
+						m_VdoInptPt.m_IsUseVdoInpt = 0;
+						m_VdoOtptPt.m_IsUseVdoOtpt = 1;
+						RqirExit( 3, 0 ); //请求重启。
+						{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
+					}
+				}
+				else //如果一键即按即通按钮为按下。
+				{
+					if( m_PttDownIsNoVibrate == 1 ) //如果一键即按即通按钮按下后还没有振动。
+					{
+						m_PttDownIsNoVibrate = 0;
+						{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.VIBRATE;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
+					}
+
+					if( ( m_AdoInptPt.m_IsUseAdoInpt == 0 ) && ( m_AdoOtptPt.m_IsUseAdoOtpt != 0 ) ) //如果不使用音频输入，且要使用音频输出。
+					{
+						m_AdoInptPt.m_IsUseAdoInpt = 1;
+						m_AdoOtptPt.m_IsUseAdoOtpt = 0;
+						m_PttDownIsNoVibrate = 1;
+						RqirExit( 3, 0 ); //请求重启。
+					}
+
+					if( ( m_VdoInptPt.m_IsUseVdoInpt == 0 ) && ( m_VdoOtptPt.m_IsUseVdoOtpt != 0 ) ) //如果不使用视频输入，且要使用视频输出。
+					{
+						m_VdoInptPt.m_IsUseVdoInpt = 1;
+						m_VdoOtptPt.m_IsUseVdoOtpt = 0;
+						m_PttDownIsNoVibrate = 1;
+						RqirExit( 3, 0 ); //请求重启。
+						{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
+					}
+				}
 			}
 
 			p_Rslt = 0; //设置本函数执行成功。
@@ -1394,7 +1446,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
 				RqirExit( 2, 0 ); //请求重启。
-				{Message clMessage = new Message();clMessage.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建Surface视图消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
 			}
 			else if( ( m_ExitFlag == 0 ) && ( m_ExitCode == -1 ) && ( m_RequestCnctRslt == 2 ) ) //如果本线程没收到退出请求，且退出代码为初始化失败，且请求连接的结果为拒绝。
 			{
@@ -1403,7 +1455,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
 				RqirExit( 2, 0 ); //请求重启。
-				{Message clMessage = new Message();clMessage.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建Surface视图消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
 			}
 			else if( ( m_ExitFlag == 0 ) && ( m_ExitCode == -2 ) ) //如果本线程没收到退出请求，且退出代码为处理失败。
 			{
@@ -1412,12 +1464,13 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
 				RqirExit( 2, 0 ); //请求重启。
-				{Message clMessage = new Message();clMessage.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建Surface视图消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
 			}
 			else //其他情况，本线程直接退出。
 			{
-				{Message clMessage = new Message();clMessage.what = MainActivityHandler.DSTOY_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送媒体处理线程退出的消息。
-				{Message clMessage = new Message();clMessage.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建Surface视图消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送媒体处理线程退出的消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.VIBRATE;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
 			}
 		}
 		else if( m_IsCreateSrvrOrClnt == 0 ) //如果是创建客户端。
@@ -1432,8 +1485,9 @@ class MyMediaPocsThrd extends MediaPocsThrd
 			}
 			else //其他情况，本线程直接退出。
 			{
-				{Message clMessage = new Message();clMessage.what = MainActivityHandler.DSTOY_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送媒体处理线程退出的消息。
-				{Message clMessage = new Message();clMessage.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( clMessage );} //向主界面发送重建Surface视图消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送媒体处理线程退出的消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.VIBRATE;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
 			}
 		}
 	}
@@ -1896,7 +1950,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 }
 
 //主界面类。
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity implements View.OnTouchListener
 {
 	String m_CurClsNameStrPt = this.getClass().getSimpleName(); //存放当前类名称字符串。
 
@@ -1957,6 +2011,7 @@ public class MainActivity extends AppCompatActivity
 		//显示布局。
 		setContentView( m_MainLyotViewPt ); //设置主界面的内容为主布局。
 		m_CurActivityLyotViewPt = m_MainLyotViewPt; //设置当前界面布局视图。
+		( ( Button )findViewById( R.id.PttBtnId ) ).setOnTouchListener( this ); //设置一键即按即通按钮的触摸监听器。
 
 		//请求权限。
 		MediaPocsThrd.RqstPrmsn( this, 1, 1, 1, 1, 1, 1, 1, 1 );
@@ -2267,10 +2322,20 @@ public class MainActivity extends AppCompatActivity
 	{
 		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaPocsThrdPt.m_AdoInptPt.m_IsUseAdoInpt = 1;
-			m_MyMediaPocsThrdPt.m_AdoOtptPt.m_IsUseAdoOtpt = 1;
-			m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt = 0;
-			m_MyMediaPocsThrdPt.m_VdoOtptPt.m_IsUseVdoOtpt = 0;
+			if( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) //如果传输模式为实时半双工。
+			{
+				m_MyMediaPocsThrdPt.m_AdoInptPt.m_IsUseAdoInpt = 0;
+				m_MyMediaPocsThrdPt.m_AdoOtptPt.m_IsUseAdoOtpt = 1;
+				m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt = 0;
+				m_MyMediaPocsThrdPt.m_VdoOtptPt.m_IsUseVdoOtpt = 0;
+			}
+			else //如果传输模式为实时全双工。
+			{
+				m_MyMediaPocsThrdPt.m_AdoInptPt.m_IsUseAdoInpt = 1;
+				m_MyMediaPocsThrdPt.m_AdoOtptPt.m_IsUseAdoOtpt = 1;
+				m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt = 0;
+				m_MyMediaPocsThrdPt.m_VdoOtptPt.m_IsUseVdoOtpt = 0;
+			}
 
 			if( m_MyMediaPocsThrdPt.m_RunFlag > MediaPocsThrd.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
 			{
@@ -2284,10 +2349,20 @@ public class MainActivity extends AppCompatActivity
 	{
 		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaPocsThrdPt.m_AdoInptPt.m_IsUseAdoInpt = 0;
-			m_MyMediaPocsThrdPt.m_AdoOtptPt.m_IsUseAdoOtpt = 0;
-			m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt = 1;
-			m_MyMediaPocsThrdPt.m_VdoOtptPt.m_IsUseVdoOtpt = 1;
+			if( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) //如果传输模式为实时半双工。
+			{
+				m_MyMediaPocsThrdPt.m_AdoInptPt.m_IsUseAdoInpt = 0;
+				m_MyMediaPocsThrdPt.m_AdoOtptPt.m_IsUseAdoOtpt = 0;
+				m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt = 0;
+				m_MyMediaPocsThrdPt.m_VdoOtptPt.m_IsUseVdoOtpt = 1;
+			}
+			else //如果传输模式为实时全双工。
+			{
+				m_MyMediaPocsThrdPt.m_AdoInptPt.m_IsUseAdoInpt = 0;
+				m_MyMediaPocsThrdPt.m_AdoOtptPt.m_IsUseAdoOtpt = 0;
+				m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt = 1;
+				m_MyMediaPocsThrdPt.m_VdoOtptPt.m_IsUseVdoOtpt = 1;
+			}
 
 			if( m_MyMediaPocsThrdPt.m_RunFlag > MediaPocsThrd.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
 			{
@@ -2301,10 +2376,20 @@ public class MainActivity extends AppCompatActivity
 	{
 		if( m_MyMediaPocsThrdPt != null )
 		{
-			m_MyMediaPocsThrdPt.m_AdoInptPt.m_IsUseAdoInpt = 1;
-			m_MyMediaPocsThrdPt.m_AdoOtptPt.m_IsUseAdoOtpt = 1;
-			m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt = 1;
-			m_MyMediaPocsThrdPt.m_VdoOtptPt.m_IsUseVdoOtpt = 1;
+			if( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) //如果传输模式为实时半双工。
+			{
+				m_MyMediaPocsThrdPt.m_AdoInptPt.m_IsUseAdoInpt = 0;
+				m_MyMediaPocsThrdPt.m_AdoOtptPt.m_IsUseAdoOtpt = 1;
+				m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt = 0;
+				m_MyMediaPocsThrdPt.m_VdoOtptPt.m_IsUseVdoOtpt = 1;
+			}
+			else //如果传输模式为实时全双工。
+			{
+				m_MyMediaPocsThrdPt.m_AdoInptPt.m_IsUseAdoInpt = 1;
+				m_MyMediaPocsThrdPt.m_AdoOtptPt.m_IsUseAdoOtpt = 1;
+				m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt = 1;
+				m_MyMediaPocsThrdPt.m_VdoOtptPt.m_IsUseVdoOtpt = 1;
+			}
 
 			if( m_MyMediaPocsThrdPt.m_RunFlag > MediaPocsThrd.RUN_FLAG_INIT ) //如果要使用音频输出，且媒体处理线程已经初始化完毕。
 			{
@@ -2430,6 +2515,16 @@ public class MainActivity extends AppCompatActivity
 					//设置使用什么传输协议。
 					m_MyMediaPocsThrdPt.m_UseWhatXfrPrtcl = ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseTcpPrtclRdBtnId ) ).isChecked() ) ? 0 : 1;
 
+					//设置传输模式。
+					if( ( ( RadioButton ) m_XfrPrtclStngLyotViewPt.findViewById( R.id.UsePttRdBtnId ) ).isChecked() )
+					{
+						m_MyMediaPocsThrdPt.m_XfrMode = 0;
+					}
+					else
+					{
+						m_MyMediaPocsThrdPt.m_XfrMode = 1;
+					}
+
 					//设置最大连接次数。
 					try
 					{
@@ -2492,8 +2587,9 @@ public class MainActivity extends AppCompatActivity
 
 				//设置是否使用音频输入。
 				m_MyMediaPocsThrdPt.SetIsUseAdoInpt(
-						( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 :
-								( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 : 0,
+						( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) ? 0 :
+								( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 :
+										( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 : 0,
 						( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate8000RdBtnId ) ).isChecked() ) ? 8000 :
 								( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate16000RdBtnId ) ).isChecked() ) ? 16000 :
 										( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate32000RdBtnId ) ).isChecked() ) ? 32000 :
@@ -2506,108 +2602,115 @@ public class MainActivity extends AppCompatActivity
 				m_MyMediaPocsThrdPt.SetAdoInptIsUseSystemAecNsAgc(
 						( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSystemAecNsAgcCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
-				//设置音频输入是否不使用声学回音消除器。
-				if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseNoAecRdBtnId ) ).isChecked() )
+				if( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) //如果传输模式为实时半双工。
 				{
 					m_MyMediaPocsThrdPt.SetAdoInptUseNoAec();
 				}
-
-				//设置音频输入是否使用Speex声学回音消除器。
-				if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexAecRdBtnId ) ).isChecked() )
+				else //如果传输模式为实时全双工。
 				{
-					try
+					//设置音频输入是否不使用声学回音消除器。
+					if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseNoAecRdBtnId ) ).isChecked() )
 					{
-						m_MyMediaPocsThrdPt.SetAdoInptUseSpeexAec(
-								Integer.parseInt( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenEdTxtId ) ).getText().toString() ),
-								( ( ( CheckBox ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsUseRecCkBoxId ) ).isChecked() ) ? 1 : 0,
-								Float.parseFloat( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoMutpEdTxtId ) ).getText().toString() ),
-								Float.parseFloat( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoCntuEdTxtId ) ).getText().toString() ),
-								Integer.parseInt( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoSupesEdTxtId ) ).getText().toString() ),
-								Integer.parseInt( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoSupesActEdTxtId ) ).getText().toString() ),
-								( ( ( CheckBox ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsSaveMemFileCkBoxId ) ).isChecked() ) ? 1 : 0,
-								m_ExternalDirFullAbsPathStrPt + "/SpeexAecMem"
-						);
+						m_MyMediaPocsThrdPt.SetAdoInptUseNoAec();
 					}
-					catch( NumberFormatException e )
-					{
-						Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
-						break Out;
-					}
-				}
 
-				//设置音频输入是否使用WebRtc定点版声学回音消除器。
-				if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecmRdBtnId ) ).isChecked() )
-				{
-					try
+					//设置音频输入是否使用Speex声学回音消除器。
+					if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexAecRdBtnId ) ).isChecked() )
 					{
-						m_MyMediaPocsThrdPt.SetAdoInptUseWebRtcAecm(
-								( ( ( CheckBox ) m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmIsUseCNGModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-								Integer.parseInt( ( ( TextView ) m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmEchoModeEdTxtId ) ).getText().toString() ),
-								Integer.parseInt( ( ( TextView ) m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmDelayEdTxtId ) ).getText().toString() )
-						);
+						try
+						{
+							m_MyMediaPocsThrdPt.SetAdoInptUseSpeexAec(
+									Integer.parseInt( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenEdTxtId ) ).getText().toString() ),
+									( ( ( CheckBox ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsUseRecCkBoxId ) ).isChecked() ) ? 1 : 0,
+									Float.parseFloat( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoMutpEdTxtId ) ).getText().toString() ),
+									Float.parseFloat( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoCntuEdTxtId ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoSupesEdTxtId ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoSupesActEdTxtId ) ).getText().toString() ),
+									( ( ( CheckBox ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsSaveMemFileCkBoxId ) ).isChecked() ) ? 1 : 0,
+									m_ExternalDirFullAbsPathStrPt + "/SpeexAecMem"
+							);
+						}
+						catch( NumberFormatException e )
+						{
+							Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
+							break Out;
+						}
 					}
-					catch( NumberFormatException e )
-					{
-						Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
-						break Out;
-					}
-				}
 
-				//设置音频输入是否使用WebRtc浮点版声学回音消除器。
-				if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecRdBtnId ) ).isChecked() )
-				{
-					try
+					//设置音频输入是否使用WebRtc定点版声学回音消除器。
+					if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecmRdBtnId ) ).isChecked() )
 					{
-						m_MyMediaPocsThrdPt.SetAdoInptUseWebRtcAec(
-								Integer.parseInt( ( ( TextView ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecEchoModeEdTxtId ) ).getText().toString() ),
-								Integer.parseInt( ( ( TextView ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecDelayEdTxtId ) ).getText().toString() ),
-								( ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgstcModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-								( ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseExtdFilterModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-								( ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-								( ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).isChecked() ) ? 1 : 0,
-								( ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCkBoxId ) ).isChecked() ) ? 1 : 0,
-								m_ExternalDirFullAbsPathStrPt + "/WebRtcAecMem"
-						);
+						try
+						{
+							m_MyMediaPocsThrdPt.SetAdoInptUseWebRtcAecm(
+									( ( ( CheckBox ) m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmIsUseCNGModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+									Integer.parseInt( ( ( TextView ) m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmEchoModeEdTxtId ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmDelayEdTxtId ) ).getText().toString() )
+							);
+						}
+						catch( NumberFormatException e )
+						{
+							Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
+							break Out;
+						}
 					}
-					catch( NumberFormatException e )
-					{
-						Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
-						break Out;
-					}
-				}
 
-				//设置音频输入是否使用SpeexWebRtc三重声学回音消除器。
-				if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexWebRtcAecRdBtnId ) ).isChecked() )
-				{
-					try
+					//设置音频输入是否使用WebRtc浮点版声学回音消除器。
+					if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecRdBtnId ) ).isChecked() )
 					{
-						m_MyMediaPocsThrdPt.SetAdoInptUseSpeexWebRtcAec(
-								( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRdBtnId ) ).isChecked() ? 1 :
-										( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? 2 :
-												( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? 3 : 0,
-								Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdTxtId ) ).getText().toString() ),
-								( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCkBoxId ) ).isChecked() ) ? 1 : 0,
-								Float.parseFloat( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMutpEdTxtId ) ).getText().toString() ),
-								Float.parseFloat( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoCntuEdTxtId ) ).getText().toString() ),
-								Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesEdTxtId ) ).getText().toString() ),
-								Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesActEdTxtId ) ).getText().toString() ),
-								( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmIsUseCNGModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-								Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmEchoModeEdTxtId ) ).getText().toString() ),
-								Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmDelayEdTxtId ) ).getText().toString() ),
-								Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecEchoModeEdTxtId ) ).getText().toString() ),
-								Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecDelayEdTxtId ) ).getText().toString() ),
-								( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseDelayAgstcModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-								( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-								( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-								( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).isChecked() ) ? 1 : 0,
-								( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecIsUseSameRoomAecCkBoxId ) ).isChecked() ) ? 1 : 0,
-								Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).getText().toString() )
-						);
+						try
+						{
+							m_MyMediaPocsThrdPt.SetAdoInptUseWebRtcAec(
+									Integer.parseInt( ( ( TextView ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecEchoModeEdTxtId ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecDelayEdTxtId ) ).getText().toString() ),
+									( ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgstcModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+									( ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseExtdFilterModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+									( ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+									( ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).isChecked() ) ? 1 : 0,
+									( ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCkBoxId ) ).isChecked() ) ? 1 : 0,
+									m_ExternalDirFullAbsPathStrPt + "/WebRtcAecMem"
+							);
+						}
+						catch( NumberFormatException e )
+						{
+							Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
+							break Out;
+						}
 					}
-					catch( NumberFormatException e )
+
+					//设置音频输入是否使用SpeexWebRtc三重声学回音消除器。
+					if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexWebRtcAecRdBtnId ) ).isChecked() )
 					{
-						Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
-						break Out;
+						try
+						{
+							m_MyMediaPocsThrdPt.SetAdoInptUseSpeexWebRtcAec(
+									( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRdBtnId ) ).isChecked() ? 1 :
+											( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? 2 :
+													( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? 3 : 0,
+									Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdTxtId ) ).getText().toString() ),
+									( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCkBoxId ) ).isChecked() ) ? 1 : 0,
+									Float.parseFloat( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMutpEdTxtId ) ).getText().toString() ),
+									Float.parseFloat( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoCntuEdTxtId ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesEdTxtId ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesActEdTxtId ) ).getText().toString() ),
+									( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmIsUseCNGModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+									Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmEchoModeEdTxtId ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmDelayEdTxtId ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecEchoModeEdTxtId ) ).getText().toString() ),
+									Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecDelayEdTxtId ) ).getText().toString() ),
+									( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseDelayAgstcModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+									( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+									( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+									( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).isChecked() ) ? 1 : 0,
+									( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecIsUseSameRoomAecCkBoxId ) ).isChecked() ) ? 1 : 0,
+									Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).getText().toString() )
+							);
+						}
+						catch( NumberFormatException e )
+						{
+							Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
+							break Out;
+						}
 					}
 				}
 
@@ -2812,8 +2915,9 @@ public class MainActivity extends AppCompatActivity
 
 				//设置是否使用视频输入。
 				m_MyMediaPocsThrdPt.SetIsUseVdoInpt(
-						( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseVdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 :
-								( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 : 0,
+						( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) ? 0 :
+								( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseVdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 :
+										( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 : 0,
 						( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate12RdBtnId ) ).isChecked() ) ? 12 :
 								( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).isChecked() ) ? 15 :
 										( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate24RdBtnId ) ).isChecked() ) ? 24 :
@@ -2953,6 +3057,34 @@ public class MainActivity extends AppCompatActivity
 	public void OnClickClearLogBtn( View ViewPt )
 	{
 		( ( LinearLayout ) m_MainLyotViewPt.findViewById( R.id.LogLinearLyotId ) ).removeAllViews();
+	}
+
+	//一键即按即通按钮。
+	@Override public boolean onTouch(View ViewPt, MotionEvent EventPt )
+	{
+		if( ViewPt.getId() == R.id.PttBtnId ) //如果是一键即按即通按钮。
+		{
+			switch( EventPt.getAction() )
+			{
+				case MotionEvent.ACTION_DOWN: //如果是按下消息。
+				{
+					if( m_MyMediaPocsThrdPt != null )
+					{
+						m_MyMediaPocsThrdPt.m_PttBtnIsDown = 1;
+					}
+					break;
+				}
+				case MotionEvent.ACTION_UP: //如果是弹起消息。
+				{
+					if( m_MyMediaPocsThrdPt != null )
+					{
+						m_MyMediaPocsThrdPt.m_PttBtnIsDown = 0;
+					}
+					break;
+				}
+			}
+		}
+		return false;
 	}
 
 	//音频自适应抖动缓冲器设置按钮。

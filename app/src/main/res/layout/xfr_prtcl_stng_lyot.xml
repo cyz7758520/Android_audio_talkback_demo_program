@@ -25,6 +25,43 @@
             android:textSize="20sp" />
 
         <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:gravity="center_vertical"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="match_parent"
+                android:text="传输模式：" />
+
+            <RadioGroup
+                android:orientation="horizontal"
+                android:layout_weight="9"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:text="实时半双工（一键通）"
+                    android:id="@+id/UsePttRdBtnId"
+                    android:layout_weight="3"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
+
+                <RadioButton
+                    android:id="@+id/UseRtFdRdBtnId"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
+                    android:checked="true"
+                    android:text="实时全双工" />
+
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">

@@ -1075,7 +1075,7 @@ public abstract class MediaPocsThrd extends Thread
 			else //如果不使用音频输入的声学回音消除，就直接启动音频输出线程。
 			{
 				m_AdoInptPt.m_AdoInptDvcPt.startRecording(); //让音频输入设备开始录音。
-				if( m_AdoOtptPt.m_IsUseAdoOtpt != 0 ) //如果要使用音频输出。
+				if( m_AdoOtptPt.m_AdoOtptDvcPt != null ) //如果要使用音频输出设备。
 				{
 					m_AdoOtptPt.m_AdoOtptDvcPt.play(); //让音频输出设备开始播放。
 					m_AdoOtptPt.m_AdoOtptThrdPt.start(); //启动音频输出线程。

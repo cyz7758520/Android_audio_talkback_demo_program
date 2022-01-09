@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -11,559 +11,576 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.andrd_ado_vdo_tkbk_demo.MainActivity">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:focusable="true"
-        android:focusableInTouchMode="true">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:text="@string/app_name"
-            android:textAlignment="center"
-            android:textSize="20sp"
-            android:textStyle="normal|bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:text="版本：2021年12月27日"
-            android:textAlignment="center"
-            android:textSize="20sp"
-            android:textStyle="normal|bold" />
-
-        <TextView
-            android:id="@+id/AppIDTxtId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:text="AppID："
-            android:textAlignment="center"
-            android:textSize="20sp"
-            android:textStyle="normal|bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:text=""
-            android:textAlignment="center"
-            android:textSize="20sp"
-            android:textStyle="normal|bold" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:focusable="true"
+            android:focusableInTouchMode="true">
 
             <TextView
-                android:text="传输协议："
-                android:layout_width="0dp"
-                android:layout_weight="4"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"/>
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="@string/app_name"
+                android:textAlignment="center"
+                android:textSize="20sp"
+                android:textStyle="normal|bold" />
 
-            <RadioGroup
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="版本：2022年01月09日"
+                android:textAlignment="center"
+                android:textSize="20sp"
+                android:textStyle="normal|bold" />
+
+            <TextView
+                android:id="@+id/AppIDTxtId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="AppID："
+                android:textAlignment="center"
+                android:textSize="20sp"
+                android:textStyle="normal|bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text=""
+                android:textAlignment="center"
+                android:textSize="20sp"
+                android:textStyle="normal|bold" />
+
+            <LinearLayout
                 android:orientation="horizontal"
-                android:layout_weight="7"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-                <RadioButton
-                    android:text="TCP"
-                    android:id="@+id/UseTcpPrtclRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-
-                <RadioButton
-                    android:text="UDP"
-                    android:id="@+id/UseUdpPrtclRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:text="传输协议："
+                    android:layout_width="0dp"
+                    android:layout_weight="4"
                     android:layout_height="match_parent"
-                    android:checked="true" />
+                    android:gravity="center_vertical"/>
+
+                <RadioGroup
+                    android:orientation="horizontal"
+                    android:layout_weight="7"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent">
+
+                    <RadioButton
+                        android:text="TCP"
+                        android:id="@+id/UseTcpPrtclRdBtnId"
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <RadioButton
+                        android:text="UDP"
+                        android:id="@+id/UseUdpPrtclRdBtnId"
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:checked="true" />
+
+                    <Button
+                        android:id="@+id/XfrPrtclStngBtnId"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:text="设置"
+                        android:onClick="OnClickXfrPrtclStngBtn" />
+
+                </RadioGroup>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="4"
+                    android:gravity="center_vertical"
+                    android:text="IP地址或域名：" />
+
+                <EditText
+                    android:id="@+id/IPAddrEdTxtId"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="7"
+                    android:hint="请输入IP地址或者域名"
+                    android:singleLine="true"
+                    android:textStyle="normal"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="4"
+                    android:gravity="center_vertical"
+                    android:text="端口："/>
+
+                <EditText
+                    android:id="@+id/PortEdTxtId"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="7"
+                    android:hint="请输入端口号"
+                    android:inputType="number"
+                    android:singleLine="true" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:text="对讲模式："
+                    android:layout_width="0dp"
+                    android:layout_weight="4"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"/>
+
+                <RadioGroup
+                    android:orientation="horizontal"
+                    android:layout_weight="7"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent">
+
+                    <RadioButton
+                        android:text="音频"
+                        android:id="@+id/UseAdoTkbkModeRdBtnId"
+                        android:layout_weight="10"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:onClick="OnClickUseAdoTkbkModeRdBtn"
+                        android:checked="true"/>
+
+                    <RadioButton
+                        android:text="视频"
+                        android:id="@+id/UseVdoTkbkModeRdBtnId"
+                        android:layout_weight="10"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:onClick="OnClickUseVdoTkbkModeRdBtn"/>
+
+                    <RadioButton
+                        android:text="音视频"
+                        android:id="@+id/UseAdoVdoTkbkModeRdBtnId"
+                        android:layout_weight="9"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:onClick="OnClickUseAdoVdoTkbkModeRdBtn"/>
+
+                </RadioGroup>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:text="音频输出设备："
+                    android:layout_width="0dp"
+                    android:layout_weight="4"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"/>
+
+                <RadioGroup
+                    android:orientation="horizontal"
+                    android:layout_weight="7"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent">
+
+                    <RadioButton
+                        android:text="扬声器"
+                        android:id="@+id/UseSpeakerRdBtnId"
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:onClick="onClickUseSpeakerRdBtn"
+                        android:checked="true"/>
+
+                    <RadioButton
+                        android:text="听筒或耳机"
+                        android:id="@+id/UseHeadsetRdBtnId"
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:onClick="onClickUseHeadsetRdBtn"/>
+
+                </RadioGroup>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:text="视频输入设备："
+                    android:layout_width="0dp"
+                    android:layout_weight="4"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"/>
+
+                <RadioGroup
+                    android:orientation="horizontal"
+                    android:layout_weight="7"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent">
+
+                    <RadioButton
+                        android:text="前置摄像头"
+                        android:id="@+id/UseFrontCamereRdBtnId"
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:onClick="onClickUseFrontCamereRdBtn"
+                        android:checked="true"/>
+
+                    <RadioButton
+                        android:text="后置摄像头"
+                        android:id="@+id/UseBackCamereRdBtnId"
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:onClick="onClickUseBackCamereRdBtn"/>
+
+                </RadioGroup>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <CheckBox
+                    android:id="@+id/AdoInptIsMuteCkBoxId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:checked="false"
+                    android:onClick="onClickAdoInptIsMuteCkBox"
+                    android:text="音频输入静音"/>
+
+                <CheckBox
+                    android:id="@+id/AdoOtptIsMuteCkBoxId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:checked="false"
+                    android:onClick="onClickAdoOtptIsMuteCkBox"
+                    android:text="音频输出静音"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <CheckBox
+                    android:id="@+id/VdoInptIsBlackCkBoxId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:checked="false"
+                    android:onClick="onClickVdoInptIsBlackCkBox"
+                    android:text="视频输入黑屏"/>
+
+                <CheckBox
+                    android:id="@+id/VdoOtptIsBlackCkBoxId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:checked="false"
+                    android:onClick="onClickVdoOtptIsBlackCkBox"
+                    android:text="视频输出黑屏"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="4"
+                    android:gravity="center_vertical"
+                    android:text="系统音频输出音量：" />
+
+                <SeekBar
+                    android:id="@+id/SystemAdoOtptVolmSkBarId"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="7"
+                    android:minHeight="30dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:text="" />
 
                 <Button
-                    android:id="@+id/XfrPrtclStngBtnId"
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:layout_weight="11"
+                    android:text="创建服务端"
+                    android:id="@+id/CreateSrvrBtnId"
+                    android:onClick="OnClickCreateSrvrAndCnctSrvrBtn" />
+
+                <TextView
                     android:layout_weight="1"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:text="" />
+
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="11"
+                    android:text="连接服务端"
+                    android:id="@+id/CnctSrvrBtnId"
+                    android:onClick="OnClickCreateSrvrAndCnctSrvrBtn" />
+
+                <TextView
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:text="" />
+
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="6"
                     android:text="设置"
-                    android:onClick="OnClickXfrPrtclStngBtn" />
-
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:gravity="center_vertical"
-                android:text="IP地址或域名：" />
-
-            <EditText
-                android:id="@+id/IPAddrEdTxtId"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="7"
-                android:hint="请输入IP地址或者域名"
-                android:singleLine="true"
-                android:textStyle="normal"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:gravity="center_vertical"
-                android:text="端口："/>
-
-            <EditText
-                android:id="@+id/PortEdTxtId"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="7"
-                android:hint="请输入端口号"
-                android:inputType="number"
-                android:singleLine="true" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:text="对讲模式："
-                android:layout_width="0dp"
-                android:layout_weight="4"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"/>
-
-            <RadioGroup
-                android:orientation="horizontal"
-                android:layout_weight="7"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:text="音频"
-                    android:id="@+id/UseAdoTkbkModeRdBtnId"
-                    android:layout_weight="10"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseAdoTkbkModeRdBtn"
-                    android:checked="true"/>
-
-                <RadioButton
-                    android:text="视频"
-                    android:id="@+id/UseVdoTkbkModeRdBtnId"
-                    android:layout_weight="10"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseVdoTkbkModeRdBtn"/>
-
-                <RadioButton
-                    android:text="音视频"
-                    android:id="@+id/UseAdoVdoTkbkModeRdBtnId"
-                    android:layout_weight="9"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseAdoVdoTkbkModeRdBtn"/>
-
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:text="音频输出设备："
-                android:layout_width="0dp"
-                android:layout_weight="4"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"/>
-
-            <RadioGroup
-                android:orientation="horizontal"
-                android:layout_weight="7"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:text="扬声器"
-                    android:id="@+id/UseSpeakerRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:onClick="onClickUseSpeakerRdBtn"
-                    android:checked="true"/>
-
-                <RadioButton
-                    android:text="听筒或耳机"
-                    android:id="@+id/UseHeadsetRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:onClick="onClickUseHeadsetRdBtn"/>
-
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:text="视频输入设备："
-                android:layout_width="0dp"
-                android:layout_weight="4"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"/>
-
-            <RadioGroup
-                android:orientation="horizontal"
-                android:layout_weight="7"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:text="前置摄像头"
-                    android:id="@+id/UseFrontCamereRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:onClick="onClickUseFrontCamereRdBtn"
-                    android:checked="true"/>
-
-                <RadioButton
-                    android:text="后置摄像头"
-                    android:id="@+id/UseBackCamereRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:onClick="onClickUseBackCamereRdBtn"/>
-
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <CheckBox
-                android:id="@+id/AdoInptIsMuteCkBoxId"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="false"
-                android:onClick="onClickAdoInptIsMuteCkBox"
-                android:text="音频输入静音"/>
-
-            <CheckBox
-                android:id="@+id/AdoOtptIsMuteCkBoxId"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="false"
-                android:onClick="onClickAdoOtptIsMuteCkBox"
-                android:text="音频输出静音"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <CheckBox
-                android:id="@+id/VdoInptIsBlackCkBoxId"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="false"
-                android:onClick="onClickVdoInptIsBlackCkBox"
-                android:text="视频输入黑屏"/>
-
-            <CheckBox
-                android:id="@+id/VdoOtptIsBlackCkBoxId"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="false"
-                android:onClick="onClickVdoOtptIsBlackCkBox"
-                android:text="视频输出黑屏"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:gravity="center_vertical"
-                android:text="系统音频输出音量：" />
-
-            <SeekBar
-                android:id="@+id/SystemAdoOtptVolmSkBarId"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="7"
-                android:minHeight="30dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="" />
-
-            <Button
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="11"
-                android:text="创建服务端"
-                android:id="@+id/CreateSrvrBtnId"
-                android:onClick="OnClickCreateSrvrAndCnctSrvrBtn" />
-
-            <TextView
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="" />
-
-            <Button
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="11"
-                android:text="连接服务端"
-                android:id="@+id/CnctSrvrBtnId"
-                android:onClick="OnClickCreateSrvrAndCnctSrvrBtn" />
-
-            <TextView
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="" />
-
-            <Button
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="6"
-                android:text="设置"
-                android:id="@+id/StngBtnId"
-                android:onClick="OnClickStngBtn" />
-
-            <TextView
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="" />
-
-            <Button
-                android:id="@+id/ReadMeBtnId"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:onClick="OnClickReadMeBtn"
-                android:text="必读说明" />
-
-            <TextView
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:gravity="center_vertical"
-                android:text="音频输入波形："/>
-
-            <SurfaceView
-                android:id="@+id/AdoInptOscilloSurfaceId"
-                android:layout_width="0dp"
-                android:layout_height="65dp"
-                android:layout_weight="7" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:gravity="center_vertical"
-                android:text="音频输出波形："/>
-
-            <SurfaceView
-                android:id="@+id/AdoOtptOscilloSurfaceId"
-                android:layout_width="0dp"
-                android:layout_height="65dp"
-                android:layout_weight="7" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:gravity="center_vertical"
-                android:text="音频结果波形："/>
-
-            <SurfaceView
-                android:id="@+id/AdoRsltOscilloSurfaceId"
-                android:layout_width="0dp"
-                android:layout_height="65dp"
-                android:layout_weight="7" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" >
+                    android:id="@+id/StngBtnId"
+                    android:onClick="OnClickStngBtn" />
 
                 <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="视频输入预览"/>
-
-                <HeavenTao.Media.HTSurfaceView
-                    android:id="@+id/VdoInptPrvwSurfaceId"
-                    android:layout_width="match_parent"
-                    android:layout_height="100dp"
-                    android:background="@android:color/transparent"
-                    android:onClick="onClickVdoInptPrvwAndVdoOtptDspySurface" />
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:text="" />
 
             </LinearLayout>
 
             <LinearLayout
-                android:orientation="vertical"
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" >
+                android:layout_height="wrap_content" >
 
                 <TextView
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:text="" />
+
+                <Button
+                    android:id="@+id/ReadMeBtnId"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="4"
+                    android:onClick="OnClickReadMeBtn"
+                    android:text="必读说明" />
+
+                <TextView
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:text="" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="4"
+                    android:gravity="center_vertical"
+                    android:text="音频输入波形："/>
+
+                <SurfaceView
+                    android:id="@+id/AdoInptOscilloSurfaceId"
+                    android:layout_width="0dp"
+                    android:layout_height="65dp"
+                    android:layout_weight="7" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="4"
+                    android:gravity="center_vertical"
+                    android:text="音频输出波形："/>
+
+                <SurfaceView
+                    android:id="@+id/AdoOtptOscilloSurfaceId"
+                    android:layout_width="0dp"
+                    android:layout_height="65dp"
+                    android:layout_weight="7" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="4"
+                    android:gravity="center_vertical"
+                    android:text="音频结果波形："/>
+
+                <SurfaceView
+                    android:id="@+id/AdoRsltOscilloSurfaceId"
+                    android:layout_width="0dp"
+                    android:layout_height="65dp"
+                    android:layout_weight="7" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="视频输出显示"/>
+                    android:layout_weight="1" >
 
-                <HeavenTao.Media.HTSurfaceView
-                    android:id="@+id/VdoOtptDspySurfaceId"
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="视频输入预览"/>
+
+                    <HeavenTao.Media.HTSurfaceView
+                        android:id="@+id/VdoInptPrvwSurfaceId"
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:background="@android:color/transparent"
+                        android:onClick="onClickVdoInptPrvwAndVdoOtptDspySurface" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
-                    android:layout_height="100dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="视频输出显示"/>
+
+                    <HeavenTao.Media.HTSurfaceView
+                        android:id="@+id/VdoOtptDspySurfaceId"
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:onClick="onClickVdoInptPrvwAndVdoOtptDspySurface" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="10"
+                    android:gravity="center_vertical"
+                    android:text="日志："/>
+
+                <Button
                     android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:onClick="onClickVdoInptPrvwAndVdoOtptDspySurface" />
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/ClearLogBtnId"
+                    android:text="清空日志"
+                    android:onClick="OnClickClearLogBtn"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/LogLinearLyotId"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
 
             </LinearLayout>
 
         </LinearLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+    </ScrollView>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="10"
-                android:gravity="center_vertical"
-                android:text="日志："/>
+    <Button
+        android:id="@+id/PttBtnId"
+        android:layout_width="wrap_content"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="100dp"
+        android:visibility="invisible"
+        android:text="一键即按即通" />
 
-            <Button
-                android:layout_weight="1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/ClearLogBtnId"
-                android:text="清空日志"
-                android:onClick="OnClickClearLogBtn"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/LogLinearLyotId"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-</ScrollView>
+</RelativeLayout>
