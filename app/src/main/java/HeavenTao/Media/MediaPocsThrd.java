@@ -852,7 +852,7 @@ public abstract class MediaPocsThrd extends Thread
 	}
 
 	//请求权限。
-	public static void RqstPrmsn( Activity RqstActivity, int IsRqstInternet, int IsRqstModifyAudioStng, int IsRqstForegroundService, int IsRqstWakeLock, int IsRqstRecordAdo, int IsRqstCamera, int DeniedIsPrintLogcat, int DeniedIsShowToast )
+	public static void RqstPrmsn( Activity RqstActivity, int IsRqstInternet, int IsRqstModifyAudioStng, int IsRqstForegroundService, int IsRqstWakeLock, int IsRqstReadPhoneState, int IsRqstRecordAdo, int IsRqstCamera, int DeniedIsPrintLogcat, int DeniedIsShowToast )
 	{
 		String p_DeniedPermissionStrPt = "拒绝的权限：";
 		int p_DeniedPermissionNum = 0;
@@ -890,6 +890,14 @@ public abstract class MediaPocsThrd extends Thread
 			p_DeniedPermissionNum++;
 		}
 
+		//检测读取电话状态权限。
+		if( ( IsRqstReadPhoneState != 0 ) && ( ContextCompat.checkSelfPermission( RqstActivity, Manifest.permission.READ_PHONE_STATE ) != PackageManager.PERMISSION_GRANTED ) )
+		{
+			p_RqstPermissionStrArrPt.add( Manifest.permission.READ_PHONE_STATE );
+			p_DeniedPermissionStrPt += "读取电话状态  ";
+			p_DeniedPermissionNum++;
+		}
+		
 		//检测录音权限。
 		if( ( IsRqstRecordAdo != 0 ) && ( ContextCompat.checkSelfPermission( RqstActivity, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED ) )
 		{

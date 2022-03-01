@@ -265,8 +265,9 @@ class MyMediaPocsThrd extends MediaPocsThrd
 	LinkedList< byte[] > m_RecvVdoOtptFrmLnkLstPt; //存放接收视频输出帧链表的指针。
 
 	AAjb m_AAjbPt; //存放音频自适应抖动缓冲器的指针。
-	int m_AAjbMinNeedBufFrmCnt; //存放音频自适应抖动缓冲器的最小需缓冲帧数量，单位个，必须大于0。
-	int m_AAjbMaxNeedBufFrmCnt; //存放音频自适应抖动缓冲器的最大需缓冲帧数量，单位个，必须大于最小需缓冲数据帧的数量。
+	int m_AAjbMinNeedBufFrmCnt; //存放音频自适应抖动缓冲器的最小需缓冲帧的数量，单位为个帧，取值区间为[1,2147483647]。
+	int m_AAjbMaxNeedBufFrmCnt; //音频自适应抖动缓冲器的最大需缓冲帧的数量，单位为个帧，取值区间为[1,2147483647]，必须大于等于最小需缓冲帧的数量。
+	int m_AAjbMaxCntuLostFrmCnt; //音频自适应抖动缓冲器的最大连续丢失帧的数量，单位为个帧，取值区间为[1,2147483647]，当连续丢失帧的数量超过最大时，认为是对方中途暂停发送。
 	float m_AAjbAdaptSensitivity; //存放音频自适应抖动缓冲器的自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0.0,127.0]。
 	VAjb m_VAjbPt; //存放视频自适应抖动缓冲器的指针。
 	int m_VAjbMinNeedBufFrmCnt; //存放视频自适应抖动缓冲器的最小需缓冲帧数量，单位个，必须大于0。
@@ -985,7 +986,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				{
 					//初始化音频自适应抖动缓冲器。
 					m_AAjbPt = new AAjb();
-					if( m_AAjbPt.Init( m_AdoOtptPt.m_SmplRate, m_AdoOtptPt.m_FrmLen, 1, 1, 0, m_AAjbMinNeedBufFrmCnt, m_AAjbMaxNeedBufFrmCnt, m_AAjbAdaptSensitivity, m_ErrInfoVarStrPt ) == 0 )
+					if( m_AAjbPt.Init( m_AdoOtptPt.m_SmplRate, m_AdoOtptPt.m_FrmLen, 1, 1, 0, m_AAjbMinNeedBufFrmCnt, m_AAjbMaxNeedBufFrmCnt, m_AAjbMaxCntuLostFrmCnt, m_AAjbAdaptSensitivity, m_ErrInfoVarStrPt ) == 0 )
 					{
 						Log.i( m_CurClsNameStrPt, "创建并初始化音频自适应抖动缓冲器成功。" );
 					}
@@ -1125,9 +1126,10 @@ class MyMediaPocsThrd extends MediaPocsThrd
 								HTInt p_CurHaveBufFrmCntPt = new HTInt(); //存放当前已缓冲帧的数量。
 								HTInt p_MinNeedBufFrmCntPt = new HTInt(); //存放最小需缓冲帧的数量。
 								HTInt p_MaxNeedBufFrmCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+								HTInt p_MaxCntuLostFrmCntPt = new HTInt(); //存放最大连续丢失帧的数量。
 								HTInt p_CurNeedBufFrmCntPt = new HTInt(); //存放当前需缓冲帧的数量。
-								m_AAjbPt.GetBufFrmCnt( p_CurHaveBufActFrmCntPt, p_CurHaveBufInactFrmCntPt, p_CurHaveBufFrmCntPt, p_MinNeedBufFrmCntPt, p_MaxNeedBufFrmCntPt, p_CurNeedBufFrmCntPt, 1, null );
-								Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrmCntPt.m_Val + "，无活动帧：" + p_CurHaveBufInactFrmCntPt.m_Val + "，帧：" + p_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrmCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrmCntPt.m_Val + "。" );
+								m_AAjbPt.GetBufFrmCnt( p_CurHaveBufActFrmCntPt, p_CurHaveBufInactFrmCntPt, p_CurHaveBufFrmCntPt, p_MinNeedBufFrmCntPt, p_MaxNeedBufFrmCntPt, p_MaxCntuLostFrmCntPt, p_CurNeedBufFrmCntPt, 1, null );
+								Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrmCntPt.m_Val + "，无活动帧：" + p_CurHaveBufInactFrmCntPt.m_Val + "，帧：" + p_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrmCntPt.m_Val + "，最大丢帧：" + p_MaxCntuLostFrmCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrmCntPt.m_Val + "。" );
 
 								break;
 							}
@@ -1746,9 +1748,10 @@ class MyMediaPocsThrd extends MediaPocsThrd
 						HTInt p_CurHaveBufFrmCntPt = new HTInt(); //存放当前已缓冲帧的数量。
 						HTInt p_MinNeedBufFrmCntPt = new HTInt(); //存放最小需缓冲帧的数量。
 						HTInt p_MaxNeedBufFrmCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+						HTInt p_MaxCntuLostFrmCntPt = new HTInt(); //存放最大连续丢失帧的数量。
 						HTInt p_CurNeedBufFrmCntPt = new HTInt(); //存放当前需缓冲帧的数量。
-						m_AAjbPt.GetBufFrmCnt( p_CurHaveBufActFrmCntPt, p_CurHaveBufInactFrmCntPt, p_CurHaveBufFrmCntPt, p_MinNeedBufFrmCntPt, p_MaxNeedBufFrmCntPt, p_CurNeedBufFrmCntPt, 1, null );
-						Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrmCntPt.m_Val + "，无活动帧：" + p_CurHaveBufInactFrmCntPt.m_Val + "，帧：" + p_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrmCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrmCntPt.m_Val + "。" );
+						m_AAjbPt.GetBufFrmCnt( p_CurHaveBufActFrmCntPt, p_CurHaveBufInactFrmCntPt, p_CurHaveBufFrmCntPt, p_MinNeedBufFrmCntPt, p_MaxNeedBufFrmCntPt, p_MaxCntuLostFrmCntPt, p_CurNeedBufFrmCntPt, 1, null );
+						Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器：有活动帧：" + p_CurHaveBufActFrmCntPt.m_Val + "，无活动帧：" + p_CurHaveBufInactFrmCntPt.m_Val + "，帧：" + p_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + p_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + p_MaxNeedBufFrmCntPt.m_Val + "，最大丢帧：" + p_MaxCntuLostFrmCntPt.m_Val + "，当前需帧：" + p_CurNeedBufFrmCntPt.m_Val + "。" );
 
 						break;
 					}
@@ -2014,7 +2017,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 		( ( Button )findViewById( R.id.PttBtnId ) ).setOnTouchListener( this ); //设置一键即按即通按钮的触摸监听器。
 
 		//请求权限。
-		MediaPocsThrd.RqstPrmsn( this, 1, 1, 1, 1, 1, 1, 1, 1 );
+		MediaPocsThrd.RqstPrmsn( this, 1, 1, 1, 1, 0, 1, 1, 1, 1 );
 
 		//初始化消息处理。
 		m_MainActivityHandlerPt = new MainActivityHandler();
@@ -2558,6 +2561,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 					{
 						m_MyMediaPocsThrdPt.m_AAjbMinNeedBufFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.AAjbMinNeedBufFrmCntEdTxtId ) ).getText().toString() );
 						m_MyMediaPocsThrdPt.m_AAjbMaxNeedBufFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.AAjbMaxNeedBufFrmCntEdTxtId ) ).getText().toString() );
+						m_MyMediaPocsThrdPt.m_AAjbMaxCntuLostFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.AAjbMaxCntuLostFrmCntEdTxtId ) ).getText().toString() );
 						m_MyMediaPocsThrdPt.m_AAjbAdaptSensitivity = Float.parseFloat( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.AAjbAdaptSensitivityEdTxtId ) ).getText().toString() );
 
 						m_MyMediaPocsThrdPt.m_VAjbMinNeedBufFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.VAjbMinNeedBufFrmCntEdTxtId ) ).getText().toString() );

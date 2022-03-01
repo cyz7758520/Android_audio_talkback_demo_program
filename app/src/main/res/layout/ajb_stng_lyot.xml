@@ -34,7 +34,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="2"
                 android:gravity="center_vertical"
-                android:text="音频自适应抖动缓冲器的最小需缓冲帧的数量，单位个，必须大于0：" />
+                android:text="音频自适应抖动缓冲器的最小需缓冲帧的数量，单位为个帧，取值区间为[1,2147483647]：" />
 
             <EditText
                 android:id="@+id/AAjbMinNeedBufFrmCntEdTxtId"
@@ -56,10 +56,32 @@
                 android:layout_height="match_parent"
                 android:layout_weight="2"
                 android:gravity="center_vertical"
-                android:text="音频自适应抖动缓冲器的最大需缓冲帧的数量，单位个，必须大于最小需缓冲帧的数量：" />
+                android:text="音频自适应抖动缓冲器的最大需缓冲帧的数量，单位为个帧，取值区间为[1,2147483647]，必须大于等于最小需缓冲帧的数量：" />
 
             <EditText
                 android:id="@+id/AAjbMaxNeedBufFrmCntEdTxtId"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:text="20" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:gravity="center_vertical"
+                android:text="音频自适应抖动缓冲器的最大连续丢失帧的数量，单位为个帧，取值区间为[1,2147483647]，当连续丢失帧的数量超过最大时，认为是对方中途暂停发送：" />
+
+            <EditText
+                android:id="@+id/AAjbMaxCntuLostFrmCntEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"

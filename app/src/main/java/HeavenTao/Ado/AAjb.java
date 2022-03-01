@@ -27,12 +27,12 @@ public class AAjb
     }
 
     //创建并初始化音频自适应抖动缓冲器。
-    public int Init( int SmplRate, int FrmLen, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, float AdaptSensitivity, VarStr ErrInfoVarStrPt )
+    public int Init( int SmplRate, int FrmLen, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, VarStr ErrInfoVarStrPt )
     {
         if( m_AAjbPt == 0 )
         {
             HTLong p_AAjbPt = new HTLong();
-            if( AAjbInit( p_AAjbPt, SmplRate, FrmLen, IsHaveTimeStamp, TimeStampStep, InactIsContPut, MinNeedBufFrmCnt, MaxNeedBufFrmCnt, AdaptSensitivity, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( AAjbInit( p_AAjbPt, SmplRate, FrmLen, IsHaveTimeStamp, TimeStampStep, InactIsContPut, MinNeedBufFrmCnt, MaxNeedBufFrmCnt, MaxCntuLostFrmCnt, AdaptSensitivity, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
             {
                 m_AAjbPt = p_AAjbPt.m_Val;
                 return 0;
@@ -73,9 +73,9 @@ public class AAjb
     }
 
     //获取缓冲帧的数量。
-    public int GetBufFrmCnt( HTInt CurHaveBufActFrmCntPt, HTInt CurHaveBufInactFrmCntPt, HTInt CurHaveBufFrmCntPt, HTInt MinNeedBufFrmCntPt, HTInt MaxNeedBufFrmCntPt, HTInt CurNeedBufFrmCntPt, int IsAutoLockUnlock, VarStr ErrInfoVarStrPt )
+    public int GetBufFrmCnt( HTInt CurHaveBufActFrmCntPt, HTInt CurHaveBufInactFrmCntPt, HTInt CurHaveBufFrmCntPt, HTInt MinNeedBufFrmCntPt, HTInt MaxNeedBufFrmCntPt, HTInt MaxCntuLostFrmCntPt, HTInt CurNeedBufFrmCntPt, int IsAutoLockUnlock, VarStr ErrInfoVarStrPt )
     {
-        return AAjbGetBufFrmCnt( m_AAjbPt, CurHaveBufActFrmCntPt, CurHaveBufInactFrmCntPt, CurHaveBufFrmCntPt, MinNeedBufFrmCntPt, MaxNeedBufFrmCntPt, CurNeedBufFrmCntPt, IsAutoLockUnlock, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
+        return AAjbGetBufFrmCnt( m_AAjbPt, CurHaveBufActFrmCntPt, CurHaveBufInactFrmCntPt, CurHaveBufFrmCntPt, MinNeedBufFrmCntPt, MaxNeedBufFrmCntPt, MaxCntuLostFrmCntPt, CurNeedBufFrmCntPt, IsAutoLockUnlock, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
     }
 
     //清空音频自适应抖动缓冲器。
@@ -106,7 +106,7 @@ public class AAjb
     }
 
     //创建并初始化音频自适应抖动缓冲器。
-    public native int AAjbInit( HTLong AAjbPt, int SmplRate, int FrmLen, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, float AdaptSensitivity, long ErrInfoVarStrPt );
+    public native int AAjbInit( HTLong AAjbPt, int SmplRate, int FrmLen, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, long ErrInfoVarStrPt );
 
     //放入一个字节型帧到音频自适应抖动缓冲器。
     public native int AAjbPutOneByteFrm( long AAjbPt, int TimeStamp, byte ByteFrmPt[], long FrmStart, long FrmLen, int IsAutoLockUnlock, long ErrInfoVarStrPt );
@@ -121,7 +121,7 @@ public class AAjb
     public native int AAjbGetOneShortFrm( long AAjbPt, HTInt TimeStampPt, short ShortFrmPt[], long FrmStart, long FrmSz, HTLong FrmLenPt, int IsAutoLockUnlock, long ErrInfoVarStrPt );
 
     //获取缓冲帧的数量。
-    public native int AAjbGetBufFrmCnt( long AAjbPt, HTInt CurHaveBufActFrmCntPt, HTInt CurHaveBufInactFrmCntPt, HTInt CurHaveBufFrmCntPt, HTInt MinNeedBufFrmCntPt, HTInt MaxNeedBufFrmCntPt, HTInt CurNeedBufFrmCntPt, int IsAutoLockUnlock, long ErrInfoVarStrPt );
+    public native int AAjbGetBufFrmCnt( long AAjbPt, HTInt CurHaveBufActFrmCntPt, HTInt CurHaveBufInactFrmCntPt, HTInt CurHaveBufFrmCntPt, HTInt MinNeedBufFrmCntPt, HTInt MaxNeedBufFrmCntPt, HTInt MaxCntuLostFrmCntPt, HTInt CurNeedBufFrmCntPt, int IsAutoLockUnlock, long ErrInfoVarStrPt );
 
     //清空音频自适应抖动缓冲器。
     public native int AAjbClear( long AAjbPt, int IsAutoLockUnlock, long ErrInfoVarStrPt);
