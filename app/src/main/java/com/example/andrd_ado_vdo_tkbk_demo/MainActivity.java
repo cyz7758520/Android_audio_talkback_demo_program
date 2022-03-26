@@ -60,7 +60,7 @@ class MainActivityHandler extends Handler
 	AlertDialog m_RequestCnctDialogPt; //存放请求连接对话框的指针。
 
 	public static final int INIT_MEDIA_PROC_THREAD = 1; //初始化媒体处理线程的消息。
-	public static final int DSTOY_MEDIA_PROC_THREAD = 2; //媒体处理线程销毁的消息。
+	public static final int DSTOY_MEDIA_PROC_THREAD = 2; //销毁媒体处理线程的消息。
 	public static final int SHOW_REQUEST_CNCT_DIALOG = 3; //显示请求连接对话框的消息。
 	public static final int DSTOY_REQUEST_CNCT_DIALOG = 4; //销毁请求连接对话框的消息。
 	public static final int SHOW_LOG = 5; //显示日志的消息。
@@ -69,7 +69,7 @@ class MainActivityHandler extends Handler
 
 	public void handleMessage( Message MessagePt )
 	{
-		if( MessagePt.what == INIT_MEDIA_PROC_THREAD ) //如果是媒体处理线程启动的消息。
+		if( MessagePt.what == INIT_MEDIA_PROC_THREAD ) //如果是初始化媒体处理线程的消息。
 		{
 			if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
 			{
@@ -179,7 +179,7 @@ class MainActivityHandler extends Handler
 				m_RequestCnctDialogPt = null;
 			}
 		}
-		else if( MessagePt.what == DSTOY_MEDIA_PROC_THREAD ) //如果是媒体处理线程销毁的消息。
+		else if( MessagePt.what == DSTOY_MEDIA_PROC_THREAD ) //如果是销毁媒体处理线程的消息。
 		{
 			m_MainActivityPt.m_MyMediaPocsThrdPt = null;
 
@@ -303,7 +303,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 		Out:
 		{
-			{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.INIT_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送媒体处理线程启动的消息。
+			{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.INIT_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送初始化媒体处理线程的消息。
 
 			m_RequestCnctRslt = 0; //设置请求连接的结果为没有选择。
 			m_IsRecvExitPkt = 0; //设置没有接收到退出包。
@@ -1418,16 +1418,16 @@ class MyMediaPocsThrd extends MediaPocsThrd
 			m_RecvAdoOtptFrmLnkLstPt.clear();
 			m_RecvAdoOtptFrmLnkLstPt = null;
 
-			Log.i( m_CurClsNameStrPt, "销毁接收输出帧链表成功。" );
+			Log.i( m_CurClsNameStrPt, "销毁接收音频输出帧链表成功。" );
 		}
 
-		//销毁视频自适应抖动缓冲器。
-		if( m_VAjbPt != null )
+		//销毁接收视频输出帧的链表。
+		if( m_RecvVdoOtptFrmLnkLstPt != null )
 		{
-			m_VAjbPt.Dstoy( null );
-			m_VAjbPt = null;
+			m_RecvVdoOtptFrmLnkLstPt.clear();
+			m_RecvVdoOtptFrmLnkLstPt = null;
 
-			Log.i( m_CurClsNameStrPt, "销毁视频自适应抖动缓冲器成功。" );
+			Log.i( m_CurClsNameStrPt, "销毁接收视频输出帧链表成功。" );
 		}
 
 		//销毁音频自适应抖动缓冲器。
@@ -1437,6 +1437,15 @@ class MyMediaPocsThrd extends MediaPocsThrd
 			m_AAjbPt = null;
 
 			Log.i( m_CurClsNameStrPt, "销毁音频自适应抖动缓冲器成功。" );
+		}
+
+		//销毁视频自适应抖动缓冲器。
+		if( m_VAjbPt != null )
+		{
+			m_VAjbPt.Dstoy( null );
+			m_VAjbPt = null;
+
+			Log.i( m_CurClsNameStrPt, "销毁视频自适应抖动缓冲器成功。" );
 		}
 
 		if( m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
@@ -1470,7 +1479,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 			}
 			else //其他情况，本线程直接退出。
 			{
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送媒体处理线程退出的消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁媒体处理线程的消息。
 				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.VIBRATE;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
 				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
 			}
@@ -1487,7 +1496,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 			}
 			else //其他情况，本线程直接退出。
 			{
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送媒体处理线程退出的消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁媒体处理线程的消息。
 				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.VIBRATE;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
 				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
 			}
@@ -3064,7 +3073,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 	}
 
 	//一键即按即通按钮。
-	@Override public boolean onTouch(View ViewPt, MotionEvent EventPt )
+	@Override public boolean onTouch( View ViewPt, MotionEvent EventPt )
 	{
 		if( ViewPt.getId() == R.id.PttBtnId ) //如果是一键即按即通按钮。
 		{
