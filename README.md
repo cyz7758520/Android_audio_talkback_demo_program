@@ -12,7 +12,7 @@
 &emsp;&emsp;* 支持保存音频到文件和绘制音频波形到Surface，可以直观且方便的调试音频。  
 &emsp;&emsp;* 支持视频软硬编解码，支持指定比特率，最低到10KB/s仍然可以进行视频对讲，还支持横竖屏切换。  
 &emsp;&emsp;* 支持音视频自适应抖动缓冲，当网络存在丢包、乱序、延时等抖动情况时，通过自适应调节缓冲深度来应对这些抖动。  
-&emsp;&emsp;* 支持与Windows下音视频对讲演示程序进行全双工实时音视频对讲。  
+&emsp;&emsp;* 支持与Windows下音视频对讲演示程序进行音视频对讲。  
 
 &emsp;&emsp;声学回音消除器效果对比：
 ![image](https://user-images.githubusercontent.com/16315192/115977799-d0722980-a5ad-11eb-811e-92da4d4f32f9.png)
