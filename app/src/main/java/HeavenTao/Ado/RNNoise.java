@@ -22,18 +22,18 @@ public class RNNoise
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
         Dstoy();
     }
 
     //创建并初始化RNNoise噪音抑制器。
-    public int Init( int SmplRate, int FrmLen, VarStr ErrInfoVarStrPt )
+    public int Init( int SmplRate, int FrmLen, Vstr ErrInfoVstrPt )
     {
         if( m_RNNoisePt == 0 )
         {
             HTLong p_RNNoisePt = new HTLong();
-            if( RNNoiseInit( p_RNNoisePt, SmplRate, FrmLen, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( RNNoiseInit( p_RNNoisePt, SmplRate, FrmLen, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_RNNoisePt = p_RNNoisePt.m_Val;
                 return 0;
@@ -77,7 +77,7 @@ public class RNNoise
     }
 
     //创建并初始化RNNoise噪音抑制器。
-    public native int RNNoiseInit( HTLong RNNoisePt, int SmplRate, int FrmLen, long ErrInfoVarStrPt );
+    public native int RNNoiseInit( HTLong RNNoisePt, int SmplRate, int FrmLen, long ErrInfoVstrPt );
 
     //用RNNoise噪音抑制器对单声道16位有符号整型PCM格式帧进行RNNoise噪音抑制。
     public native int RNNoisePocs( long RNNoisePt, short FrmPt[], short RsltFrmPt[] );

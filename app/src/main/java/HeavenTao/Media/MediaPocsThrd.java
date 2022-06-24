@@ -351,7 +351,7 @@ public abstract class MediaPocsThrd extends Thread
 	HTInt m_EncdAdoInptFrmIsNeedTransPt = null; //存放已编码格式音频输入帧是否需要传输的指针，为1表示需要传输，为0表示不需要传输。
 	VdoInpt.VdoInptFrmElm m_VdoInptFrmPt = null; //存放视频输入帧的指针。
 
-	public VarStr m_ErrInfoVarStrPt; //存放错误信息动态字符串的指针。
+	public Vstr m_ErrInfoVstrPt; //存放错误信息动态字符串的指针。
 
 	//用户定义的相关回调函数。
 
@@ -1003,45 +1003,44 @@ public abstract class MediaPocsThrd extends Thread
 
 			if( m_AdoInptPt.m_UseWhatAec != 0 ) //如果要使用音频输入的声学回音消除，就自适应计算声学回音的延迟，并设置到声学回音消除器。放在音频输入线程中计算，可以减少媒体处理线程的初始化时间。
 			{
-				int p_Delay = 0; //存放声学回音的延迟，单位毫秒。
+				int p_AdoOtptDelay = -10; //存放音频输出延迟。播放的最后一个10ms空的音频输出帧不算音频输出延迟，因为是多写进去的。
+				int p_AdoInptDelay = 0; //存放音频输入延迟。
+				int p_Delay; //存放声学回音的延迟，单位毫秒。
 				HTInt p_HTIntDelay = new HTInt();
 
 				//计算音频输出的延迟。
 				m_AdoOtptPt.m_AdoOtptDvcPt.play(); //让音频输出设备开始播放。
-				m_AdoInptPt.m_AdoInptFrmPt = new short[ m_AdoOtptPt.m_FrmLen ]; //创建一个空的音频输出帧。
+				m_AdoInptPt.m_AdoInptFrmPt = new short[ m_AdoOtptPt.m_SmplRate / 1000 * 10 ]; //创建一个10ms空的音频输出帧。
 				m_AdoInptPt.m_LastTimeMsec = System.currentTimeMillis();
 				while( true )
 				{
 					m_AdoOtptPt.m_AdoOtptDvcPt.write( m_AdoInptPt.m_AdoInptFrmPt, 0, m_AdoInptPt.m_AdoInptFrmPt.length ); //播放一个空的音频输出帧。
 					m_AdoInptPt.m_NowTimeMsec = System.currentTimeMillis();
-					p_Delay += m_AdoOtptPt.m_FrmLen; //递增音频输出的延迟。
+					p_AdoOtptDelay += 10; //递增音频输出延迟。
+					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "本次音频输出耗时 " + ( m_AdoInptPt.m_NowTimeMsec - m_AdoInptPt.m_LastTimeMsec ) + " 毫秒，音频输出延迟 " + p_AdoOtptDelay + " 毫秒。" );
 					if( m_AdoInptPt.m_NowTimeMsec - m_AdoInptPt.m_LastTimeMsec >= 10 ) //如果播放耗时较长，就表示音频输出设备的缓冲区已经写满，结束计算。
 					{
 						break;
 					}
 					m_AdoInptPt.m_LastTimeMsec = m_AdoInptPt.m_NowTimeMsec;
 				}
-				p_Delay = p_Delay * 1000 / m_AdoOtptPt.m_SmplRate; //将音频输出的延迟转换为毫秒。
-				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "音频输出延迟：" + p_Delay + " 毫秒。" );
+				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "音频输出延迟 " + p_AdoOtptDelay + " 毫秒。" );
 
 				//计算音频输入的延迟。
 				m_AdoInptPt.m_AdoInptDvcPt.startRecording(); //让音频输入设备开始录音。
-				m_AdoInptPt.m_AdoInptFrmPt = new short[ m_AdoInptPt.m_FrmLen ]; //创建一个空的音频输入帧。
-				m_AdoInptPt.m_LastTimeMsec = System.currentTimeMillis();
-				m_AdoInptPt.m_AdoInptDvcPt.read( m_AdoInptPt.m_AdoInptFrmPt, 0, m_AdoInptPt.m_AdoInptFrmPt.length ); //计算读取一个音频输入帧的耗时。
-				m_AdoInptPt.m_NowTimeMsec = System.currentTimeMillis();
-				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "音频输入延迟：" + ( m_AdoInptPt.m_NowTimeMsec - m_AdoInptPt.m_LastTimeMsec ) + " 毫秒。" );
-
-				m_AdoOtptPt.m_AdoOtptThrdPt.start(); //启动音频输出线程。
+				p_AdoInptDelay = 0; //音频输入延迟不方便计算，调用耗时在不同的设备都不一样，可能为0也可能很高，也不一定为全0，所以直接认定音频输入延迟为0ms。
+				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "音频输入延迟 " + p_AdoInptDelay + " 毫秒。" );
 
 				//计算声学回音的延迟。
-				p_Delay = p_Delay + ( int ) ( m_AdoInptPt.m_NowTimeMsec - m_AdoInptPt.m_LastTimeMsec );
-				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "声学回音延迟：" + p_Delay + " 毫秒，现在启动音频输出线程，并开始音频输入循环，为了保证音频输入线程走在输出数据线程的前面。" );
+				p_Delay = p_AdoOtptDelay + p_AdoInptDelay;
+				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：" + "声学回音延迟 " + p_Delay + " 毫秒，现在启动音频输出线程，并开始音频输入循环，为了保证音频输入线程走在输出数据线程的前面。" );
+
+				m_AdoOtptPt.m_AdoOtptThrdPt.start(); //启动音频输出线程。
 
 				//设置到WebRtc定点版和浮点版声学回音消除器。
 				if( ( m_AdoInptPt.m_WebRtcAecmPt != null ) && ( m_AdoInptPt.m_WebRtcAecmPt.GetDelay( p_HTIntDelay ) == 0 ) && ( p_HTIntDelay.m_Val == 0 ) ) //如果要使用WebRtc定点版声学回音消除器，且需要自适应设置回音的延迟。
 				{
-					m_AdoInptPt.m_WebRtcAecmPt.SetDelay( p_Delay / 2 );
+					m_AdoInptPt.m_WebRtcAecmPt.SetDelay( p_Delay / 2 ); //WebRtc定点版声学回音消除器的回音延迟应为实际声学回音延迟的二分之一，这样效果最好。
 					m_AdoInptPt.m_WebRtcAecmPt.GetDelay( p_HTIntDelay );
 					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：自适应设置WebRtc定点版声学回音消除器的回音延迟为 " + p_HTIntDelay.m_Val + " 毫秒。" );
 				}
@@ -1061,7 +1060,7 @@ public abstract class MediaPocsThrd extends Thread
 				}
 				if( ( m_AdoInptPt.m_SpeexWebRtcAecPt != null ) && ( m_AdoInptPt.m_SpeexWebRtcAecPt.GetWebRtcAecmDelay( p_HTIntDelay ) == 0 ) && ( p_HTIntDelay.m_Val == 0 ) ) //如果要使用SpeexWebRtc三重声学回音消除器，且WebRtc定点版声学回音消除器需要自适应设置回音的延迟。
 				{
-					m_AdoInptPt.m_SpeexWebRtcAecPt.SetWebRtcAecmDelay( p_Delay / 2 );
+					m_AdoInptPt.m_SpeexWebRtcAecPt.SetWebRtcAecmDelay( p_Delay / 2 ); //WebRtc定点版声学回音消除器的回音延迟应为实际声学回音延迟的二分之一，这样效果最好。
 					m_AdoInptPt.m_SpeexWebRtcAecPt.GetWebRtcAecmDelay( p_HTIntDelay );
 					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "音频输入线程：自适应设置SpeexWebRtc三重声学回音消除器的WebRtc定点版声学回音消除器的回音延迟为 " + p_HTIntDelay.m_Val + " 毫秒。" );
 				}
@@ -1679,8 +1678,8 @@ public abstract class MediaPocsThrd extends Thread
 				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：本地代码的指令集名称（CPU类型+ ABI约定）为" + android.os.Build.CPU_ABI + "，手机型号为" + android.os.Build.MODEL + "，上下文为" + m_AppCntxtPt + "。" );
 
 				//初始化错误信息动态字符串。
-				m_ErrInfoVarStrPt = new VarStr();
-				m_ErrInfoVarStrPt.Init();
+				m_ErrInfoVstrPt = new Vstr();
+				m_ErrInfoVstrPt.Init( null );
 
 				//初始化唤醒锁。
 				WakeLockInitOrDstoy( m_IsUseWakeLock );
@@ -1924,27 +1923,27 @@ public abstract class MediaPocsThrd extends Thread
 							if( m_AdoInptPt.m_SpeexAecIsSaveMemFile != 0 )
 							{
 								m_AdoInptPt.m_SpeexAecPt = new SpeexAec();
-								if( m_AdoInptPt.m_SpeexAecPt.InitByMemFile( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_SpeexAecFilterLen, m_AdoInptPt.m_SpeexAecIsUseRec, m_AdoInptPt.m_SpeexAecEchoMultiple, m_AdoInptPt.m_SpeexAecEchoCont, m_AdoInptPt.m_SpeexAecEchoSupes, m_AdoInptPt.m_SpeexAecEchoSupesAct, m_AdoInptPt.m_SpeexAecMemFileFullPathStrPt, m_ErrInfoVarStrPt ) == 0 )
+								if( m_AdoInptPt.m_SpeexAecPt.InitByMemFile( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_SpeexAecFilterLen, m_AdoInptPt.m_SpeexAecIsUseRec, m_AdoInptPt.m_SpeexAecEchoMultiple, m_AdoInptPt.m_SpeexAecEchoCont, m_AdoInptPt.m_SpeexAecEchoSupes, m_AdoInptPt.m_SpeexAecEchoSupesAct, m_AdoInptPt.m_SpeexAecMemFileFullPathStrPt, m_ErrInfoVstrPt ) == 0 )
 								{
 									if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：根据Speex声学回音消除器内存块文件 " + m_AdoInptPt.m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器成功。" );
 								}
 								else
 								{
 									m_AdoInptPt.m_SpeexAecPt = null;
-									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：根据Speex声学回音消除器内存块文件 " + m_AdoInptPt.m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：根据Speex声学回音消除器内存块文件 " + m_AdoInptPt.m_SpeexAecMemFileFullPathStrPt + " 来创建并初始化Speex声学回音消除器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 								}
 							}
 							if( m_AdoInptPt.m_SpeexAecPt == null )
 							{
 								m_AdoInptPt.m_SpeexAecPt = new SpeexAec();
-								if( m_AdoInptPt.m_SpeexAecPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_SpeexAecFilterLen, m_AdoInptPt.m_SpeexAecIsUseRec, m_AdoInptPt.m_SpeexAecEchoMultiple, m_AdoInptPt.m_SpeexAecEchoCont, m_AdoInptPt.m_SpeexAecEchoSupes, m_AdoInptPt.m_SpeexAecEchoSupesAct, m_ErrInfoVarStrPt ) == 0 )
+								if( m_AdoInptPt.m_SpeexAecPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_SpeexAecFilterLen, m_AdoInptPt.m_SpeexAecIsUseRec, m_AdoInptPt.m_SpeexAecEchoMultiple, m_AdoInptPt.m_SpeexAecEchoCont, m_AdoInptPt.m_SpeexAecEchoSupes, m_AdoInptPt.m_SpeexAecEchoSupesAct, m_ErrInfoVstrPt ) == 0 )
 								{
 									if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex声学回音消除器成功。" );
 								}
 								else
 								{
 									m_AdoInptPt.m_SpeexAecPt = null;
-									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex声学回音消除器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex声学回音消除器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 									break OutMediaInitAndPocs;
 								}
 							}
@@ -1953,14 +1952,14 @@ public abstract class MediaPocsThrd extends Thread
 						case 2: //如果要使用WebRtc定点版声学回音消除器。
 						{
 							m_AdoInptPt.m_WebRtcAecmPt = new WebRtcAecm();
-							if( m_AdoInptPt.m_WebRtcAecmPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_WebRtcAecmIsUseCNGMode, m_AdoInptPt.m_WebRtcAecmEchoMode, m_AdoInptPt.m_WebRtcAecmDelay, m_ErrInfoVarStrPt ) == 0 )
+							if( m_AdoInptPt.m_WebRtcAecmPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_WebRtcAecmIsUseCNGMode, m_AdoInptPt.m_WebRtcAecmEchoMode, m_AdoInptPt.m_WebRtcAecmDelay, m_ErrInfoVstrPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版声学回音消除器成功。" );
 							}
 							else
 							{
 								m_AdoInptPt.m_WebRtcAecmPt = null;
-								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版声学回音消除器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版声学回音消除器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 								break OutMediaInitAndPocs;
 							}
 							break;
@@ -1970,27 +1969,27 @@ public abstract class MediaPocsThrd extends Thread
 							if( m_AdoInptPt.m_WebRtcAecIsSaveMemFile != 0 )
 							{
 								m_AdoInptPt.m_WebRtcAecPt = new WebRtcAec();
-								if( m_AdoInptPt.m_WebRtcAecPt.InitByMemFile( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_WebRtcAecEchoMode, m_AdoInptPt.m_WebRtcAecDelay, m_AdoInptPt.m_WebRtcAecIsUseDelayAgstcMode, m_AdoInptPt.m_WebRtcAecIsUseExtdFilterMode, m_AdoInptPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AdoInptPt.m_WebRtcAecIsUseAdaptAdjDelay, m_AdoInptPt.m_WebRtcAecMemFileFullPathStrPt, m_ErrInfoVarStrPt ) == 0 )
+								if( m_AdoInptPt.m_WebRtcAecPt.InitByMemFile( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_WebRtcAecEchoMode, m_AdoInptPt.m_WebRtcAecDelay, m_AdoInptPt.m_WebRtcAecIsUseDelayAgstcMode, m_AdoInptPt.m_WebRtcAecIsUseExtdFilterMode, m_AdoInptPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AdoInptPt.m_WebRtcAecIsUseAdaptAdjDelay, m_AdoInptPt.m_WebRtcAecMemFileFullPathStrPt, m_ErrInfoVstrPt ) == 0 )
 								{
 									if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_AdoInptPt.m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器成功。" );
 								}
 								else
 								{
 									m_AdoInptPt.m_WebRtcAecPt = null;
-									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_AdoInptPt.m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：根据WebRtc浮点版声学回音消除器内存块文件 " + m_AdoInptPt.m_WebRtcAecMemFileFullPathStrPt + " 来创建并初始化WebRtc浮点版声学回音消除器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 								}
 							}
 							if( m_AdoInptPt.m_WebRtcAecPt == null )
 							{
 								m_AdoInptPt.m_WebRtcAecPt = new WebRtcAec();
-								if( m_AdoInptPt.m_WebRtcAecPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_WebRtcAecEchoMode, m_AdoInptPt.m_WebRtcAecDelay, m_AdoInptPt.m_WebRtcAecIsUseDelayAgstcMode, m_AdoInptPt.m_WebRtcAecIsUseExtdFilterMode, m_AdoInptPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AdoInptPt.m_WebRtcAecIsUseAdaptAdjDelay, m_ErrInfoVarStrPt ) == 0 )
+								if( m_AdoInptPt.m_WebRtcAecPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_WebRtcAecEchoMode, m_AdoInptPt.m_WebRtcAecDelay, m_AdoInptPt.m_WebRtcAecIsUseDelayAgstcMode, m_AdoInptPt.m_WebRtcAecIsUseExtdFilterMode, m_AdoInptPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AdoInptPt.m_WebRtcAecIsUseAdaptAdjDelay, m_ErrInfoVstrPt ) == 0 )
 								{
 									if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版声学回音消除器成功。" );
 								}
 								else
 								{
 									m_AdoInptPt.m_WebRtcAecPt = null;
-									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版声学回音消除器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版声学回音消除器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 									break OutMediaInitAndPocs;
 								}
 							}
@@ -1999,14 +1998,14 @@ public abstract class MediaPocsThrd extends Thread
 						case 4: //如果要使用SpeexWebRtc三重声学回音消除器。
 						{
 							m_AdoInptPt.m_SpeexWebRtcAecPt = new SpeexWebRtcAec();
-							if( m_AdoInptPt.m_SpeexWebRtcAecPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_SpeexWebRtcAecWorkMode, m_AdoInptPt.m_SpeexWebRtcAecSpeexAecFilterLen, m_AdoInptPt.m_SpeexWebRtcAecSpeexAecIsUseRec, m_AdoInptPt.m_SpeexWebRtcAecSpeexAecEchoMultiple, m_AdoInptPt.m_SpeexWebRtcAecSpeexAecEchoCont, m_AdoInptPt.m_SpeexWebRtcAecSpeexAecEchoSupes, m_AdoInptPt.m_SpeexWebRtcAecSpeexAecEchoSupesAct, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecmEchoMode, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecmDelay, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecEchoMode, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecDelay, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecIsUseDelayAgstcMode, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecIsUseExtdFilterMode, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecMode, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay, m_AdoInptPt.m_SpeexWebRtcAecIsUseSameRoomAec, m_AdoInptPt.m_SpeexWebRtcAecSameRoomEchoMinDelay, m_ErrInfoVarStrPt ) == 0 )
+							if( m_AdoInptPt.m_SpeexWebRtcAecPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_SpeexWebRtcAecWorkMode, m_AdoInptPt.m_SpeexWebRtcAecSpeexAecFilterLen, m_AdoInptPt.m_SpeexWebRtcAecSpeexAecIsUseRec, m_AdoInptPt.m_SpeexWebRtcAecSpeexAecEchoMultiple, m_AdoInptPt.m_SpeexWebRtcAecSpeexAecEchoCont, m_AdoInptPt.m_SpeexWebRtcAecSpeexAecEchoSupes, m_AdoInptPt.m_SpeexWebRtcAecSpeexAecEchoSupesAct, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecmIsUseCNGMode, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecmEchoMode, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecmDelay, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecEchoMode, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecDelay, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecIsUseDelayAgstcMode, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecIsUseExtdFilterMode, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecMode, m_AdoInptPt.m_SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelay, m_AdoInptPt.m_SpeexWebRtcAecIsUseSameRoomAec, m_AdoInptPt.m_SpeexWebRtcAecSameRoomEchoMinDelay, m_ErrInfoVstrPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化SpeexWebRtc三重声学回音消除器成功。" );
 							}
 							else
 							{
 								m_AdoInptPt.m_SpeexWebRtcAecPt = null;
-								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化SpeexWebRtc三重声学回音消除器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化SpeexWebRtc三重声学回音消除器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 								break OutMediaInitAndPocs;
 							}
 							break;
@@ -2029,14 +2028,14 @@ public abstract class MediaPocsThrd extends Thread
 						case 2: //如果要使用WebRtc定点版噪音抑制器。
 						{
 							m_AdoInptPt.m_WebRtcNsxPt = new WebRtcNsx();
-							if( m_AdoInptPt.m_WebRtcNsxPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_WebRtcNsxPolicyMode, m_ErrInfoVarStrPt ) == 0 )
+							if( m_AdoInptPt.m_WebRtcNsxPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_WebRtcNsxPolicyMode, m_ErrInfoVstrPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版噪音抑制器成功。" );
 							}
 							else
 							{
 								m_AdoInptPt.m_WebRtcNsxPt = null;
-								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版噪音抑制器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc定点版噪音抑制器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 								break OutMediaInitAndPocs;
 							}
 							break;
@@ -2044,14 +2043,14 @@ public abstract class MediaPocsThrd extends Thread
 						case 3: //如果要使用WebRtc浮点版噪音抑制器。
 						{
 							m_AdoInptPt.m_WebRtcNsPt = new WebRtcNs();
-							if( m_AdoInptPt.m_WebRtcNsPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_WebRtcNsPolicyMode, m_ErrInfoVarStrPt ) == 0 )
+							if( m_AdoInptPt.m_WebRtcNsPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_WebRtcNsPolicyMode, m_ErrInfoVstrPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版噪音抑制器成功。" );
 							}
 							else
 							{
 								m_AdoInptPt.m_WebRtcNsPt = null;
-								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版噪音抑制器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化WebRtc浮点版噪音抑制器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 								break OutMediaInitAndPocs;
 							}
 							break;
@@ -2059,14 +2058,14 @@ public abstract class MediaPocsThrd extends Thread
 						case 4: //如果要使用RNNoise噪音抑制器。
 						{
 							m_AdoInptPt.m_RNNoisePt = new RNNoise();
-							if( m_AdoInptPt.m_RNNoisePt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_ErrInfoVarStrPt ) == 0 )
+							if( m_AdoInptPt.m_RNNoisePt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_ErrInfoVstrPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化RNNoise噪音抑制器成功。" );
 							}
 							else
 							{
 								m_AdoInptPt.m_RNNoisePt = null;
-								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化RNNoise噪音抑制器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化RNNoise噪音抑制器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 								break OutMediaInitAndPocs;
 							}
 							break;
@@ -2087,14 +2086,14 @@ public abstract class MediaPocsThrd extends Thread
 							m_AdoInptPt.m_SpeexPrpocsIsUseAgc = 0;
 						}
 						m_AdoInptPt.m_SpeexPrpocsPt = new SpeexPrpocs();
-						if( m_AdoInptPt.m_SpeexPrpocsPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_SpeexPrpocsIsUseNs, m_AdoInptPt.m_SpeexPrpocsNoiseSupes, m_AdoInptPt.m_SpeexPrpocsIsUseDereverb, m_AdoInptPt.m_SpeexPrpocsIsUseVad, m_AdoInptPt.m_SpeexPrpocsVadProbStart, m_AdoInptPt.m_SpeexPrpocsVadProbCont, m_AdoInptPt.m_SpeexPrpocsIsUseAgc, m_AdoInptPt.m_SpeexPrpocsAgcLevel, m_AdoInptPt.m_SpeexPrpocsAgcIncrement, m_AdoInptPt.m_SpeexPrpocsAgcDecrement, m_AdoInptPt.m_SpeexPrpocsAgcMaxGain, m_ErrInfoVarStrPt ) == 0 )
+						if( m_AdoInptPt.m_SpeexPrpocsPt.Init( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_SpeexPrpocsIsUseNs, m_AdoInptPt.m_SpeexPrpocsNoiseSupes, m_AdoInptPt.m_SpeexPrpocsIsUseDereverb, m_AdoInptPt.m_SpeexPrpocsIsUseVad, m_AdoInptPt.m_SpeexPrpocsVadProbStart, m_AdoInptPt.m_SpeexPrpocsVadProbCont, m_AdoInptPt.m_SpeexPrpocsIsUseAgc, m_AdoInptPt.m_SpeexPrpocsAgcLevel, m_AdoInptPt.m_SpeexPrpocsAgcIncrement, m_AdoInptPt.m_SpeexPrpocsAgcDecrement, m_AdoInptPt.m_SpeexPrpocsAgcMaxGain, m_ErrInfoVstrPt ) == 0 )
 						{
 							if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex预处理器成功。"  );
 						}
 						else
 						{
 							m_AdoInptPt.m_SpeexPrpocsPt = null;
-							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex预处理器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化Speex预处理器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 							break OutMediaInitAndPocs;
 						}
 					}
@@ -2165,25 +2164,25 @@ public abstract class MediaPocsThrd extends Thread
 					if( m_AdoInptPt.m_IsDrawAdoWavfmToSurface != 0 )
 					{
 						m_AdoInptPt.m_AdoInptOscilloPt = new AdoWavfm();
-						if( m_AdoInptPt.m_AdoInptOscilloPt.Init( m_ErrInfoVarStrPt ) == 0 )
+						if( m_AdoInptPt.m_AdoInptOscilloPt.Init( m_ErrInfoVstrPt ) == 0 )
 						{
 							if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输入波形器成功。" );
 						}
 						else
 						{
 							m_AdoInptPt.m_AdoInptOscilloPt = null;
-							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输入波形器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输入波形器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 							break OutMediaInitAndPocs;
 						}
 						m_AdoInptPt.m_AdoRsltOscilloPt = new AdoWavfm();
-						if( m_AdoInptPt.m_AdoRsltOscilloPt.Init( m_ErrInfoVarStrPt ) == 0 )
+						if( m_AdoInptPt.m_AdoRsltOscilloPt.Init( m_ErrInfoVstrPt ) == 0 )
 						{
 							if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频结果波形器成功。" );
 						}
 						else
 						{
 							m_AdoInptPt.m_AdoRsltOscilloPt = null;
-							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频结果波形器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频结果波形器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 							break OutMediaInitAndPocs;
 						}
 					}
@@ -2298,14 +2297,14 @@ public abstract class MediaPocsThrd extends Thread
 					if( m_AdoOtptPt.m_IsDrawAdoWavfmToSurface != 0 )
 					{
 						m_AdoOtptPt.m_AdoOtptOscilloPt = new AdoWavfm();
-						if( m_AdoOtptPt.m_AdoOtptOscilloPt.Init( m_ErrInfoVarStrPt ) == 0 )
+						if( m_AdoOtptPt.m_AdoOtptOscilloPt.Init( m_ErrInfoVstrPt ) == 0 )
 						{
 							if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输出波形器成功。" );
 						}
 						else
 						{
 							m_AdoOtptPt.m_AdoOtptOscilloPt = null;
-							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输出波形器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化音频输出波形器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 							break OutMediaInitAndPocs;
 						}
 					}
@@ -2323,8 +2322,9 @@ public abstract class MediaPocsThrd extends Thread
 					//用第一种方法创建并初始化音频输出设备。
 					try
 					{
-						m_AdoOtptPt.m_AdoOtptDvcBufSz = m_AdoOtptPt.m_FrmLen * 2;
-						m_AdoOtptPt.m_AdoOtptDvcPt = new AudioTrack( ( m_AdoOtptPt.m_UseWhatAdoOtptStreamType == 0 ) ? AudioManager.STREAM_VOICE_CALL : AudioManager.STREAM_MUSIC,
+						m_AdoOtptPt.m_AdoOtptDvcBufSz = 2;
+						m_AdoOtptPt.m_AdoOtptDvcPt = new AudioTrack(
+								( m_AdoOtptPt.m_UseWhatAdoOtptStreamType == 0 ) ? AudioManager.STREAM_VOICE_CALL : AudioManager.STREAM_MUSIC,
 								m_AdoOtptPt.m_SmplRate,
 								AudioFormat.CHANNEL_CONFIGURATION_MONO,
 								AudioFormat.ENCODING_PCM_16BIT,
@@ -2551,9 +2551,9 @@ public abstract class MediaPocsThrd extends Thread
 
 						//判断视频输入设备帧是否裁剪。
 						if(
-								( m_VdoInptPt.m_VdoInptDvcFrmWidth > m_VdoInptPt.m_VdoInptDvcFrmCropWidth ) //如果视频输入设备帧的宽度比裁剪宽度大，就表示需要裁剪宽度。
-										||
-										( m_VdoInptPt.m_VdoInptDvcFrmHeight > m_VdoInptPt.m_VdoInptDvcFrmCropHeight ) //如果视频输入设备帧的高度比裁剪高度大，就表示需要裁剪高度。
+							( m_VdoInptPt.m_VdoInptDvcFrmWidth > m_VdoInptPt.m_VdoInptDvcFrmCropWidth ) //如果视频输入设备帧的宽度比裁剪宽度大，就表示需要裁剪宽度。
+							||
+							( m_VdoInptPt.m_VdoInptDvcFrmHeight > m_VdoInptPt.m_VdoInptDvcFrmCropHeight ) //如果视频输入设备帧的高度比裁剪高度大，就表示需要裁剪高度。
 						)
 						{
 							m_VdoInptPt.m_VdoInptDvcFrmIsCrop = 1; //设置视频输入设备帧要裁剪。
@@ -2702,14 +2702,14 @@ public abstract class MediaPocsThrd extends Thread
 						case 1: //如果要使用OpenH264编码器。
 						{
 							m_VdoInptPt.m_OpenH264EncdPt = new OpenH264Encd();
-							if( m_VdoInptPt.m_OpenH264EncdPt.Init( m_VdoInptPt.m_VdoInptDvcFrmScaleWidth, m_VdoInptPt.m_VdoInptDvcFrmScaleHeight, m_VdoInptPt.m_OpenH264EncdVdoType, m_VdoInptPt.m_OpenH264EncdEncdBitrate, m_VdoInptPt.m_OpenH264EncdBitrateCtrlMode, m_VdoInptPt.m_MaxSmplRate, m_VdoInptPt.m_OpenH264EncdIDRFrmIntvl, m_VdoInptPt.m_OpenH264EncdCmplxt, m_ErrInfoVarStrPt ) == 0 )
+							if( m_VdoInptPt.m_OpenH264EncdPt.Init( m_VdoInptPt.m_VdoInptDvcFrmScaleWidth, m_VdoInptPt.m_VdoInptDvcFrmScaleHeight, m_VdoInptPt.m_OpenH264EncdVdoType, m_VdoInptPt.m_OpenH264EncdEncdBitrate, m_VdoInptPt.m_OpenH264EncdBitrateCtrlMode, m_VdoInptPt.m_MaxSmplRate, m_VdoInptPt.m_OpenH264EncdIDRFrmIntvl, m_VdoInptPt.m_OpenH264EncdCmplxt, m_ErrInfoVstrPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化OpenH264编码器成功。" );
 							}
 							else
 							{
 								m_VdoInptPt.m_OpenH264EncdPt = null;
-								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化OpenH264编码器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化OpenH264编码器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 								break OutMediaInitAndPocs;
 							}
 							break;
@@ -2717,14 +2717,14 @@ public abstract class MediaPocsThrd extends Thread
 						case 2: //如果要使用系统自带H264编码器。
 						{
 							m_VdoInptPt.m_SystemH264EncdPt = new SystemH264Encd();
-							if( m_VdoInptPt.m_SystemH264EncdPt.Init( m_VdoInptPt.m_VdoInptDvcFrmScaleWidth, m_VdoInptPt.m_VdoInptDvcFrmScaleHeight, m_VdoInptPt.m_SystemH264EncdEncdBitrate, m_VdoInptPt.m_SystemH264EncdBitrateCtrlMode, m_VdoInptPt.m_MaxSmplRate, m_VdoInptPt.m_SystemH264EncdIDRFrmIntvlTimeSec, m_VdoInptPt.m_SystemH264EncdCmplxt, m_ErrInfoVarStrPt ) == 0 )
+							if( m_VdoInptPt.m_SystemH264EncdPt.Init( m_VdoInptPt.m_VdoInptDvcFrmScaleWidth, m_VdoInptPt.m_VdoInptDvcFrmScaleHeight, m_VdoInptPt.m_SystemH264EncdEncdBitrate, m_VdoInptPt.m_SystemH264EncdBitrateCtrlMode, m_VdoInptPt.m_MaxSmplRate, m_VdoInptPt.m_SystemH264EncdIDRFrmIntvlTimeSec, m_VdoInptPt.m_SystemH264EncdCmplxt, m_ErrInfoVstrPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化系统自带H264编码器成功。" );
 							}
 							else
 							{
 								m_VdoInptPt.m_SystemH264EncdPt = null;
-								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化系统自带H264编码器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化系统自带H264编码器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 								break OutMediaInitAndPocs;
 							}
 							break;
@@ -2782,14 +2782,14 @@ public abstract class MediaPocsThrd extends Thread
 						case 1: //如果要使用OpenH264解码器。
 						{
 							m_VdoOtptPt.m_OpenH264DecdPt = new OpenH264Decd();
-							if( m_VdoOtptPt.m_OpenH264DecdPt.Init( m_VdoOtptPt.m_OpenH264DecdDecdThrdNum, m_ErrInfoVarStrPt ) == 0 )
+							if( m_VdoOtptPt.m_OpenH264DecdPt.Init( m_VdoOtptPt.m_OpenH264DecdDecdThrdNum, m_ErrInfoVstrPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：创建并初始化OpenH264解码器成功。" );
 							}
 							else
 							{
 								m_VdoOtptPt.m_OpenH264DecdPt = null;
-								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化OpenH264解码器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：创建并初始化OpenH264解码器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 								break OutMediaInitAndPocs;
 							}
 							break;
@@ -3154,21 +3154,21 @@ public abstract class MediaPocsThrd extends Thread
 						//使用音频输入波形器绘制音频输入波形到Surface、音频结果波形器绘制音频结果波形到Surface。
 						if( m_AdoInptPt.m_IsDrawAdoWavfmToSurface != 0 )
 						{
-							if( m_AdoInptPt.m_AdoInptOscilloPt.Draw( m_PcmAdoInptFrmPt, m_PcmAdoInptFrmPt.length, m_AdoInptPt.m_AdoInptOscilloSurfacePt.getHolder().getSurface(), m_ErrInfoVarStrPt ) == 0 )
+							if( m_AdoInptPt.m_AdoInptOscilloPt.Draw( m_PcmAdoInptFrmPt, m_PcmAdoInptFrmPt.length, m_AdoInptPt.m_AdoInptOscilloSurfacePt.getHolder().getSurface(), m_ErrInfoVstrPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频输入波形器绘制音频输入波形到Surface成功。" );
 							}
 							else
 							{
-								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输入波形器绘制音频输入波形到Surface失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输入波形器绘制音频输入波形到Surface失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 							}
-							if( m_AdoInptPt.m_AdoRsltOscilloPt.Draw( m_PcmAdoRsltFrmPt, m_PcmAdoRsltFrmPt.length, m_AdoInptPt.m_AdoRsltOscilloSurfacePt.getHolder().getSurface(), m_ErrInfoVarStrPt ) == 0 )
+							if( m_AdoInptPt.m_AdoRsltOscilloPt.Draw( m_PcmAdoRsltFrmPt, m_PcmAdoRsltFrmPt.length, m_AdoInptPt.m_AdoRsltOscilloSurfacePt.getHolder().getSurface(), m_ErrInfoVstrPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频结果波形器绘制音频结果波形到Surface成功。" );
 							}
 							else
 							{
-								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频结果波形器绘制音频结果波形到Surface失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频结果波形器绘制音频结果波形到Surface失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 							}
 						}
 					}
@@ -3199,13 +3199,13 @@ public abstract class MediaPocsThrd extends Thread
 						//使用音频输出波形器绘制音频输出波形到Surface。
 						if( m_AdoOtptPt.m_IsDrawAdoWavfmToSurface != 0 )
 						{
-							if( m_AdoOtptPt.m_AdoOtptOscilloPt.Draw( m_PcmAdoOtptFrmPt, m_PcmAdoOtptFrmPt.length, m_AdoOtptPt.m_AdoOtptOscilloSurfacePt.getHolder().getSurface(), m_ErrInfoVarStrPt ) == 0 )
+							if( m_AdoOtptPt.m_AdoOtptOscilloPt.Draw( m_PcmAdoOtptFrmPt, m_PcmAdoOtptFrmPt.length, m_AdoOtptPt.m_AdoOtptOscilloSurfacePt.getHolder().getSurface(), m_ErrInfoVstrPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频输出波形器绘制音频输入波形到Surface成功。" );
 							}
 							else
 							{
-								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输出波形器绘制音频输出波形到Surface失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输出波形器绘制音频输出波形到Surface失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 							}
 						}
 					}
@@ -3219,7 +3219,7 @@ public abstract class MediaPocsThrd extends Thread
 
 					//处理视频输入帧。
 					if( ( m_VdoInptPt.m_VdoInptFrmLnkLstPt != null ) && ( ( p_TmpInt321 = m_VdoInptPt.m_VdoInptFrmLnkLstPt.size() ) > 0 ) && //如果要使用视频输入，且视频输入帧链表中有帧了。
-							( ( m_PcmAdoInptFrmPt != null ) || ( m_AdoInptPt.m_AdoInptFrmLnkLstPt == null ) ) ) //且已经处理了音频输入帧或不使用音频输入帧链表。
+						( ( m_PcmAdoInptFrmPt != null ) || ( m_AdoInptPt.m_AdoInptFrmLnkLstPt == null ) ) ) //且已经处理了音频输入帧或不使用音频输入帧链表。
 					{
 						//从视频输入帧链表中取出第一个视频输入帧。
 						synchronized( m_VdoInptPt.m_VdoInptFrmLnkLstPt )
@@ -3354,25 +3354,25 @@ public abstract class MediaPocsThrd extends Thread
 				{
 					if( m_AdoInptPt.m_AdoInptOscilloPt != null )
 					{
-						if( m_AdoInptPt.m_AdoInptOscilloPt.Dstoy( m_ErrInfoVarStrPt ) == 0 )
+						if( m_AdoInptPt.m_AdoInptOscilloPt.Dstoy( m_ErrInfoVstrPt ) == 0 )
 						{
 							if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁音频输入波形器成功。" );
 						}
 						else
 						{
-							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁音频输入波形器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁音频输入波形器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 						}
 						m_AdoInptPt.m_AdoInptOscilloPt = null;
 					}
 					if( m_AdoInptPt.m_AdoRsltOscilloPt != null )
 					{
-						if( m_AdoInptPt.m_AdoRsltOscilloPt.Dstoy( m_ErrInfoVarStrPt ) == 0 )
+						if( m_AdoInptPt.m_AdoRsltOscilloPt.Dstoy( m_ErrInfoVstrPt ) == 0 )
 						{
 							if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁音频结果波形器成功。" );
 						}
 						else
 						{
-							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁音频结果波形器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁音频结果波形器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 						}
 						m_AdoInptPt.m_AdoRsltOscilloPt = null;
 					}
@@ -3525,13 +3525,13 @@ public abstract class MediaPocsThrd extends Thread
 						{
 							if( m_AdoInptPt.m_SpeexAecIsSaveMemFile != 0 )
 							{
-								if( m_AdoInptPt.m_SpeexAecPt.SaveMemFile( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_SpeexAecFilterLen, m_AdoInptPt.m_SpeexAecIsUseRec, m_AdoInptPt.m_SpeexAecEchoMultiple, m_AdoInptPt.m_SpeexAecEchoCont, m_AdoInptPt.m_SpeexAecEchoSupes, m_AdoInptPt.m_SpeexAecEchoSupesAct, m_AdoInptPt.m_SpeexAecMemFileFullPathStrPt, m_ErrInfoVarStrPt ) == 0 )
+								if( m_AdoInptPt.m_SpeexAecPt.SaveMemFile( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_SpeexAecFilterLen, m_AdoInptPt.m_SpeexAecIsUseRec, m_AdoInptPt.m_SpeexAecEchoMultiple, m_AdoInptPt.m_SpeexAecEchoCont, m_AdoInptPt.m_SpeexAecEchoSupes, m_AdoInptPt.m_SpeexAecEchoSupesAct, m_AdoInptPt.m_SpeexAecMemFileFullPathStrPt, m_ErrInfoVstrPt ) == 0 )
 								{
 									if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：将Speex声学回音消除器内存块保存到指定的文件 " + m_AdoInptPt.m_SpeexAecMemFileFullPathStrPt + " 成功。" );
 								}
 								else
 								{
-									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：将Speex声学回音消除器内存块保存到指定的文件 " + m_AdoInptPt.m_SpeexAecMemFileFullPathStrPt + " 失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：将Speex声学回音消除器内存块保存到指定的文件 " + m_AdoInptPt.m_SpeexAecMemFileFullPathStrPt + " 失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 								}
 							}
 							if( m_AdoInptPt.m_SpeexAecPt.Dstoy() == 0 )
@@ -3568,13 +3568,13 @@ public abstract class MediaPocsThrd extends Thread
 						{
 							if( m_AdoInptPt.m_WebRtcAecIsSaveMemFile != 0 )
 							{
-								if( m_AdoInptPt.m_WebRtcAecPt.SaveMemFile( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_WebRtcAecEchoMode, m_AdoInptPt.m_WebRtcAecDelay, m_AdoInptPt.m_WebRtcAecIsUseDelayAgstcMode, m_AdoInptPt.m_WebRtcAecIsUseExtdFilterMode, m_AdoInptPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AdoInptPt.m_WebRtcAecIsUseAdaptAdjDelay, m_AdoInptPt.m_WebRtcAecMemFileFullPathStrPt, m_ErrInfoVarStrPt ) == 0 )
+								if( m_AdoInptPt.m_WebRtcAecPt.SaveMemFile( m_AdoInptPt.m_SmplRate, m_AdoInptPt.m_FrmLen, m_AdoInptPt.m_WebRtcAecEchoMode, m_AdoInptPt.m_WebRtcAecDelay, m_AdoInptPt.m_WebRtcAecIsUseDelayAgstcMode, m_AdoInptPt.m_WebRtcAecIsUseExtdFilterMode, m_AdoInptPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode, m_AdoInptPt.m_WebRtcAecIsUseAdaptAdjDelay, m_AdoInptPt.m_WebRtcAecMemFileFullPathStrPt, m_ErrInfoVstrPt ) == 0 )
 								{
 									if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：将WebRtc浮点版声学回音消除器内存块保存到指定的文件 " + m_AdoInptPt.m_WebRtcAecMemFileFullPathStrPt + " 成功。" );
 								}
 								else
 								{
-									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：将WebRtc浮点版声学回音消除器内存块保存到指定的文件 " + m_AdoInptPt.m_WebRtcAecMemFileFullPathStrPt + " 失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：将WebRtc浮点版声学回音消除器内存块保存到指定的文件 " + m_AdoInptPt.m_WebRtcAecMemFileFullPathStrPt + " 失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 								}
 							}
 							if( m_AdoInptPt.m_WebRtcAecPt.Dstoy() == 0 )
@@ -3655,13 +3655,13 @@ public abstract class MediaPocsThrd extends Thread
 				{
 					if( m_AdoOtptPt.m_AdoOtptOscilloPt != null )
 					{
-						if( m_AdoOtptPt.m_AdoOtptOscilloPt.Dstoy( m_ErrInfoVarStrPt ) == 0 )
+						if( m_AdoOtptPt.m_AdoOtptOscilloPt.Dstoy( m_ErrInfoVstrPt ) == 0 )
 						{
 							if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁音频输出波形器成功。" );
 						}
 						else
 						{
-							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁音频输出波形器失败。原因：" + m_ErrInfoVarStrPt.GetStr() );
+							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁音频输出波形器失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 						}
 						m_AdoOtptPt.m_AdoOtptOscilloPt = null;
 					}
@@ -3931,9 +3931,9 @@ public abstract class MediaPocsThrd extends Thread
 			}
 
 			//销毁错误信息动态字符串。
-			if( m_ErrInfoVarStrPt != null )
+			if( m_ErrInfoVstrPt != null )
 			{
-				if( m_ErrInfoVarStrPt.Dstoy() == 0 )
+				if( m_ErrInfoVstrPt.Dstoy() == 0 )
 				{
 					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁错误信息动态字符串成功。" );
 				}
@@ -3941,7 +3941,7 @@ public abstract class MediaPocsThrd extends Thread
 				{
 					if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：销毁错误信息动态字符串失败。" );
 				}
-				m_ErrInfoVarStrPt = null;
+				m_ErrInfoVstrPt = null;
 			}
 
 			m_RunFlag = RUN_FLAG_END; //设置本线程运行标记为销毁完毕。

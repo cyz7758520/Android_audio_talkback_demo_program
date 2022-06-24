@@ -20,18 +20,18 @@ public class SpeexAec
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
         Dstoy();
     }
 
     //创建并初始化Speex声学回音消除器。
-    public int Init( int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, VarStr ErrInfoVarStrPt )
+    public int Init( int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, Vstr ErrInfoVstrPt )
     {
         if( m_SpeexAecPt == 0 )
         {
             HTLong p_SpeexAecPt = new HTLong();
-            if( SpeexAecInit( p_SpeexAecPt, SmplRate, FrmLen, FilterLen, IsUseRec, EchoMultiple, EchoCont, EchoSupes, EchoSupesAct, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( SpeexAecInit( p_SpeexAecPt, SmplRate, FrmLen, FilterLen, IsUseRec, EchoMultiple, EchoCont, EchoSupes, EchoSupesAct, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_SpeexAecPt = p_SpeexAecPt.m_Val;
                 return 0;
@@ -48,12 +48,12 @@ public class SpeexAec
     }
 
     //根据Speex声学回音消除器内存块来创建并初始化Speex声学回音消除器。
-    public int InitByMem( int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, byte SpeexAecMemPt[], long SpeexAecMemLen, VarStr ErrInfoVarStrPt )
+    public int InitByMem( int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, byte SpeexAecMemPt[], long SpeexAecMemLen, Vstr ErrInfoVstrPt )
     {
         if( m_SpeexAecPt == 0 )
         {
             HTLong p_SpeexAecPt = new HTLong();
-            if( SpeexAecInitByMem( p_SpeexAecPt, SmplRate, FrmLen, FilterLen, IsUseRec, EchoMultiple, EchoCont, EchoSupes, EchoSupesAct, SpeexAecMemPt, SpeexAecMemLen, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( SpeexAecInitByMem( p_SpeexAecPt, SmplRate, FrmLen, FilterLen, IsUseRec, EchoMultiple, EchoCont, EchoSupes, EchoSupesAct, SpeexAecMemPt, SpeexAecMemLen, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_SpeexAecPt = p_SpeexAecPt.m_Val;
                 return 0;
@@ -70,12 +70,12 @@ public class SpeexAec
     }
 
     //根据Speex声学回音消除器内存块文件来创建并初始化Speex声学回音消除器。
-    public int InitByMemFile( int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, String SpeexAecMemFileFullPathStrPt, VarStr ErrInfoVarStrPt )
+    public int InitByMemFile( int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, String SpeexAecMemFileFullPathStrPt, Vstr ErrInfoVstrPt )
     {
         if( m_SpeexAecPt == 0 )
         {
             HTLong p_SpeexAecPt = new HTLong();
-            if( SpeexAecInitByMemFile( p_SpeexAecPt, SmplRate, FrmLen, FilterLen, IsUseRec, EchoMultiple, EchoCont, EchoSupes, EchoSupesAct, SpeexAecMemFileFullPathStrPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( SpeexAecInitByMemFile( p_SpeexAecPt, SmplRate, FrmLen, FilterLen, IsUseRec, EchoMultiple, EchoCont, EchoSupes, EchoSupesAct, SpeexAecMemFileFullPathStrPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_SpeexAecPt = p_SpeexAecPt.m_Val;
                 return 0;
@@ -104,9 +104,9 @@ public class SpeexAec
     }
 
     //将Speex声学回音消除器内存块保存到指定的文件。
-    public int SaveMemFile( int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, String SpeexAecMemFileFullPathStrPt, VarStr ErrInfoVarStrPt )
+    public int SaveMemFile( int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, String SpeexAecMemFileFullPathStrPt, Vstr ErrInfoVstrPt )
     {
-        return SpeexAecSaveMemFile( m_SpeexAecPt, SmplRate, FrmLen, FilterLen, IsUseRec, EchoMultiple, EchoCont, EchoSupes, EchoSupesAct, SpeexAecMemFileFullPathStrPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
+        return SpeexAecSaveMemFile( m_SpeexAecPt, SmplRate, FrmLen, FilterLen, IsUseRec, EchoMultiple, EchoCont, EchoSupes, EchoSupesAct, SpeexAecMemFileFullPathStrPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
     //用Speex声学回音消除器对单声道16位有符号整型PCM格式输入帧进行Speex声学回音消除。
@@ -137,13 +137,13 @@ public class SpeexAec
     }
 
     //创建并初始化Speex声学回音消除器。
-    public native int SpeexAecInit( HTLong SpeexAecPt, int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, long ErrInfoVarStrPt );
+    public native int SpeexAecInit( HTLong SpeexAecPt, int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, long ErrInfoVstrPt );
 
     //根据Speex声学回音消除器内存块来创建并初始化Speex声学回音消除器。
-    public native int SpeexAecInitByMem( HTLong SpeexAecPt, int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, byte SpeexAecMemPt[], long SpeexAecMemLen, long ErrInfoVarStrPt );
+    public native int SpeexAecInitByMem( HTLong SpeexAecPt, int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, byte SpeexAecMemPt[], long SpeexAecMemLen, long ErrInfoVstrPt );
 
     //根据Speex声学回音消除器内存块文件来创建并初始化Speex声学回音消除器。
-    public native int SpeexAecInitByMemFile( HTLong SpeexAecPt, int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, String SpeexAecMemFileFullPathStrPt, long ErrInfoVarStrPt );
+    public native int SpeexAecInitByMemFile( HTLong SpeexAecPt, int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, String SpeexAecMemFileFullPathStrPt, long ErrInfoVstrPt );
 
     //获取Speex声学回音消除器内存块的数据长度。
     public native int SpeexAecGetMemLen( long SpeexAecPt, int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, HTLong SpeexAecMemLenPt );
@@ -152,7 +152,7 @@ public class SpeexAec
     public native int SpeexAecGetMem( long SpeexAecPt, int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, byte SpeexAecMemPt[], long SpeexAecMemSz );
 
     //将Speex声学回音消除器内存块保存到指定的文件。
-    public native int SpeexAecSaveMemFile( long SpeexAecPt, int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, String SpeexAecMemFileFullPathStrPt, long ErrInfoVarStrPt );
+    public native int SpeexAecSaveMemFile( long SpeexAecPt, int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMultiple, float EchoCont, int EchoSupes, int EchoSupesAct, String SpeexAecMemFileFullPathStrPt, long ErrInfoVstrPt );
 
     //用Speex声学回音消除器对单声道16位有符号整型PCM格式输入帧进行Speex声学回音消除。
     public native int SpeexAecPocs( long SpeexAecPt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );

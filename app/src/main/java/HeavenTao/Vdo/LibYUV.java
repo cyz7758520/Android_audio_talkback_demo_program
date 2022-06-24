@@ -21,7 +21,7 @@ public class LibYUV
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
 
     }
@@ -52,21 +52,21 @@ public class LibYUV
     public native static int PictrCrop( byte SrcPictrPt[], int SrcPictrFmt, int SrcPictrWidth, int SrcPictrHeight,
                                         int CropX, int CropY, int CropWidth, int CropHeight,
                                         byte DstPictrPt[], long DstPictrSz, HTLong DstPictrLenPt, HTInt DstPictrWidthPt, HTInt DstPictrHeightPt,
-                                        VarStr ErrInfoVarStrPt );
+                                        Vstr ErrInfoVstrPt );
 
     public native static int PictrRotate( byte SrcPictrPt[], int SrcPictrFmt, int SrcPictrWidth, int SrcPictrHeight,
                                           int RotateDegree,
                                           byte DstPictrPt[], long DstPictrSz, HTInt DstPictrWidthPt, HTInt DstPictrHeightPt,
-                                          VarStr ErrInfoVarStrPt );
+                                          Vstr ErrInfoVstrPt );
 
     public native static int PictrScale( byte SrcPictrPt[], int SrcPictrFmt, int SrcPictrWidth, int SrcPictrHeight,
                                          int Quality,
                                          byte DstPictrPt[], long DstPictrSz, HTLong DstPictrLenPt, int DstPictrWidth, int DstPictrHeight,
-                                         VarStr ErrInfoVarStrPt );
+                                         Vstr ErrInfoVstrPt );
 
     public native static int PictrFmtCnvrt( byte SrcPictrPt[], int SrcPictrFmt, int SrcPictrWidth, int SrcPictrHeight,
                                             byte DstPictrPt[], long DstPictrSz, HTLong DstPictrLenPt, int DstPictrFmt,
-                                            VarStr ErrInfoVarStrPt );
+                                            Vstr ErrInfoVstrPt );
 
     public native static int PictrFmtCnvrtWithStride( byte SrcPictrPlane1Pt[], long SrcPictrPlane1Start, int SrcPictrPlane1Stride,
                                                       byte SrcPictrPlane2Pt[], long SrcPictrPlane2Start, int SrcPictrPlane2Stride,
@@ -78,13 +78,13 @@ public class LibYUV
                                                       byte DstPictrPlane3Pt[], long DstPictrPlane3Start, long DstPictrPlane3Sz, int DstPictrPlane3Stride, HTLong DstPictrPlane3LenPt,
                                                       int DstPictrFmt,
 
-                                                      VarStr ErrInfoVarStrPt );
+                                                      Vstr ErrInfoVstrPt );
     
     public native static int PictrDrawToBitmap( byte SrcPictrPt[], int SrcPictrFmt, int SrcPictrWidth, int SrcPictrHeight,
                                                 Bitmap DstBitmapPt,
-                                                VarStr ErrInfoVarStrPt );
+                                                Vstr ErrInfoVstrPt );
 
     public native static int PictrDrawToSurface( byte SrcPictrPt[], long SrcPictrStart, int SrcPictrFmt, int SrcPictrWidth, int SrcPictrHeight,
                                                  Surface DstSurfacePt,
-                                                 VarStr ErrInfoVarStrPt );
+                                                 Vstr ErrInfoVstrPt );
 }

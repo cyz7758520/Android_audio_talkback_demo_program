@@ -21,18 +21,18 @@ public class WebRtcAecm
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
         Dstoy();
     }
 
     //创建并初始化WebRtc定点版声学回音消除器。
-    public int Init( int SmplRate, int FrmLen, int IsUseCNGMode, int EchoMode, int Delay, VarStr ErrInfoVarStrPt )
+    public int Init( int SmplRate, int FrmLen, int IsUseCNGMode, int EchoMode, int Delay, Vstr ErrInfoVstrPt )
     {
         if( m_WebRtcAecmPt == 0 )
         {
             HTLong p_WebRtcAecmPt = new HTLong();
-            if( WebRtcAecmInit( p_WebRtcAecmPt, SmplRate, FrmLen, IsUseCNGMode, EchoMode, Delay, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( WebRtcAecmInit( p_WebRtcAecmPt, SmplRate, FrmLen, IsUseCNGMode, EchoMode, Delay, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_WebRtcAecmPt = p_WebRtcAecmPt.m_Val;
                 return 0;
@@ -88,7 +88,7 @@ public class WebRtcAecm
     }
 
     //创建并初始化WebRtc定点版声学回音消除器。
-    public native int WebRtcAecmInit( HTLong WebRtcAecmPt, int SmplRate, int FrmLen, int IsUseCNGMode, int EchoMode, int Delay, long ErrInfoVarStrPt );
+    public native int WebRtcAecmInit( HTLong WebRtcAecmPt, int SmplRate, int FrmLen, int IsUseCNGMode, int EchoMode, int Delay, long ErrInfoVstrPt );
 
     //设置WebRtc定点版声学回音消除器的回音延迟。
     public native int WebRtcAecmSetDelay( long WebRtcAecmPt, int Delay );

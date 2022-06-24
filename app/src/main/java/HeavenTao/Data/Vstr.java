@@ -1,36 +1,36 @@
 package HeavenTao.Data;
 
 //动态字符串类。
-public class VarStr
+public class Vstr
 {
     static
     {
         System.loadLibrary( "Func" ); //加载libFunc.so。
     }
 
-    public long m_VarStrPt; //存放动态字符串的指针。
+    public long m_VstrPt; //存放动态字符串的指针。
 
     //构造函数。
-    public VarStr()
+    public Vstr()
     {
-        m_VarStrPt = 0;
+        m_VstrPt = 0;
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
         Dstoy();
     }
 
     //创建并初始化动态字符串。
-    public int Init()
+    public int Init( String SrcStrPt )
     {
-        if( m_VarStrPt == 0 )
+        if( m_VstrPt == 0 )
         {
-            HTLong p_VarStrPt = new HTLong();
-            if( VarStrInit( p_VarStrPt ) == 0 )
+            HTLong p_VstrPt = new HTLong();
+            if( VstrInit( p_VstrPt, SrcStrPt ) == 0 )
             {
-                m_VarStrPt = p_VarStrPt.m_Val;
+                m_VstrPt = p_VstrPt.m_Val;
                 return 0;
             }
             else
@@ -45,55 +45,55 @@ public class VarStr
     }
 
     //复制字符串到动态字符串。
-    public int Cpy( String StrPt )
+    public int Cpy( String SrcStrPt )
     {
-        return VarStrCpy( m_VarStrPt, StrPt );
+        return VstrCpy( m_VstrPt, SrcStrPt );
     }
 
     //插入字符串到动态字符串的指定位置。
-    public int Ins( long Pos, String StrPt )
+    public int Ins( long Pos, String SrcStrPt )
     {
-        return VarStrIns( m_VarStrPt, Pos, StrPt );
+        return VstrIns( m_VstrPt, Pos, SrcStrPt );
     }
 
     //追加字符串到动态字符串的末尾。
-    public int Cat( String StrPt )
+    public int Cat( String SrcStrPt )
     {
-        return VarStrCat( m_VarStrPt, StrPt );
+        return VstrCat( m_VstrPt, SrcStrPt );
     }
 
     //清空动态字符串的字符串。
     public int SetEmpty()
     {
-        return VarStrSetEmpty( m_VarStrPt );
+        return VstrSetEmpty( m_VstrPt );
     }
 
     //设置动态字符串的字符串内存大小。
     public int SetSz( long StrSz )
     {
-        return VarStrSetSz( m_VarStrPt, StrSz );
+        return VstrSetSz( m_VstrPt, StrSz );
     }
 
     //获取动态字符串的字符串内存大小。
     public int GetSz( HTLong StrSzPt )
     {
-        return VarStrGetSz( m_VarStrPt, StrSzPt );
+        return VstrGetSz( m_VstrPt, StrSzPt );
     }
 
     //获取动态字符串的字符串。
     public String GetStr()
     {
-        return VarStrGetStr( m_VarStrPt );
+        return VstrGetStr( m_VstrPt );
     }
 
     //销毁动态字符串。
     public int Dstoy()
     {
-        if( m_VarStrPt != 0 )
+        if( m_VstrPt != 0 )
         {
-            if( VarStrDstoy( m_VarStrPt ) == 0 )
+            if( VstrDstoy( m_VstrPt ) == 0 )
             {
-                m_VarStrPt = 0;
+                m_VstrPt = 0;
                 return 0;
             }
             else
@@ -108,29 +108,29 @@ public class VarStr
     }
 
     //创建并初始化动态字符串。
-    public native int VarStrInit( HTLong VarStrPt );
+    public native int VstrInit( HTLong VstrPt, String SrcStrPt );
 
     //复制字符串到动态字符串。
-    public native int VarStrCpy( long VarStrPt, String StrPt );
+    public native int VstrCpy( long VstrPt, String SrcStrPt );
 
     //插入字符串到动态字符串的指定位置。
-    public native int VarStrIns( long VarStrPt, long Pos, String StrPt );
+    public native int VstrIns( long VstrPt, long Pos, String SrcStrPt );
 
     //追加字符串到动态字符串的末尾。
-    public native int VarStrCat( long VarStrPt, String StrPt );
+    public native int VstrCat( long VstrPt, String SrcStrPt );
 
     //清空动态字符串的字符串。
-    public native int VarStrSetEmpty( long VarStrPt );
+    public native int VstrSetEmpty( long VstrPt );
 
     //设置动态字符串的字符串内存大小。
-    public native int VarStrSetSz( long VarStrPt, long StrSz );
+    public native int VstrSetSz( long VstrPt, long StrSz );
 
     //获取动态字符串的字符串内存大小。
-    public native int VarStrGetSz( long VarStrPt, HTLong StrSzPt );
+    public native int VstrGetSz( long VstrPt, HTLong StrSzPt );
 
     //获取动态字符串的字符串。
-    public native String VarStrGetStr( long VarStrPt );
+    public native String VstrGetStr( long VstrPt );
 
     //销毁动态字符串。
-    public native int VarStrDstoy( long VarStrPt );
+    public native int VstrDstoy( long VstrPt );
 }

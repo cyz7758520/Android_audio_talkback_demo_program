@@ -21,18 +21,18 @@ public class WebRtcNs
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
         Dstoy();
     }
 
     //创建并初始化WebRtc浮点版噪音抑制器。
-    public int Init( int SmplRate, int FrmLen, int PolicyMode, VarStr ErrInfoVarStrPt )
+    public int Init( int SmplRate, int FrmLen, int PolicyMode, Vstr ErrInfoVstrPt )
     {
         if( m_WebRtcNsPt == 0 )
         {
             HTLong p_WebRtcNsPt = new HTLong();
-            if( WebRtcNsInit( p_WebRtcNsPt, SmplRate, FrmLen, PolicyMode, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( WebRtcNsInit( p_WebRtcNsPt, SmplRate, FrmLen, PolicyMode, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_WebRtcNsPt = p_WebRtcNsPt.m_Val;
                 return 0;
@@ -76,7 +76,7 @@ public class WebRtcNs
     }
 
     //创建并初始化WebRtc浮点版噪音抑制器。
-    public native int WebRtcNsInit( HTLong WebRtcNsPt, int SmplRate, int FrmLen, int PolicyMode, long ErrInfoVarStrPt );
+    public native int WebRtcNsInit( HTLong WebRtcNsPt, int SmplRate, int FrmLen, int PolicyMode, long ErrInfoVstrPt );
 
     //用WebRtc浮点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc浮点版噪音抑制。
     public native int WebRtcNsPocs( long WebRtcNsPt, short FrmObj[], short RsltFrmObj[] );

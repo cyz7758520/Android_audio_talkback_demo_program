@@ -22,18 +22,18 @@ public class AdoWavfm
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
         Dstoy( null );
     }
 
     //创建并初始化音频波形器。
-    public int Init( VarStr ErrInfoVarStrPt )
+    public int Init( Vstr ErrInfoVstrPt )
     {
         if( m_AdoWavfmPt == 0 )
         {
             HTLong p_AdoWavfmPt = new HTLong();
-            if( AdoWavfmInit( p_AdoWavfmPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( AdoWavfmInit( p_AdoWavfmPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_AdoWavfmPt = p_AdoWavfmPt.m_Val;
                 return 0;
@@ -50,17 +50,17 @@ public class AdoWavfm
     }
 
     //绘制音频波形到Surface。
-    public int Draw( short PcmFrmPt[], int FrmLen, Surface DstSurfacePt, VarStr ErrInfoVarStrPt )
+    public int Draw( short PcmFrmPt[], int FrmLen, Surface DstSurfacePt, Vstr ErrInfoVstrPt )
     {
-        return AdoWavfmDraw( m_AdoWavfmPt, PcmFrmPt, FrmLen, DstSurfacePt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
+        return AdoWavfmDraw( m_AdoWavfmPt, PcmFrmPt, FrmLen, DstSurfacePt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
     //销毁音频波形器。
-    public int Dstoy( VarStr ErrInfoVarStrPt )
+    public int Dstoy( Vstr ErrInfoVstrPt )
     {
         if( m_AdoWavfmPt != 0 )
         {
-            if( AdoWavfmDstoy( m_AdoWavfmPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( AdoWavfmDstoy( m_AdoWavfmPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_AdoWavfmPt = 0;
                 return 0;
@@ -77,11 +77,11 @@ public class AdoWavfm
     }
 
     //创建并初始化音频波形器。
-    public native int AdoWavfmInit( HTLong AdoWavfmPt, long ErrInfoVarStrPt );
+    public native int AdoWavfmInit( HTLong AdoWavfmPt, long ErrInfoVstrPt );
 
     //绘制音频波形到Surface。
-    public native int AdoWavfmDraw( long AdoWavfmPt, short PcmFrmPt[], int FrmLen, Surface DstSurfacePt, long ErrInfoVarStrPt );
+    public native int AdoWavfmDraw( long AdoWavfmPt, short PcmFrmPt[], int FrmLen, Surface DstSurfacePt, long ErrInfoVstrPt );
 
     //销毁音频波形器。
-    public native int AdoWavfmDstoy( long AdoWavfmPt, long ErrInfoVarStrPt );
+    public native int AdoWavfmDstoy( long AdoWavfmPt, long ErrInfoVstrPt );
 }

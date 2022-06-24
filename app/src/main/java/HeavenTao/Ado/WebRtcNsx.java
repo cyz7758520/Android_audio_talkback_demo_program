@@ -21,18 +21,18 @@ public class WebRtcNsx
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
         Dstoy();
     }
 
     //创建并初始化WebRtc定点版噪音抑制器。
-    public int Init( int SmplRate, int FrmLen, int PolicyMode, VarStr ErrInfoVarStrPt )
+    public int Init( int SmplRate, int FrmLen, int PolicyMode, Vstr ErrInfoVstrPt )
     {
         if( m_WebRtcNsxPt == 0 )
         {
             HTLong p_WebRtcNsPt = new HTLong();
-            if( WebRtcNsxInit( p_WebRtcNsPt, SmplRate, FrmLen, PolicyMode, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( WebRtcNsxInit( p_WebRtcNsPt, SmplRate, FrmLen, PolicyMode, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_WebRtcNsxPt = p_WebRtcNsPt.m_Val;
                 return 0;
@@ -76,7 +76,7 @@ public class WebRtcNsx
     }
 
     //创建并初始化WebRtc定点版噪音抑制器。
-    public native int WebRtcNsxInit( HTLong WebRtcNsxPt, int SmplRate, int FrmLen, int PolicyMode, long ErrInfoVarStrPt );
+    public native int WebRtcNsxInit( HTLong WebRtcNsxPt, int SmplRate, int FrmLen, int PolicyMode, long ErrInfoVstrPt );
 
     //用WebRtc定点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc定点版噪音抑制。
     public native int WebRtcNsxPocs( long WebRtcNsxPt, short FrmPt[], short RsltFrmPt[] );

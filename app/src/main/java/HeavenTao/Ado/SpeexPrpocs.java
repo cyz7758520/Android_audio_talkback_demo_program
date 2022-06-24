@@ -20,18 +20,18 @@ public class SpeexPrpocs
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
         Dstoy();
     }
 
     //创建并初始化Speex预处理器。
-    public int Init( int SmplRate, int FrmLen, int IsUseNs, int NoiseSupes, int IsUseDereverb, int IsUseVad, int VadProbStart, int VadProbCont, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain, VarStr ErrInfoVarStrPt )
+    public int Init( int SmplRate, int FrmLen, int IsUseNs, int NoiseSupes, int IsUseDereverb, int IsUseVad, int VadProbStart, int VadProbCont, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain, Vstr ErrInfoVstrPt )
     {
         if( m_SpeexPrpocsPt == 0 )
         {
             HTLong p_SpeexPrpocsPt = new HTLong();
-            if( SpeexPrpocsInit( p_SpeexPrpocsPt, SmplRate, FrmLen, IsUseNs, NoiseSupes, IsUseDereverb, IsUseVad, VadProbStart, VadProbCont, IsUseAgc, AgcLevel, AgcIncrement, AgcDecrement, AgcMaxGain, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( SpeexPrpocsInit( p_SpeexPrpocsPt, SmplRate, FrmLen, IsUseNs, NoiseSupes, IsUseDereverb, IsUseVad, VadProbStart, VadProbCont, IsUseAgc, AgcLevel, AgcIncrement, AgcDecrement, AgcMaxGain, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_SpeexPrpocsPt = p_SpeexPrpocsPt.m_Val;
                 return 0;
@@ -75,7 +75,7 @@ public class SpeexPrpocs
     }
 
     //创建并初始化Speex预处理器。
-    public native int SpeexPrpocsInit( HTLong SpeexPrpocsPt, int SmplRate, int FrmLen, int IsUseNs, int NoiseSupes, int IsUseDereverb, int IsUseVad, int VadProbStart, int VadProbCont, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain, long ErrInfoVarStrPt );
+    public native int SpeexPrpocsInit( HTLong SpeexPrpocsPt, int SmplRate, int FrmLen, int IsUseNs, int NoiseSupes, int IsUseDereverb, int IsUseVad, int VadProbStart, int VadProbCont, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain, long ErrInfoVstrPt );
 
     //用Speex预处理器对单声道16位有符号整型PCM格式帧进行Speex预处理。
     public native int SpeexPrpocsPocs( long SpeexPrpocsPt, short FrmPt[], short RsltFrmPt[], HTInt VoiceActStsPt );

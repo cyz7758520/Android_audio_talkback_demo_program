@@ -21,18 +21,18 @@ public class WebRtcAec
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
         Dstoy();
     }
 
     //创建并初始化WebRtc浮点版声学回音消除器。
-    public int Init( int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, VarStr ErrInfoVarStrPt )
+    public int Init( int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, Vstr ErrInfoVstrPt )
     {
         if( m_WebRtcAecPt == 0 )
         {
             HTLong p_WebRtcAecPt = new HTLong();
-            if( WebRtcAecInit( p_WebRtcAecPt, SmplRate, FrmLen, EchoMode, Delay, IsUseDelayAgstcMode, IsUseExtdFilterMode, IsUseRefinedFilterAdaptAecMode, IsUseAdaptAdjDelay, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( WebRtcAecInit( p_WebRtcAecPt, SmplRate, FrmLen, EchoMode, Delay, IsUseDelayAgstcMode, IsUseExtdFilterMode, IsUseRefinedFilterAdaptAecMode, IsUseAdaptAdjDelay, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_WebRtcAecPt = p_WebRtcAecPt.m_Val;
                 return 0;
@@ -49,12 +49,12 @@ public class WebRtcAec
     }
 
     //根据WebRtc浮点版声学回音消除器内存块来创建并初始化WebRtc浮点版声学回音消除器。
-    public int InitByMem( int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, byte WebRtcAecMemPt[], long WebRtcAecMemLen, VarStr ErrInfoVarStrPt )
+    public int InitByMem( int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, byte WebRtcAecMemPt[], long WebRtcAecMemLen, Vstr ErrInfoVstrPt )
     {
         if( m_WebRtcAecPt == 0 )
         {
             HTLong p_WebRtcAecPt = new HTLong();
-            if( WebRtcAecInitByMem( p_WebRtcAecPt, SmplRate, FrmLen, EchoMode, Delay, IsUseDelayAgstcMode, IsUseExtdFilterMode, IsUseRefinedFilterAdaptAecMode, IsUseAdaptAdjDelay, WebRtcAecMemPt, WebRtcAecMemLen, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( WebRtcAecInitByMem( p_WebRtcAecPt, SmplRate, FrmLen, EchoMode, Delay, IsUseDelayAgstcMode, IsUseExtdFilterMode, IsUseRefinedFilterAdaptAecMode, IsUseAdaptAdjDelay, WebRtcAecMemPt, WebRtcAecMemLen, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_WebRtcAecPt = p_WebRtcAecPt.m_Val;
                 return 0;
@@ -71,12 +71,12 @@ public class WebRtcAec
     }
 
     //根据WebRtc浮点版声学回音消除器内存块文件来创建并初始化WebRtc浮点版声学回音消除器。
-    public int InitByMemFile( int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, String WebRtcAecMemFileFullPathStrPt, VarStr ErrInfoVarStrPt )
+    public int InitByMemFile( int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, String WebRtcAecMemFileFullPathStrPt, Vstr ErrInfoVstrPt )
     {
         if( m_WebRtcAecPt == 0 )
         {
             HTLong p_WebRtcAecPt = new HTLong();
-            if( WebRtcAecInitByMemFile( p_WebRtcAecPt, SmplRate, FrmLen, EchoMode, Delay, IsUseDelayAgstcMode, IsUseExtdFilterMode, IsUseRefinedFilterAdaptAecMode, IsUseAdaptAdjDelay, WebRtcAecMemFileFullPathStrPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 ) == 0 )
+            if( WebRtcAecInitByMemFile( p_WebRtcAecPt, SmplRate, FrmLen, EchoMode, Delay, IsUseDelayAgstcMode, IsUseExtdFilterMode, IsUseRefinedFilterAdaptAecMode, IsUseAdaptAdjDelay, WebRtcAecMemFileFullPathStrPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_WebRtcAecPt = p_WebRtcAecPt.m_Val;
                 return 0;
@@ -105,9 +105,9 @@ public class WebRtcAec
     }
 
     //将WebRtc浮点版声学回音消除器内存块保存到指定的文件。
-    public int SaveMemFile( int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, String WebRtcAecMemFileFullPathStrPt, VarStr ErrInfoVarStrPt )
+    public int SaveMemFile( int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, String WebRtcAecMemFileFullPathStrPt, Vstr ErrInfoVstrPt )
     {
-        return WebRtcAecSaveMemFile( m_WebRtcAecPt, SmplRate, FrmLen, EchoMode, Delay, IsUseDelayAgstcMode, IsUseExtdFilterMode, IsUseRefinedFilterAdaptAecMode, IsUseAdaptAdjDelay, WebRtcAecMemFileFullPathStrPt, ( ErrInfoVarStrPt != null ) ? ErrInfoVarStrPt.m_VarStrPt : 0 );
+        return WebRtcAecSaveMemFile( m_WebRtcAecPt, SmplRate, FrmLen, EchoMode, Delay, IsUseDelayAgstcMode, IsUseExtdFilterMode, IsUseRefinedFilterAdaptAecMode, IsUseAdaptAdjDelay, WebRtcAecMemFileFullPathStrPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
     //设置WebRtc浮点版声学回音消除器的回音延迟。
@@ -150,13 +150,13 @@ public class WebRtcAec
     }
 
     //创建并初始化WebRtc浮点版声学回音消除器。
-    public native int WebRtcAecInit( HTLong WebRtcAecPt, int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, long ErrInfoVarStrPt );
+    public native int WebRtcAecInit( HTLong WebRtcAecPt, int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, long ErrInfoVstrPt );
 
     //根据WebRtc浮点版声学回音消除器内存块来创建并初始化WebRtc浮点版声学回音消除器。
-    public native int WebRtcAecInitByMem( HTLong WebRtcAecPt, int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, byte WebRtcAecMemPt[], long WebRtcAecMemLen, long ErrInfoVarStrPt );
+    public native int WebRtcAecInitByMem( HTLong WebRtcAecPt, int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, byte WebRtcAecMemPt[], long WebRtcAecMemLen, long ErrInfoVstrPt );
 
     //根据WebRtc浮点版声学回音消除器内存块文件来创建并初始化WebRtc浮点版声学回音消除器。
-    public native int WebRtcAecInitByMemFile( HTLong WebRtcAecPt, int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, String WebRtcAecMemFileFullPathStrPt, long ErrInfoVarStrPt );
+    public native int WebRtcAecInitByMemFile( HTLong WebRtcAecPt, int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, String WebRtcAecMemFileFullPathStrPt, long ErrInfoVstrPt );
 
     //获取WebRtc浮点版声学回音消除器内存块的数据长度。
     public native int WebRtcAecGetMemLen( long WebRtcAecPt, int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, HTLong WebrtcAecMemLenPt );
@@ -165,7 +165,7 @@ public class WebRtcAec
     public native int WebRtcAecGetMem( long WebRtcAecPt, int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, byte WebRtcAecMemPt[], long WebRtcAecMemSz );
 
     //将WebRtc浮点版声学回音消除器内存块保存到指定的文件。
-    public native int WebRtcAecSaveMemFile( long WebRtcAecPt, int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, String WebRtcAecMemFileFullPathStrPt, long ErrInfoVarStrPt );
+    public native int WebRtcAecSaveMemFile( long WebRtcAecPt, int SmplRate, int FrmLen, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, String WebRtcAecMemFileFullPathStrPt, long ErrInfoVstrPt );
 
     //设置WebRtc浮点版声学回音消除器的回音延迟。
     public native int WebRtcAecSetDelay( long WebRtcAecPt, int Delay );
