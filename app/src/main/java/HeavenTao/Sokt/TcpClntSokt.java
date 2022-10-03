@@ -25,13 +25,13 @@ public class TcpClntSokt
         Dstoy( ( short )-1, null );
     }
 
-    //创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字。
-    public int Init( int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, short TimeOutMsec, Vstr ErrInfoVstrPt )
+    //创建并初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字。
+    public int Init( int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, short TmotMsec, Vstr ErrInfoVstrPt )
     {
         if( m_TcpClntSoktPt == 0 )
         {
             HTLong p_WebRtcNsPt = new HTLong();
-            if( TcpClntSoktInit( p_WebRtcNsPt, RmtLclNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, LclNodeNamePt, LclNodeSrvcPt, TimeOutMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            if( TcpClntInit( p_WebRtcNsPt, RmtLclNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, LclNodeNamePt, LclNodeSrvcPt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_TcpClntSoktPt = p_WebRtcNsPt.m_Val;
                 return 0;
@@ -47,72 +47,94 @@ public class TcpClntSokt
         }
     }
 
-    //获取已连接的本端TCP协议客户端套接字绑定的本端节点地址和端口。
-    public int GetLclAddr( HTInt LclNodeAddrFmlyPt, HTString LclNodeAddrPt, HTString LclNodePortPt, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
+    //本端TCP协议客户端套接字的互斥锁加锁。
+    public int Locked( Vstr ErrInfoVstrPt )
     {
-        return TcpClntSoktGetLclAddr( m_TcpClntSoktPt, LclNodeAddrFmlyPt, LclNodeAddrPt, LclNodePortPt, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return TcpClntLocked( m_TcpClntSoktPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
-    //获取已连接的本端TCP协议客户端套接字连接的远端TCP协议客户端套接字绑定的远端节点地址和端口。
-    public int GetRmtAddr( HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
+    //本端TCP协议客户端套接字的互斥锁解锁。
+    public int Unlock( Vstr ErrInfoVstrPt )
     {
-        return TcpClntSoktGetRmtAddr( m_TcpClntSoktPt, RmtNodeAddrFmlyPt, RmtNodeAddrPt, RmtNodePortPt, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
-    }
-
-    //设置已连接的本端TCP协议客户端套接字的Nagle延迟算法状态。
-    public int SetNoDelay( int IsNoDelay, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
-    {
-        return TcpClntSoktSetNoDelay( m_TcpClntSoktPt, IsNoDelay, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
-    }
-    //获取已连接的本端TCP协议客户端套接字的Nagle延迟算法状态。
-    public int GetNoDelay( HTInt IsNoDelayPt, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
-    {
-        return TcpClntSoktGetNoDelay( m_TcpClntSoktPt, IsNoDelayPt, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return TcpClntUnlock( m_TcpClntSoktPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
-    //设置本端TCP协议客户端套接字的发送缓冲区内存大小。
-    public int SetSendBufSz( long SendBufSz, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
+    //获取本端TCP协议客户端套接字绑定的本端节点地址和端口。
+    public int GetLclAddr( HTInt LclNodeAddrFmlyPt, HTString LclNodeAddrPt, HTString LclNodePortPt, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return TcpClntSoktSetSendBufSz( m_TcpClntSoktPt, SendBufSz, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return TcpClntGetLclAddr( m_TcpClntSoktPt, LclNodeAddrFmlyPt, LclNodeAddrPt, LclNodePortPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
-    //获取本端TCP协议客户端套接字的发送缓冲区内存大小。
-    public int GetSendBufSz( HTLong SendBufSzPt, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
+    //获取本端TCP协议客户端套接字连接的远端TCP协议客户端套接字绑定的远端节点地址和端口。
+    public int GetRmtAddr( HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return TcpClntSoktGetSendBufSz( m_TcpClntSoktPt, SendBufSzPt, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
-    }
-
-    //设置本端TCP协议客户端套接字的接收缓冲区内存大小。
-    public int SetRecvBufSz( long RecvBufSz, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
-    {
-        return TcpClntSoktSetRecvBufSz( m_TcpClntSoktPt, RecvBufSz, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
-    }
-    //获取本端TCP协议客户端套接字的接收缓冲区内存大小。
-    public int GetRecvBufSz( HTLong RecvBufSzPt, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
-    {
-        return TcpClntSoktGetRecvBufSz( m_TcpClntSoktPt, RecvBufSzPt, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
-    }
-    //获取本端TCP协议客户端套接字的接收缓冲区数据长度。
-    public int GetRecvBufLen( HTLong RecvBufLenPt, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
-    {
-        return TcpClntSoktGetRecvBufLen( m_TcpClntSoktPt, RecvBufLenPt, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return TcpClntGetRmtAddr( m_TcpClntSoktPt, RmtNodeAddrFmlyPt, RmtNodeAddrPt, RmtNodePortPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
-    //用已连接的本端TCP协议客户端套接字发送一个数据包到连接的远端TCP协议客户端套接字。
-    public int SendPkt( byte DataBufPt[], long DataBufLen, short TimeOutMsec, int Times, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
+    //设置本端TCP协议客户端套接字的Nagle延迟算法状态。
+    public int SetNoDelay( int IsNoDelay, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return TcpClntSoktSendPkt( m_TcpClntSoktPt, DataBufPt, DataBufLen, TimeOutMsec, Times, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return TcpClntSetNoDelay( m_TcpClntSoktPt, IsNoDelay, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
-    //用已连接的本端TCP协议客户端套接字接收一个连接的远端TCP协议客户端套接字发送的数据包。
-    public int RecvPkt( byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TimeOutMsec, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
+    //获取本端TCP协议客户端套接字的Nagle延迟算法状态。
+    public int GetNoDelay( HTInt IsNoDelayPt, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return TcpClntSoktRecvPkt( m_TcpClntSoktPt, DataBufPt, DataBufSz, DataBufLenPt, TimeOutMsec, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return TcpClntGetNoDelay( m_TcpClntSoktPt, IsNoDelayPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
-    //关闭并销毁已创建的本端TCP协议客户端套接字。
-    public int Dstoy( short TimeOutSec, Vstr ErrInfoVstrPt )
+    //设置本端TCP协议客户端套接字的发送缓冲区大小。
+    public int SetSendBufSz( long SendBufSz, int IsAutoLock, Vstr ErrInfoVstrPt )
+    {
+        return TcpClntSetSendBufSz( m_TcpClntSoktPt, SendBufSz, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+    //获取本端TCP协议客户端套接字的发送缓冲区大小。
+    public int GetSendBufSz( HTLong SendBufSzPt, int IsAutoLock, Vstr ErrInfoVstrPt )
+    {
+        return TcpClntGetSendBufSz( m_TcpClntSoktPt, SendBufSzPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+
+    //设置本端TCP协议客户端套接字的接收缓冲区大小。
+    public int SetRecvBufSz( long RecvBufSz, int IsAutoLock, Vstr ErrInfoVstrPt )
+    {
+        return TcpClntSetRecvBufSz( m_TcpClntSoktPt, RecvBufSz, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+    //获取本端TCP协议客户端套接字的接收缓冲区大小。
+    public int GetRecvBufSz( HTLong RecvBufSzPt, int IsAutoLock, Vstr ErrInfoVstrPt )
+    {
+        return TcpClntGetRecvBufSz( m_TcpClntSoktPt, RecvBufSzPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+    //获取本端TCP协议客户端套接字的接收缓冲区长度。
+    public int GetRecvBufLen( HTLong RecvBufLenPt, int IsAutoLock, Vstr ErrInfoVstrPt )
+    {
+        return TcpClntGetRecvBufLen( m_TcpClntSoktPt, RecvBufLenPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+
+    //设置本端TCP协议客户端套接字的保活机制。
+    public int SetKeepAlive( int IsUseKeepAlive, int KeepIdle, int KeepIntvl, int KeepCnt, int IsAutoLock, Vstr ErrInfoVstrPt )
+    {
+        return TcpClntSetKeepAlive( m_TcpClntSoktPt, IsUseKeepAlive, KeepIdle, KeepIntvl, KeepCnt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+    //获取本端TCP协议客户端套接字的保活机制。
+    public int GetKeepAlive( HTInt IsUseKeepAlivePt, HTInt KeepIdlePt, HTInt KeepIntvlPt, HTInt KeepCntPt, int IsAutoLock, Vstr ErrInfoVstrPt )
+    {
+        return TcpClntGetKeepAlive( m_TcpClntSoktPt, IsUseKeepAlivePt, KeepIdlePt, KeepIntvlPt, KeepCntPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+
+    //用本端TCP协议客户端套接字发送数据包到连接的远端TCP协议客户端套接字。
+    public int SendPkt( byte DataBufPt[], long DataBufLen, short TmotMsec, int Times, int IsAutoLock, Vstr ErrInfoVstrPt )
+    {
+        return TcpClntSendPkt( m_TcpClntSoktPt, DataBufPt, DataBufLen, TmotMsec, Times, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+    //用本端TCP协议客户端套接字接收连接的远端TCP协议客户端套接字发送的数据包。
+    public int RecvPkt( byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TmotMsec, int IsAutoLock, Vstr ErrInfoVstrPt )
+    {
+        return TcpClntRecvPkt( m_TcpClntSoktPt, DataBufPt, DataBufSz, DataBufLenPt, TmotMsec, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+
+    //关闭并销毁本端TCP协议客户端套接字。
+    public int Dstoy( short TmotSec, Vstr ErrInfoVstrPt )
     {
         if( m_TcpClntSoktPt != 0 )
         {
-            if( TcpClntSoktDstoy( m_TcpClntSoktPt, TimeOutSec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            if( TcpClntDstoy( m_TcpClntSoktPt, TmotSec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_TcpClntSoktPt = 0;
                 return 0;
@@ -128,36 +150,46 @@ public class TcpClntSokt
         }
     }
 
-    //创建并初始化本端TCP协议客户端套接字，并连接已监听的远端TCP协议服务端套接字。
-    public native int TcpClntSoktInit( HTLong TcpClntSoktPt, int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, short TimeOutMsec, long ErrInfoVstrPt );
+    //创建并初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字。
+    private native int TcpClntInit( HTLong TcpClntSoktPt, int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, short TmotMsec, long ErrInfoVstrPt );
 
-    //获取已连接的本端TCP协议客户端套接字绑定的本端节点地址和端口。
-    public native int TcpClntSoktGetLclAddr( long TcpClntSoktPt, HTInt LclNodeAddrFmlyPt, HTString LclNodeAddrPt, HTString LclNodePortPt, int IsAutoLockUnlock, long ErrInfoVstrPt );
-    //获取已连接的本端TCP协议客户端套接字连接的远端TCP协议客户端套接字绑定的远端节点地址和端口。
-    public native int TcpClntSoktGetRmtAddr( long TcpClntSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, int IsAutoLockUnlock, long ErrInfoVstrPt );
+    //本端TCP协议客户端套接字的互斥锁加锁。
+    private native int TcpClntLocked( long TcpClntSoktPt, long ErrInfoVstrPt );
+    //本端TCP协议客户端套接字的互斥锁解锁。
+    private native int TcpClntUnlock( long TcpClntSoktPt, long ErrInfoVstrPt );
 
-    //设置已连接的本端TCP协议客户端套接字的Nagle延迟算法状态。
-    public native int TcpClntSoktSetNoDelay( long TcpClntSoktPt, int IsNoDelay, int IsAutoLockUnlock, long ErrInfoVstrPt );
-    //获取已连接的本端TCP协议客户端套接字的Nagle延迟算法状态。
-    public native int TcpClntSoktGetNoDelay( long TcpClntSoktPt, HTInt IsNoDelayPt, int IsAutoLockUnlock, long ErrInfoVstrPt );
+    //获取本端TCP协议客户端套接字绑定的本端节点地址和端口。
+    private native int TcpClntGetLclAddr( long TcpClntSoktPt, HTInt LclNodeAddrFmlyPt, HTString LclNodeAddrPt, HTString LclNodePortPt, int IsAutoLock, long ErrInfoVstrPt );
+    //获取本端TCP协议客户端套接字连接的远端TCP协议客户端套接字绑定的远端节点地址和端口。
+    private native int TcpClntGetRmtAddr( long TcpClntSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, int IsAutoLock, long ErrInfoVstrPt );
 
-    //设置本端TCP协议客户端套接字的发送缓冲区内存大小。
-    public native int TcpClntSoktSetSendBufSz( long TcpClntSoktPt, long SendBufSz, int IsAutoLockUnlock, long ErrInfoVstrPt );
-    //获取本端TCP协议客户端套接字的发送缓冲区内存大小。
-    public native int TcpClntSoktGetSendBufSz( long TcpClntSoktPt, HTLong SendBufSzPt, int IsAutoLockUnlock, long ErrInfoVstrPt );
+    //设置本端TCP协议客户端套接字的Nagle延迟算法状态。
+    private native int TcpClntSetNoDelay( long TcpClntSoktPt, int IsNoDelay, int IsAutoLock, long ErrInfoVstrPt );
+    //获取本端TCP协议客户端套接字的Nagle延迟算法状态。
+    private native int TcpClntGetNoDelay( long TcpClntSoktPt, HTInt IsNoDelayPt, int IsAutoLock, long ErrInfoVstrPt );
 
-    //设置本端TCP协议客户端套接字的接收缓冲区内存大小。
-    public native int TcpClntSoktSetRecvBufSz( long TcpClntSoktPt, long RecvBufSz, int IsAutoLockUnlock, long ErrInfoVstrPt );
-    //获取本端TCP协议客户端套接字的接收缓冲区内存大小。
-    public native int TcpClntSoktGetRecvBufSz( long TcpClntSoktPt, HTLong RecvBufSzPt, int IsAutoLockUnlock, long ErrInfoVstrPt );
-    //获取本端TCP协议客户端套接字的接收缓冲区数据长度。
-    public native int TcpClntSoktGetRecvBufLen( long TcpClntSoktPt, HTLong RecvBufLenPt, int IsAutoLockUnlock, long ErrInfoVstrPt );
+    //设置本端TCP协议客户端套接字的发送缓冲区大小。
+    private native int TcpClntSetSendBufSz( long TcpClntSoktPt, long SendBufSz, int IsAutoLock, long ErrInfoVstrPt );
+    //获取本端TCP协议客户端套接字的发送缓冲区大小。
+    private native int TcpClntGetSendBufSz( long TcpClntSoktPt, HTLong SendBufSzPt, int IsAutoLock, long ErrInfoVstrPt );
 
-    //用已连接的本端TCP协议客户端套接字发送一个数据包到连接的远端TCP协议客户端套接字。
-    public native int TcpClntSoktSendPkt( long TcpClntSoktPt, byte DataBufPt[], long DataBufLen, short TimeOutMsec, int Times, int IsAutoLockUnlock, long ErrInfoVstrPt );
-    //用已连接的本端TCP协议客户端套接字开始接收连接的远端TCP协议客户端套接字发送的一个数据包。
-    public native int TcpClntSoktRecvPkt( long TcpClntSoktPt, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TimeOutMsec, int IsAutoLockUnlock, long ErrInfoVstrPt );
+    //设置本端TCP协议客户端套接字的接收缓冲区大小。
+    private native int TcpClntSetRecvBufSz( long TcpClntSoktPt, long RecvBufSz, int IsAutoLock, long ErrInfoVstrPt );
+    //获取本端TCP协议客户端套接字的接收缓冲区大小。
+    private native int TcpClntGetRecvBufSz( long TcpClntSoktPt, HTLong RecvBufSzPt, int IsAutoLock, long ErrInfoVstrPt );
+    //获取本端TCP协议客户端套接字的接收缓冲区长度。
+    private native int TcpClntGetRecvBufLen( long TcpClntSoktPt, HTLong RecvBufLenPt, int IsAutoLock, long ErrInfoVstrPt );
 
-    //关闭并销毁已创建的本端TCP协议客户端套接字。
-    public native int TcpClntSoktDstoy( long TcpClntSoktPt, short TimeOutSec, long ErrInfoVstrPt );
+    //设置本端TCP协议客户端套接字的保活机制。
+    private native int TcpClntSetKeepAlive( long TcpClntSoktPt, int IsUseKeepAlive, int KeepIdle, int KeepIntvl, int KeepCnt, int IsAutoLock, long ErrInfoVstrPt );
+    //获取本端TCP协议客户端套接字的保活机制。
+    private native int TcpClntGetKeepAlive( long TcpClntSoktPt, HTInt IsUseKeepAlivePt, HTInt KeepIdlePt, HTInt KeepIntvlPt, HTInt KeepCntPt, int IsAutoLock, long ErrInfoVstrPt );
+
+    //用本端TCP协议客户端套接字发送数据包到连接的远端TCP协议客户端套接字。
+    private native int TcpClntSendPkt( long TcpClntSoktPt, byte DataBufPt[], long DataBufLen, short TmotMsec, int Times, int IsAutoLock, long ErrInfoVstrPt );
+    //用本端TCP协议客户端套接字接收连接的远端TCP协议客户端套接字发送的数据包。
+    private native int TcpClntRecvPkt( long TcpClntSoktPt, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TmotMsec, int IsAutoLock, long ErrInfoVstrPt );
+
+    //关闭并销毁本端TCP协议客户端套接字。
+    private native int TcpClntDstoy( long TcpClntSoktPt, short TmotSec, long ErrInfoVstrPt );
 }

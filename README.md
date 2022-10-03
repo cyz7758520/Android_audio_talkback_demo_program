@@ -19,7 +19,7 @@
 ![image](https://user-images.githubusercontent.com/16315192/115977799-d0722980-a5ad-11eb-811e-92da4d4f32f9.png)
 
 # 准备
-&emsp;&emsp;准备两台安装了Android 2.3及以上系统的设备（已适配到Android 10.0），其中一台设备作为客户端可以连接到另一台作为服务端的设备（可以用Ping工具测试，建议两台设备在同一局域网内），且两台设备都安装相同版本的本软件。
+&emsp;&emsp;准备两台安装了Android 2.3及以上系统的设备（已适配到Android 12.0），其中一台设备作为客户端可以连接到另一台作为服务端的设备（可以用Ping工具测试，建议两台设备在同一局域网内），且两台设备都安装相同版本的本软件。
 
 # 开始
 &emsp;&emsp;在一台设备上直接点击创建服务端，再在另一台设备上将IP地址改为服务端设备的IP地址，并点击连接服务端，即可开始对讲，在任意一端点击中断，即可中断对讲。  
@@ -40,7 +40,7 @@
 
 &emsp;&emsp;**普通免费功能包括：WebRtc定点版声学回音消除器、Speex预处理器的噪音抑制、WebRtc定点版噪音抑制器、WebRtc浮点版噪音抑制器、Speex预处理器的其他功能、Speex编解码器、Wave文件读取器、Wave文件写入器、音频波形器、本端TCP协议服务端套接字、本端TCP协议客户端套接字、本端UDP协议套接字。**  
 
-&emsp;&emsp;**高级收费功能包括：Speex声学回音消除器、WebRtc浮点版声学回音消除器、SpeexWebRtc三重声学回音消除器、RNNoise噪音抑制器、OpenH264编解码器、系统自带H264编解码器、自己设计的自适应抖动缓冲器。**  
+&emsp;&emsp;**高级收费功能包括：Speex声学回音消除器、WebRtc浮点版声学回音消除器、SpeexWebRtc三重声学回音消除器、RNNoise噪音抑制器、OpenH264编解码器、系统自带H264编解码器、自己设计的自适应抖动缓冲器、本端高级UDP协议套接字。**  
 
 &emsp;&emsp;各个功能对应的文件如下：  
 &emsp;&emsp;* Speex声学回音消除器：libFunc.so、libSpeexDsp.so、SpeexAec.java。  

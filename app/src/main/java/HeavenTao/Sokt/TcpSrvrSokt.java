@@ -25,13 +25,13 @@ public class TcpSrvrSokt
         Dstoy( null );
     }
 
-    //创建并初始化已监听的本端TCP协议服务端套接字。
+    //创建并初始化本端TCP协议服务端套接字。
     public int Init( int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, int MaxWait, int IsReuseAddr, Vstr ErrInfoVstrPt )
     {
         if( m_TcpSrvrSoktPt == 0 )
         {
             HTLong p_WebRtcNsPt = new HTLong();
-            if( TcpSrvrSoktInit( p_WebRtcNsPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, MaxWait, IsReuseAddr, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            if( TcpSrvrInit( p_WebRtcNsPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, MaxWait, IsReuseAddr, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_TcpSrvrSoktPt = p_WebRtcNsPt.m_Val;
                 return 0;
@@ -47,24 +47,35 @@ public class TcpSrvrSokt
         }
     }
 
-    //获取已监听的本端TCP协议服务端套接字绑定的本端节点地址和端口。
-    public int GetLclAddr( HTInt LclNodeAddrFmlyPt, HTString LclNodeAddrPt, HTString LclNodePortPt, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
+    //本端TCP协议服务端套接字的互斥锁加锁。
+    public int Locked( Vstr ErrInfoVstrPt )
     {
-        return TcpSrvrSoktGetLclAddr( m_TcpSrvrSoktPt, LclNodeAddrFmlyPt, LclNodeAddrPt, LclNodePortPt, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return TcpSrvrLocked( m_TcpSrvrSoktPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+    //本端TCP协议服务端套接字的互斥锁解锁。
+    public int Unlock( Vstr ErrInfoVstrPt )
+    {
+        return TcpSrvrUnlock( m_TcpSrvrSoktPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
-    //用已监听的本端TCP协议服务端套接字开始接受远端TCP协议客户端套接字的连接。
-    public int Accept( HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, short TimeOutMsec, TcpClntSokt TcpClntSoktPt, int IsAutoLockUnlock, Vstr ErrInfoVstrPt )
+    //获取本端TCP协议服务端套接字绑定的本端节点地址和端口。
+    public int GetLclAddr( HTInt LclNodeAddrFmlyPt, HTString LclNodeAddrPt, HTString LclNodePortPt, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return TcpSrvrSoktAccept( m_TcpSrvrSoktPt, RmtNodeAddrFmlyPt, RmtNodeAddrPt, RmtNodePortPt, TimeOutMsec, TcpClntSoktPt, IsAutoLockUnlock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return TcpSrvrGetLclAddr( m_TcpSrvrSoktPt, LclNodeAddrFmlyPt, LclNodeAddrPt, LclNodePortPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
-    //关闭并销毁已创建的本端TCP协议服务端套接字。
+    //用本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接。
+    public int Acpt( TcpClntSokt TcpClntSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, short TmotMsec, int IsAutoLock, Vstr ErrInfoVstrPt )
+    {
+        return TcpSrvrAcpt( m_TcpSrvrSoktPt, TcpClntSoktPt, RmtNodeAddrFmlyPt, RmtNodeAddrPt, RmtNodePortPt, TmotMsec, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+
+    //关闭并销毁本端TCP协议服务端套接字。
     public int Dstoy( Vstr ErrInfoVstrPt )
     {
         if( m_TcpSrvrSoktPt != 0 )
         {
-            if( TcpSrvrSoktDstoy( m_TcpSrvrSoktPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            if( TcpSrvrDstoy( m_TcpSrvrSoktPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_TcpSrvrSoktPt = 0;
                 return 0;
@@ -80,15 +91,20 @@ public class TcpSrvrSokt
         }
     }
 
-    //创建并初始化已监听的本端TCP协议服务端套接字。
-    public native int TcpSrvrSoktInit( HTLong TcpSrvrSoktPt, int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, int MaxWait, int IsReuseAddr, long ErrInfoVstrPt );
+    //创建并初始化本端TCP协议服务端套接字。
+    private native int TcpSrvrInit(HTLong TcpSrvrSoktPt, int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, int MaxWait, int IsReuseAddr, long ErrInfoVstrPt );
 
-    //获取已监听的本端TCP协议服务端套接字绑定的本端节点地址和端口。
-    public native int TcpSrvrSoktGetLclAddr( long TcpSrvrSoktPt, HTInt LclNodeAddrFmlyPt, HTString LclNodeAddrPt, HTString LclNodePortPt, int IsAutoLockUnlock, long ErrInfoVstrPt );
+    //本端TCP协议服务端套接字的互斥锁加锁。
+    private native int TcpSrvrLocked( long TcpSrvrSoktPt, long ErrInfoVstrPt );
+    //本端TCP协议服务端套接字的互斥锁解锁。
+    private native int TcpSrvrUnlock( long TcpSrvrSoktPt, long ErrInfoVstrPt );
 
-    //用已监听的本端TCP协议服务端套接字开始接受远端TCP协议客户端套接字的连接。
-    public native int TcpSrvrSoktAccept( long TcpSrvrSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, short TimeOutMsec, TcpClntSokt TcpClntSoktPt, int IsAutoLockUnlock, long ErrInfoVstrPt );
+    //获取本端TCP协议服务端套接字绑定的本端节点地址和端口。
+    private native int TcpSrvrGetLclAddr( long TcpSrvrSoktPt, HTInt LclNodeAddrFmlyPt, HTString LclNodeAddrPt, HTString LclNodePortPt, int IsAutoLock, long ErrInfoVstrPt );
 
-    //关闭并销毁已创建的本端TCP协议服务端套接字。
-    public native int TcpSrvrSoktDstoy( long TcpSrvrSoktPt, long ErrInfoVstrPt );
+    //用本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接。
+    private native int TcpSrvrAcpt( long TcpSrvrSoktPt, TcpClntSokt TcpClntSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, short TmotMsec, int IsAutoLock, long ErrInfoVstrPt );
+
+    //关闭并销毁本端TCP协议服务端套接字。
+    private native int TcpSrvrDstoy( long TcpSrvrSoktPt, long ErrInfoVstrPt );
 }
