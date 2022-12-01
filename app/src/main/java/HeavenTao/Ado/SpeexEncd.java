@@ -20,7 +20,7 @@ public class SpeexEncd
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
         Dstoy();
     }

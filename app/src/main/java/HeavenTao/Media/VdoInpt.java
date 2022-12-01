@@ -4,6 +4,8 @@ import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.View;
 import android.widget.Toast;
 
 import java.util.Arrays;
@@ -18,6 +20,7 @@ public class VdoInpt //视频输入类。
 	MediaPocsThrd m_MediaPocsThrdPt; //存放媒体处理线程的指针。
 
 	public int m_IsUseVdoInpt; //存放是否使用视频输入，为0表示不使用，为非0表示要使用。
+	public int m_IsInitVdoInpt; //存放是否初始化视频输入，为0表示未初始化，为非0表示已初始化。
 
 	public int m_MaxSmplRate; //存放最大采样频率，取值范围为[1,60]，实际帧率和图像的亮度有关，亮度较高时采样频率可以达到最大值，亮度较低时系统就自动降低采样频率来提升亮度。
 	public int m_FrmWidth; //存放屏幕旋转0度时，帧的宽度，单位为像素。
@@ -44,7 +47,9 @@ public class VdoInpt //视频输入类。
 	int m_FrontCameraDvcId; //存放前置摄像头的设备ID，为-1表示自动查找。
 	int m_BackCameraDvcId; //存放后置摄像头的设备ID，为-1表示自动查找。
 	public HTSurfaceView m_VdoInptPrvwSurfaceViewPt; //存放视频输入预览SurfaceView的指针。
+	SurfaceHolder.Callback m_VdoInptPrvwSurfaceClbkPt; //存放视频输入预览Surface回调函数的指针。
 	public byte m_VdoInptPrvwClbkBufPtPt[][]; //存放视频输入预览回调函数缓冲区的指针。
+	VodInptPrvwClbk m_VodInptPrvwClbkPt; //存放视频输入预览回调函数的指针。
 	int m_VdoInptDvcFrmWidth; //存放视频输入设备帧的宽度，单位为像素。
 	int m_VdoInptDvcFrmHeight; //存放视频输入设备帧的高度，单位为像素。
 	int m_VdoInptDvcFrmIsCrop; //存放视频输入设备帧是否裁剪，为0表示不裁剪，为非0表示要裁剪。
@@ -72,7 +77,7 @@ public class VdoInpt //视频输入类。
 	public LinkedList< VdoInptFrmElm > m_VdoInptFrmLnkLstPt; //存放视频输入帧链表的指针。
 	public LinkedList< VdoInptFrmElm > m_VdoInptIdleFrmLnkLstPt; //存放视频输入空闲帧链表的指针。
 
-	//视频输入线程的临时变量。
+	int m_IsInitVdoInptThrdTmpVar; //存放是否初始化视频输入线程的临时变量。
 	long m_LastVdoInptFrmTimeMsec; //存放上一个视频输入帧的时间，单位毫秒。
 	long m_VdoInptFrmTimeStepMsec; //存放视频输入帧的时间步进，单位毫秒。
 	byte m_VdoInptFrmPt[]; //存放视频输入帧的指针。
@@ -100,18 +105,13 @@ public class VdoInpt //视频输入类。
 		{
 			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) p_LastMsec = System.currentTimeMillis(); //记录初始化开始的时间。
 
-			//创建视频输入线程。
-			m_VdoInptThrdExitFlag = 0; //设置视频输入线程退出标记为0表示保持运行。
-			m_VdoInptThrdPt = new VdoInptThrd();
-			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：创建视频输入线程成功。" );
-	
 			//初始化视频输入设备。
 			{
 				//打开视频输入设备。
 				{
 					int p_CameraDvcId = 0;
 					Camera.CameraInfo p_CameraInfoPt = new Camera.CameraInfo();
-	
+
 					//查找视频输入设备对应的ID。
 					if( m_UseWhatVdoInptDvc == 0 ) //如果要使用前置摄像头。
 					{
@@ -169,62 +169,66 @@ public class VdoInpt //视频输入类。
 				}
 
 				Camera.Parameters p_CameraParaPt = m_VdoInptDvcPt.getParameters(); //获取视频输入设备的参数。
-	
+
 				p_CameraParaPt.setPreviewFormat( ImageFormat.NV21 ); //设置预览帧的格式。
-	
+
 				p_CameraParaPt.setPreviewFrameRate( m_MaxSmplRate ); //设置最大采样频率。
-	
-				//选择合适的视频输入设备帧大小。
-				int p_VdoInptTargetFrmWidth = m_FrmHeight; //存放视频输入目标帧的宽度，单位为像素。
-				int p_VdoInptTargetFrmHeight = m_FrmWidth; //存放视频输入目标帧的高度，单位为像素。
-				double p_TargetFrmWidthToHeightRatio = ( double )p_VdoInptTargetFrmWidth / ( double )p_VdoInptTargetFrmHeight; //存放目标帧的宽高比。
+
+				//遍历视频输入设备支持的帧大小，并智能选择满足目标的视频输入设备帧大小。
+				int p_TgtVdoInptFrmWidth = m_FrmHeight; //存放目标视频输入帧的宽度，单位为像素。
+				int p_TgtVdoInptFrmHeight = m_FrmWidth; //存放目标视频输入帧的高度，单位为像素。
+				double p_TgtVdoInptFrmAspectRatio = ( double )p_TgtVdoInptFrmWidth / ( double )p_TgtVdoInptFrmHeight; //存放目标视频输入帧的宽高比。
 				List< Camera.Size > p_SupportedPrvwSizesListPt = p_CameraParaPt.getSupportedPreviewSizes(); //设置视频输入设备支持的预览帧大小。
 				Camera.Size p_CameraSizePt; //存放本次的帧大小。
-				double p_VdoInptDvcFrmWidthToHeightRatio; //存放本次视频输入设备帧的宽高比。
+				double p_VdoInptDvcFrmAspectRatio; //存放本次视频输入设备帧的宽高比。
 				int p_VdoInptDvcFrmCropX; //存放本次视频输入设备帧裁剪区域左上角的横坐标，单位像素。
 				int p_VdoInptDvcFrmCropY; //存放本次视频输入设备帧裁剪区域左上角的纵坐标，单位像素。
 				int p_VdoInptDvcFrmCropWidth; //存放本次视频输入设备帧裁剪区域的宽度，单位像素。
 				int p_VdoInptDvcFrmCropHeight; //存放本次视频输入设备帧裁剪区域的高度，单位像素。
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入设备目标的帧大小：width：" + p_VdoInptTargetFrmWidth + " height：" + p_VdoInptTargetFrmHeight );
+				int p_IsSetSelCur; //存放是否设置选择的为本次的，为0表示不设置，为非0表示要设置。
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：目标视频输入的帧大小：宽度：" + p_TgtVdoInptFrmWidth + "，高度：" + p_TgtVdoInptFrmHeight + "。" );
 				for( int p_TmpInt = 0; p_TmpInt < p_SupportedPrvwSizesListPt.size(); p_TmpInt++ )
 				{
 					p_CameraSizePt = p_SupportedPrvwSizesListPt.get( p_TmpInt );
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入设备支持的帧大小：width：" + p_CameraSizePt.width + " height：" + p_CameraSizePt.height );
-	
-					//设置本次视频输入设备帧的宽高比、裁剪宽度、裁剪高度。
-					p_VdoInptDvcFrmWidthToHeightRatio = ( double )p_CameraSizePt.width / ( double )p_CameraSizePt.height;
-					if( p_VdoInptDvcFrmWidthToHeightRatio >= p_TargetFrmWidthToHeightRatio ) //如果本次视频输入设备帧的宽高比目标帧的大，就表示需要裁剪宽度。
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入设备支持的帧大小：宽度：" + p_CameraSizePt.width + "，高度：" + p_CameraSizePt.height + "。" );
+
+					//设置本次视频输入设备帧的宽高比、裁剪宽度、裁剪高度、裁剪区域左上角的坐标。
+					p_VdoInptDvcFrmAspectRatio = ( double )p_CameraSizePt.width / ( double )p_CameraSizePt.height;
+					if( p_VdoInptDvcFrmAspectRatio >= p_TgtVdoInptFrmAspectRatio ) //如果本次视频输入设备帧的宽高比目标的大，就表示需要裁剪宽度。
 					{
-						p_VdoInptDvcFrmCropWidth = ( int )( ( double )p_CameraSizePt.height * p_TargetFrmWidthToHeightRatio ); //设置本次视频输入设备帧裁剪区域左上角的宽度，使裁剪区域居中。
+						p_VdoInptDvcFrmCropWidth = ( int )( ( double )p_CameraSizePt.height * p_TgtVdoInptFrmAspectRatio ); //设置本次视频输入设备帧裁剪区域左上角的宽度，使裁剪区域居中。
 						p_VdoInptDvcFrmCropWidth -= p_VdoInptDvcFrmCropWidth % 2;
 						p_VdoInptDvcFrmCropHeight = p_CameraSizePt.height; //设置本次视频输入设备帧裁剪区域左上角的高度，使裁剪区域居中。
-	
+
 						p_VdoInptDvcFrmCropX = ( p_CameraSizePt.width - p_VdoInptDvcFrmCropWidth ) / 2; //设置本次视频输入设备帧裁剪区域左上角的横坐标，使裁剪区域居中。
 						p_VdoInptDvcFrmCropX -= p_VdoInptDvcFrmCropX % 2;
 						p_VdoInptDvcFrmCropY = 0; //设置本次视频输入设备帧裁剪区域左上角的纵坐标。
 					}
-					else //如果本次视频输入设备帧的宽高比指定帧的小，就表示需要裁剪高度。
+					else //如果本次视频输入设备帧的宽高比目标的小，就表示需要裁剪高度。
 					{
 						p_VdoInptDvcFrmCropWidth = p_CameraSizePt.width; //设置本次视频输入设备帧裁剪区域左上角的宽度，使裁剪区域居中。
-						p_VdoInptDvcFrmCropHeight = ( int )( ( double )p_CameraSizePt.width / p_TargetFrmWidthToHeightRatio ); //设置本次视频输入设备帧裁剪区域左上角的高度，使裁剪区域居中。
+						p_VdoInptDvcFrmCropHeight = ( int )( ( double )p_CameraSizePt.width / p_TgtVdoInptFrmAspectRatio ); //设置本次视频输入设备帧裁剪区域左上角的高度，使裁剪区域居中。
 						p_VdoInptDvcFrmCropHeight -= p_VdoInptDvcFrmCropHeight % 2;
-	
+
 						p_VdoInptDvcFrmCropX = 0; //设置本次视频输入设备帧裁剪区域左上角的横坐标。
 						p_VdoInptDvcFrmCropY = ( p_CameraSizePt.height - p_VdoInptDvcFrmCropHeight ) / 2; //设置本次视频输入设备帧裁剪区域左上角的纵坐标，使裁剪区域居中。
 						p_VdoInptDvcFrmCropY -= p_VdoInptDvcFrmCropY % 2;
 					}
-	
-					//如果选择的帧裁剪区域不满足指定的（包括选择的帧裁剪区域为0），但是本次的帧裁剪区域比选择的高，就设置选择的为本次的。
-					//如果本次的帧裁剪区域满足指定的（选择的帧裁剪区域肯定也满足指定的，如果选择的帧裁剪区域不满足指定的，那么就会走上一条判断），但是本次的帧裁剪区域比选择的低，就设置选择的为本次的。
-					if(
-						(
-							( ( m_VdoInptDvcFrmCropWidth < p_VdoInptTargetFrmWidth ) || ( m_VdoInptDvcFrmCropHeight < p_VdoInptTargetFrmHeight ) )
-							&&
-							( ( p_VdoInptDvcFrmCropWidth > m_VdoInptDvcFrmCropWidth ) && ( p_VdoInptDvcFrmCropHeight > m_VdoInptDvcFrmCropHeight ) )
-						)
-						||
-						(
-							( ( p_VdoInptDvcFrmCropWidth >= p_VdoInptTargetFrmWidth ) && ( p_VdoInptDvcFrmCropHeight >= p_VdoInptTargetFrmHeight ) )
+
+					//如果选择的帧裁剪区域不满足目标的（包括选择的帧裁剪区域为0），则只要本次的帧裁剪区域比选择的大，就设置选择的为本次的。
+					//如果选择的帧裁剪区域满足目标的，就只要本次的帧裁剪区域满足目标的，且本次的帧裁剪区域比选择的小、或本次的帧裁剪区域相同但裁剪量比选择的小，就设置选择的为本次的。
+					p_IsSetSelCur = 0;
+					if( ( m_VdoInptDvcFrmCropWidth < p_TgtVdoInptFrmWidth ) && ( m_VdoInptDvcFrmCropHeight < p_TgtVdoInptFrmHeight ) )
+					{
+						if( ( p_VdoInptDvcFrmCropWidth > m_VdoInptDvcFrmCropWidth ) && ( p_VdoInptDvcFrmCropHeight > m_VdoInptDvcFrmCropHeight ) )
+						{
+							p_IsSetSelCur = 1;
+						}
+					}
+					else
+					{
+						if(
+							( ( p_VdoInptDvcFrmCropWidth >= p_TgtVdoInptFrmWidth ) && ( p_VdoInptDvcFrmCropHeight >= p_TgtVdoInptFrmHeight ) )
 							&&
 							(
 								( ( p_VdoInptDvcFrmCropWidth < m_VdoInptDvcFrmCropWidth ) || ( p_VdoInptDvcFrmCropHeight < m_VdoInptDvcFrmCropHeight ) )
@@ -232,7 +236,11 @@ public class VdoInpt //视频输入类。
 								( ( p_VdoInptDvcFrmCropWidth == m_VdoInptDvcFrmCropWidth ) && ( p_VdoInptDvcFrmCropHeight == m_VdoInptDvcFrmCropHeight ) && ( p_VdoInptDvcFrmCropX + p_VdoInptDvcFrmCropY < m_VdoInptDvcFrmCropX + m_VdoInptDvcFrmCropY ) )
 							)
 						)
-					)
+						{
+							p_IsSetSelCur = 1;
+						}
+					}
+					if( p_IsSetSelCur != 0 ) //如果要设置选择的为本次的。
 					{
 						m_VdoInptDvcFrmWidth = p_CameraSizePt.width;
 						m_VdoInptDvcFrmHeight = p_CameraSizePt.height;
@@ -244,14 +252,11 @@ public class VdoInpt //视频输入类。
 					}
 				}
 				p_CameraParaPt.setPreviewSize( m_VdoInptDvcFrmWidth, m_VdoInptDvcFrmHeight ); //设置预览帧的宽度为设置的高度，预览帧的高度为设置的宽度，因为预览帧处理的时候要旋转。
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入设备选择的帧大小：width：" + m_VdoInptDvcFrmWidth + " height：" + m_VdoInptDvcFrmHeight );
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：选择视频输入设备的帧大小：宽：" + m_VdoInptDvcFrmWidth + "，高：" + m_VdoInptDvcFrmHeight + "。" );
 
 				//判断视频输入设备帧是否裁剪。
-				if(
-					( m_VdoInptDvcFrmWidth > m_VdoInptDvcFrmCropWidth ) //如果视频输入设备帧的宽度比裁剪宽度大，就表示需要裁剪宽度。
-					||
-					( m_VdoInptDvcFrmHeight > m_VdoInptDvcFrmCropHeight ) //如果视频输入设备帧的高度比裁剪高度大，就表示需要裁剪高度。
-				)
+				if( ( m_VdoInptDvcFrmWidth > m_VdoInptDvcFrmCropWidth ) || //如果视频输入设备帧的宽度比裁剪宽度大，就表示需要裁剪宽度。
+					( m_VdoInptDvcFrmHeight > m_VdoInptDvcFrmCropHeight ) ) //如果视频输入设备帧的高度比裁剪高度大，就表示需要裁剪高度。
 				{
 					m_VdoInptDvcFrmIsCrop = 1; //设置视频输入设备帧要裁剪。
 				}
@@ -259,8 +264,8 @@ public class VdoInpt //视频输入类。
 				{
 					m_VdoInptDvcFrmIsCrop = 0; //设置视频输入设备帧不裁剪。
 				}
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入设备帧是否裁剪：" + m_VdoInptDvcFrmIsCrop + "  左上角的横坐标：" + m_VdoInptDvcFrmCropX + "  纵坐标：" + m_VdoInptDvcFrmCropY + "  裁剪区域的宽度：" + m_VdoInptDvcFrmCropWidth + "  高度：" + m_VdoInptDvcFrmCropHeight + "。" );
-	
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入设备帧是否裁剪：" + m_VdoInptDvcFrmIsCrop + "，左上角的横坐标：" + m_VdoInptDvcFrmCropX + "，纵坐标：" + m_VdoInptDvcFrmCropY + "，裁剪区域的宽度：" + m_VdoInptDvcFrmCropWidth + "，高度：" + m_VdoInptDvcFrmCropHeight + "。" );
+
 				//设置视频输入设备帧的旋转。
 				if( m_UseWhatVdoInptDvc == 0 ) //如果要使用前置摄像头。
 				{
@@ -281,9 +286,9 @@ public class VdoInpt //视频输入类。
 					m_VdoInptDvcFrmRotateHeight = m_VdoInptDvcFrmCropWidth; //设置视频输入设备帧旋转后的高度。
 				}
 				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入设备帧旋转后的宽度：" + m_VdoInptDvcFrmRotateWidth + "，旋转后的高度：" + m_VdoInptDvcFrmRotateHeight + "。" );
-	
+
 				//判断视频输入设备帧是否缩放。
-				if( ( m_VdoInptDvcFrmCropWidth != p_VdoInptTargetFrmWidth ) || ( m_VdoInptDvcFrmCropHeight != p_VdoInptTargetFrmHeight ) )
+				if( ( m_VdoInptDvcFrmCropWidth != p_TgtVdoInptFrmWidth ) || ( m_VdoInptDvcFrmCropHeight != p_TgtVdoInptFrmHeight ) )
 				{
 					m_VdoInptDvcFrmIsScale = 1; //设置视频输入设备帧要缩放。
 				}
@@ -293,16 +298,16 @@ public class VdoInpt //视频输入类。
 				}
 				if( ( m_VdoInptDvcFrmRotate == 0 ) || ( m_VdoInptDvcFrmRotate == 180 ) ) //如果旋转后为横屏。
 				{
-					m_VdoInptDvcFrmScaleWidth = p_VdoInptTargetFrmWidth; //设置视频输入设备帧缩放后的宽度。
-					m_VdoInptDvcFrmScaleHeight = p_VdoInptTargetFrmHeight; //设置视频输入设备帧缩放后的高度。
+					m_VdoInptDvcFrmScaleWidth = p_TgtVdoInptFrmWidth; //设置视频输入设备帧缩放后的宽度。
+					m_VdoInptDvcFrmScaleHeight = p_TgtVdoInptFrmHeight; //设置视频输入设备帧缩放后的高度。
 				}
 				else //如果旋转后为竖屏。
 				{
-					m_VdoInptDvcFrmScaleWidth = p_VdoInptTargetFrmHeight; //设置视频输入设备帧缩放后的宽度。
-					m_VdoInptDvcFrmScaleHeight = p_VdoInptTargetFrmWidth; //设置视频输入设备帧缩放后的高度。
+					m_VdoInptDvcFrmScaleWidth = p_TgtVdoInptFrmHeight; //设置视频输入设备帧缩放后的宽度。
+					m_VdoInptDvcFrmScaleHeight = p_TgtVdoInptFrmWidth; //设置视频输入设备帧缩放后的高度。
 				}
 				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入设备帧是否缩放：" + m_VdoInptDvcFrmIsScale + "，缩放后的宽度：" + m_VdoInptDvcFrmScaleWidth + "，缩放后的高度：" + m_VdoInptDvcFrmScaleHeight + "。" );
-	
+
 				//设置视频输入设备的对焦模式。
 				List<String> p_FocusModesListPt = p_CameraParaPt.getSupportedFocusModes();
 				String p_PrvwFocusModePt = "";
@@ -349,7 +354,7 @@ public class VdoInpt //视频输入类。
 					}
 				}
 				p_CameraParaPt.setFocusMode( p_PrvwFocusModePt ); //设置对焦模式。
-	
+
 				try
 				{
 					m_VdoInptDvcPt.setParameters( p_CameraParaPt ); //设置参数到视频输入设备。
@@ -360,31 +365,64 @@ public class VdoInpt //视频输入类。
 					if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActivityPt, "媒体处理线程：初始化视频输入设备失败。原因：设置参数到视频输入设备失败。原因：" + e.getMessage(), Toast.LENGTH_LONG ).show(); } } );
 					break Out;
 				}
-	
+
+				m_VdoInptPrvwSurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置视频输入预览Surface的类型。老机型上必须要用。
+				m_VdoInptPrvwSurfaceClbkPt = new SurfaceHolder.Callback() //创建视频输入预览Surface的回调函数。
+				{
+					@Override public void surfaceCreated( SurfaceHolder holder )
+					{
+						Log.i( MediaPocsThrd.m_CurClsNameStrPt, "VdoInptPrvwSurface Created" );
+						m_MediaPocsThrdPt.SetVdoInptUseDvc( m_UseWhatVdoInptDvc, -1, -1 ); //重启视频输入。
+					}
+
+					@Override public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
+					{
+						Log.i( MediaPocsThrd.m_CurClsNameStrPt, "VdoInptPrvwSurface Changed" );
+					}
+
+					@Override public void surfaceDestroyed( SurfaceHolder holder )
+					{
+						Log.i( MediaPocsThrd.m_CurClsNameStrPt, "VdoInptPrvwSurface Destroyed" );
+					}
+				};
+				m_VdoInptPrvwSurfaceViewPt.getHolder().addCallback( m_VdoInptPrvwSurfaceClbkPt ); //设置视频输入预览Surface的回调函数。
 				try
 				{
 					m_VdoInptDvcPt.setPreviewDisplay( m_VdoInptPrvwSurfaceViewPt.getHolder() ); //设置视频输入预览SurfaceView。
-					if( m_ScreenRotate == 0 || m_ScreenRotate == 180 ) //如果屏幕为竖屏。
-					{
-						m_VdoInptPrvwSurfaceViewPt.setWidthToHeightRatio( ( float )m_VdoInptDvcFrmHeight / m_VdoInptDvcFrmWidth ); //设置视频输入预览SurfaceView的宽高比。
-					}
-					else //如果屏幕为横屏。
-					{
-						m_VdoInptPrvwSurfaceViewPt.setWidthToHeightRatio( ( float )m_VdoInptDvcFrmWidth / m_VdoInptDvcFrmHeight ); //设置视频输入预览SurfaceView的宽高比。
-					}
 				}
 				catch( Exception ignored )
 				{
 				}
+				if( m_ScreenRotate == 0 || m_ScreenRotate == 180 ) //如果屏幕为竖屏。
+				{
+					m_VdoInptPrvwSurfaceViewPt.setWidthToHeightRatio( ( float )m_VdoInptDvcFrmHeight / m_VdoInptDvcFrmWidth ); //设置视频输入预览SurfaceView的宽高比。
+				}
+				else //如果屏幕为横屏。
+				{
+					m_VdoInptPrvwSurfaceViewPt.setWidthToHeightRatio( ( float )m_VdoInptDvcFrmWidth / m_VdoInptDvcFrmHeight ); //设置视频输入预览SurfaceView的宽高比。
+				}
 				m_VdoInptDvcPt.setDisplayOrientation( ( 450 - m_ScreenRotate ) % 360 ); //调整相机拍到的图像旋转，不然竖着拿手机，图像是横着的。
-	
+
 				//设置视频输入预览回调函数缓冲区的指针。
 				m_VdoInptPrvwClbkBufPtPt = new byte[ m_MaxSmplRate ][ m_VdoInptDvcFrmWidth * m_VdoInptDvcFrmHeight * 3 / 2 ];
 				for( int p_TmpInt = 0; p_TmpInt < m_MaxSmplRate; p_TmpInt++ )
 					m_VdoInptDvcPt.addCallbackBuffer( m_VdoInptPrvwClbkBufPtPt[p_TmpInt] );
-	
-				m_VdoInptDvcPt.setPreviewCallbackWithBuffer( m_VdoInptThrdPt ); //设置视频输入预览回调函数。
-	
+
+				//设置视频输入预览回调函数。
+				m_VodInptPrvwClbkPt = new VodInptPrvwClbk();
+				m_VdoInptDvcPt.setPreviewCallbackWithBuffer( m_VodInptPrvwClbkPt );
+
+				//设置视频输入设备开始预览。
+				try
+				{
+					m_VdoInptDvcPt.startPreview();
+				}
+				catch( RuntimeException e )
+				{
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：设置视频输入设备开始预览失败。原因：" + e.getMessage() );
+					break Out;
+				}
+
 				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：初始化视频输入设备成功。" );
 			}
 
@@ -393,7 +431,7 @@ public class VdoInpt //视频输入类。
 			{
 				case 0: //如果要使用YU12原始数据。
 				{
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：使用YU12原始数据。" );
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：初始化YU12原始数据成功。" );
 					break;
 				}
 				case 1: //如果要使用OpenH264编码器。
@@ -430,14 +468,15 @@ public class VdoInpt //视频输入类。
 
 			//初始化视频输入线程的临时变量。
 			{
+				m_IsInitVdoInptThrdTmpVar = 1; //设置已初始化视频输入线程的临时变量。
 				m_LastVdoInptFrmTimeMsec = 0; //初始化上一个视频输入帧的时间。
 				m_VdoInptFrmTimeStepMsec = 1000 / m_MaxSmplRate; //初始化视频输入帧的时间步进。
 				m_VdoInptFrmPt = null; //初始化视频输入帧的指针。
-				if( m_FrmWidth * m_FrmHeight >= m_VdoInptDvcFrmWidth * m_VdoInptDvcFrmHeight ) //如果视频输入帧指定的大小大于等于视频输入设备帧的大小。
+				if( m_FrmWidth * m_FrmHeight >= m_VdoInptDvcFrmWidth * m_VdoInptDvcFrmHeight ) //如果视频输入帧的大小大于等于视频输入设备帧的大小。
 				{
 					m_VdoInptRsltFrmSz = m_FrmWidth * m_FrmHeight * 3 / 2; //初始化视频输入结果帧的内存大小。
 				}
-				else //如果视频输入帧指定的大小小于视频输入设备帧的大小。
+				else //如果视频输入帧的大小小于视频输入设备帧的大小。
 				{
 					m_VdoInptRsltFrmSz = m_VdoInptDvcFrmWidth * m_VdoInptDvcFrmHeight * 3 / 2; //初始化视频输入结果帧的内存大小。
 				}
@@ -463,17 +502,14 @@ public class VdoInpt //视频输入类。
 			//初始化视频输入空闲帧链表。
 			m_VdoInptIdleFrmLnkLstPt = new LinkedList< VdoInptFrmElm >();
 			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：初始化视频输入空闲帧链表成功。" );
-			
-			try
+
+			//初始化视频输入线程。
 			{
-				m_VdoInptDvcPt.startPreview(); //让视频输入设备开始预览。
+				m_VdoInptThrdExitFlag = 0; //设置视频输入线程退出标记为0表示保持运行。
+				m_VdoInptThrdPt = new VdoInptThrd();
+				m_VdoInptThrdPt.start(); //启动视频输入线程。
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：创建视频输入线程成功。" );
 			}
-			catch( RuntimeException e )
-			{
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：让视频输入设备开始预览失败。原因：" + e.getMessage() );
-				break Out;
-			}
-			m_VdoInptThrdPt.start(); //启动视频输入线程。
 
 			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )
 			{
@@ -510,7 +546,9 @@ public class VdoInpt //视频输入类。
 		}
 
 		//销毁视频输入线程的临时变量。
+		if( m_IsInitVdoInptThrdTmpVar != 0 )
 		{
+			m_IsInitVdoInptThrdTmpVar = 0; //设置未初始化视频输入线程的临时变量。
 			m_LastVdoInptFrmTimeMsec = 0; //销毁上一个视频输入帧的时间。
 			m_VdoInptFrmTimeStepMsec = 0; //销毁视频输入帧的时间步进。
 			m_VdoInptFrmPt = null; //销毁视频输入帧的指针。
@@ -533,7 +571,11 @@ public class VdoInpt //视频输入类。
 			m_VdoInptDvcPt.stopPreview(); //停止预览。
 			m_VdoInptDvcPt.release(); //销毁摄像头。
 			m_VdoInptDvcPt = null;
+			m_VdoInptPrvwSurfaceViewPt.getHolder().removeCallback( m_VdoInptPrvwSurfaceClbkPt );
+			m_VdoInptPrvwSurfaceClbkPt = null;
+			MediaPocsThrd.m_MainActivityPt.runOnUiThread( new Runnable() { public void run() { m_VdoInptPrvwSurfaceViewPt.setVisibility( View.GONE ); m_VdoInptPrvwSurfaceViewPt.setVisibility( View.VISIBLE ); } } ); //重建视频输入预览Surface视图。
 			m_VdoInptPrvwClbkBufPtPt = null;
+			m_VodInptPrvwClbkPt = null;
 			m_VdoInptDvcFrmRotate = 0;
 			m_VdoInptDvcFrmWidth = 0;
 			m_VdoInptDvcFrmHeight = 0;
@@ -575,6 +617,7 @@ public class VdoInpt //视频输入类。
 		{
 			case 0: //如果要使用YU12原始数据。
 			{
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：销毁YU12原始数据成功。" );
 				break;
 			}
 			case 1: //如果要使用OpenH264编码器。
@@ -611,21 +654,32 @@ public class VdoInpt //视频输入类。
 			}
 		}
 	}
-	
-	//视频输入线程类。
-	public class VdoInptThrd extends Thread implements Camera.PreviewCallback
+
+	//视频输入预览回调类。
+	public class VodInptPrvwClbk implements Camera.PreviewCallback
 	{
 		//读取一个视频输入帧的预览回调函数，本函数是在主线程中运行的。
 		@Override public void onPreviewFrame( byte[] data, Camera camera )
 		{
-			//追加本次视频输入帧到视频输入帧链表。
-			synchronized( m_NV21VdoInptFrmLnkLstPt )
+			if( m_NV21VdoInptFrmLnkLstPt != null ) //如果NV21格式视频输入帧链表已初始化。
 			{
-				m_NV21VdoInptFrmLnkLstPt.addLast( data );
+				//追加本次视频输入帧到视频输入帧链表。
+				synchronized( m_NV21VdoInptFrmLnkLstPt )
+				{
+					m_NV21VdoInptFrmLnkLstPt.addLast( data );
+				}
+			}
+			else //如果NV21格式视频输入帧链表未初始化，因为视频输入设备是在其初始化前就初始化了。
+			{
+				m_VdoInptDvcPt.addCallbackBuffer( m_VdoInptFrmPt );
 			}
 			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：读取一个视频输入帧。" );
 		}
+	}
 
+	//视频输入线程类。
+	public class VdoInptThrd extends Thread
+	{
 		public void run()
 		{
 			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：开始准备视频输入。" );

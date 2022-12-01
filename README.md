@@ -32,7 +32,7 @@
 &emsp;&emsp;如果需要在自己的软件中使用本软件的音视频功能，需要以下几个步骤：  
 &emsp;&emsp;1、在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限。  
 &emsp;&emsp;2、将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中。  
-&emsp;&emsp;3、继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserPocs、UserDstoy、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetPcmAdoOtptFrm、UserWriteVdoOtptFrm、UserGetYU12VdoOtptFrm这八个回调成员函数。如果要在JNI层处理音视频帧，则可以将这八个回调成员函数继承为native函数，然后在JNI层实现即可。  
+&emsp;&emsp;3、继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserPocs、UserDstoy、UserMsg、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetPcmAdoOtptFrm、UserWriteVdoOtptFrm、UserGetYU12VdoOtptFrm这九个回调成员函数。如果要在JNI层处理音视频帧，则可以将这些回调成员函数继承为native函数，然后在JNI层实现即可。  
 &emsp;&emsp;4、new这个继承的类，然后调用类的相关设置成员函数，最后调用start()成员函数启动媒体处理线程即可。  
 &emsp;&emsp;5、当需要媒体处理线程退出时，调用类的RqirExit()成员函数即可。  
 
@@ -58,7 +58,7 @@
 &emsp;&emsp;* 系统自带H264编解码器：libFunc.so、libSystemH264.so、SystemH264Encd.java、SystemH264Decd.java。  
 &emsp;&emsp;* 图片处理：libFunc.so、libLibYUV.so、LibYUV.java。  
 &emsp;&emsp;* 音视频自适应抖动缓冲器：libFunc.so、libc++_shared.so、libAjb.so、AAjb.java、VAjb.java。  
-&emsp;&emsp;* 本端TCP协议UDP协议套接字：libFunc.so、libSokt.so、TcpSrvrSokt.java、TcpClntSokt.java、UdpSokt.java。  
+&emsp;&emsp;* 本端TCP协议UDP协议套接字：libFunc.so、libSokt.so、TcpSrvrSokt.java、TcpClntSokt.java、UdpSokt.java、AudpSokt.java。  
 
 # 注意
 &emsp;&emsp;不要在64位操作系统下使用32位动态库，或在32位操作系统下使用64位动态库，否则会导致意想不到的问题。  
@@ -72,14 +72,16 @@
 &emsp;&emsp;系统自带H264编解码器需要Android 5.0（API 21）及以上系统，且在某些Android设备上使用可能会花屏，这种情况只能使用OpenH264编解码器。  
 
 # 其他
-&emsp;&emsp;本软件采用了Speex的1.2.1版本、SpeexDsp的1.2.1版本、WebRtc的2019年7月份版本、OpenH264的2.3.0版本为基础，并进行了大量优化。  
+&emsp;&emsp;本软件采用了Speex的1.2.1版本、SpeexDsp的1.2.1版本、WebRtc的2019年7月份版本、OpenH264的2.3.1版本为基础，并进行了大量优化。  
 &emsp;&emsp;讨论QQ群：511046632    欢迎大家参与测试和讨论！  
 &emsp;&emsp;本人QQ号：280604597    赤勇玄心行天道  
 &emsp;&emsp;本人博客：http://www.cnblogs.com/gaoyaguo  
 &emsp;&emsp;Windows版源代码：https://github.com/cyz7758520/Windows_audio_talkback_demo_program  
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitee.com/chen_yi_ze/Windows_audio_talkback_demo_program  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitcode.net/cyz7758520/Windows_audio_talkback_demo_program  
 &emsp;&emsp;Android版源代码：https://github.com/cyz7758520/Android_audio_talkback_demo_program  
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitee.com/chen_yi_ze/Android_audio_talkback_demo_program  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitcode.net/cyz7758520/Android_audio_talkback_demo_program  
 
 # 版权
 &emsp;&emsp;Speex：https://gitlab.xiph.org/xiph/speex/-/blob/master/COPYING  
@@ -92,7 +94,7 @@
 &emsp;&emsp;感谢 WELEN、善书、陈国福 对 Speex、WebRTC 的指点！  
 
 # 函数
-### 八个回调函数
+### 九个回调函数
 ___
 函数名称：UserInit  
 功能说明：用户定义的初始化函数，在本线程刚启动时回调一次。  
@@ -109,6 +111,11 @@ ___
 函数名称：UserDstoy  
 功能说明：用户定义的销毁函数，在本线程退出时回调一次。  
 参数说明：无。  
+返回说明：无。  
+___
+函数名称：UserMsg  
+功能说明：用户定义的消息函数，在接收到用户消息时回调一次。  
+参数说明：MsgArgPt：\[输入\]，存放消息参数的动态参数的指针。如果没有消息参数，则本参数为null。  
 返回说明：无。  
 ___
 函数名称：UserReadAdoVdoInptFrm  

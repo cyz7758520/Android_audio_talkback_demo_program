@@ -2,6 +2,8 @@ package HeavenTao.Media;
 
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.View;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -15,6 +17,7 @@ public class VdoOtpt //视频输出类。
 	MediaPocsThrd m_MediaPocsThrdPt; //存放媒体处理线程的指针。
 
 	public int m_IsUseVdoOtpt; //存放是否使用视频输出，为0表示不使用，为非0表示要使用。
+	public int m_IsInitVdoOtpt; //存放是否初始化视频输出，为0表示未初始化，为非0表示已初始化。
 
 	public class VdoOtptStrm
 	{
@@ -30,10 +33,11 @@ public class VdoOtpt //视频输出类。
 		SystemH264Decd m_SystemH264DecdPt; //存放系统自带H264解码器的指针。
 
 		HTSurfaceView m_VdoOtptDspySurfaceViewPt; //存放视频输出显示SurfaceView的指针。
+		SurfaceHolder.Callback m_VdoOtptDspySurfaceClbkPt; //存放视频输出显示Surface回调函数的指针。
 		float m_VdoOtptDspyScale; //存放视频输出显示缩放倍数，为1.0f表示不缩放。
 		int m_VdoOtptIsBlack; //存放视频输出是否黑屏，为0表示有图像，为非0表示黑屏。
 
-		//视频输出线程的临时变量。
+		int m_IsInitVdoOtptThrdTmpVar; //存放是否初始化视频输出线程的临时变量。
 		byte m_VdoOtptRsltFrmPt[]; //存放视频输出结果帧的指针。
 		byte m_VdoOtptTmpFrmPt[]; //存放视频输出临时帧的指针。
 		byte m_VdoOtptSwapFrmPt[]; //存放视频输出交换帧的指针。
@@ -57,7 +61,7 @@ public class VdoOtpt //视频输出类。
 				{
 					case 0: //如果要使用YU12原始数据。
 					{
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：使用YU12原始数据。" );
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：初始化YU12原始数据成功。" );
 						break;
 					}
 					case 1: //如果要使用OpenH264解码器。
@@ -65,12 +69,12 @@ public class VdoOtpt //视频输出类。
 						m_OpenH264DecdPt = new OpenH264Decd();
 						if( m_OpenH264DecdPt.Init( m_OpenH264DecdDecdThrdNum, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
 						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：初始化OpenH264解码器成功。" );
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：初始化OpenH264解码器成功。" );
 						}
 						else
 						{
 							m_OpenH264DecdPt = null;
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：初始化OpenH264解码器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：初始化OpenH264解码器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
 							break Out;
 						}
 						break;
@@ -80,12 +84,12 @@ public class VdoOtpt //视频输出类。
 						m_SystemH264DecdPt = new SystemH264Decd();
 						if( m_SystemH264DecdPt.Init( null ) == 0 )
 						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：初始化系统自带H264解码器成功。" );
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：初始化系统自带H264解码器成功。" );
 						}
 						else
 						{
 							m_SystemH264DecdPt = null;
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：初始化系统自带H264解码器失败。" );
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：初始化系统自带H264解码器失败。" );
 							break Out;
 						}
 						break;
@@ -108,7 +112,7 @@ public class VdoOtpt //视频输出类。
 			{
 				case 0: //如果要使用YU12原始数据。
 				{
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：销毁YU12原始数据成功。" );
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：销毁YU12原始数据成功。" );
 					break;
 				}
 				case 1: //如果要使用OpenH264解码器。
@@ -117,11 +121,11 @@ public class VdoOtpt //视频输出类。
 					{
 						if( m_OpenH264DecdPt.Dstoy( null ) == 0 )
 						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：销毁OpenH264解码器成功。" );
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：销毁OpenH264解码器成功。" );
 						}
 						else
 						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：销毁OpenH264解码器失败。" );
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：销毁OpenH264解码器失败。" );
 						}
 						m_OpenH264DecdPt = null;
 					}
@@ -133,11 +137,11 @@ public class VdoOtpt //视频输出类。
 					{
 						if( m_SystemH264DecdPt.Dstoy( null ) == 0 )
 						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：销毁系统自带H264解码器成功。" );
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：销毁系统自带H264解码器成功。" );
 						}
 						else
 						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：销毁系统自带H264解码器失败。" );
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：销毁系统自带H264解码器失败。" );
 						}
 						m_SystemH264DecdPt = null;
 					}
@@ -153,8 +157,29 @@ public class VdoOtpt //视频输出类。
 
 			Out:
 			{
+				m_VdoOtptDspySurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_NORMAL );
+				m_VdoOtptDspySurfaceClbkPt = new SurfaceHolder.Callback() //创建视频输出显示Surface的回调函数。
+				{
+					@Override public void surfaceCreated( SurfaceHolder holder )
+					{
+						Log.i( MediaPocsThrd.m_CurClsNameStrPt, "VdoOtptDspySurface Created" );
+					}
+
+					@Override public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
+					{
+						Log.i( MediaPocsThrd.m_CurClsNameStrPt, "VdoOtptDspySurface Changed" );
+					}
+
+					@Override public void surfaceDestroyed( SurfaceHolder holder )
+					{
+						Log.i( MediaPocsThrd.m_CurClsNameStrPt, "VdoOtptDspySurface Destroyed" );
+					}
+				};
+				m_VdoOtptDspySurfaceViewPt.getHolder().addCallback( m_VdoOtptDspySurfaceClbkPt ); //设置视频输出显示Surface的回调函数。
+
 				//初始化视频输出线程的临时变量。
 				{
+					m_IsInitVdoOtptThrdTmpVar = 1; //设置已初始化视频输出线程的临时变量。
 					m_VdoOtptRsltFrmPt = new byte[ 960 * 1280 * 3 / 2 * 3 ]; //初始化视频输出结果帧的指针。
 					m_VdoOtptTmpFrmPt = new byte[ 960 * 1280 * 3 / 2 * 3 ]; //初始化视频输出临时帧的指针。
 					m_VdoOtptSwapFrmPt = null; //初始化视频输出交换帧的指针。
@@ -163,14 +188,14 @@ public class VdoOtpt //视频输出类。
 					m_VdoOtptFrmHeightPt = new HTInt(); //初始化视频输出帧的高度。
 					m_LastTimeMsec = 0; //初始化上次时间的毫秒数。
 					m_NowTimeMsec = 0; //初始化本次时间的毫秒数。
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：初始化视频输出线程的临时变量成功。" );
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：初始化视频输出线程的临时变量成功。" );
 				}
 
 				//创建视频输出线程。
 				m_VdoOtptThrdExitFlag = 0; //设置视频输出线程退出标记为0表示保持运行。
 				m_VdoOtptThrdPt = new VdoOtptThrd();
 				m_VdoOtptThrdPt.start();
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：创建视频输出线程成功。" );
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：创建视频输出线程成功。" );
 
 				p_Rslt = 0; //设置本函数执行成功。
 			}
@@ -197,11 +222,13 @@ public class VdoOtpt //视频输出类。
 				}
 				m_VdoOtptThrdPt = null;
 				m_VdoOtptThrdExitFlag = 0;
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：销毁视频输出线程成功。" );
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：销毁视频输出线程成功。" );
 			}
 
 			//销毁视频输出线程的临时变量。
+			if( m_IsInitVdoOtptThrdTmpVar != 0 )
 			{
+				m_IsInitVdoOtptThrdTmpVar = 0; //设置未初始化视频输出线程的临时变量。
 				m_VdoOtptRsltFrmPt = null; //销毁视频输出结果帧的指针。
 				m_VdoOtptTmpFrmPt = null; //销毁视频输出临时帧的指针。
 				m_VdoOtptSwapFrmPt = null; //销毁视频输出交换帧的指针。
@@ -210,8 +237,12 @@ public class VdoOtpt //视频输出类。
 				m_VdoOtptFrmHeightPt = null; //销毁视频输出帧的高度。
 				m_LastTimeMsec = 0; //销毁上次时间的毫秒数。
 				m_NowTimeMsec = 0; //销毁本次时间的毫秒数。
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_VdoOtptStrmIdx + "：销毁视频输出线程的临时变量成功。" );
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_VdoOtptStrmIdx + "：销毁视频输出线程的临时变量成功。" );
 			}
+
+			m_VdoOtptDspySurfaceViewPt.getHolder().removeCallback( m_VdoOtptDspySurfaceClbkPt );
+			m_VdoOtptDspySurfaceClbkPt = null;
+			MediaPocsThrd.m_MainActivityPt.runOnUiThread( new Runnable() { public void run() { m_VdoOtptDspySurfaceViewPt.setVisibility( View.GONE ); m_VdoOtptDspySurfaceViewPt.setVisibility( View.VISIBLE ); } } ); //重建视频输出显示Surface视图。
 		}
 
 		//初始化视频输出流。
@@ -403,7 +434,7 @@ public class VdoOtpt //视频输出类。
 	//添加视频输出流。
 	public void AddVdoOtptStrm( int VdoOtptStrmIdx )
 	{
-		//查找视频输出流索引是否已经存在。
+		//查找视频输出流索引。
 		for( VdoOtpt.VdoOtptStrm p_VdoOtptStrmPt : m_VdoOtptStrmLnkLstPt )
 		{
 			if( p_VdoOtptStrmPt.m_VdoOtptStrmIdx == VdoOtptStrmIdx )
@@ -421,7 +452,7 @@ public class VdoOtpt //视频输出类。
 	//删除视频输出流。
 	public void DelVdoOtptStrm( int VdoOtptStrmIdx )
 	{
-		//查找索引是否已经存在。
+		//查找视频输出流索引。
 		for( Iterator< VdoOtpt.VdoOtptStrm > p_VdoOtptStrmItrtr = m_VdoOtptStrmLnkLstPt.iterator(); p_VdoOtptStrmItrtr.hasNext(); )
 		{
 			VdoOtpt.VdoOtptStrm p_VdoOtptStrmPt = p_VdoOtptStrmItrtr.next();
@@ -448,13 +479,13 @@ public class VdoOtpt //视频输出类。
 		{
 			if( p_VdoOtptStrmPt.m_VdoOtptStrmIdx == VdoOtptStrmIdx )
 			{
-				if( ( m_IsUseVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Dstoy();
+				if( ( m_IsInitVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Dstoy();
 
 				p_VdoOtptStrmPt.m_VdoOtptDspySurfaceViewPt = VdoOtptDspySurfaceViewPt;
 				p_VdoOtptStrmPt.m_VdoOtptDspyScale = VdoOtptDspyScale;
 
-				if( ( m_IsUseVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Init();
-				break;
+				if( ( m_IsInitVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Init();
+				return;
 			}
 		}
 	}
@@ -467,12 +498,12 @@ public class VdoOtpt //视频输出类。
 		{
 			if( p_VdoOtptStrmPt.m_VdoOtptStrmIdx == VdoOtptStrmIdx )
 			{
-				if( ( m_IsUseVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Dstoy();
+				if( ( m_IsInitVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Dstoy();
 
 				p_VdoOtptStrmPt.m_UseWhatDecd = 0;
 
-				if( ( m_IsUseVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Init();
-				break;
+				if( ( m_IsInitVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Init();
+				return;
 			}
 		}
 	}
@@ -485,13 +516,13 @@ public class VdoOtpt //视频输出类。
 		{
 			if( p_VdoOtptStrmPt.m_VdoOtptStrmIdx == VdoOtptStrmIdx )
 			{
-				if( ( m_IsUseVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Dstoy();
+				if( ( m_IsInitVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Dstoy();
 
 				p_VdoOtptStrmPt.m_UseWhatDecd = 1;
 				p_VdoOtptStrmPt.m_OpenH264DecdDecdThrdNum = DecdThrdNum;
 
-				if( ( m_IsUseVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Init();
-				break;
+				if( ( m_IsInitVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Init();
+				return;
 			}
 		}
 	}
@@ -504,12 +535,12 @@ public class VdoOtpt //视频输出类。
 		{
 			if( p_VdoOtptStrmPt.m_VdoOtptStrmIdx == VdoOtptStrmIdx )
 			{
-				if( ( m_IsUseVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Dstoy();
+				if( ( m_IsInitVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Dstoy();
 
 				p_VdoOtptStrmPt.m_UseWhatDecd = 2;
 
-				if( ( m_IsUseVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Init();
-				break;
+				if( ( m_IsInitVdoOtpt != 0 ) && ( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) ) p_VdoOtptStrmPt.Init();
+				return;
 			}
 		}
 	}
@@ -523,7 +554,7 @@ public class VdoOtpt //视频输出类。
 			if( p_VdoOtptStrmPt.m_VdoOtptStrmIdx == VdoOtptStrmIdx )
 			{
 				p_VdoOtptStrmPt.m_VdoOtptIsBlack = IsBlack;
-				break;
+				return;
 			}
 		}
 	}
@@ -531,38 +562,38 @@ public class VdoOtpt //视频输出类。
 	//设置视频输出流是否使用。
 	public void SetVdoOtptStrmIsUse( int VdoOtptStrmIdx, int IsUseVdoOtptStrm )
 	{
-		//查找视频输出流索引是否已经存在。
+		//查找视频输出流索引。
 		for( VdoOtpt.VdoOtptStrm p_VdoOtptStrmPt : m_VdoOtptStrmLnkLstPt )
 		{
 			if( p_VdoOtptStrmPt.m_VdoOtptStrmIdx == VdoOtptStrmIdx ) //如果索引找到了。
 			{
-				if( IsUseVdoOtptStrm != 0 ) //如果是要使用视频输出流。
+				if( IsUseVdoOtptStrm != 0 ) //如果要使用视频输出流。
 				{
-					if( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm == 0 ) //如果视频输出流当前为不使用。
+					if( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm == 0 ) //如果当前不使用视频输出流。
 					{
-						if( m_IsUseVdoOtpt != 0 ) //如果要使用视频输出。
+						if( m_IsInitVdoOtpt != 0 ) //如果已初始化视频输出。
 						{
 							if( p_VdoOtptStrmPt.Init() == 0 ) //如果初始化视频输出流成功。
 							{
 								p_VdoOtptStrmPt.m_IsUseVdoOtptStrm = 1;
 							}
 						}
-						else //如果不使用视频输出。
+						else //如果未初始化视频输出。
 						{
 							p_VdoOtptStrmPt.m_IsUseVdoOtptStrm = 1;
 						}
 					}
 				}
-				else //如果是不使用视频输出流。
+				else //如果不使用视频输出流。
 				{
-					if( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) //如果视频输出流当前为要使用。
+					if( p_VdoOtptStrmPt.m_IsUseVdoOtptStrm != 0 ) //如果当前要使用视频输出流。
 					{
-						if( m_IsUseVdoOtpt != 0 ) //如果要使用视频输出。
+						if( m_IsInitVdoOtpt != 0 ) //如果已初始化视频输出。
 						{
 							p_VdoOtptStrmPt.Dstoy();
 							p_VdoOtptStrmPt.m_IsUseVdoOtptStrm = 0;
 						}
-						else //如果不使用视频输出。
+						else //如果未初始化视频输出。
 						{
 							p_VdoOtptStrmPt.m_IsUseVdoOtptStrm = 0;
 						}

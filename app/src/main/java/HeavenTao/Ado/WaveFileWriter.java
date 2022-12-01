@@ -20,13 +20,13 @@ public class WaveFileWriter
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
         Dstoy();
     }
 
     //创建并初始化Wave文件写入器。
-    public int Init( String WaveFileFullPathStrPt, short NumChanl, int SmplRate, int SmplBit )
+    public int Init( String WaveFileFullPathStrPt, int NumChanl, int SmplRate, int SmplBit )
     {
         if( m_WaveFileWriterPt == 0 )
         {
@@ -47,10 +47,10 @@ public class WaveFileWriter
         }
     }
 
-    //用Wave文件写入器写入数据。
-    public int WriteData( short DataPt[], long DataLen )
+    //用Wave文件写入器写入Short型数据。
+    public int WriteShort( short DataPt[], long DataLen )
     {
-        return WaveFileWriterWriteData( m_WaveFileWriterPt, DataPt, DataLen );
+        return WaveFileWriterWriteShort( m_WaveFileWriterPt, DataPt, DataLen );
     }
 
     //销毁Wave文件写入器。
@@ -75,10 +75,10 @@ public class WaveFileWriter
     }
 
     //创建并初始化Wave文件写入器。
-    public native int WaveFileWriterInit( HTLong WaveFileWriterPt, String WaveFileFullPathStrPt, short NumChanl, int SmplRate, int SmplBit );
+    public native int WaveFileWriterInit( HTLong WaveFileWriterPt, String WaveFileFullPathStrPt, int NumChanl, int SmplRate, int SmplBit );
 
     //用Wave文件写入器写入数据。
-    public native int WaveFileWriterWriteData( long WaveFileWriterPt, short DataPt[], long DataLen );
+    public native int WaveFileWriterWriteShort( long WaveFileWriterPt, short DataPt[], long DataLen );
 
     //销毁Wave文件写入器。
     public native int WaveFileWriterDstoy( long WaveFileWriterPt );

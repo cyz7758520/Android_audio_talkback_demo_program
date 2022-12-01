@@ -9,10 +9,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.media.AudioManager;
-import android.net.Uri;
+import android.media.MediaCodec;
+import android.media.MediaCodecInfo;
+import android.media.MediaFormat;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -23,7 +24,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
@@ -36,9 +36,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -58,166 +60,173 @@ class MainActivityHandler extends Handler
 
 	MainActivity m_MainActivityPt; //存放主界面的指针。
 	ServiceConnection m_FrgndSrvcCnctPt; //存放前台服务连接器的指针。
-	AlertDialog m_RequestCnctDialogPt; //存放请求连接对话框的指针。
+	AlertDialog m_RqstCnctDlgPt; //存放请求连接对话框的指针。
 
-	public static final int INIT_MEDIA_PROC_THREAD = 1; //初始化媒体处理线程的消息。
-	public static final int DSTOY_MEDIA_PROC_THREAD = 2; //销毁媒体处理线程的消息。
-	public static final int SHOW_REQUEST_CNCT_DIALOG = 3; //显示请求连接对话框的消息。
-	public static final int DSTOY_REQUEST_CNCT_DIALOG = 4; //销毁请求连接对话框的消息。
-	public static final int SHOW_LOG = 5; //显示日志的消息。
-	public static final int REBUILD_SURFACE_VIEW = 6; //重建Surface视图的消息。
-	public static final int VIBRATE = 7; //振动的消息。
+	public enum Msg
+	{
+		MediaPocsThrdInit, //主界面消息：初始化媒体处理线程。
+		MediaPocsThrdDstoy, //主界面消息：销毁媒体处理线程。
+		RqstCnctDlgInit, //主界面消息：初始化请求连接对话框。
+		RqstCnctDlgDstoy, //主界面消息：销毁请求连接对话框。
+		PttBtnInit, //主界面消息：初始化一键即按即通按钮。
+		PttBtnDstoy, //主界面消息：销毁一键即按即通按钮。
+		ShowLog, //主界面消息：显示日志。
+		Vibrate, //主界面消息：振动。
+	}
 
 	public void handleMessage( Message MessagePt )
 	{
-		if( MessagePt.what == INIT_MEDIA_PROC_THREAD ) //如果是初始化媒体处理线程的消息。
+		switch( Msg.values()[ MessagePt.what ] )
 		{
-			if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
+			case MediaPocsThrdInit:
 			{
-				( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseTcpPrtclRdBtnId ) ).setEnabled( false ); //设置TCP协议按钮为不可用。
-				( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseUdpPrtclRdBtnId ) ).setEnabled( false ); //设置UDP协议按钮为不可用。
-				( ( Button ) m_MainActivityPt.findViewById( R.id.XfrPrtclStngBtnId ) ).setEnabled( false ); //设置传输协议设置按钮为不可用。
-				( ( EditText ) m_MainActivityPt.findViewById( R.id.IPAddrEdTxtId ) ).setEnabled( false ); //设置IP地址控件为不可用。
-				( ( EditText ) m_MainActivityPt.findViewById( R.id.PortEdTxtId ) ).setEnabled( false ); //设置端口控件为不可用。
-				( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setText( "中断" ); //设置创建服务端按钮的内容为“中断”。
-				( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setEnabled( false ); //设置连接服务端按钮为不可用。
-				( ( Button ) m_MainActivityPt.findViewById( R.id.StngBtnId ) ).setEnabled( false ); //设置设置按钮为不可用。
-				if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_XfrMode == 0 )
+				if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
 				{
-					( ( Button ) m_MainActivityPt.findViewById( R.id.PttBtnId ) ).setVisibility( Button.VISIBLE ); //设置一键即按即通按钮为可见。
+					( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseTcpPrtclRdBtnId ) ).setEnabled( false ); //设置TCP协议按钮为不可用。
+					( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseUdpPrtclRdBtnId ) ).setEnabled( false ); //设置UDP协议按钮为不可用。
+					( ( Button ) m_MainActivityPt.findViewById( R.id.XfrPrtclStngBtnId ) ).setEnabled( false ); //设置传输协议设置按钮为不可用。
+					( ( EditText ) m_MainActivityPt.findViewById( R.id.IPAddrEdTxtId ) ).setEnabled( false ); //设置IP地址控件为不可用。
+					( ( EditText ) m_MainActivityPt.findViewById( R.id.PortEdTxtId ) ).setEnabled( false ); //设置端口控件为不可用。
+					( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setText( "中断" ); //设置创建服务端按钮的内容为“中断”。
+					( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setEnabled( false ); //设置连接服务端按钮为不可用。
+					( ( Button ) m_MainActivityPt.findViewById( R.id.StngBtnId ) ).setEnabled( false ); //设置设置按钮为不可用。
 				}
-			}
-			else //如果是创建客户端。
-			{
-				( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseTcpPrtclRdBtnId ) ).setEnabled( false ); //设置TCP协议按钮为不可用。
-				( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseUdpPrtclRdBtnId ) ).setEnabled( false ); //设置UDP协议按钮为不可用。
-				( ( Button ) m_MainActivityPt.findViewById( R.id.XfrPrtclStngBtnId ) ).setEnabled( false ); //设置传输协议设置按钮为不可用。
-				( ( EditText ) m_MainActivityPt.findViewById( R.id.IPAddrEdTxtId ) ).setEnabled( false ); //设置IP地址控件为不可用。
-				( ( EditText ) m_MainActivityPt.findViewById( R.id.PortEdTxtId ) ).setEnabled( false ); //设置端口控件为不可用。
-				( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setEnabled( false ); //设置创建服务端按钮为不可用。
-				( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setText( "中断" ); //设置连接服务端按钮的内容为“中断”。
-				( ( Button ) m_MainActivityPt.findViewById( R.id.StngBtnId ) ).setEnabled( false ); //设置设置按钮为不可用。
-				if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_XfrMode == 0 )
+				else //如果是创建客户端。
 				{
-					( ( Button ) m_MainActivityPt.findViewById( R.id.PttBtnId ) ).setVisibility( Button.VISIBLE ); //设置一键即按即通按钮为可见。
+					( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseTcpPrtclRdBtnId ) ).setEnabled( false ); //设置TCP协议按钮为不可用。
+					( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseUdpPrtclRdBtnId ) ).setEnabled( false ); //设置UDP协议按钮为不可用。
+					( ( Button ) m_MainActivityPt.findViewById( R.id.XfrPrtclStngBtnId ) ).setEnabled( false ); //设置传输协议设置按钮为不可用。
+					( ( EditText ) m_MainActivityPt.findViewById( R.id.IPAddrEdTxtId ) ).setEnabled( false ); //设置IP地址控件为不可用。
+					( ( EditText ) m_MainActivityPt.findViewById( R.id.PortEdTxtId ) ).setEnabled( false ); //设置端口控件为不可用。
+					( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setEnabled( false ); //设置创建服务端按钮为不可用。
+					( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setText( "中断" ); //设置连接服务端按钮的内容为“中断”。
+					( ( Button ) m_MainActivityPt.findViewById( R.id.StngBtnId ) ).setEnabled( false ); //设置设置按钮为不可用。
 				}
-			}
 
-			//创建并绑定前台服务，从而确保本进程在转入后台或系统锁屏时不会被系统限制运行，且只能放在主线程中执行，因为要使用界面。
-			if( ( ( CheckBox ) m_MainActivityPt.m_StngLyotViewPt.findViewById( R.id.IsUseFrgndSrvcCkBoxId ) ).isChecked() && ( m_FrgndSrvcCnctPt == null ) )
-			{
-				m_FrgndSrvcCnctPt = new ServiceConnection() //创建存放前台服务连接器。
+				//创建并绑定前台服务，从而确保本进程在转入后台或系统锁屏时不会被系统限制运行，且只能放在主线程中执行，因为要使用界面。
+				if( ( ( CheckBox ) m_MainActivityPt.m_StngLyotViewPt.findViewById( R.id.IsUseFrgndSrvcCkBoxId ) ).isChecked() && ( m_FrgndSrvcCnctPt == null ) )
 				{
-					@Override public void onServiceConnected( ComponentName name, IBinder service ) //前台服务绑定成功。
+					m_FrgndSrvcCnctPt = new ServiceConnection() //创建存放前台服务连接器。
 					{
-						( ( FrgndSrvc.FrgndSrvcBinder ) service ).SetForeground( m_MainActivityPt ); //将服务设置为前台服务。
-					}
+						@Override public void onServiceConnected( ComponentName name, IBinder service ) //前台服务绑定成功。
+						{
+							( ( FrgndSrvc.FrgndSrvcBinder ) service ).SetForeground( m_MainActivityPt ); //将服务设置为前台服务。
+						}
 
-					@Override public void onServiceDisconnected( ComponentName name ) //前台服务解除绑定。
-					{
+						@Override public void onServiceDisconnected( ComponentName name ) //前台服务解除绑定。
+						{
 
-					}
-				};
-				m_MainActivityPt.bindService( new Intent( m_MainActivityPt, FrgndSrvc.class ), m_FrgndSrvcCnctPt, Context.BIND_AUTO_CREATE ); //创建并绑定前台服务。
+						}
+					};
+					m_MainActivityPt.bindService( new Intent( m_MainActivityPt, FrgndSrvc.class ), m_FrgndSrvcCnctPt, Context.BIND_AUTO_CREATE ); //创建并绑定前台服务。
+				}
+				break;
 			}
-		}
-		else if( MessagePt.what == SHOW_REQUEST_CNCT_DIALOG ) //如果是显示请求连接对话框的消息。
-		{
-			AlertDialog.Builder builder = new AlertDialog.Builder( m_MainActivityPt );
-
-			builder.setCancelable( false ); //点击对话框以外的区域是否让对话框消失
-			builder.setTitle( R.string.app_name );
-
-			if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
+			case MediaPocsThrdDstoy:
 			{
-				builder.setMessage( "您是否允许远端[" + MessagePt.obj + "]的连接？" );
+				m_MainActivityPt.m_MyMediaPocsThrdPt = null;
 
-				//设置正面按钮。
-				builder.setPositiveButton( "允许", new DialogInterface.OnClickListener()
+				if( m_FrgndSrvcCnctPt != null ) //如果已经创建并绑定了前台服务。
 				{
-					@Override
-					public void onClick( DialogInterface dialog, int which )
-					{
-						m_MainActivityPt.m_MyMediaPocsThrdPt.m_RequestCnctRslt = 1;
-						m_RequestCnctDialogPt = null;
-					}
-				} );
-				//设置反面按钮。
-				builder.setNegativeButton( "拒绝", new DialogInterface.OnClickListener()
+					m_MainActivityPt.unbindService( m_FrgndSrvcCnctPt ); //解除绑定并销毁前台服务。
+					m_FrgndSrvcCnctPt = null;
+				}
+
+				( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseTcpPrtclRdBtnId ) ).setEnabled( true ); //设置TCP协议按钮为可用。
+				( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseUdpPrtclRdBtnId ) ).setEnabled( true ); //设置UDP协议按钮为可用。
+				( ( Button ) m_MainActivityPt.findViewById( R.id.XfrPrtclStngBtnId ) ).setEnabled( true ); //设置传输协议设置按钮为不可用。
+				( ( EditText ) m_MainActivityPt.findViewById( R.id.IPAddrEdTxtId ) ).setEnabled( true ); //设置IP地址控件为可用。
+				( ( EditText ) m_MainActivityPt.findViewById( R.id.PortEdTxtId ) ).setEnabled( true ); //设置端口控件为可用。
+				( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setText( "创建服务端" ); //设置创建服务端按钮的内容为“创建服务端”。
+				( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setEnabled( true ); //设置连接服务端按钮为可用。
+				( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setText( "连接服务端" ); //设置连接服务端按钮的内容为“连接服务端”。
+				( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setEnabled( true ); //设置创建服务端按钮为可用。
+				( ( Button ) m_MainActivityPt.findViewById( R.id.StngBtnId ) ).setEnabled( true ); //设置设置按钮为可用。
+				break;
+			}
+			case PttBtnInit:
+			{
+				( ( Button ) m_MainActivityPt.findViewById( R.id.PttBtnId ) ).setVisibility( Button.VISIBLE ); //设置一键即按即通按钮为可见。
+				break;
+			}
+			case PttBtnDstoy:
+			{
+				( ( Button ) m_MainActivityPt.findViewById( R.id.PttBtnId ) ).setVisibility( Button.INVISIBLE ); //设置一键即按即通按钮为不可见。
+				break;
+			}
+			case RqstCnctDlgInit:
+			{
+				AlertDialog.Builder builder = new AlertDialog.Builder( m_MainActivityPt );
+
+				builder.setCancelable( false ); //点击对话框以外的区域是否让对话框消失
+				builder.setTitle( R.string.app_name );
+
+				if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
 				{
-					@Override
-					public void onClick( DialogInterface dialog, int which )
-					{
-						m_MainActivityPt.m_MyMediaPocsThrdPt.m_RequestCnctRslt = 2;
-						m_RequestCnctDialogPt = null;
-					}
-				} );
-			}
-			else //如果是创建客户端。
-			{
-				builder.setMessage( "等待远端[" + MessagePt.obj + "]允许您的连接..." );
+					builder.setMessage( "您是否允许远端[" + MessagePt.obj + "]的连接？" );
 
-				//设置反面按钮。
-				builder.setNegativeButton( "中断", new DialogInterface.OnClickListener()
+					//设置正面按钮。
+					builder.setPositiveButton( "允许", new DialogInterface.OnClickListener()
+					{
+						@Override
+						public void onClick( DialogInterface dialog, int which )
+						{
+							m_MainActivityPt.m_MyMediaPocsThrdPt.m_RqstCnctRslt = 1;
+							m_RqstCnctDlgPt = null;
+						}
+					} );
+					//设置反面按钮。
+					builder.setNegativeButton( "拒绝", new DialogInterface.OnClickListener()
+					{
+						@Override
+						public void onClick( DialogInterface dialog, int which )
+						{
+							m_MainActivityPt.m_MyMediaPocsThrdPt.m_RqstCnctRslt = 2;
+							m_RqstCnctDlgPt = null;
+						}
+					} );
+				}
+				else //如果是创建客户端。
 				{
-					@Override
-					public void onClick( DialogInterface dialog, int which )
+					builder.setMessage( "等待远端[" + MessagePt.obj + "]允许您的连接..." );
+
+					//设置反面按钮。
+					builder.setNegativeButton( "中断", new DialogInterface.OnClickListener()
 					{
-						m_MainActivityPt.m_MyMediaPocsThrdPt.m_RequestCnctRslt = 2;
-						m_RequestCnctDialogPt = null;
-					}
-				} );
-			}
+						@Override
+						public void onClick( DialogInterface dialog, int which )
+						{
+							m_MainActivityPt.m_MyMediaPocsThrdPt.m_RqstCnctRslt = 2;
+							m_RqstCnctDlgPt = null;
+						}
+					} );
+				}
 
-			m_RequestCnctDialogPt = builder.create(); //创建AlertDialog对象。
-			m_RequestCnctDialogPt.show();
-		}
-		else if( MessagePt.what == DSTOY_REQUEST_CNCT_DIALOG ) //如果是销毁请求连接对话框的消息。
-		{
-			if( m_RequestCnctDialogPt != null )
+				m_RqstCnctDlgPt = builder.create(); //创建AlertDialog对象。
+				m_RqstCnctDlgPt.show();
+				break;
+			}
+			case RqstCnctDlgDstoy:
 			{
-				m_RequestCnctDialogPt.cancel();
-				m_RequestCnctDialogPt = null;
+				if( m_RqstCnctDlgPt != null )
+				{
+					m_RqstCnctDlgPt.cancel();
+					m_RqstCnctDlgPt = null;
+				}
+				break;
 			}
-		}
-		else if( MessagePt.what == DSTOY_MEDIA_PROC_THREAD ) //如果是销毁媒体处理线程的消息。
-		{
-			m_MainActivityPt.m_MyMediaPocsThrdPt = null;
-
-			if( m_FrgndSrvcCnctPt != null ) //如果已经创建并绑定了前台服务。
+			case ShowLog:
 			{
-				m_MainActivityPt.unbindService( m_FrgndSrvcCnctPt ); //解除绑定并销毁前台服务。
-				m_FrgndSrvcCnctPt = null;
+				TextView p_LogTextView = new TextView( m_MainActivityPt );
+				p_LogTextView.setText( ( new SimpleDateFormat( "HH:mm:ss SSS" ) ).format( new Date() ) + "：" + MessagePt.obj );
+				( ( LinearLayout ) m_MainActivityPt.m_MainLyotViewPt.findViewById( R.id.LogLinearLyotId ) ).addView( p_LogTextView );
+				break;
 			}
-
-			( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseTcpPrtclRdBtnId ) ).setEnabled( true ); //设置TCP协议按钮为可用。
-			( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseUdpPrtclRdBtnId ) ).setEnabled( true ); //设置UDP协议按钮为可用。
-			( ( Button ) m_MainActivityPt.findViewById( R.id.XfrPrtclStngBtnId ) ).setEnabled( true ); //设置传输协议设置按钮为不可用。
-			( ( EditText ) m_MainActivityPt.findViewById( R.id.IPAddrEdTxtId ) ).setEnabled( true ); //设置IP地址控件为可用。
-			( ( EditText ) m_MainActivityPt.findViewById( R.id.PortEdTxtId ) ).setEnabled( true ); //设置端口控件为可用。
-			( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setText( "创建服务端" ); //设置创建服务端按钮的内容为“创建服务端”。
-			( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setEnabled( true ); //设置连接服务端按钮为可用。
-			( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setText( "连接服务端" ); //设置连接服务端按钮的内容为“连接服务端”。
-			( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setEnabled( true ); //设置创建服务端按钮为可用。
-			( ( Button ) m_MainActivityPt.findViewById( R.id.StngBtnId ) ).setEnabled( true ); //设置设置按钮为可用。
-			( ( Button ) m_MainActivityPt.findViewById( R.id.PttBtnId ) ).setVisibility( Button.INVISIBLE ); //设置一键即按即通按钮为不可见。
-		}
-		else if( MessagePt.what == SHOW_LOG ) //如果是显示日志的消息。
-		{
-			TextView p_LogTextView = new TextView( m_MainActivityPt );
-			p_LogTextView.setText( ( new SimpleDateFormat( "HH:mm:ss SSS" ) ).format( new Date() ) + "：" + MessagePt.obj );
-			( ( LinearLayout ) m_MainActivityPt.m_MainLyotViewPt.findViewById( R.id.LogLinearLyotId ) ).addView( p_LogTextView );
-		}
-		else if( MessagePt.what == REBUILD_SURFACE_VIEW ) //如果是重建Surface视图的消息，用来清空残余画面。
-		{
-			m_MainActivityPt.m_VdoInptPrvwSurfaceViewPt.setVisibility( View.GONE ); //销毁视频输入预览Surface视图。
-			m_MainActivityPt.m_VdoInptPrvwSurfaceViewPt.setVisibility( View.VISIBLE ); //创建视频输入预览Surface视图。
-			m_MainActivityPt.m_VdoOtptDspySurfaceViewPt.setVisibility( View.GONE ); //销毁视频输出显示Surface视图。
-			m_MainActivityPt.m_VdoOtptDspySurfaceViewPt.setVisibility( View.VISIBLE ); //创建视频输出显示Surface视图。
-		}
-		else if( MessagePt.what == VIBRATE ) //如果是振动消息。
-		{
-			( ( Vibrator ) m_MainActivityPt.getSystemService( m_MainActivityPt.VIBRATOR_SERVICE ) ).vibrate( 100 );
+			case Vibrate:
+			{
+				( ( Vibrator ) m_MainActivityPt.getSystemService( Context.VIBRATOR_SERVICE ) ).vibrate( 50 );
+				break;
+			}
 		}
 	}
 }
@@ -227,12 +236,20 @@ class MyMediaPocsThrd extends MediaPocsThrd
 {
 	MainActivity m_MainActivityPt; //存放主界面的指针。
 	Handler m_MainActivityHandlerPt; //存放主界面消息处理的指针。
+	public int m_IsInterrupt; //存放是否中断，为0表示未中断，为1表示已中断。
+
+	public enum UserMsg
+	{
+		LclTkbkMode, //我的媒体处理线程消息：本端对讲模式。
+		RmtTkbkMode, //我的媒体处理线程消息：远端对讲模式。
+		PttBtnDown, //我的媒体处理线程消息：一键即按即通按钮按下。
+		PttBtnUp, //我的媒体处理线程消息：一键即按即通按钮弹起。
+	}
 
 	String m_IPAddrStrPt; //存放IP地址字符串的指针。
 	String m_PortStrPt; //存放端口字符串的指针。
 	int m_XfrMode; //存放传输模式，为0表示实时半双工（一键通），为1表示实时全双工。
-	int m_PttBtnIsDown; //存放一键即按即通按钮是否按下，为0表示弹起，为1表示按下。
-	int m_PttDownIsNoVibrate; //存放一键即按即通按钮按下后是否没有振动，为0表示已经振动，为1表示没有振动。
+	int m_PttBtnIsDown; //存放一键即按即通按钮是否按下，为0表示弹起，为非0表示按下。
 	int m_MaxCnctTimes; //存放最大连接次数，取值区间为[1,2147483647]。
 	int m_UseWhatXfrPrtcl; //存放使用什么传输协议，为0表示TCP协议，为1表示UDP协议。
 	int m_IsCreateSrvrOrClnt; //存放创建服务端或者客户端标记，为1表示创建服务端，为0表示创建客户端。
@@ -240,19 +257,31 @@ class MyMediaPocsThrd extends MediaPocsThrd
 	TcpClntSokt m_TcpClntSoktPt; //存放本端TCP协议客户端套接字的指针。
 	AudpSokt m_AudpSoktPt; //存放本端高级UDP协议套接字的指针。
 	HTLong m_AudpCnctIdx; //存放本端高级UDP协议连接索引。
+	int m_IsRecvExitPkt; //存放是否接收到退出包，为0表示否，为1表示是。
 	public static final byte PKT_TYP_ALLOW_CNCT  = 1; //数据包类型：允许连接包。
 	public static final byte PKT_TYP_REFUSE_CNCT = 2; //数据包类型：拒绝连接包。
-	public static final byte PKT_TYP_ADO_FRM     = 3; //数据包类型：音频输入输出帧。
-	public static final byte PKT_TYP_VDO_FRM     = 4; //数据包类型：视频输入输出帧。
-	public static final byte PKT_TYP_EXIT        = 5; //数据包类型：退出包。
+	public static final byte PKT_TYP_TKBK_MODE   = 3; //数据包类型：对讲模式。
+	public static final byte PKT_TYP_ADO_FRM     = 4; //数据包类型：音频输入输出帧。
+	public static final byte PKT_TYP_VDO_FRM     = 5; //数据包类型：视频输入输出帧。
+	public static final byte PKT_TYP_EXIT        = 6; //数据包类型：退出包。
 
 	int m_IsAutoAllowCnct; //存放是否自动允许连接，为0表示手动，为1表示自动。
-	int m_RequestCnctRslt; //存放请求连接的结果，为0表示没有选择，为1表示允许，为2表示拒绝。
+	int m_RqstCnctRslt; //存放请求连接的结果，为0表示没有选择，为1表示允许，为2表示拒绝。
+
+	public enum TkbkMode
+	{
+		None, //对讲模式：空。
+		Ado, //对讲模式：音频。
+		Vdo, //对讲模式：视频。
+		AdoVdo, //对讲模式：音视频。
+		NoChg, //对讲模式：不变。
+	}
+	TkbkMode m_LclTkbkMode; //存放本端对讲模式。
+	TkbkMode m_RmtTkbkMode; //存放远端对讲模式。
 
 	int m_LastSendAdoInptFrmIsAct; //存放最后一个发送的音频输入帧有无语音活动，为1表示有语音活动，为0表示无语音活动。
 	int m_LastSendAdoInptFrmTimeStamp; //存放最后一个发送音频输入帧的时间戳。
 	int m_LastSendVdoInptFrmTimeStamp; //存放最后一个发送视频输入帧的时间戳。
-	byte m_IsRecvExitPkt; //存放是否接收到退出包，为0表示否，为1表示是。
 
 	int m_UseWhatRecvOtptFrm; //存放使用什么接收输出帧，为0表示链表，为1表示自适应抖动缓冲器。
 	int m_LastGetAdoOtptFrmIsAct; //存放最后一个取出的音频输出帧是否为有语音活动，为0表示否，为非0表示是。
@@ -283,10 +312,14 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 	MyMediaPocsThrd( MainActivity MainActivityPt, Handler MainActivityHandlerPt )
 	{
-		super( MainActivityPt.getApplicationContext() );
+		super( MainActivityPt );
 
 		m_MainActivityPt = MainActivityPt; //设置主界面的指针。
 		m_MainActivityHandlerPt = MainActivityHandlerPt; //设置主界面消息处理的指针。
+		m_IsInterrupt = 0; //设置未中断。
+
+		m_LclTkbkMode = TkbkMode.None;
+		m_RmtTkbkMode = TkbkMode.None;
 	}
 
 	//用户定义的初始化函数。
@@ -300,13 +333,13 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 		Out:
 		{
-			{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.INIT_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送初始化媒体处理线程的消息。
+			{ Message p_MessagePt = new Message(); p_MessagePt.what = MainActivityHandler.Msg.MediaPocsThrdInit.ordinal(); m_MainActivityHandlerPt.sendMessage( p_MessagePt ); } //向主界面发送初始化媒体处理线程的消息。
 
-			m_RequestCnctRslt = 0; //设置请求连接的结果为没有选择。
+			m_RqstCnctRslt = 0; //设置请求连接的结果为没有选择。
 			m_IsRecvExitPkt = 0; //设置没有接收到退出包。
-			if( m_TmpBytePt == null ) m_TmpBytePt = new byte[1024 * 1024]; //初始化临时数据。
-			if( m_TmpByte2Pt == null ) m_TmpByte2Pt = new byte[1024 * 1024]; //初始化临时数据。
-			if( m_TmpByte3Pt == null ) m_TmpByte3Pt = new byte[1024 * 1024]; //初始化临时数据。
+			if( m_TmpBytePt == null ) m_TmpBytePt = new byte[ 1024 * 1024 ]; //初始化临时数据。
+			if( m_TmpByte2Pt == null ) m_TmpByte2Pt = new byte[ 1024 * 1024 ]; //初始化临时数据。
+			if( m_TmpByte3Pt == null ) m_TmpByte3Pt = new byte[ 1024 * 1024 ]; //初始化临时数据。
 			if( m_TmpHTIntPt == null ) m_TmpHTIntPt = new HTInt(); //初始化临时数据。
 			if( m_TmpHTInt2Pt == null ) m_TmpHTInt2Pt = new HTInt(); //初始化临时数据。
 			if( m_TmpHTInt3Pt == null ) m_TmpHTInt3Pt = new HTInt(); //初始化临时数据。
@@ -326,19 +359,19 @@ class MyMediaPocsThrd extends MediaPocsThrd
 						{
 							String p_InfoStrPt = "获取本端TCP协议服务端套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							break Out;
 						}
 
 						String p_InfoStrPt = "初始化本端TCP协议服务端套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]成功。";
 						Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 					}
 					else //如果初始化本端TCP协议服务端套接字失败。
 					{
 						String p_InfoStrPt = "初始化本端TCP协议服务端套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVstrPt.GetStr();
 						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 						break Out;
 					}
 
@@ -355,13 +388,9 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 								String p_InfoStrPt = "用本端TCP协议服务端套接字接受远端TCP协议客户端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]的连接成功。";
 								Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 								break;
-							}
-							else //如果用本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接超时，就重新接受。
-							{
-
-							}
+							} //如果用本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接超时，就重新接受。
 						}
 						else
 						{
@@ -369,14 +398,13 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 							String p_InfoStrPt = "用本端TCP协议服务端套接字接受远端TCP协议客户端套接字的连接失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							break Out;
 						}
 
-						if( m_ExitFlag != 0 ) //如果本线程接收到退出请求。
+						if( m_ReadyExitCnt != 0 ) //如果本线程接收到退出请求。
 						{
 							m_TcpClntSoktPt = null;
-
 							Log.i( m_CurClsNameStrPt, "本线程接收到退出请求，开始准备退出。" );
 							break Out;
 						}
@@ -402,7 +430,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 						{
 							String p_InfoStrPt = "开始第 " + p_CurCnctTimes + "次连接。";
 							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 						}
 
 						if( m_TcpClntSoktPt.Init( 4, m_IPAddrStrPt, m_PortStrPt, null, null, ( short ) 5000, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字成功。
@@ -411,27 +439,27 @@ class MyMediaPocsThrd extends MediaPocsThrd
 							{
 								String p_InfoStrPt = "获取本端TCP协议客户端套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVstrPt.GetStr();
 								Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 								break Out;
 							}
 							if( m_TcpClntSoktPt.GetRmtAddr( null, p_RmtNodeAddrPt, p_RmtNodePortPt, 0, m_ErrInfoVstrPt ) != 0 )
 							{
 								String p_InfoStrPt = "获取本端TCP协议客户端套接字连接的远端TCP协议客户端套接字绑定的远程节点地址和端口失败。原因：" + m_ErrInfoVstrPt.GetStr();
 								Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 								break Out;
 							}
 
 							String p_InfoStrPt = "初始化本端TCP协议客户端套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]，并连接远端TCP协议服务端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]成功。";
 							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							break LoopCnct; //跳出重连。
 						}
 						else
 						{
 							String p_InfoStrPt = "初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 						}
 
 						p_CurCnctTimes++; //递增当前连接次数。
@@ -441,14 +469,13 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 							String p_InfoStrPt = "达到最大连接次数，中断连接。";
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							break Out;
 						}
 
-						if( m_ExitFlag != 0 ) //如果本线程接收到退出请求。
+						if( m_ReadyExitCnt != 0 ) //如果本线程接收到退出请求。
 						{
 							m_TcpClntSoktPt = null;
-
 							Log.i( m_CurClsNameStrPt, "本线程接收到退出请求，开始准备退出。" );
 							break Out;
 						}
@@ -459,7 +486,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				{
 					String p_InfoStrPt = "设置本端TCP协议客户端套接字的Nagle延迟算法状态为禁用失败。原因：" + m_ErrInfoVstrPt.GetStr();
 					Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 					break Out;
 				}
 
@@ -467,7 +494,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				{
 					String p_InfoStrPt = "设置本端TCP协议客户端套接字的发送缓冲区大小失败。原因：" + m_ErrInfoVstrPt.GetStr();
 					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 					break Out;
 				}
 
@@ -475,7 +502,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				{
 					String p_InfoStrPt = "设置本端TCP协议客户端套接字的接收缓冲区大小失败。原因：" + m_ErrInfoVstrPt.GetStr();
 					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 					break Out;
 				}
 
@@ -483,7 +510,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				{
 					String p_InfoStrPt = "设置本端TCP协议客户端套接字的保活机制失败。原因：" + m_ErrInfoVstrPt.GetStr();
 					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 					break Out;
 				}
 			}
@@ -500,19 +527,19 @@ class MyMediaPocsThrd extends MediaPocsThrd
 						{
 							String p_InfoStrPt = "获取本端高级UDP协议套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							break Out;
 						}
 
 						String p_InfoStrPt = "初始化本端高级UDP协议套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]成功。";
 						Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 					}
 					else //如果初始化本端高级UDP协议套接字失败。
 					{
 						String p_InfoStrPt = "初始化本端高级UDP协议套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVstrPt.GetStr();
 						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 						break Out;
 					}
 
@@ -524,23 +551,19 @@ class MyMediaPocsThrd extends MediaPocsThrd
 							{
 								String p_InfoStrPt = "用本端高级UDP协议套接字接受远端高级UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]的连接成功。";
 								Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 								break;
-							}
-							else //如果用本端高级UDP协议套接字接受远端高级UDP协议套接字的连接超时，就重新接受。
-							{
-
-							}
+							} //如果用本端高级UDP协议套接字接受远端高级UDP协议套接字的连接超时，就重新接受。
 						}
 						else
 						{
 							String p_InfoStrPt = "用本端高级UDP协议套接字接受远端高级UDP协议套接字的连接失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							break Out;
 						}
 
-						if( m_ExitFlag != 0 ) //如果本线程接收到退出请求。
+						if( m_ReadyExitCnt != 0 ) //如果本线程接收到退出请求。
 						{
 							Log.i( m_CurClsNameStrPt, "本线程接收到退出请求，开始准备退出。" );
 							break Out;
@@ -564,19 +587,19 @@ class MyMediaPocsThrd extends MediaPocsThrd
 						{
 							String p_InfoStrPt = "获取本端高级UDP协议套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							break Out;
 						}
 
 						String p_InfoStrPt = "初始化本端高级UDP协议套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]成功。";
 						Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 					}
 					else //如果初始化本端高级UDP协议套接字失败。
 					{
 						String p_InfoStrPt = "初始化本端高级UDP协议套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVstrPt.GetStr();
 						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 						break Out;
 					}
 
@@ -588,7 +611,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 							{
 								String p_InfoStrPt = "开始第 " + p_CurCnctTimes + "次连接。";
 								Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							}
 
 							if( m_AudpSoktPt.Cnct( 4, m_IPAddrStrPt, m_PortStrPt, m_AudpCnctIdx, m_ErrInfoVstrPt ) == 0 ) //如果连接远端高级UDP协议套接字成功。
@@ -603,13 +626,13 @@ class MyMediaPocsThrd extends MediaPocsThrd
 										{
 											String p_InfoStrPt = "获取本端高级UDP协议客户端套接字连接的远端高级UDP协议客户端套接字绑定的远程节点地址和端口失败。原因：" + m_ErrInfoVstrPt.GetStr();
 											Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-											Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+											Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 											break Out;
 										}
 
 										String p_InfoStrPt = "用本端高级UDP协议套接字连接远端高级UDP协议套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]成功。";
 										Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-										Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+										Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 										break; //跳出重连。
 									}
 									else //如果连接失败。
@@ -618,13 +641,13 @@ class MyMediaPocsThrd extends MediaPocsThrd
 										{
 											String p_InfoStrPt = "用本端高级UDP协议套接字连接远端高级UDP协议套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：连接超时。";
 											Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-											Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+											Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 										}
 										else //如果连接断开。
 										{
 											String p_InfoStrPt = "用本端高级UDP协议套接字连接远端高级UDP协议套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：连接断开。";
 											Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-											Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+											Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 										}
 									}
 								}
@@ -635,8 +658,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 							{
 								String p_InfoStrPt = "用本端高级UDP协议套接字连接远端高级UDP协议套接字[" + m_IPAddrStrPt + ":" + m_PortStrPt + "]失败。原因：" + m_ErrInfoVstrPt.GetStr();
 								Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-
+								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							}
 						}
 
@@ -645,11 +667,11 @@ class MyMediaPocsThrd extends MediaPocsThrd
 						{
 							String p_InfoStrPt = "达到最大连接次数，中断连接。";
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							break Out;
 						}
 
-						if( m_ExitFlag != 0 ) //如果本线程接收到退出请求。
+						if( m_ReadyExitCnt != 0 ) //如果本线程接收到退出请求。
 						{
 							Log.i( m_CurClsNameStrPt, "本线程接收到退出请求，开始准备退出。" );
 							break Out;
@@ -661,7 +683,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				{
 					String p_InfoStrPt = "设置本端高级UDP协议套接字的发送缓冲区大小失败。原因：" + m_ErrInfoVstrPt.GetStr();
 					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 					break Out;
 				}
 
@@ -669,92 +691,92 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				{
 					String p_InfoStrPt = "设置本端高级UDP协议套接字的接收缓冲区大小失败。原因：" + m_ErrInfoVstrPt.GetStr();
 					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 					break Out;
 				}
 			} //协议连接结束。
 
 			//等待允许连接。
-			if( ( m_IsCreateSrvrOrClnt == 1 ) && ( m_IsAutoAllowCnct != 0 ) ) m_RequestCnctRslt = 1;
-			else m_RequestCnctRslt = 0;
-			{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_REQUEST_CNCT_DIALOG;p_MessagePt.obj = p_RmtNodeAddrPt.m_Val;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送显示请求连接对话框的消息。
+			if( ( m_IsCreateSrvrOrClnt == 1 ) && ( m_IsAutoAllowCnct != 0 ) ) m_RqstCnctRslt = 1;
+			else m_RqstCnctRslt = 0;
+			{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.RqstCnctDlgInit.ordinal();p_MessagePt.obj = p_RmtNodeAddrPt.m_Val;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送显示请求连接对话框的消息。
 			WaitAllowCnct:
 			while( true )
 			{
 				if( m_IsCreateSrvrOrClnt == 1 ) //如果是服务端。
 				{
-					if( m_RequestCnctRslt == 1 ) //如果允许连接。
+					if( m_RqstCnctRslt == 1 ) //如果允许连接。
 					{
 						m_TmpBytePt[0] = PKT_TYP_ALLOW_CNCT; //设置允许连接包。
 						if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
 							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_AudpSoktPt.SendPkt( m_AudpCnctIdx.m_Val, m_TmpBytePt, 1, 10, m_ErrInfoVstrPt ) == 0 ) ) )
 						{
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.RqstCnctDlgDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 							String p_InfoStrPt = "发送一个允许连接包成功。";
 							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 							break WaitAllowCnct;
 						}
 						else
 						{
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.RqstCnctDlgDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 							String p_InfoStrPt = "发送一个允许连接包失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							break Out;
 						}
 					}
-					else if( m_RequestCnctRslt == 2 ) //如果拒绝连接。
+					else if( m_RqstCnctRslt == 2 ) //如果拒绝连接。
 					{
 						m_TmpBytePt[0] = PKT_TYP_REFUSE_CNCT; //设置拒绝连接包。
 						if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
 							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_AudpSoktPt.SendPkt( m_AudpCnctIdx.m_Val, m_TmpBytePt, 1, 10, m_ErrInfoVstrPt ) == 0 ) ) )
 						{
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.RqstCnctDlgDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 							String p_InfoStrPt = "发送一个拒绝连接包成功。";
 							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 							break Out;
 						}
 						else
 						{
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.RqstCnctDlgDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 							String p_InfoStrPt = "发送一个拒绝连接包失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							break Out;
 						}
 					}
 				}
 				else //如果是客户端。
 				{
-					if( m_RequestCnctRslt == 2 ) //如果中断等待。
+					if( m_RqstCnctRslt == 2 ) //如果中断等待。
 					{
 						m_TmpBytePt[0] = PKT_TYP_REFUSE_CNCT; //设置拒绝连接包。
 						if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
 							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_AudpSoktPt.SendPkt( m_AudpCnctIdx.m_Val, m_TmpBytePt, 1, 10, m_ErrInfoVstrPt ) == 0 ) ) )
 						{
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.RqstCnctDlgDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 							String p_InfoStrPt = "发送一个拒绝连接包成功。";
 							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 							break Out;
 						}
 						else
 						{
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.RqstCnctDlgDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 							String p_InfoStrPt = "发送一个拒绝连接包失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							break Out;
 						}
 					}
@@ -770,53 +792,48 @@ class MyMediaPocsThrd extends MediaPocsThrd
 						{
 							if( m_IsCreateSrvrOrClnt == 0 ) //如果是客户端。
 							{
-								m_RequestCnctRslt = 1;
+								m_RqstCnctRslt = 1;
 
-								{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+								{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.RqstCnctDlgDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 								String p_InfoStrPt = "接收到一个允许连接包。";
 								Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 								if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 								break WaitAllowCnct;
-							}
-							else //如果是服务端。
-							{
-								//就重新接收。
-							}
+							} //如果是服务端，就重新接收。
 						}
 						else if( ( m_TmpHTLongPt.m_Val == 1 ) && ( m_TmpBytePt[0] == PKT_TYP_REFUSE_CNCT ) ) //如果是拒绝连接包。
 						{
-							m_RequestCnctRslt = 2;
+							m_RqstCnctRslt = 2;
 
-							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
+							{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.RqstCnctDlgDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送毁请求连接对话框的消息。
 
 							String p_InfoStrPt = "接收到一个拒绝连接包。";
 							Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 							if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 							break Out;
-						}
-						else //如果是其他包。
-						{
-							//就重新接收。
-						}
-					}
-					else //如果用本端套接字接收一个连接的远端套接字发送的数据包超时。
-					{
-						//就重新接收。
-					}
+						} //如果是其他包，就重新接收。
+					} //如果用本端套接字接收一个连接的远端套接字发送的数据包超时，就重新接收。
 				}
 				else //如果用本端套接字接收一个连接的远端套接字发送的数据包失败。
 				{
-					{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_REQUEST_CNCT_DIALOG;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁请求连接对话框的消息。
+					{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.RqstCnctDlgDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁请求连接对话框的消息。
 
 					String p_InfoStrPt = "用本端套接字接收一个连接的远端套接字发送的数据包失败。原因：" + m_ErrInfoVstrPt.GetStr();
 					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 					break Out;
 				}
-			}
+			} //等待允许连接结束。
+
+			m_LastSendAdoInptFrmIsAct = 0; //设置最后发送的一个音频输入帧为无语音活动。
+			m_LastSendAdoInptFrmTimeStamp = 0 - 1; //设置最后一个发送音频输入帧的时间戳为0的前一个，因为第一次发送音频输入帧时会递增一个步进。
+			m_LastSendVdoInptFrmTimeStamp = 0 - 1; //设置最后一个发送视频输入帧的时间戳为0的前一个，因为第一次发送视频输入帧时会递增一个步进。
+
+			m_LastGetAdoOtptFrmIsAct = 0; //设置最后一个取出的音频输出帧为无语音活动，因为如果不使用音频输出，只使用视频输出时，可以保证视频正常输出。
+			m_LastGetAdoOtptFrmVdoOtptFrmTimeStamp = 0; //设置最后一个取出的音频输出帧对应视频输出帧的时间戳为0。
 
 			switch( m_UseWhatRecvOtptFrm ) //使用什么接收输出帧。
 			{
@@ -835,15 +852,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				{
 					//初始化音频自适应抖动缓冲器。
 					m_AAjbPt = new AAjb();
-					if( m_AAjbPt.Init(
-							( ( ( RadioButton ) m_MainActivityPt.m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate8000RdBtnId ) ).isChecked() ) ? 8000 :
-									( ( ( RadioButton ) m_MainActivityPt.m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate16000RdBtnId ) ).isChecked() ) ? 16000 :
-											( ( ( RadioButton ) m_MainActivityPt.m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate32000RdBtnId ) ).isChecked() ) ? 32000 :
-													( ( ( RadioButton ) m_MainActivityPt.m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate48000RdBtnId ) ).isChecked() ) ? 48000 : 0,
-							( ( ( RadioButton ) m_MainActivityPt.m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen10msRdBtnId ) ).isChecked() ) ? 10 :
-									( ( ( RadioButton ) m_MainActivityPt.m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen20msRdBtnId ) ).isChecked() ) ? 20 :
-											( ( ( RadioButton ) m_MainActivityPt.m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen30msRdBtnId ) ).isChecked() ) ? 30 : 0,
-							1, 1, 0, m_AAjbMinNeedBufFrmCnt, m_AAjbMaxNeedBufFrmCnt, m_AAjbMaxCntuLostFrmCnt, m_AAjbAdaptSensitivity, m_ErrInfoVstrPt ) == 0 )
+					if( m_AAjbPt.Init( m_AdoOtptPt.m_SmplRate, m_AdoOtptPt.m_FrmLen, 1, 1, 0, m_AAjbMinNeedBufFrmCnt, m_AAjbMaxNeedBufFrmCnt, m_AAjbMaxCntuLostFrmCnt, m_AAjbAdaptSensitivity, m_ErrInfoVstrPt ) == 0 )
 					{
 						Log.i( m_CurClsNameStrPt, "初始化音频自适应抖动缓冲器成功。" );
 					}
@@ -851,7 +860,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					{
 						String p_InfoStrPt = "初始化音频自适应抖动缓冲器失败。原因：" + m_ErrInfoVstrPt.GetStr();
 						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 						break Out;
 					}
 
@@ -865,28 +874,23 @@ class MyMediaPocsThrd extends MediaPocsThrd
 					{
 						String p_InfoStrPt = "初始化视频自适应抖动缓冲器失败。原因：" + m_ErrInfoVstrPt.GetStr();
 						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 						break Out;
 					}
 					break;
 				}
 			}
 
-			m_LastSendAdoInptFrmIsAct = 0; //设置最后发送的一个音频输入帧为无语音活动。
-			m_LastSendAdoInptFrmTimeStamp = 0 - 1; //设置最后一个发送音频输入帧的时间戳为0的前一个，因为第一次发送音频输入帧时会递增一个步进。
-			m_LastSendVdoInptFrmTimeStamp = 0 - 1; //设置最后一个发送视频输入帧的时间戳为0的前一个，因为第一次发送视频输入帧时会递增一个步进。
-
-			m_LastGetAdoOtptFrmIsAct = 0; //设置最后一个取出的音频输出帧为无语音活动，因为如果不使用音频输出，只使用视频输出时，可以保证视频正常输出。
-			m_LastGetAdoOtptFrmVdoOtptFrmTimeStamp = 0; //设置最后一个取出的音频输出帧对应视频输出帧的时间戳为0。
-
 			{
 				String p_InfoStrPt = "开始对讲。";
 				Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-				Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+				Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 				if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 			}
 
-			{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.VIBRATE;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
+			{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.Vibrate.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
+			if( m_XfrMode == 0 ) {Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.PttBtnInit.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送初始化一键即按即通按钮的消息。
+			SendUserMsg( UserMsg.LclTkbkMode, TkbkMode.NoChg ); //发送对讲模式包。
 
 			p_Rslt = 0; //设置本函数执行成功。
 		}
@@ -913,7 +917,24 @@ class MyMediaPocsThrd extends MediaPocsThrd
 						Log.e( m_CurClsNameStrPt, "接收到一个数据包的数据长度为" + m_TmpHTLongPt.m_Val + "，表示没有数据，无法继续接收。" );
 						break Out;
 					}
-					else if( m_TmpBytePt[0] == PKT_TYP_ADO_FRM ) //如果是音频输出帧包。
+					else if( m_TmpBytePt[ 0 ] == PKT_TYP_TKBK_MODE ) //如果是对讲模式包。
+					{
+						if( m_TmpHTLongPt.m_Val < 1 + 1 ) //如果音频输出帧包的数据长度小于1 + 1，表示没有对讲模式。
+						{
+							Log.e( m_CurClsNameStrPt, "接收到一个对讲模式包的数据长度为" + m_TmpHTLongPt.m_Val + "小于1 + 1，表示没有对讲模式，无法继续接收。" );
+							break Out;
+						}
+						if( m_TmpBytePt[ 1 ] >= TkbkMode.NoChg.ordinal() )
+						{
+							Log.e( m_CurClsNameStrPt, "接收到一个对讲模式包的对讲模式为" + m_TmpBytePt[ 1 ] + "不正确，无法继续接收。" );
+							break Out;
+						}
+
+						m_RmtTkbkMode = TkbkMode.values()[ m_TmpBytePt[ 1 ] ]; //设置远端对讲模式。
+						Log.i( m_CurClsNameStrPt, "接收到一个对讲模式包。对讲模式：" + m_RmtTkbkMode );
+						SetTkbkMode(); //设置对讲模式。
+					}
+					else if( m_TmpBytePt[ 0 ] == PKT_TYP_ADO_FRM ) //如果是音频输出帧包。
 					{
 						if( m_TmpHTLongPt.m_Val < 1 + 4 ) //如果音频输出帧包的数据长度小于1 + 4，表示没有音频输出帧时间戳。
 						{
@@ -922,7 +943,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 						}
 
 						//读取音频输出帧时间戳。
-						p_TmpInt = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
+						p_TmpInt = ( m_TmpBytePt[ 1 ] & 0xFF ) + ( ( m_TmpBytePt[ 2 ] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[ 3 ] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[ 4 ] & 0xFF ) << 24 );
 
 						//将音频输出帧放入链表或自适应抖动缓冲器。
 						switch( m_UseWhatRecvOtptFrm ) //使用什么接收输出帧。
@@ -977,7 +998,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 							}
 						}
 					}
-					else if( m_TmpBytePt[0] == PKT_TYP_VDO_FRM ) //如果是视频输出帧包。
+					else if( m_TmpBytePt[ 0 ] == PKT_TYP_VDO_FRM ) //如果是视频输出帧包。
 					{
 						if( m_TmpHTLongPt.m_Val < 1 + 4 ) //如果视频输出帧包的数据长度小于1 + 4，表示没有视频输出帧时间戳。
 						{
@@ -986,7 +1007,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 						}
 
 						//读取视频输出帧时间戳。
-						p_TmpInt = ( m_TmpBytePt[1] & 0xFF ) + ( ( m_TmpBytePt[2] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[3] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[4] & 0xFF ) << 24 );
+						p_TmpInt = ( m_TmpBytePt[ 1 ] & 0xFF ) + ( ( m_TmpBytePt[ 2 ] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[ 3 ] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[ 4 ] & 0xFF ) << 24 );
 
 						//将视频输出帧放入链表或自适应抖动缓冲器。
 						switch( m_UseWhatRecvOtptFrm ) //使用什么接收输出帧。
@@ -1019,7 +1040,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 								if( m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
 								{
 									m_VAjbPt.PutByteFrm( System.currentTimeMillis(), p_TmpInt, m_TmpBytePt, 1 + 4, m_TmpHTLongPt.m_Val - 1 - 4, 1, null );
-									Log.i( m_CurClsNameStrPt, "接收到一个有图像活动的视频输出帧包，并放入视频自适应抖动缓冲器成功。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。" );
+									Log.i( m_CurClsNameStrPt, "接收到一个有图像活动的视频输出帧包，并放入视频自适应抖动缓冲器成功。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "，类型：" + ( m_TmpBytePt[ 13 ] & 0xff ) + "。" );
 								}
 								else //如果该视频输出帧为无图像活动。
 								{
@@ -1037,7 +1058,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 							}
 						}
 					}
-					else if( m_TmpBytePt[0] == PKT_TYP_EXIT ) //如果是退出包。
+					else if( m_TmpBytePt[ 0 ] == PKT_TYP_EXIT ) //如果是退出包。
 					{
 						if( m_TmpHTLongPt.m_Val > 1 ) //如果退出包的数据长度大于1。
 						{
@@ -1050,59 +1071,17 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 						String p_InfoStrPt = "接收到一个退出包。";
 						Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 						if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 					}
-				}
-				else //如果用本端套接字接收一个连接的远端套接字发送的数据包超时。
-				{
-
-				}
+				} //如果用本端套接字接收一个连接的远端套接字发送的数据包超时，就重新接收。
 			}
 			else //如果用本端套接字接收一个连接的远端套接字发送的数据包失败。
 			{
 				String p_InfoStrPt = "用本端套接字接收一个连接的远端套接字发送的数据包失败。原因：" + m_ErrInfoVstrPt.GetStr();
 				Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-				Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+				Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 				break Out;
-			}
-
-			if( m_XfrMode == 0 ) //如果传输模式为实时半双工（一键通）。
-			{
-				if( m_PttBtnIsDown == 0 ) //如果一键即按即通按钮为弹起。
-				{
-					if( ( m_AdoInptPt.m_IsUseAdoInpt != 0 ) && ( m_AdoOtptPt.m_IsUseAdoOtpt == 0 ) ) //如果要使用音频输入，且不使用音频输出。
-					{
-						SetIsUseAdoVdoInptOtpt( 0, 1, -1, -1 );
-					}
-
-					if( ( m_VdoInptPt.m_IsUseVdoInpt != 0 ) && ( m_VdoOtptPt.m_IsUseVdoOtpt == 0 ) ) //如果要使用视频输入，且不使用视频输出。
-					{
-						SetIsUseAdoVdoInptOtpt( -1, -1, 0, 1 );
-						{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
-					}
-				}
-				else //如果一键即按即通按钮为按下。
-				{
-					if( m_PttDownIsNoVibrate == 1 ) //如果一键即按即通按钮按下后还没有振动。
-					{
-						m_PttDownIsNoVibrate = 0;
-						{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.VIBRATE;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
-					}
-
-					if( ( m_AdoInptPt.m_IsUseAdoInpt == 0 ) && ( m_AdoOtptPt.m_IsUseAdoOtpt != 0 ) ) //如果不使用音频输入，且要使用音频输出。
-					{
-						SetIsUseAdoVdoInptOtpt( 1, 0, -1, -1 );
-						m_PttDownIsNoVibrate = 1;
-					}
-
-					if( ( m_VdoInptPt.m_IsUseVdoInpt == 0 ) && ( m_VdoOtptPt.m_IsUseVdoOtpt != 0 ) ) //如果不使用视频输入，且要使用视频输出。
-					{
-						SetIsUseAdoVdoInptOtpt( -1, -1, 1, 0 );
-						m_PttDownIsNoVibrate = 1;
-						{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
-					}
-				}
 			}
 
 			p_Rslt = 0; //设置本函数执行成功。
@@ -1114,9 +1093,9 @@ class MyMediaPocsThrd extends MediaPocsThrd
 	//用户定义的销毁函数。
 	@Override public void UserDstoy()
 	{
-		if( ( m_ExitFlag == 1 ) && ( ( m_TcpClntSoktPt != null ) || ( ( m_AudpSoktPt != null ) && ( m_AudpSoktPt.GetRmtAddr( m_AudpCnctIdx.m_Val, null, null, null, null ) == 0 ) ) ) ) //如果本线程接收到退出请求，且本端TCP协议客户端套接字不为空或本端高级UDP协议套接字不为空且已连接远端。
+		if( ( m_TcpClntSoktPt != null ) || ( ( m_AudpSoktPt != null ) && ( m_AudpSoktPt.GetRmtAddr( m_AudpCnctIdx.m_Val, null, null, null, null ) == 0 ) ) ) //如果本端TCP协议客户端套接字不为空或本端高级UDP协议套接字不为空且已连接远端。
 		{
-			SendExitPkt:
+			OutExitPkt:
 			{
 				//发送退出包。
 				m_TmpBytePt[0] = PKT_TYP_EXIT; //设置退出包。
@@ -1125,14 +1104,14 @@ class MyMediaPocsThrd extends MediaPocsThrd
 				{
 					String p_InfoStrPt = "发送一个退出包失败。原因：" + m_ErrInfoVstrPt.GetStr();
 					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-					break SendExitPkt;
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+					break OutExitPkt;
 				}
 
 				{
 					String p_InfoStrPt = "发送一个退出包成功。";
 					Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 				}
 
 				if( m_IsRecvExitPkt == 0 ) //如果没有接收到退出包。
@@ -1148,28 +1127,24 @@ class MyMediaPocsThrd extends MediaPocsThrd
 								{
 									String p_InfoStrPt = "接收到一个退出包。";
 									Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-									Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-									break SendExitPkt;
-								}
-								else //如果是其他包，继续接收。
-								{
-
-								}
+									Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+									break OutExitPkt;
+								} //如果是其他包，继续接收。
 							}
 							else //如果用本端套接字接收一个连接的远端套接字发送的数据包超时。
 							{
 								String p_InfoStrPt = "用本端套接字接收一个连接的远端套接字发送的数据包失败。原因：" + m_ErrInfoVstrPt.GetStr();
 								Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-								break SendExitPkt;
+								Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+								break OutExitPkt;
 							}
 						}
 						else //如果用本端套接字接收一个连接的远端套接字发送的数据包失败。
 						{
 							String p_InfoStrPt = "用本端套接字接收一个连接的远端套接字发送的数据包失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-							break SendExitPkt;
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							break OutExitPkt;
 						}
 					}
 				}
@@ -1177,7 +1152,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 			String p_InfoStrPt = "中断对讲。";
 			Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 			if( m_IsShowToast != 0 ) m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 		}
 
@@ -1189,7 +1164,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 			String p_InfoStrPt = "关闭并销毁本端TCP协议服务端套接字成功。";
 			Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 		}
 
 		//销毁本端TCP协议客户端套接字。
@@ -1200,7 +1175,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 			String p_InfoStrPt = "关闭并销毁本端TCP协议客户端套接字成功。";
 			Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 		}
 
 		//销毁本端高级UDP协议套接字。
@@ -1212,7 +1187,7 @@ class MyMediaPocsThrd extends MediaPocsThrd
 
 			String p_InfoStrPt = "关闭并销毁本端高级UDP协议套接字成功。";
 			Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
 		}
 
 		//销毁接收音频输出帧的链表。
@@ -1220,7 +1195,6 @@ class MyMediaPocsThrd extends MediaPocsThrd
 		{
 			m_RecvAdoOtptFrmLnkLstPt.clear();
 			m_RecvAdoOtptFrmLnkLstPt = null;
-
 			Log.i( m_CurClsNameStrPt, "销毁接收音频输出帧链表成功。" );
 		}
 
@@ -1229,7 +1203,6 @@ class MyMediaPocsThrd extends MediaPocsThrd
 		{
 			m_RecvVdoOtptFrmLnkLstPt.clear();
 			m_RecvVdoOtptFrmLnkLstPt = null;
-
 			Log.i( m_CurClsNameStrPt, "销毁接收视频输出帧链表成功。" );
 		}
 
@@ -1238,7 +1211,6 @@ class MyMediaPocsThrd extends MediaPocsThrd
 		{
 			m_AAjbPt.Dstoy( null );
 			m_AAjbPt = null;
-
 			Log.i( m_CurClsNameStrPt, "销毁音频自适应抖动缓冲器成功。" );
 		}
 
@@ -1247,238 +1219,271 @@ class MyMediaPocsThrd extends MediaPocsThrd
 		{
 			m_VAjbPt.Dstoy( null );
 			m_VAjbPt = null;
-
 			Log.i( m_CurClsNameStrPt, "销毁视频自适应抖动缓冲器成功。" );
 		}
 
 		if( m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
 		{
-			if( ( m_ExitFlag == 1 ) && ( m_IsRecvExitPkt == 1 ) ) //如果本线程接收到退出请求，且接收到了退出包。
+			if( m_IsRecvExitPkt == 1 )
 			{
-				String p_InfoStrPt = "由于是创建服务端，且本线程接收到退出请求，且接收到了退出包，表示是远端TCP协议客户端套接字主动退出，本线程重新初始化来继续保持监听。";
+				String p_InfoStrPt = "由于是创建服务端，且接收到了退出包，表示是远端套接字主动退出，本线程重新初始化来继续保持监听。";
 				Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
 				RqirExit( 2, 0 ); //请求重启。
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.Vibrate.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
+				if( m_XfrMode == 0 ) {Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.PttBtnDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁一键即按即通按钮的消息。
 			}
-			else if( ( m_ExitFlag == 0 ) && ( m_ExitCode == -1 ) && ( m_RequestCnctRslt == 2 ) ) //如果本线程没收到退出请求，且退出代码为初始化失败，且请求连接的结果为拒绝。
+			else if( ( m_IsInterrupt == 0 ) && ( m_ExitCode == ExitCode.UserInit ) && ( m_RqstCnctRslt == 2 ) )
 			{
-				String p_InfoStrPt = "由于是创建服务端，且本线程没收到退出请求，且初始化失败，且请求连接的结果为拒绝，表示是拒绝本次连接，本线程重新初始化来继续保持监听。";
+				String p_InfoStrPt = "由于是创建服务端，且未中断，且退出码为调用用户定义的初始化函数失败，且请求连接的结果为拒绝，表示是拒绝本次连接，本线程重新初始化来继续保持监听。";
 				Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
 				RqirExit( 2, 0 ); //请求重启。
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.Vibrate.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
+				if( m_XfrMode == 0 ) {Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.PttBtnDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁一键即按即通按钮的消息。
 			}
-			else if( ( m_ExitFlag == 0 ) && ( m_ExitCode == -2 ) ) //如果本线程没收到退出请求，且退出代码为处理失败。
+			else if( ( m_IsInterrupt == 0 ) && ( ( m_ExitCode == ExitCode.MediaMsgPocs ) || ( m_ExitCode == ExitCode.AdoVdoInptOtptPocs ) ) )
 			{
-				String p_InfoStrPt = "由于是创建服务端，且本线程没收到退出请求，且退出码为处理失败，表示是处理失败或连接异常断开，本线程重新初始化来继续保持监听。";
+				String p_InfoStrPt = "由于是创建服务端，且未中断，且退出码为媒体消息处理失败或音视频输入输出处理失败，表示是媒体消息处理失败或连接异常断开，本线程重新初始化来继续保持监听。";
 				Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
 				RqirExit( 2, 0 ); //请求重启。
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.Vibrate.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
+				if( m_XfrMode == 0 ) {Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.PttBtnDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁一键即按即通按钮的消息。
 			}
 			else //其他情况，本线程直接退出。
 			{
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁媒体处理线程的消息。
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.VIBRATE;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.MediaPocsThrdDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁媒体处理线程的消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.Vibrate.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
+				if( m_XfrMode == 0 ) {Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.PttBtnDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁一键即按即通按钮的消息。
 			}
 		}
 		else if( m_IsCreateSrvrOrClnt == 0 ) //如果是创建客户端。
 		{
-			if( ( m_ExitFlag == 0 ) && ( m_ExitCode == -2 ) ) //如果本线程没收到退出请求，且退出代码为处理失败。
+			if( ( m_IsInterrupt == 0 ) && ( ( m_ExitCode == ExitCode.MediaMsgPocs ) || ( m_ExitCode == ExitCode.AdoVdoInptOtptPocs ) ) )
 			{
-				String p_InfoStrPt = "由于是创建客户端，且本线程没收到退出请求，且退出码为处理失败，表示是处理失败或连接异常断开，本线程重新初始化来重连服务端。";
-				Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
+				String p_InfoStrPt = "由于是创建客户端，且未中断，且退出码为媒体消息处理失败或音视频输入输出处理失败，表示是媒体消息处理失败或连接异常断开，本线程重新初始化来重连服务端。";
+				Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );}
 
 				RqirExit( 2, 0 ); //请求重启。
+				if( m_XfrMode == 0 ) {Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.PttBtnDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁一键即按即通按钮的消息。
 			}
 			else //其他情况，本线程直接退出。
 			{
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.DSTOY_MEDIA_PROC_THREAD;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁媒体处理线程的消息。
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.VIBRATE;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
-				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.REBUILD_SURFACE_VIEW;m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送重建Surface视图消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.MediaPocsThrdDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁媒体处理线程的消息。
+				{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.Vibrate.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
+				if( m_XfrMode == 0 ) {Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.PttBtnDstoy.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送销毁一键即按即通按钮的消息。
 			}
 		}
 	}
 
-	//用户定义的读取音视频输入帧函数。
-	@Override public int UserReadAdoVdoInptFrm( short PcmAdoInptFrmPt[], short PcmAdoRsltFrmPt[], HTInt VoiceActStsPt, byte EncdAdoInptFrmPt[], HTLong EncdAdoInptFrmLenPt, HTInt EncdAdoInptFrmIsNeedTransPt,
-												byte YU12VdoInptFrmPt[], HTInt YU12VdoInptFrmWidthPt, HTInt YU12VdoInptFrmHeightPt, byte EncdVdoInptFrmPt[], HTLong EncdVdoInptFrmLenPt )
+	//设置对讲模式。
+	public void SetTkbkMode()
+	{
+		if( m_XfrMode == 0 ) //如果传输模式为实时半双工（一键通）。
+		{
+			if( m_PttBtnIsDown == 0 ) //如果一键即按即通按钮为弹起。
+			{
+				switch( m_LclTkbkMode )
+				{
+					case None: //如果本端对讲模式为空。
+					{
+						SetIsUseAdoVdoInptOtpt( 0, 0, 0, 0 ); //设置是否使用音视频输入输出。
+						break;
+					}
+					case Ado: //如果本端对讲模式为音频。
+					{
+						SetIsUseAdoVdoInptOtpt( 0, 1, 0, 0 ); //设置是否使用音视频输入输出。
+						break;
+					}
+					case Vdo: //如果本端对讲模式为视频。
+					{
+						SetIsUseAdoVdoInptOtpt( 0, 0, 0, 1 ); //设置是否使用音视频输入输出。
+						break;
+					}
+					case AdoVdo: //如果本端对讲模式为音视频。
+					{
+						SetIsUseAdoVdoInptOtpt( 0, 1, 0, 1 ); //设置是否使用音视频输入输出。
+						break;
+					}
+				}
+			}
+			else //如果一键即按即通按钮为按下。
+			{
+				switch( m_LclTkbkMode )
+				{
+					case None: //如果本端对讲模式为空。
+					{
+						SetIsUseAdoVdoInptOtpt( 0, 0, 0, 0 ); //设置是否使用音视频输入输出。
+						break;
+					}
+					case Ado: //如果本端对讲模式为音频。
+					{
+						SetIsUseAdoVdoInptOtpt( 1, 0, 0, 0 ); //设置是否使用音视频输入输出。
+						break;
+					}
+					case Vdo: //如果本端对讲模式为视频。
+					{
+						SetIsUseAdoVdoInptOtpt( 0, 0, 1, 0 ); //设置是否使用音视频输入输出。
+						break;
+					}
+					case AdoVdo: //如果本端对讲模式为音视频。
+					{
+						SetIsUseAdoVdoInptOtpt( 1, 0, 1, 0 ); //设置是否使用音视频输入输出。
+						break;
+					}
+				}
+			}
+		}
+		else //如果传输模式为实时全双工。
+		{
+			switch( m_LclTkbkMode )
+			{
+				case None: //如果本端对讲模式为空。
+				{
+					SetIsUseAdoVdoInptOtpt( 0, 0, 0, 0 ); //设置是否使用音视频输入输出。
+					break;
+				}
+				case Ado: //如果本端对讲模式为音频。
+				{
+					switch( m_RmtTkbkMode )
+					{
+						case None: //如果远端对讲模式为空。
+						{
+							SetIsUseAdoVdoInptOtpt( 1, 0, 0, 0 ); //设置是否使用音视频输入输出。
+							break;
+						}
+						case Ado: //如果远端对讲模式为音频。
+						{
+							SetIsUseAdoVdoInptOtpt( 1, 1, 0, 0 ); //设置是否使用音视频输入输出。
+							break;
+						}
+						case Vdo: //如果远端对讲模式为视频。
+						{
+							SetIsUseAdoVdoInptOtpt( 1, 0, 0, 0 ); //设置是否使用音视频输入输出。
+							break;
+						}
+						case AdoVdo: //如果远端对讲模式为音视频。
+						{
+							SetIsUseAdoVdoInptOtpt( 1, 1, 0, 0 ); //设置是否使用音视频输入输出。
+							break;
+						}
+					}
+					break;
+				}
+				case Vdo: //如果本端对讲模式为视频。
+				{
+					switch( m_RmtTkbkMode )
+					{
+						case None: //如果远端对讲模式为空。
+						{
+							SetIsUseAdoVdoInptOtpt( 0, 0, 1, 0 ); //设置是否使用音视频输入输出。
+							break;
+						}
+						case Ado: //如果远端对讲模式为音频。
+						{
+							SetIsUseAdoVdoInptOtpt( 0, 0, 1, 0 ); //设置是否使用音视频输入输出。
+							break;
+						}
+						case Vdo: //如果远端对讲模式为视频。
+						{
+							SetIsUseAdoVdoInptOtpt( 0, 0, 1, 1 ); //设置是否使用音视频输入输出。
+							break;
+						}
+						case AdoVdo: //如果远端对讲模式为音视频。
+						{
+							SetIsUseAdoVdoInptOtpt( 0, 0, 1, 1 ); //设置是否使用音视频输入输出。
+							break;
+						}
+					}
+					break;
+				}
+				case AdoVdo: //如果本端对讲模式为音视频。
+				{
+					switch( m_RmtTkbkMode )
+					{
+						case None: //如果远端对讲模式为空。
+						{
+							SetIsUseAdoVdoInptOtpt( 1, 0, 1, 0 ); //设置是否使用音视频输入输出。
+							break;
+						}
+						case Ado: //如果远端对讲模式为音频。
+						{
+							SetIsUseAdoVdoInptOtpt( 1, 1, 1, 0 ); //设置是否使用音视频输入输出。
+							break;
+						}
+						case Vdo: //如果远端对讲模式为视频。
+						{
+							SetIsUseAdoVdoInptOtpt( 1, 0, 1, 1 ); //设置是否使用音视频输入输出。
+							break;
+						}
+						case AdoVdo: //如果远端对讲模式为音视频。
+						{
+							SetIsUseAdoVdoInptOtpt( 1, 1, 1, 1 ); //设置是否使用音视频输入输出。
+							break;
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	//用户定义的消息函数。
+	public int UserMsg( Object MsgArgPt[] )
 	{
 		int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
-		int p_FrmPktLen = 0; //存放输入输出帧数据包的数据长度，单位字节。
-		int p_TmpInt32 = 0;
 
 		Out:
 		{
-			//发送音频输入帧。
-			if( PcmAdoInptFrmPt != null ) //如果要使用音频输入。
+			switch( ( UserMsg ) MsgArgPt[ 0 ] )
 			{
-				if( EncdAdoInptFrmPt != null ) //如果要使用已编码格式音频输入帧。
+				case LclTkbkMode:
 				{
-					if( VoiceActStsPt.m_Val != 0 && EncdAdoInptFrmIsNeedTransPt.m_Val != 0 ) //如果本次音频输入帧为有语音活动，且需要传输。
+					if( ( TkbkMode )MsgArgPt[ 1 ] != TkbkMode.NoChg ) m_LclTkbkMode = ( TkbkMode )MsgArgPt[ 1 ]; //设置本端对讲模式。
+					SetTkbkMode(); //设置对讲模式。
+					if( ( m_TcpClntSoktPt != null ) || ( ( m_AudpSoktPt != null ) && ( m_AudpSoktPt.GetRmtAddr( m_AudpCnctIdx.m_Val, null, null, null, null ) == 0 ) ) ) //如果本端TCP协议客户端套接字不为空或本端高级UDP协议套接字不为空且已连接远端。
 					{
-						System.arraycopy( EncdAdoInptFrmPt, 0, m_TmpBytePt, 1 + 4 + 4, ( int ) EncdAdoInptFrmLenPt.m_Val ); //设置音频输入输出帧。
-						p_FrmPktLen = 1 + 4 + 4 + ( int )EncdAdoInptFrmLenPt.m_Val; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 视频输入帧时间戳 + 已编码格式音频输入帧。
-					}
-					else //如果本次音频输入帧为无语音活动，或不需要传输。
-					{
-						p_FrmPktLen = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
-					}
-				}
-				else //如果要使用PCM格式音频输入帧。
-				{
-					if( VoiceActStsPt.m_Val != 0 ) //如果本次音频输入帧为有语音活动。
-					{
-						for( p_TmpInt32 = 0; p_TmpInt32 < PcmAdoRsltFrmPt.length; p_TmpInt32++ ) //设置音频输入输出帧。
+						//发送对讲模式包。
+						m_TmpBytePt[0] = PKT_TYP_TKBK_MODE; //设置对讲模式包。
+						m_TmpBytePt[1] = ( byte ) m_LclTkbkMode.ordinal(); //设置对讲模式。
+						if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, 2, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) != 0 ) ) ||
+							( ( m_UseWhatXfrPrtcl == 1 ) && ( m_AudpSoktPt.SendPkt( m_AudpCnctIdx.m_Val, m_TmpBytePt, 2, 10, m_ErrInfoVstrPt ) != 0 ) ) )
 						{
-							m_TmpBytePt[1 + 4 + 4 + p_TmpInt32 * 2] = ( byte ) ( PcmAdoRsltFrmPt[p_TmpInt32] & 0xFF );
-							m_TmpBytePt[1 + 4 + 4 + p_TmpInt32 * 2 + 1] = ( byte ) ( ( PcmAdoRsltFrmPt[p_TmpInt32] & 0xFF00 ) >> 8 );
+							String p_InfoStrPt = "发送一个对讲模式包失败。原因：" + m_ErrInfoVstrPt.GetStr();
+							Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+							Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+							break Out;
 						}
-						p_FrmPktLen = 1 + 4 + 4 + PcmAdoRsltFrmPt.length * 2; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 视频输入帧时间戳 + PCM格式音频输入帧。
+						else
+						{
+							Log.i( m_CurClsNameStrPt, "发送一个对讲模式包成功。对讲模式：" + m_LclTkbkMode );
+						}
 					}
-					else //如果本次音频输入帧为无语音活动，或不需要传输。
-					{
-						p_FrmPktLen = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
-					}
+					break;
 				}
-
-				if( p_FrmPktLen != 1 + 4 ) //如果本音频输入帧为有语音活动，就发送。
+				case RmtTkbkMode:
 				{
-					m_LastSendAdoInptFrmTimeStamp += 1; //音频输入帧的时间戳递增一个步进。
-
-					//设置数据包类型为音频输入帧包。
-					m_TmpBytePt[0] = PKT_TYP_ADO_FRM;
-					//设置音频输入帧时间戳。
-					m_TmpBytePt[1] = ( byte ) ( m_LastSendAdoInptFrmTimeStamp & 0xFF );
-					m_TmpBytePt[2] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
-					m_TmpBytePt[3] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
-					m_TmpBytePt[4] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
-					//设置视频输入帧时间戳。
-					m_TmpBytePt[5] = ( byte ) ( m_LastSendVdoInptFrmTimeStamp & 0xFF );
-					m_TmpBytePt[6] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
-					m_TmpBytePt[7] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
-					m_TmpBytePt[8] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
-
-					if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_FrmPktLen, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-						( ( m_UseWhatXfrPrtcl == 1 ) && ( m_AudpSoktPt.SendPkt( m_AudpCnctIdx.m_Val, m_TmpBytePt, p_FrmPktLen, 1, m_ErrInfoVstrPt ) == 0 ) ) )
-					{
-						Log.i( m_CurClsNameStrPt, "发送一个有语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。" );
-					}
-					else
-					{
-						String p_InfoStrPt = "发送一个有语音活动的音频输入帧包失败。原因：" + m_ErrInfoVstrPt.GetStr() + "音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。";
-						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-						break Out;
-					}
-
-					m_LastSendAdoInptFrmIsAct = 1; //设置最后一个发送的音频输入帧有语音活动。
+					if( ( TkbkMode )MsgArgPt[ 1 ] != TkbkMode.NoChg ) m_RmtTkbkMode = ( TkbkMode )MsgArgPt[ 1 ]; //设置远端对讲模式。
+					SetTkbkMode(); //设置对讲模式。
+					break;
 				}
-				else if( ( p_FrmPktLen == 1 + 4 ) && ( m_LastSendAdoInptFrmIsAct != 0 ) ) //如果本音频输入帧为无语音活动，但最后一个发送的音频输入帧为有语音活动，就发送。
+				case PttBtnDown:
 				{
-					m_LastSendAdoInptFrmTimeStamp += 1; //音频输入帧的时间戳递增一个步进。
-
-					//设置数据包类型为音频输入帧包。
-					m_TmpBytePt[0] = PKT_TYP_ADO_FRM;
-					//设置音频输入帧时间戳。
-					m_TmpBytePt[1] = ( byte ) ( m_LastSendAdoInptFrmTimeStamp & 0xFF );
-					m_TmpBytePt[2] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
-					m_TmpBytePt[3] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
-					m_TmpBytePt[4] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
-
-					if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_FrmPktLen, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-						( ( m_UseWhatXfrPrtcl == 1 ) && ( m_AudpSoktPt.SendPkt( m_AudpCnctIdx.m_Val, m_TmpBytePt, p_FrmPktLen, 10, m_ErrInfoVstrPt ) == 0 ) ) )
-					{
-						Log.i( m_CurClsNameStrPt, "发送一个无语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。" );
-					}
-					else
-					{
-						String p_InfoStrPt = "发送一个无语音活动的音频输入帧包失败。原因：" + m_ErrInfoVstrPt.GetStr() + "音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。";
-						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-						break Out;
-					}
-
-					m_LastSendAdoInptFrmIsAct = 0; //设置最后一个发送的音频输入帧无语音活动。
+					m_PttBtnIsDown = 1; //设置一键即按即通按钮为按下。
+					SetTkbkMode(); //设置对讲模式。
+					{Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.Vibrate.ordinal();m_MainActivityHandlerPt.sendMessage( p_MessagePt );} //向主界面发送振动的消息。
+					break;
 				}
-				else //如果本音频输入帧为无语音活动，且最后一个发送的音频输入帧为无语音活动，无需发送。
+				case PttBtnUp:
 				{
-					Log.i( m_CurClsNameStrPt, "本音频输入帧为无语音活动，且最后一个发送的音频输入帧为无语音活动，无需发送。" );
-				}
-			}
-
-			//发送视频输入帧。
-			if( YU12VdoInptFrmPt != null ) //如果要使用视频输入。
-			{
-				if( EncdVdoInptFrmPt != null ) //如果要使用已编码格式视频输入帧。
-				{
-					if( EncdVdoInptFrmLenPt.m_Val != 0 ) //如果本次视频输入帧为有图像活动。
-					{
-						System.arraycopy( EncdVdoInptFrmPt, 0, m_TmpBytePt, 1 + 4 + 4, ( int ) EncdVdoInptFrmLenPt.m_Val ); //设置视频输入输出帧。
-						p_FrmPktLen = 1 + 4 + 4 + ( int ) EncdVdoInptFrmLenPt.m_Val; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 音频输入帧时间戳 + 已编码格式视频输入帧。
-					}
-					else
-					{
-						p_FrmPktLen = 1 + 4; //数据包长度 = 数据包类型 + 视频输入帧时间戳。
-					}
-				}
-				else //如果要使用YU12格式视频输入帧。
-				{
-					//设置视频输入帧宽度。
-					m_TmpBytePt[9] = ( byte ) ( YU12VdoInptFrmWidthPt.m_Val & 0xFF );
-					m_TmpBytePt[10] = ( byte ) ( ( YU12VdoInptFrmWidthPt.m_Val & 0xFF00 ) >> 8 );
-					m_TmpBytePt[11] = ( byte ) ( ( YU12VdoInptFrmWidthPt.m_Val & 0xFF0000 ) >> 16 );
-					m_TmpBytePt[12] = ( byte ) ( ( YU12VdoInptFrmWidthPt.m_Val & 0xFF000000 ) >> 24 );
-					//设置视频输入帧高度。
-					m_TmpBytePt[13] = ( byte ) ( YU12VdoInptFrmHeightPt.m_Val & 0xFF );
-					m_TmpBytePt[14] = ( byte ) ( ( YU12VdoInptFrmHeightPt.m_Val & 0xFF00 ) >> 8 );
-					m_TmpBytePt[15] = ( byte ) ( ( YU12VdoInptFrmHeightPt.m_Val & 0xFF0000 ) >> 16 );
-					m_TmpBytePt[16] = ( byte ) ( ( YU12VdoInptFrmHeightPt.m_Val & 0xFF000000 ) >> 24 );
-
-					System.arraycopy( YU12VdoInptFrmPt, 0, m_TmpBytePt, 1 + 4 + 4 + 4 + 4, YU12VdoInptFrmPt.length ); //设置视频输入输出帧。
-					p_FrmPktLen = 1 + 4 + 4 + 4 + 4 + YU12VdoInptFrmPt.length; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 音频输入帧时间戳 + 视频输入帧宽度 + 视频输入帧高度 + YU12格式视频输入帧。
-				}
-
-				//发送视频输入帧数据包。
-				if( p_FrmPktLen != 1 + 4 ) //如果本视频输入帧为有图像活动，就发送。
-				{
-					m_LastSendVdoInptFrmTimeStamp += 1; //视频输入帧的时间戳递增一个步进。
-
-					//设置数据包类型为视频输入帧包。
-					m_TmpBytePt[0] = PKT_TYP_VDO_FRM;
-					//设置视频输入帧时间戳。
-					m_TmpBytePt[1] = ( byte ) ( m_LastSendVdoInptFrmTimeStamp & 0xFF );
-					m_TmpBytePt[2] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
-					m_TmpBytePt[3] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
-					m_TmpBytePt[4] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
-					//设置音频输入帧时间戳。
-					m_TmpBytePt[5] = ( byte ) ( m_LastSendAdoInptFrmTimeStamp & 0xFF );
-					m_TmpBytePt[6] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
-					m_TmpBytePt[7] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
-					m_TmpBytePt[8] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
-
-					if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_FrmPktLen, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-						( ( m_UseWhatXfrPrtcl == 1 ) && ( m_AudpSoktPt.SendPkt( m_AudpCnctIdx.m_Val, m_TmpBytePt, p_FrmPktLen, 1, m_ErrInfoVstrPt ) == 0 ) ) )
-					{
-						Log.i( m_CurClsNameStrPt, "发送一个有图像活动的视频输入帧包成功。视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "，音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。" );
-					}
-					else
-					{
-						String p_InfoStrPt = "发送一个有图像活动的视频输入帧包失败。视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "，音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。原因：" + m_ErrInfoVstrPt.GetStr() + "。";
-						Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-						Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-						break Out;
-					}
-				}
-				else //如果本视频输入帧为无图像活动，无需发送。
-				{
-					Log.i( m_CurClsNameStrPt, "本视频输入帧为无图像活动，无需发送。" );
+					m_PttBtnIsDown = 0; //设置一键即按即通按钮为弹起。
+					SetTkbkMode(); //设置对讲模式。
+					break;
 				}
 			}
 
@@ -1486,6 +1491,177 @@ class MyMediaPocsThrd extends MediaPocsThrd
 		}
 
 		return p_Rslt;
+	}
+
+	//用户定义的读取音视频输入帧函数。
+	@Override public void UserReadAdoVdoInptFrm( short PcmAdoInptFrmPt[], short PcmAdoRsltFrmPt[], HTInt VoiceActStsPt, byte EncdAdoInptFrmPt[], HTLong EncdAdoInptFrmLenPt, HTInt EncdAdoInptFrmIsNeedTransPt,
+												byte YU12VdoInptFrmPt[], HTInt YU12VdoInptFrmWidthPt, HTInt YU12VdoInptFrmHeightPt, byte EncdVdoInptFrmPt[], HTLong EncdVdoInptFrmLenPt )
+	{
+		int p_FrmPktLen = 0; //存放输入输出帧数据包的数据长度，单位字节。
+		int p_TmpInt32 = 0;
+
+		//发送音频输入帧。
+		if( PcmAdoInptFrmPt != null ) //如果要使用音频输入。
+		{
+			if( EncdAdoInptFrmPt != null ) //如果要使用已编码格式音频输入帧。
+			{
+				if( VoiceActStsPt.m_Val != 0 && EncdAdoInptFrmIsNeedTransPt.m_Val != 0 ) //如果本次音频输入帧为有语音活动，且需要传输。
+				{
+					System.arraycopy( EncdAdoInptFrmPt, 0, m_TmpBytePt, 1 + 4 + 4, ( int ) EncdAdoInptFrmLenPt.m_Val ); //设置音频输入输出帧。
+					p_FrmPktLen = 1 + 4 + 4 + ( int ) EncdAdoInptFrmLenPt.m_Val; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 视频输入帧时间戳 + 已编码格式音频输入帧。
+				}
+				else //如果本次音频输入帧为无语音活动，或不需要传输。
+				{
+					p_FrmPktLen = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
+				}
+			}
+			else //如果要使用PCM格式音频输入帧。
+			{
+				if( VoiceActStsPt.m_Val != 0 ) //如果本次音频输入帧为有语音活动。
+				{
+					for( p_TmpInt32 = 0; p_TmpInt32 < PcmAdoRsltFrmPt.length; p_TmpInt32++ ) //设置音频输入输出帧。
+					{
+						m_TmpBytePt[ 1 + 4 + 4 + p_TmpInt32 * 2 ] = ( byte ) ( PcmAdoRsltFrmPt[ p_TmpInt32 ] & 0xFF );
+						m_TmpBytePt[ 1 + 4 + 4 + p_TmpInt32 * 2 + 1 ] = ( byte ) ( ( PcmAdoRsltFrmPt[ p_TmpInt32 ] & 0xFF00 ) >> 8 );
+					}
+					p_FrmPktLen = 1 + 4 + 4 + PcmAdoRsltFrmPt.length * 2; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 视频输入帧时间戳 + PCM格式音频输入帧。
+				}
+				else //如果本次音频输入帧为无语音活动，或不需要传输。
+				{
+					p_FrmPktLen = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
+				}
+			}
+
+			if( p_FrmPktLen != 1 + 4 ) //如果本音频输入帧为有语音活动，就发送。
+			{
+				m_LastSendAdoInptFrmTimeStamp += 1; //音频输入帧的时间戳递增一个步进。
+
+				//设置数据包类型为音频输入帧包。
+				m_TmpBytePt[0] = PKT_TYP_ADO_FRM;
+				//设置音频输入帧时间戳。
+				m_TmpBytePt[1] = ( byte ) ( m_LastSendAdoInptFrmTimeStamp & 0xFF );
+				m_TmpBytePt[2] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
+				m_TmpBytePt[3] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
+				m_TmpBytePt[4] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
+				//设置视频输入帧时间戳。
+				m_TmpBytePt[5] = ( byte ) ( m_LastSendVdoInptFrmTimeStamp & 0xFF );
+				m_TmpBytePt[6] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
+				m_TmpBytePt[7] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
+				m_TmpBytePt[8] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
+
+				if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_FrmPktLen, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+					( ( m_UseWhatXfrPrtcl == 1 ) && ( m_AudpSoktPt.SendPkt( m_AudpCnctIdx.m_Val, m_TmpBytePt, p_FrmPktLen, 1, m_ErrInfoVstrPt ) == 0 ) ) )
+				{
+					Log.i( m_CurClsNameStrPt, "发送一个有语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。" );
+				}
+				else
+				{
+					String p_InfoStrPt = "发送一个有语音活动的音频输入帧包失败。原因：" + m_ErrInfoVstrPt.GetStr() + "音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。";
+					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+				}
+
+				m_LastSendAdoInptFrmIsAct = 1; //设置最后一个发送的音频输入帧有语音活动。
+			}
+			else if( ( p_FrmPktLen == 1 + 4 ) && ( m_LastSendAdoInptFrmIsAct != 0 ) ) //如果本音频输入帧为无语音活动，但最后一个发送的音频输入帧为有语音活动，就发送。
+			{
+				m_LastSendAdoInptFrmTimeStamp += 1; //音频输入帧的时间戳递增一个步进。
+
+				//设置数据包类型为音频输入帧包。
+				m_TmpBytePt[0] = PKT_TYP_ADO_FRM;
+				//设置音频输入帧时间戳。
+				m_TmpBytePt[1] = ( byte ) ( m_LastSendAdoInptFrmTimeStamp & 0xFF );
+				m_TmpBytePt[2] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
+				m_TmpBytePt[3] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
+				m_TmpBytePt[4] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
+
+				if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_FrmPktLen, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+					( ( m_UseWhatXfrPrtcl == 1 ) && ( m_AudpSoktPt.SendPkt( m_AudpCnctIdx.m_Val, m_TmpBytePt, p_FrmPktLen, 10, m_ErrInfoVstrPt ) == 0 ) ) )
+				{
+					Log.i( m_CurClsNameStrPt, "发送一个无语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。" );
+				}
+				else
+				{
+					String p_InfoStrPt = "发送一个无语音活动的音频输入帧包失败。原因：" + m_ErrInfoVstrPt.GetStr() + "音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。";
+					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+				}
+
+				m_LastSendAdoInptFrmIsAct = 0; //设置最后一个发送的音频输入帧无语音活动。
+			}
+			else //如果本音频输入帧为无语音活动，且最后一个发送的音频输入帧为无语音活动，无需发送。
+			{
+				Log.i( m_CurClsNameStrPt, "本音频输入帧为无语音活动，且最后一个发送的音频输入帧为无语音活动，无需发送。" );
+			}
+		}
+
+		//发送视频输入帧。
+		if( YU12VdoInptFrmPt != null ) //如果要使用视频输入。
+		{
+			if( EncdVdoInptFrmPt != null ) //如果要使用已编码格式视频输入帧。
+			{
+				if( EncdVdoInptFrmLenPt.m_Val != 0 ) //如果本次视频输入帧为有图像活动。
+				{
+					System.arraycopy( EncdVdoInptFrmPt, 0, m_TmpBytePt, 1 + 4 + 4, ( int ) EncdVdoInptFrmLenPt.m_Val ); //设置视频输入输出帧。
+					p_FrmPktLen = 1 + 4 + 4 + ( int ) EncdVdoInptFrmLenPt.m_Val; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 音频输入帧时间戳 + 已编码格式视频输入帧。
+				}
+				else
+				{
+					p_FrmPktLen = 1 + 4; //数据包长度 = 数据包类型 + 视频输入帧时间戳。
+				}
+			}
+			else //如果要使用YU12格式视频输入帧。
+			{
+				//设置视频输入帧宽度。
+				m_TmpBytePt[9] = ( byte ) ( YU12VdoInptFrmWidthPt.m_Val & 0xFF );
+				m_TmpBytePt[10] = ( byte ) ( ( YU12VdoInptFrmWidthPt.m_Val & 0xFF00 ) >> 8 );
+				m_TmpBytePt[11] = ( byte ) ( ( YU12VdoInptFrmWidthPt.m_Val & 0xFF0000 ) >> 16 );
+				m_TmpBytePt[12] = ( byte ) ( ( YU12VdoInptFrmWidthPt.m_Val & 0xFF000000 ) >> 24 );
+				//设置视频输入帧高度。
+				m_TmpBytePt[13] = ( byte ) ( YU12VdoInptFrmHeightPt.m_Val & 0xFF );
+				m_TmpBytePt[14] = ( byte ) ( ( YU12VdoInptFrmHeightPt.m_Val & 0xFF00 ) >> 8 );
+				m_TmpBytePt[15] = ( byte ) ( ( YU12VdoInptFrmHeightPt.m_Val & 0xFF0000 ) >> 16 );
+				m_TmpBytePt[16] = ( byte ) ( ( YU12VdoInptFrmHeightPt.m_Val & 0xFF000000 ) >> 24 );
+
+				System.arraycopy( YU12VdoInptFrmPt, 0, m_TmpBytePt, 1 + 4 + 4 + 4 + 4, YU12VdoInptFrmPt.length ); //设置视频输入输出帧。
+				p_FrmPktLen = 1 + 4 + 4 + 4 + 4 + YU12VdoInptFrmPt.length; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 音频输入帧时间戳 + 视频输入帧宽度 + 视频输入帧高度 + YU12格式视频输入帧。
+			}
+
+			//发送视频输入帧数据包。
+			if( p_FrmPktLen != 1 + 4 ) //如果本视频输入帧为有图像活动，就发送。
+			{
+				m_LastSendVdoInptFrmTimeStamp += 1; //视频输入帧的时间戳递增一个步进。
+
+				//设置数据包类型为视频输入帧包。
+				m_TmpBytePt[0] = PKT_TYP_VDO_FRM;
+				//设置视频输入帧时间戳。
+				m_TmpBytePt[1] = ( byte ) ( m_LastSendVdoInptFrmTimeStamp & 0xFF );
+				m_TmpBytePt[2] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
+				m_TmpBytePt[3] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
+				m_TmpBytePt[4] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
+				//设置音频输入帧时间戳。
+				m_TmpBytePt[5] = ( byte ) ( m_LastSendAdoInptFrmTimeStamp & 0xFF );
+				m_TmpBytePt[6] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
+				m_TmpBytePt[7] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
+				m_TmpBytePt[8] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
+
+				if( ( ( m_UseWhatXfrPrtcl == 0 ) && ( m_TcpClntSoktPt.SendPkt( m_TmpBytePt, p_FrmPktLen, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+					( ( m_UseWhatXfrPrtcl == 1 ) && ( m_AudpSoktPt.SendPkt( m_AudpCnctIdx.m_Val, m_TmpBytePt, p_FrmPktLen, 1, m_ErrInfoVstrPt ) == 0 ) ) )
+				{
+					Log.i( m_CurClsNameStrPt, "发送一个有图像活动的视频输入帧包成功。视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "，音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。" );
+				}
+				else
+				{
+					String p_InfoStrPt = "发送一个有图像活动的视频输入帧包失败。视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "，音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "，类型：" + ( m_TmpBytePt[13] & 0xff ) + "。原因：" + m_ErrInfoVstrPt.GetStr() + "。";
+					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+					Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+				}
+			}
+			else //如果本视频输入帧为无图像活动，无需发送。
+			{
+				Log.i( m_CurClsNameStrPt, "本视频输入帧为无图像活动，无需发送。" );
+			}
+		}
 	}
 
 	//用户定义的写入音频输出帧函数。
@@ -1785,9 +1961,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 	MyMediaPocsThrd m_MyMediaPocsThrdPt; //存放媒体处理线程的指针。
 	MainActivityHandler m_MainActivityHandlerPt; //存放主界面消息处理的指针。
 
-	HTSurfaceView m_VdoInptPrvwSurfaceViewPt; //存放视频输入预览SurfaceView视图的指针。
-	HTSurfaceView m_VdoOtptDspySurfaceViewPt; //存放视频输出显示SurfaceView视图的指针。
-
 	String m_ExternalDirFullAbsPathStrPt; //存放扩展目录完整绝对路径字符串的指针。
 
 	//Activity创建消息。
@@ -1914,68 +2087,21 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 		( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseEffectSuperRdBtnId ) ).performClick(); //默认效果等级：超。
 		( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseBitrateSuperRdBtnId ) ).performClick(); //默认比特率等级：超。
 
-		//设置视频输入预览Surface。
-		m_VdoInptPrvwSurfaceViewPt = ( ( HTSurfaceView )findViewById( R.id.VdoInptPrvwSurfaceId ) );
-		m_VdoInptPrvwSurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS );
-		m_VdoInptPrvwSurfaceViewPt.getHolder().addCallback( new SurfaceHolder.Callback() //添加视频输入预览Surface的回调函数。
-		{
-			@Override public void surfaceCreated( SurfaceHolder holder )
-			{
-				Log.i( m_CurClsNameStrPt, "VdoInptPrvwSurface Created" );
-				if( m_MyMediaPocsThrdPt != null && m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt != 0 && m_MyMediaPocsThrdPt.m_RunFlag == MediaPocsThrd.RUN_FLAG_POCS ) //如果SurfaceView已经重新创建，且媒体处理线程已经启动，且要使用视频输入，并处于初始化完毕正在循环处理帧。
-				{
-					m_MyMediaPocsThrdPt.SetVdoInptUseDvc( //重启视频输入。
-							( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseFrontCamereRdBtnId ) ).isChecked() ) ? 0 : 1,
-							-1,
-							-1 );
-				}
-			}
-
-			@Override public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
-			{
-				Log.i( m_CurClsNameStrPt, "VdoInptPrvwSurface Changed" );
-			}
-
-			@Override public void surfaceDestroyed( SurfaceHolder holder )
-			{
-				Log.i( m_CurClsNameStrPt, "VdoInptPrvwSurface Destroyed" );
-			}
-		} );
-
-		//设置视频输出显示Surface。
-		m_VdoOtptDspySurfaceViewPt = ( ( HTSurfaceView )findViewById( R.id.VdoOtptDspySurfaceId ) );
-		m_VdoOtptDspySurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_NORMAL );
-		m_VdoOtptDspySurfaceViewPt.getHolder().addCallback( new SurfaceHolder.Callback() //添加视频输出显示Surface的回调函数。
-		{
-			@Override public void surfaceCreated( SurfaceHolder holder )
-			{
-				Log.i( m_CurClsNameStrPt, "VdoOtptDspySurface Created" );
-			}
-
-			@Override public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
-			{
-				Log.i( m_CurClsNameStrPt, "VdoOtptDspySurface Changed" );
-			}
-
-			@Override public void surfaceDestroyed( SurfaceHolder holder )
-			{
-				Log.i( m_CurClsNameStrPt, "VdoOtptDspySurface Destroyed" );
-			}
-		} );
-
 		//获取扩展目录完整绝对路径字符串。
-		if( getExternalFilesDir( null ) != null )
 		{
-			m_ExternalDirFullAbsPathStrPt = getExternalFilesDir( null ).getPath();
-		}
-		else
-		{
-			m_ExternalDirFullAbsPathStrPt = Environment.getExternalStorageDirectory().getPath() + "/Android/data/" + getApplicationContext().getPackageName();
-		}
+			if( getExternalFilesDir( null ) != null )
+			{
+				m_ExternalDirFullAbsPathStrPt = getExternalFilesDir( null ).getPath();
+			}
+			else
+			{
+				m_ExternalDirFullAbsPathStrPt = Environment.getExternalStorageDirectory().getPath() + "/Android/data/" + getApplicationContext().getPackageName();
+			}
 
-		String p_InfoStrPt = "扩展目录完整绝对路径：" + m_ExternalDirFullAbsPathStrPt;
-		Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-		Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.SHOW_LOG;p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+			String p_InfoStrPt = "扩展目录完整绝对路径：" + m_ExternalDirFullAbsPathStrPt;
+			Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+			Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+		}
 	}
 
 	//主界面的从遮挡恢复消息。
@@ -2031,6 +2157,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 			if( m_MyMediaPocsThrdPt != null )
 			{
 				Log.i( m_CurClsNameStrPt, "开始请求并等待媒体处理线程退出。" );
+				m_MyMediaPocsThrdPt.m_IsInterrupt = 1;
 				m_MyMediaPocsThrdPt.RqirExit( 1, 1 );
 				Log.i( m_CurClsNameStrPt, "结束请求并等待媒体处理线程退出。" );
 			}
@@ -2099,7 +2226,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 	{
 		super.onConfigurationChanged( newConfig );
 
-		if( m_MyMediaPocsThrdPt != null && m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt != 0 && m_MyMediaPocsThrdPt.m_RunFlag == MediaPocsThrd.RUN_FLAG_POCS ) //如果媒体处理线程已经启动，且要使用视频输入，并处于初始化完毕正在循环处理帧。
+		if( m_MyMediaPocsThrdPt != null && m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt != 0 && m_MyMediaPocsThrdPt.m_RunFlag == MediaPocsThrd.RunFlag.Run ) //如果媒体处理线程已经启动，且要使用视频输入，且媒体处理线程正在运行。
 		{
 			m_MyMediaPocsThrdPt.SetVdoInpt(
 					( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate12RdBtnId ) ).isChecked() ) ? 12 :
@@ -2115,7 +2242,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 									( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize480_640RdBtnId ) ).isChecked() ) ? 640 :
 											( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize960_1280RdBtnId ) ).isChecked() ) ? 1280 : 0,
 					getWindowManager().getDefaultDisplay().getRotation() * 90,
-					m_VdoInptPrvwSurfaceViewPt
+					( ( HTSurfaceView )findViewById( R.id.VdoInptPrvwSurfaceId ) )
 			);
 		}
 	}
@@ -2132,14 +2259,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 	{
 		if( m_MyMediaPocsThrdPt != null )
 		{
-			if( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) //如果传输模式为实时半双工。
-			{
-				m_MyMediaPocsThrdPt.SetIsUseAdoVdoInptOtpt( 0, 1, 0, 0 );
-			}
-			else //如果传输模式为实时全双工。
-			{
-				m_MyMediaPocsThrdPt.SetIsUseAdoVdoInptOtpt( 1, 1, 0, 0 );
-			}
+			m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsg.LclTkbkMode, MyMediaPocsThrd.TkbkMode.Ado );
 		}
 	}
 
@@ -2148,14 +2268,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 	{
 		if( m_MyMediaPocsThrdPt != null )
 		{
-			if( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) //如果传输模式为实时半双工。
-			{
-				m_MyMediaPocsThrdPt.SetIsUseAdoVdoInptOtpt( 0, 0, 0, 1 );
-			}
-			else //如果传输模式为实时全双工。
-			{
-				m_MyMediaPocsThrdPt.SetIsUseAdoVdoInptOtpt( 0, 0, 1, 1 );
-			}
+			m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsg.LclTkbkMode, MyMediaPocsThrd.TkbkMode.Vdo );
 		}
 	}
 
@@ -2164,14 +2277,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 	{
 		if( m_MyMediaPocsThrdPt != null )
 		{
-			if( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) //如果传输模式为实时半双工。
-			{
-				m_MyMediaPocsThrdPt.SetIsUseAdoVdoInptOtpt( 0, 1, 0, 1 );
-			}
-			else //如果传输模式为实时全双工。
-			{
-				m_MyMediaPocsThrdPt.SetIsUseAdoVdoInptOtpt( 1, 1, 1, 1 );
-			}
+			m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsg.LclTkbkMode, MyMediaPocsThrd.TkbkMode.AdoVdo );
 		}
 	}
 
@@ -2306,7 +2412,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 					m_MyMediaPocsThrdPt.m_UseWhatRecvOtptFrm = 0;
 				}
 
-				//设置是否使用自己设计的音频自适应抖动缓冲器。
+				//设置是否使用自己设计的自适应抖动缓冲器。
 				if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAjbRecvOtptFrmRdBtnId ) ).isChecked() )
 				{
 					m_MyMediaPocsThrdPt.m_UseWhatRecvOtptFrm = 1;
@@ -2338,7 +2444,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 				//设置是否使用唤醒锁。
 				m_MyMediaPocsThrdPt.SetIsUseWakeLock( ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseWakeLockCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
-				//设置是否使用音频输入。
+				//设置音频输入。
 				m_MyMediaPocsThrdPt.SetAdoInpt(
 						( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate8000RdBtnId ) ).isChecked() ) ? 8000 :
 								( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate16000RdBtnId ) ).isChecked() ) ? 16000 :
@@ -2352,7 +2458,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 				m_MyMediaPocsThrdPt.SetAdoInptIsUseSystemAecNsAgc(
 						( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSystemAecNsAgcCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
-				if( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) //如果传输模式为实时半双工。
+				if( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) //如果传输模式为实时半双工（一键通）。
 				{
 					m_MyMediaPocsThrdPt.SetAdoInptUseNoAec();
 				}
@@ -2604,7 +2710,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 				m_MyMediaPocsThrdPt.SetAdoInptIsMute(
 						( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.AdoInptIsMuteCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
-				//设置是否使用音频输出。
+				//设置音频输出。
 				m_MyMediaPocsThrdPt.SetAdoOtpt(
 						( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate8000RdBtnId ) ).isChecked() ) ? 8000 :
 								( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate16000RdBtnId ) ).isChecked() ) ? 16000 :
@@ -2666,7 +2772,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 				m_MyMediaPocsThrdPt.SetAdoOtptIsMute(
 						( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.AdoOtptIsMuteCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
-				//设置是否使用视频输入。
+				//设置视频输入。
 				m_MyMediaPocsThrdPt.SetVdoInpt(
 						( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate12RdBtnId ) ).isChecked() ) ? 12 :
 								( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).isChecked() ) ? 15 :
@@ -2681,8 +2787,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 										( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize480_640RdBtnId ) ).isChecked() ) ? 640 :
 												( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize960_1280RdBtnId ) ).isChecked() ) ? 1280 : 0,
 						getWindowManager().getDefaultDisplay().getRotation() * 90,
-						m_VdoInptPrvwSurfaceViewPt
-				);
+						( ( HTSurfaceView )findViewById( R.id.VdoInptPrvwSurfaceId ) ) );
 
 				//设置视频输入是否使用YU12原始数据。
 				if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseYU12RdBtnId ) ).isChecked() )
@@ -2723,16 +2828,15 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 				m_MyMediaPocsThrdPt.SetVdoInptIsBlack(
 						( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.VdoInptIsBlackCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
-				//设置是否使用视频输出。
+				//设置视频输出。
 				m_MyMediaPocsThrdPt.AddVdoOtptStrm( 0 );
 				m_MyMediaPocsThrdPt.SetVdoOtptStrm(
 						0,
-						m_VdoOtptDspySurfaceViewPt,
+						( ( HTSurfaceView )findViewById( R.id.VdoOtptDspySurfaceId ) ),
 						( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoDspyScale1_0RdBtnId ) ).isChecked() ) ? 1.0f :
 								( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoDspyScale1_5RdBtnId ) ).isChecked() ) ? 1.5f :
 										( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoDspyScale2_0RdBtnId ) ).isChecked() ) ? 2.0f :
-												( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoDspyScale3_0RdBtnId ) ).isChecked() ) ? 3.0f : 1.0f
-				);
+												( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoDspyScale3_0RdBtnId ) ).isChecked() ) ? 3.0f : 1.0f );
 
 				//设置视频输出是否使用YU12原始数据。
 				if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseYU12RdBtnId ) ).isChecked() )
@@ -2760,19 +2864,12 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 				//设置视频输出流是否使用。
 				m_MyMediaPocsThrdPt.SetVdoOtptStrmIsUse( 0, 1 );
 
-				//设置是否使用音视频输入输出。
-				m_MyMediaPocsThrdPt.SetIsUseAdoVdoInptOtpt(
-						( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) ? 0 :
-								( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 :
-										( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 : 0,
-						( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 :
-								( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 : 0,
-						( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) ? 0 :
-								( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseVdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 :
-										( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 : 0,
-						( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseVdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 :
-								( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? 1 : 0
-				);
+				//设置本端对讲模式。
+				m_MyMediaPocsThrdPt.SendUserMsg(
+						MyMediaPocsThrd.UserMsg.LclTkbkMode,
+						( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoTkbkModeRdBtnId ) ).isChecked() ) ? MyMediaPocsThrd.TkbkMode.Ado :
+								( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseVdoTkbkModeRdBtnId ) ).isChecked() ) ? MyMediaPocsThrd.TkbkMode.Vdo :
+										( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? MyMediaPocsThrd.TkbkMode.AdoVdo : MyMediaPocsThrd.TkbkMode.NoChg );
 
 				//设置是否保存设置到文件。
 				if( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveStngToFileCkBoxId ) ).isChecked() )
@@ -2788,6 +2885,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 			else
 			{
 				Log.i( m_CurClsNameStrPt, "开始请求并等待媒体处理线程退出。" );
+				m_MyMediaPocsThrdPt.m_IsInterrupt = 1;
 				m_MyMediaPocsThrdPt.RqirExit( 1, 1 );
 				Log.i( m_CurClsNameStrPt, "结束请求并等待媒体处理线程退出。" );
 			}
@@ -2844,7 +2942,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 				{
 					if( m_MyMediaPocsThrdPt != null )
 					{
-						m_MyMediaPocsThrdPt.m_PttBtnIsDown = 1;
+						m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsg.PttBtnDown );
 					}
 					break;
 				}
@@ -2852,7 +2950,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 				{
 					if( m_MyMediaPocsThrdPt != null )
 					{
-						m_MyMediaPocsThrdPt.m_PttBtnIsDown = 0;
+						m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsg.PttBtnUp );
 					}
 					break;
 				}

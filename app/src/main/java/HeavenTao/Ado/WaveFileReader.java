@@ -20,13 +20,13 @@ public class WaveFileReader
     }
 
     //析构函数。
-    public void finalize()
+    protected void finalize()
     {
         Dstoy();
     }
 
     //创建并初始化Wave文件读取器。
-    public int Init( String WaveFileFullPathStrPt, HTShort NumChanlPt, HTInt SmplRatePt, HTInt SmplBitPt )
+    public int Init( String WaveFileFullPathStrPt, HTInt NumChanlPt, HTInt SmplRatePt, HTInt SmplBitPt )
     {
         if( m_WaveFileReaderPt == 0 )
         {
@@ -47,10 +47,10 @@ public class WaveFileReader
         }
     }
 
-    //用Wave文件读取器读取数据。
-    public int ReadData( short DataPt[], long DataSz, HTLong DataLenPt )
+    //用Wave文件读取器读取Short型数据。
+    public int ReadShort( short DataPt[], long DataSz, HTLong DataLenPt )
     {
-        return WaveFileReaderReadData( m_WaveFileReaderPt, DataPt, DataSz, DataLenPt );
+        return WaveFileReaderReadShort( m_WaveFileReaderPt, DataPt, DataSz, DataLenPt );
     }
 
     //销毁Wave文件读取器。
@@ -75,10 +75,10 @@ public class WaveFileReader
     }
 
     //创建并初始化Wave文件读取器。
-    public native int WaveFileReaderInit( HTLong WaveFileReaderPt, String WaveFileFullPathStrPt, HTShort NumChanlPt, HTInt SmplRatePt, HTInt SmplBitPt );
+    public native int WaveFileReaderInit( HTLong WaveFileReaderPt, String WaveFileFullPathStrPt, HTInt NumChanlPt, HTInt SmplRatePt, HTInt SmplBitPt );
 
     //用Wave文件读取器读取数据。
-    public native int WaveFileReaderReadData( long WaveFileReaderPt, short DataPt[], long DataSz, HTLong DataLenPt );
+    public native int WaveFileReaderReadShort( long WaveFileReaderPt, short DataPt[], long DataSz, HTLong DataLenPt );
 
     //销毁Wave文件读取器。
     public native int WaveFileReaderDstoy( long WaveFileReaderPt );
