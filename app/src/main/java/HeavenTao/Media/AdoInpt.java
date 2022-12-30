@@ -1081,7 +1081,8 @@ public class AdoInpt //音频输入类。
 			while( true )
 			{
 				//获取一个音频输入空闲帧。
-				if( ( m_AdoInptFrmLnkLstElmTotal = m_AdoInptIdleFrmLnkLstPt.size() ) > 0 ) //如果音频输入空闲帧链表中有音频输入空闲帧。
+				m_AdoInptFrmLnkLstElmTotal = m_AdoInptIdleFrmLnkLstPt.size();
+				if( m_AdoInptFrmLnkLstElmTotal > 0 ) //如果音频输入空闲帧链表中有音频输入空闲帧。
 				{
 					//从音频输入空闲帧链表中取出第一个音频输入空闲帧。
 					synchronized( m_AdoInptIdleFrmLnkLstPt )
@@ -1093,7 +1094,8 @@ public class AdoInpt //音频输入类。
 				}
 				else //如果音频输入空闲帧链表中没有音频输入空闲帧。
 				{
-					if( ( m_AdoInptFrmLnkLstElmTotal = m_AdoInptFrmLnkLstPt.size() ) <= 50 )
+					m_AdoInptFrmLnkLstElmTotal = m_AdoInptFrmLnkLstPt.size();
+					if( m_AdoInptFrmLnkLstElmTotal <= 50 )
 					{
 						m_AdoInptFrmPt = new short[ m_FrmLen ]; //创建一个音频输入空闲帧。
 						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：音频输入空闲帧链表中没有音频输入空闲帧，创建一个音频输入空闲帧。" );

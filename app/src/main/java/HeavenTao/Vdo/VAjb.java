@@ -72,18 +72,6 @@ public class VAjb
         return VAjbGetShortFrm( m_VAjbPt, CurTime, TimeStampPt, ShortFrmPt, FrmStart, FrmStartSz, FrmLenPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
-    //从视频自适应抖动缓冲器取出字节型帧。
-    public int GetByteFrmWantTimeStamp( long CurTime, int WantTimeStamp, HTInt TimeStampPt, byte ByteFrmPt[], long FrmStart, long FrmStartSz, HTLong FrmLenPt, int IsAutoLock, Vstr ErrInfoVstrPt )
-    {
-        return VAjbGetByteFrmWantTimeStamp( m_VAjbPt, CurTime, WantTimeStamp, TimeStampPt, ByteFrmPt, FrmStart, FrmStartSz, FrmLenPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
-    }
-
-    //从视频自适应抖动缓冲器取出短整型帧。
-    public int GetShortFrmWantTimeStamp( long CurTime, int WantTimeStamp, HTInt TimeStampPt, short ShortFrmPt[], long FrmStart, long FrmStartSz, HTLong FrmLenPt, int IsAutoLock, Vstr ErrInfoVstrPt )
-    {
-        return VAjbGetShortFrmWantTimeStamp( m_VAjbPt, CurTime, WantTimeStamp, TimeStampPt, ShortFrmPt, FrmStart, FrmStartSz, FrmLenPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
-    }
-
     //获取缓冲帧的数量。
     public int GetBufFrmCnt( HTInt CurHaveBufFrmCntPt, HTInt MinNeedBufFrmCntPt, HTInt MaxNeedBufFrmCntPt, HTInt CurNeedBufFrmCntPt, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
@@ -131,12 +119,6 @@ public class VAjb
 
     //从视频自适应抖动缓冲器取出短整型帧。
     public native int VAjbGetShortFrm( long VAjbPt, long CurTime, HTInt TimeStampPt, short ShortFrmPt[], long FrmStart, long FrmStartSz, HTLong FrmLenPt, int IsAutoLock, long ErrInfoVstrPt );
-
-    //从视频自适应抖动缓冲器取出字节型帧。
-    public native int VAjbGetByteFrmWantTimeStamp( long VAjbPt, long CurTime, int WantTimeStamp, HTInt TimeStampPt, byte ByteFrmPt[], long FrmStart, long FrmStartSz, HTLong FrmLenPt, int IsAutoLock, long ErrInfoVstrPt );
-
-    //从视频自适应抖动缓冲器取出短整型帧。
-    public native int VAjbGetShortFrmWantTimeStamp( long VAjbPt, long CurTime, int WantTimeStamp, HTInt TimeStampPt, short ShortFrmPt[], long FrmStart, long FrmStartSz, HTLong FrmLenPt, int IsAutoLock, long ErrInfoVstrPt );
 
     //获取缓冲帧的数量。
     public native int VAjbGetBufFrmCnt( long VAjbPt, HTInt CurHaveBufFrmCntPt, HTInt MinNeedBufFrmCntPt, HTInt MaxNeedBufFrmCntPt, HTInt CurNeedBufFrmCntPt, int IsAutoLock, long ErrInfoVstrPt );

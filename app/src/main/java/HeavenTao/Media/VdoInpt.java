@@ -520,8 +520,9 @@ public class VdoInpt //视频输入类。
 			p_Rslt = 0; //设置本函数执行成功。
 		}
 
-		//if( p_Rslt != 0 ) //如果本函数执行失败。
+		if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
+			Dstoy();
 		}
 		return p_Rslt;
 	}

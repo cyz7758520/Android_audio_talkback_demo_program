@@ -678,7 +678,8 @@ public class AdoOtpt //音频输出类。
 			while( true )
 			{
 				//获取一个音频输出空闲帧。
-				if( ( m_AdoOtptFrmLnkLstElmTotal = m_AdoOtptIdleFrmLnkLstPt.size() ) > 0 ) //如果音频输出空闲帧链表中有音频输出空闲帧。
+				m_AdoOtptFrmLnkLstElmTotal = m_AdoOtptIdleFrmLnkLstPt.size();
+				if( m_AdoOtptFrmLnkLstElmTotal > 0 ) //如果音频输出空闲帧链表中有音频输出空闲帧。
 				{
 					//从音频输出空闲帧链表中取出第一个音频输出空闲帧。
 					synchronized( m_AdoOtptIdleFrmLnkLstPt )
@@ -690,7 +691,8 @@ public class AdoOtpt //音频输出类。
 				}
 				else //如果音频输出空闲帧链表中没有音频输出空闲帧。
 				{
-					if( ( m_AdoOtptFrmLnkLstElmTotal = m_AdoOtptFrmLnkLstPt.size() ) <= 50 )
+					m_AdoOtptFrmLnkLstElmTotal = m_AdoOtptFrmLnkLstPt.size();
+					if( m_AdoOtptFrmLnkLstElmTotal <= 50 )
 					{
 						m_AdoOtptFrmPt = new short[ m_FrmLen ]; //创建一个音频输出空闲帧。
 						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出空闲帧链表中没有音频输出空闲帧，创建一个音频输出空闲帧。" );

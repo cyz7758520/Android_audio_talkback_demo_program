@@ -34,12 +34,12 @@ public class FrgndSrvc extends Service
 			}
 
 			//创建通知。
-			PendingIntent pendingIntent = PendingIntent.getActivity( m_MainActivityPt,0, new Intent(m_MainActivityPt, MainActivity.class ),0 );
+			PendingIntent pendingIntent = PendingIntent.getActivity( m_MainActivityPt, 0, new Intent( m_MainActivityPt, MainActivity.class ), PendingIntent.FLAG_IMMUTABLE );
 			Notification notification =
 					new NotificationCompat
 							.Builder( m_MainActivityPt, "status" ) //Android API 14及以上版本使用。
 							//new NotificationCompat.Builder( m_MainActivityPt ) //Android API 9~25版本使用。
-							.setSmallIcon( R.mipmap.ic_launcher )
+							.setSmallIcon( R.mipmap.tkbk_icon )
 							.setContentTitle( m_MainActivityPt.getString( R.string.app_name ) )
 							.setContentText( "前台服务" )
 							.setSound( null )
