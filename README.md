@@ -62,13 +62,13 @@
 &emsp;&emsp;* RNNoise噪音抑制器：libFunc.so、libc++_shared.so、libWebRtc.so、libRNNoise.so、RNNoise.java。  
 &emsp;&emsp;* Speex预处理器：libFunc.so、libSpeexDsp.so、SpeexPrpocs.java。  
 &emsp;&emsp;* Speex编解码器：libFunc.so、libSpeex.so、SpeexEncd.java、SpeexDecd.java。  
-&emsp;&emsp;* Wave文件写入读取器：libFunc.so、libWaveFile.so、WaveFileReader.java、WaveFileWriter.java。  
 &emsp;&emsp;* 音频波形器：libFunc.so、libAdoWavfm.so、AdoWavfm.java。  
 &emsp;&emsp;* OpenH264编解码器：libFunc.so、libOpenH264.so、OpenH264Encd.java、OpenH264Decd.java。  
 &emsp;&emsp;* 系统自带H264编解码器：libFunc.so、libSystemH264.so、SystemH264Encd.java、SystemH264Decd.java。  
 &emsp;&emsp;* 图片处理：libFunc.so、libLibYUV.so、LibYUV.java。  
 &emsp;&emsp;* 音视频自适应抖动缓冲器：libFunc.so、libc++_shared.so、libAjb.so、AAjb.java、VAjb.java。  
 &emsp;&emsp;* 本端TCP协议UDP协议套接字：libFunc.so、libSokt.so、TcpSrvrSokt.java、TcpClntSokt.java、UdpSokt.java、AudpSokt.java。  
+&emsp;&emsp;* Wave文件Avi文件写入读取器：libFunc.so、libMediaFile.so、WaveFileReader.java、WaveFileWriter.java、AviFileWriter.java。  
 
 # 注意
 &emsp;&emsp;不要在64位操作系统下使用32位动态库，或在32位操作系统下使用64位动态库，否则会导致意想不到的问题。  
