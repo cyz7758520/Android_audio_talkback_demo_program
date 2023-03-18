@@ -2,7 +2,7 @@ package HeavenTao.Sokt;
 
 import HeavenTao.Data.*;
 
-//本端TCP协议服务端套接字类。
+//本端TCP协议服务端套接字。
 public class TcpSrvrSokt
 {
     static
@@ -93,7 +93,7 @@ public class TcpSrvrSokt
     }
 
     //创建并初始化本端TCP协议服务端套接字。
-    private native int TcpSrvrInit(HTLong TcpSrvrSoktPt, int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, int MaxWait, int IsReuseAddr, long ErrInfoVstrPt );
+    private native int TcpSrvrInit( HTLong TcpSrvrSoktPt, int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, int MaxWait, int IsReuseAddr, long ErrInfoVstrPt );
 
     //本端TCP协议服务端套接字的互斥锁加锁。
     private native int TcpSrvrLocked( long TcpSrvrSoktPt, long ErrInfoVstrPt );

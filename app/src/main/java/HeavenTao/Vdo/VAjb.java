@@ -2,7 +2,7 @@ package HeavenTao.Vdo;
 
 import HeavenTao.Data.*;
 
-//视频自适应抖动缓冲器类。
+//视频自适应抖动缓冲器。
 public class VAjb
 {
     static

@@ -2,7 +2,7 @@ package HeavenTao.Ado;
 
 import HeavenTao.Data.*;
 
-//Speex解码器类。
+//Speex解码器。
 public class SpeexDecd
 {
     static
@@ -47,7 +47,7 @@ public class SpeexDecd
         }
     }
 
-    //用Speex解码器对单声道16位有符号整型20毫秒PCM格式帧进行Speex格式编码。
+    //用Speex解码器对单声道16位有符号整型20毫秒Pcm格式帧进行Speex格式编码。
     public int Pocs( byte SpeexFrmPt[], long SpeexFrmLen, short PcmFrmPt[] )
     {
         return SpeexDecdPocs( m_SpeexDecdPt, SpeexFrmPt, SpeexFrmLen, PcmFrmPt );
@@ -77,7 +77,7 @@ public class SpeexDecd
     //创建并初始化Speex解码器。
     public native int SpeexDecdInit( HTLong SpeexDecdPt, int SmplRate, int IsUsePrcplEnhsmt );
 
-    //用Speex解码器对单声道16位有符号整型20毫秒Speex格式帧进行PCM格式解码。
+    //用Speex解码器对单声道16位有符号整型20毫秒Speex格式帧进行Pcm格式解码。
     public native int SpeexDecdPocs( long SpeexDecdPt, byte SpeexFrmPt[], long SpeexFrmLen, short PcmFrmPt[] );
 
     //销毁Speex解码器。

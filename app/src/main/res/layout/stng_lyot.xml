@@ -129,6 +129,13 @@
             android:checked="true"
             android:text="使用唤醒锁" />
 
+        <CheckBox
+            android:id="@+id/IsSaveAdoVdoInptOtptToAviFileCkBoxId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="将音视频输入输出替换保存到当前进程活动目录下的AdoVdoInptOtpt.avi文件中" />
+
         <TextView
             android:gravity="center_horizontal"
             android:textAlignment="center"
@@ -657,16 +664,16 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/IsSaveAdoToFileCkBoxId"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="将音频输入、音频输出、音频结果分别替换保存到扩展目录下的AdoInpt.wav、AdoOtpt.wav、AdoRslt.wav文件中" />
-
-        <CheckBox
             android:id="@+id/IsDrawAdoWavfmToSurfaceCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="将音频输入、音频输出、音频结果的波形绘制到Surface中" />
+            android:text="将音频输入原始、音频输入结果、音频输出原始的波形绘制到Surface中" />
+
+        <CheckBox
+            android:id="@+id/IsSaveAdoToWaveFileCkBoxId"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="将音频输入原始、音频输入结果、音频输出原始分别替换保存到当前进程活动目录下的AdoInptSrc.wav、AdoInptRslt.wav、AdoOtptSrc.wav文件中" />
 
         <TextView
             android:gravity="center_horizontal"
@@ -769,56 +776,6 @@
                 <RadioButton
                     android:text="960×1280"
                     android:id="@+id/UseVdoFrmSize960_1280RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:gravity="center_vertical"
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="match_parent"
-                android:text="显示缩放：" />
-
-            <RadioGroup
-                android:orientation="horizontal"
-                android:layout_weight="9"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:text="不缩放"
-                    android:id="@+id/UseVdoDspyScale1_0RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <RadioButton
-                    android:text="1.5倍"
-                    android:id="@+id/UseVdoDspyScale1_5RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <RadioButton
-                    android:text="2倍"
-                    android:id="@+id/UseVdoDspyScale2_0RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <RadioButton
-                    android:text="3倍"
-                    android:id="@+id/UseVdoDspyScale3_0RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>

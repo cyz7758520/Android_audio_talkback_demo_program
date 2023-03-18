@@ -2,7 +2,7 @@ package HeavenTao.Sokt;
 
 import HeavenTao.Data.*;
 
-//本端UDP协议套接字类。
+//本端UDP协议套接字。
 public class UdpSokt
 {
     private long m_UdpSoktPt; //存放本端UDP协议套接字的指针。
@@ -88,52 +88,52 @@ public class UdpSokt
     }
 
     //设置本端UDP协议套接字的发送缓冲区大小。
-    public int SetSendBufSz( long SendBufSz, int IsAutoLock, Vstr ErrInfoVstrPt )
+    public int SetSendBufSz( long SendBufSzByt, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return UdpSetSendBufSz( m_UdpSoktPt, SendBufSz, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return UdpSetSendBufSz( m_UdpSoktPt, SendBufSzByt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
     //获取本端UDP协议套接字的发送缓冲区大小。
-    public int GetSendBufSz( HTLong SendBufSzPt, int IsAutoLock, Vstr ErrInfoVstrPt )
+    public int GetSendBufSz( HTLong SendBufSzBytPt, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return UdpGetSendBufSz( m_UdpSoktPt, SendBufSzPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return UdpGetSendBufSz( m_UdpSoktPt, SendBufSzBytPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
     //设置本端UDP协议套接字的接收缓冲区大小。
-    public int SetRecvBufSz( long RecvBufSz, int IsAutoLock, Vstr ErrInfoVstrPt )
+    public int SetRecvBufSz( long RecvBufSzByt, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return UdpSetRecvBufSz( m_UdpSoktPt, RecvBufSz, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return UdpSetRecvBufSz( m_UdpSoktPt, RecvBufSzByt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
     //获取本端UDP协议套接字的接收缓冲区大小。
-    public int GetRecvBufSz( HTLong RecvBufSzPt, int IsAutoLock, Vstr ErrInfoVstrPt )
+    public int GetRecvBufSz( HTLong RecvBufSzBytPt, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return UdpGetRecvBufSz( m_UdpSoktPt, RecvBufSzPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return UdpGetRecvBufSz( m_UdpSoktPt, RecvBufSzBytPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
     //获取本端UDP协议套接字的接收缓冲区长度。
-    public int GetRecvBufLen( HTLong RecvBufLenPt, int IsAutoLock, Vstr ErrInfoVstrPt )
+    public int GetRecvBufLen( HTLong RecvBufLenBytPt, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return UdpGetRecvBufLen( m_UdpSoktPt, RecvBufLenPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return UdpGetRecvBufLen( m_UdpSoktPt, RecvBufLenBytPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
     //用本端UDP协议套接字发送原始数据包到指定的或连接的远端UDP协议套接字。
-    public int Send( int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte DataBufPt[], long DataBufLen, short TmotMsec, int Times, int IsAutoLock, Vstr ErrInfoVstrPt )
+    public int SendPkt( int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte PktPt[], long PktLenByt, short TmotMsec, int Times, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return UdpSend( m_UdpSoktPt, RmtNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, DataBufPt, DataBufLen, TmotMsec, Times, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return UdpSendPkt( m_UdpSoktPt, RmtNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, PktPt, PktLenByt, TmotMsec, Times, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
     //用本端UDP协议套接字接收远端UDP协议套接字发送的原始数据包。
-    public int Recv( HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TmotMsec, int IsAutoLock, Vstr ErrInfoVstrPt )
+    public int RecvPkt( HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, short TmotMsec, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return UdpRecv( m_UdpSoktPt, RmtNodeAddrFmlyPt, RmtNodeAddrPt, RmtNodePortPt, DataBufPt, DataBufSz, DataBufLenPt, TmotMsec, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return UdpRecvPkt( m_UdpSoktPt, RmtNodeAddrFmlyPt, RmtNodeAddrPt, RmtNodePortPt, PktPt, PktSzByt, PktLenBytPt, TmotMsec, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
-    //用本端UDP协议套接字发送封装数据包到指定的或连接的远端UDP协议套接字。
-    public int SendPkt( int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte DataBufPt[], long DataBufLen, short TmotMsec, int Times, int IsAutoLock, Vstr ErrInfoVstrPt )
+    //用本端UDP协议套接字发送高级数据包到指定的或连接的远端UDP协议套接字。
+    public int SendApkt( int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte PktPt[], long PktLenByt, short TmotMsec, int Times, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return UdpSendPkt( m_UdpSoktPt, RmtNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, DataBufPt, DataBufLen, TmotMsec, Times, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return UdpSendApkt( m_UdpSoktPt, RmtNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, PktPt, PktLenByt, TmotMsec, Times, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
-    //用本端UDP协议套接字接收远端UDP协议套接字发送的封装数据包。
-    public int RecvPkt( HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TmotMsec, int IsAutoLock, Vstr ErrInfoVstrPt )
+    //用本端UDP协议套接字接收远端UDP协议套接字发送的高级数据包。
+    public int RecvApkt( HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, short TmotMsec, int IsAutoLock, Vstr ErrInfoVstrPt )
     {
-        return UdpRecvPkt( m_UdpSoktPt, RmtNodeAddrFmlyPt, RmtNodeAddrPt, RmtNodePortPt, DataBufPt, DataBufSz, DataBufLenPt, TmotMsec, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return UdpRecvApkt( m_UdpSoktPt, RmtNodeAddrFmlyPt, RmtNodeAddrPt, RmtNodePortPt, PktPt, PktSzByt, PktLenBytPt, TmotMsec, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
     //关闭并销毁本端UDP协议套接字。
@@ -176,26 +176,26 @@ public class UdpSokt
     private native int UdpGetRmtAddr( long UdpSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, int IsAutoLock, long ErrInfoVstrPt );
 
     //设置本端UDP协议套接字的发送缓冲区大小。
-    private native int UdpSetSendBufSz( long UdpSoktPt, long SendBufSz, int IsAutoLock, long ErrInfoVstrPt );
+    private native int UdpSetSendBufSz( long UdpSoktPt, long SendBufSzByt, int IsAutoLock, long ErrInfoVstrPt );
     //获取本端UDP协议套接字的发送缓冲区大小。
-    private native int UdpGetSendBufSz( long UdpSoktPt, HTLong SendBufSzPt, int IsAutoLock, long ErrInfoVstrPt );
+    private native int UdpGetSendBufSz( long UdpSoktPt, HTLong SendBufSzBytPt, int IsAutoLock, long ErrInfoVstrPt );
 
     //设置本端UDP协议套接字的接收缓冲区大小。
-    private native int UdpSetRecvBufSz( long UdpSoktPt, long RecvBufSz, int IsAutoLock, long ErrInfoVstrPt );
+    private native int UdpSetRecvBufSz( long UdpSoktPt, long RecvBufSzByt, int IsAutoLock, long ErrInfoVstrPt );
     //获取本端UDP协议套接字的接收缓冲区大小。
-    private native int UdpGetRecvBufSz( long UdpSoktPt, HTLong RecvBufSzPt, int IsAutoLock, long ErrInfoVstrPt );
+    private native int UdpGetRecvBufSz( long UdpSoktPt, HTLong RecvBufSzBytPt, int IsAutoLock, long ErrInfoVstrPt );
     //获取本端UDP协议套接字的接收缓冲区长度。
-    private native int UdpGetRecvBufLen( long UdpSoktPt, HTLong RecvBufLenPt, int IsAutoLock, long ErrInfoVstrPt );
+    private native int UdpGetRecvBufLen( long UdpSoktPt, HTLong RecvBufLenBytPt, int IsAutoLock, long ErrInfoVstrPt );
 
     //用本端UDP协议套接字发送原始数据包到指定的或连接的远端UDP协议套接字。
-    private native int UdpSend( long UdpSoktPt, int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte DataBufPt[], long DataBufLen, short TmotMsec, int Times, int IsAutoLock, long ErrInfoVstrPt );
+    private native int UdpSendPkt( long UdpSoktPt, int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte PktPt[], long PktLenByt, short TmotMsec, int Times, int IsAutoLock, long ErrInfoVstrPt );
     //用本端UDP协议套接字接收远端UDP协议套接字发送的原始数据包。
-    private native int UdpRecv( long UdpSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TmotMsec, int IsAutoLock, long ErrInfoVstrPt );
+    private native int UdpRecvPkt( long UdpSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, short TmotMsec, int IsAutoLock, long ErrInfoVstrPt );
 
-    //用本端UDP协议套接字发送封装数据包到指定的或连接的远端UDP协议套接字。
-    private native int UdpSendPkt( long UdpSoktPt, int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte DataBufPt[], long DataBufLen, short TmotMsec, int Times, int IsAutoLock, long ErrInfoVstrPt );
-    //用本端UDP协议套接字接收远端UDP协议套接字发送的封装数据包。
-    private native int UdpRecvPkt( long UdpSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TmotMsec, int IsAutoLock, long ErrInfoVstrPt );
+    //用本端UDP协议套接字发送高级数据包到指定的或连接的远端UDP协议套接字。
+    private native int UdpSendApkt( long UdpSoktPt, int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte PktPt[], long PktLenByt, short TmotMsec, int Times, int IsAutoLock, long ErrInfoVstrPt );
+    //用本端UDP协议套接字接收远端UDP协议套接字发送的高级数据包。
+    private native int UdpRecvApkt( long UdpSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, short TmotMsec, int IsAutoLock, long ErrInfoVstrPt );
 
     //关闭并销毁本端UDP协议套接字。
     private native int UdpDstoy( long UdpSoktPt, long ErrInfoVstrPt );

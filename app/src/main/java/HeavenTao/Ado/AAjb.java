@@ -2,7 +2,7 @@ package HeavenTao.Ado;
 
 import HeavenTao.Data.*;
 
-//音频自适应抖动缓冲器类。
+//音频自适应抖动缓冲器。
 public class AAjb
 {
     static
@@ -27,12 +27,12 @@ public class AAjb
     }
 
     //创建并初始化音频自适应抖动缓冲器。
-    public int Init( int SmplRate, int FrmLen, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, Vstr ErrInfoVstrPt )
+    public int Init( int SmplRate, int FrmLen, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, int IsDelObsltFrm, Vstr ErrInfoVstrPt )
     {
         if( m_AAjbPt == 0 )
         {
             HTLong p_AAjbPt = new HTLong();
-            if( AAjbInit( p_AAjbPt, SmplRate, FrmLen, IsHaveTimeStamp, TimeStampStep, InactIsContPut, MinNeedBufFrmCnt, MaxNeedBufFrmCnt, MaxCntuLostFrmCnt, AdaptSensitivity, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            if( AAjbInit( p_AAjbPt, SmplRate, FrmLen, IsHaveTimeStamp, TimeStampStep, InactIsContPut, MinNeedBufFrmCnt, MaxNeedBufFrmCnt, MaxCntuLostFrmCnt, AdaptSensitivity, IsDelObsltFrm, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_AAjbPt = p_AAjbPt.m_Val;
                 return 0;
@@ -106,7 +106,7 @@ public class AAjb
     }
 
     //创建并初始化音频自适应抖动缓冲器。
-    public native int AAjbInit( HTLong AAjbPt, int SmplRate, int FrmLen, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, long ErrInfoVstrPt );
+    public native int AAjbInit( HTLong AAjbPt, int SmplRate, int FrmLen, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, int IsDelObsltFrm, long ErrInfoVstrPt );
 
     //放入字节型帧到音频自适应抖动缓冲器。
     public native int AAjbPutByteFrm( long AAjbPt, int TimeStamp, byte ByteFrmPt[], long FrmStart, long FrmLen, int IsAutoLock, long ErrInfoVstrPt );

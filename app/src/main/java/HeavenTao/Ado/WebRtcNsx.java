@@ -2,7 +2,7 @@ package HeavenTao.Ado;
 
 import HeavenTao.Data.*;
 
-//WebRtc定点版噪音抑制器类。
+//WebRtc定点版噪音抑制器。
 public class WebRtcNsx
 {
     static
@@ -48,7 +48,7 @@ public class WebRtcNsx
         }
     }
 
-    //用WebRtc定点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc定点版噪音抑制。
+    //用WebRtc定点版噪音抑制器对单声道16位有符号整型Pcm格式帧进行WebRtc定点版噪音抑制。
     public int Pocs( short FrmPt[], short RsltFrmPt[] )
     {
         return WebRtcNsxPocs( m_WebRtcNsxPt, FrmPt, RsltFrmPt );
@@ -78,7 +78,7 @@ public class WebRtcNsx
     //创建并初始化WebRtc定点版噪音抑制器。
     public native int WebRtcNsxInit( HTLong WebRtcNsxPt, int SmplRate, int FrmLen, int PolicyMode, long ErrInfoVstrPt );
 
-    //用WebRtc定点版噪音抑制器对单声道16位有符号整型PCM格式帧进行WebRtc定点版噪音抑制。
+    //用WebRtc定点版噪音抑制器对单声道16位有符号整型Pcm格式帧进行WebRtc定点版噪音抑制。
     public native int WebRtcNsxPocs( long WebRtcNsxPt, short FrmPt[], short RsltFrmPt[] );
 
     //销毁WebRtc定点版噪音抑制器。

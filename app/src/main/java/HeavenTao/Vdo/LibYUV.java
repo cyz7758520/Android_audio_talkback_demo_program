@@ -5,7 +5,7 @@ import android.view.Surface;
 
 import HeavenTao.Data.*;
 
-//图片处理类。
+//图片处理。
 public class LibYUV
 {
     static

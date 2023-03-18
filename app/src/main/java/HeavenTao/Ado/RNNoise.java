@@ -2,7 +2,7 @@ package HeavenTao.Ado;
 
 import HeavenTao.Data.*;
 
-//RNNoise噪音抑制器类。
+//RNNoise噪音抑制器。
 public class RNNoise
 {
     static
@@ -49,7 +49,7 @@ public class RNNoise
         }
     }
 
-    //用RNNoise噪音抑制器对单声道16位有符号整型PCM格式帧进行RNNoise噪音抑制。
+    //用RNNoise噪音抑制器对单声道16位有符号整型Pcm格式帧进行RNNoise噪音抑制。
     public int Pocs( short FrmPt[], short RsltFrmPt[] )
     {
         return RNNoisePocs( m_RNNoisePt, FrmPt, RsltFrmPt );
@@ -79,7 +79,7 @@ public class RNNoise
     //创建并初始化RNNoise噪音抑制器。
     public native int RNNoiseInit( HTLong RNNoisePt, int SmplRate, int FrmLen, long ErrInfoVstrPt );
 
-    //用RNNoise噪音抑制器对单声道16位有符号整型PCM格式帧进行RNNoise噪音抑制。
+    //用RNNoise噪音抑制器对单声道16位有符号整型Pcm格式帧进行RNNoise噪音抑制。
     public native int RNNoisePocs( long RNNoisePt, short FrmPt[], short RsltFrmPt[] );
 
     //销毁RNNoise噪音抑制器。

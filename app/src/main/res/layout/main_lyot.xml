@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="版本：2022年12月30日"
+                android:text="版本：2023年03月18日"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="normal|bold" />
@@ -439,10 +439,10 @@
                     android:layout_height="match_parent"
                     android:layout_weight="4"
                     android:gravity="center_vertical"
-                    android:text="音频输入波形："/>
+                    android:text="音频输入原始波形："/>
 
                 <SurfaceView
-                    android:id="@+id/AdoInptOscilloSurfaceId"
+                    android:id="@+id/AdoInptWavfmSurfaceId"
                     android:layout_width="0dp"
                     android:layout_height="65dp"
                     android:layout_weight="7" />
@@ -459,10 +459,10 @@
                     android:layout_height="match_parent"
                     android:layout_weight="4"
                     android:gravity="center_vertical"
-                    android:text="音频输出波形："/>
+                    android:text="音频输出原始波形："/>
 
                 <SurfaceView
-                    android:id="@+id/AdoOtptOscilloSurfaceId"
+                    android:id="@+id/AdoOtptWavfmSurfaceId"
                     android:layout_width="0dp"
                     android:layout_height="65dp"
                     android:layout_weight="7" />
@@ -479,10 +479,10 @@
                     android:layout_height="match_parent"
                     android:layout_weight="4"
                     android:gravity="center_vertical"
-                    android:text="音频结果波形："/>
+                    android:text="音频输入结果波形："/>
 
                 <SurfaceView
-                    android:id="@+id/AdoRsltOscilloSurfaceId"
+                    android:id="@+id/AdoRsltWavfmSurfaceId"
                     android:layout_width="0dp"
                     android:layout_height="65dp"
                     android:layout_weight="7" />

@@ -2,7 +2,7 @@ package HeavenTao.Ado;
 
 import HeavenTao.Data.*;
 
-//Speex预处理器类。
+//Speex预处理器。
 public class SpeexPrpocs
 {
     static
@@ -47,7 +47,7 @@ public class SpeexPrpocs
         }
     }
 
-    //用Speex预处理器对单声道16位有符号整型PCM格式帧进行Speex预处理。
+    //用Speex预处理器对单声道16位有符号整型Pcm格式帧进行Speex预处理。
     public int Pocs( short FrmPt[], short RsltFrmPt[], HTInt VoiceActStsPt )
     {
         return SpeexPrpocsPocs( m_SpeexPrpocsPt, FrmPt, RsltFrmPt, VoiceActStsPt );
@@ -77,7 +77,7 @@ public class SpeexPrpocs
     //创建并初始化Speex预处理器。
     public native int SpeexPrpocsInit( HTLong SpeexPrpocsPt, int SmplRate, int FrmLen, int IsUseNs, int NoiseSupes, int IsUseDereverb, int IsUseVad, int VadProbStart, int VadProbCntu, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain, long ErrInfoVstrPt );
 
-    //用Speex预处理器对单声道16位有符号整型PCM格式帧进行Speex预处理。
+    //用Speex预处理器对单声道16位有符号整型Pcm格式帧进行Speex预处理。
     public native int SpeexPrpocsPocs( long SpeexPrpocsPt, short FrmPt[], short RsltFrmPt[], HTInt VoiceActStsPt );
 
     //销毁Speex预处理器。

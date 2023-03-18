@@ -13,6 +13,7 @@
 &emsp;&emsp;* 支持视频软硬编解码，支持指定比特率，最低到10KB/s仍然可以进行视频对讲，还支持横竖屏切换。  
 &emsp;&emsp;* 支持音视频自适应抖动缓冲，当网络存在丢包、乱序、延时等抖动情况时，通过自适应调节缓冲深度来应对这些抖动。  
 &emsp;&emsp;* 支持自定义调节各种功能的参数来适应不同的设备，绝大部分情况下都不需要修改。  
+&emsp;&emsp;* 支持保存音视频输入输出到文件。  
 &emsp;&emsp;* 支持与Windows下音视频对讲演示程序进行音视频对讲。  
 
 &emsp;&emsp;声学回音消除器效果对比：
@@ -41,7 +42,7 @@
 &emsp;&emsp;如果需要在自己的软件中使用本软件的音视频功能，需要以下几个步骤：  
 &emsp;&emsp;1、在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限。  
 &emsp;&emsp;2、将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中。  
-&emsp;&emsp;3、继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserPocs、UserDstoy、UserMsg、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetPcmAdoOtptFrm、UserWriteVdoOtptFrm、UserGetYU12VdoOtptFrm这九个回调成员函数。如果要在JNI层处理音视频帧，则可以将这些回调成员函数继承为native函数，然后在JNI层实现即可。  
+&emsp;&emsp;3、继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserPocs、UserDstoy、UserMsg、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetAdoOtptFrm、UserWriteVdoOtptFrm、UserGetVdoOtptFrm这九个回调成员函数。如果要在JNI层处理音视频帧，则可以将这些回调成员函数继承为native函数，然后在JNI层实现即可。  
 &emsp;&emsp;4、new这个继承的类，然后调用类的相关设置成员函数，最后调用start()成员函数启动媒体处理线程即可。  
 &emsp;&emsp;5、当需要媒体处理线程退出时，调用类的RqirExit()成员函数即可。  
 
@@ -49,7 +50,7 @@
 
 &emsp;&emsp;**普通免费功能包括：WebRtc定点版声学回音消除器、Speex预处理器的噪音抑制、WebRtc定点版噪音抑制器、WebRtc浮点版噪音抑制器、Speex预处理器的其他功能、Speex编解码器、Wave文件读取器、Wave文件写入器、音频波形器、本端TCP协议服务端套接字、本端TCP协议客户端套接字、本端UDP协议套接字。**  
 
-&emsp;&emsp;**高级收费功能包括：Speex声学回音消除器、WebRtc浮点版声学回音消除器、SpeexWebRtc三重声学回音消除器、RNNoise噪音抑制器、OpenH264编解码器、系统自带H264编解码器、自己设计的自适应抖动缓冲器、本端高级UDP协议套接字。**  
+&emsp;&emsp;**高级收费功能包括：Speex声学回音消除器、WebRtc浮点版声学回音消除器、SpeexWebRtc三重声学回音消除器、RNNoise噪音抑制器、OpenH264编解码器、系统自带H264编解码器、自己设计的自适应抖动缓冲器、Avi文件写入器、本端高级UDP协议套接字。**  
 
 &emsp;&emsp;各个功能对应的文件如下：  
 &emsp;&emsp;* Speex声学回音消除器：libFunc.so、libSpeexDsp.so、SpeexAec.java。  
@@ -79,6 +80,7 @@
 &emsp;&emsp;某些Android设备的系统自带的声学回音消除器、噪音抑制器和自动增益控制器在使用后可能会导致音频输入出现问题，这种情况可以先关闭后再试试。  
 &emsp;&emsp;音频波形器占用CPU比较高，建议只在需要调试时临时打开。  
 &emsp;&emsp;系统自带H264编解码器需要Android 5.0（API 21）及以上系统，且在某些Android设备上使用可能会花屏，这种情况只能使用OpenH264编解码器。  
+&emsp;&emsp;保存音视频输入输出的AdoVdoInptOtpt.avi文件不能直接播放，需要使用FFmpeg命令转码后才能播放，建议用VLC播放器，转码命令为：ffmpeg -i AdoVdoInptOtpt.avi -filter_complex "[0:<zero-width space>a:1][0:<zero-width space>a:2]amix=inputs=2:duration=max[aout]" -map [aout] -map 0:v -acodec pcm_s16le -vcodec copy AdoVdoInptOtpt_Mix.avi -y。
 
 # 其他
 &emsp;&emsp;本软件采用了Speex的1.2.1版本、SpeexDsp的1.2.1版本、WebRtc的2019年7月份版本、OpenH264的2.3.1版本为基础，并进行了大量优化。  
@@ -129,46 +131,63 @@ ___
 ___
 函数名称：UserReadAdoVdoInptFrm  
 功能说明：用户定义的读取音视频输入帧函数，在读取到一个音频输入帧或视频输入帧并处理完后回调一次。如果没有使用音频输入和视频输入，则本函数不会被回调。  
-参数说明：PcmAdoInptFrmPt：\[输入\]，存放PCM格式音频输入帧的指针。如果没有使用音频输入，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;PcmAdoRsltFrmPt：\[输入\]，存放PCM格式音频结果帧的指针。如果没有使用音频输入，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;VoiceActStsPt：\[输入\]，存放语音活动状态的指针，为非0表示有语音活动，为0表示无语音活动。如果没有使用音频输入，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoInptFrmPt：\[输入\]，存放已编码格式音频输入帧的指针。如果没有使用音频输入，或音频输入编码器使用PCM原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoInptFrmLenPt：\[输入\]，存放已编码格式音频输入帧长度的指针，单位为字节。如果没有使用音频输入，或音频输入编码器使用PCM原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoInptFrmIsNeedTransPt：\[输入\]，存放已编码格式音频输入帧是否需要传输的指针，为非0表示需要传输，为0表示不需要传输。如果没有使用音频输入，或音频输入编码器使用PCM原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptFrmPt：\[输入\]，存放YU12格式视频输入帧的指针。如果没有使用视频输入，或本次没有读取到视频输入帧，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptFrmWidthPt：\[输入\]，存放YU12格式视频输入帧宽度的指针。如果没有使用视频输入，或本次没有读取到视频输入帧，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptFrmHeightPt：\[输入\]，存放YU12格式视频输入帧高度的指针。如果没有使用视频输入，或本次没有读取到视频输入帧，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoInptFrmPt：\[输入\]，存放已编码格式视频输入帧的指针。如果没有使用视频输入，或本次没有读取到视频输入帧，或视频输入编码器使用YU12原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoInptFrmLenPt：\[输入\]，存放已编码格式视频输入帧长度的指针，单位为字节。如果没有使用视频输入，或本次没有读取到视频输入帧，或视频输入编码器使用YU12原始数据，则本参数为null。  
+参数说明：PcmAdoInptSrcFrmPt：\[输入\]，存放PCM格式音频输入原始帧的指针，就是未经过声学回音消除、噪音抑制、自动增益控制的音频帧。如果不使用音频输入，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;PcmAdoInptRsltFrmPt：\[输入\]，存放PCM格式音频输入结果帧的指针，就是已经过声学回音消除、噪音抑制、自动增益控制的音频帧。如果不使用音频输入，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;PcmAdoInptFrmLenUnit：\[输入\]，存放PCM格式音频输入帧的长度，单位为采样单元。如果不使用音频输入，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;PcmAdoInptRsltFrmVoiceActSts：\[输入\]，存放PCM格式音频输入结果帧的语音活动状态，为非0表示有语音活动，为0表示无语音活动。如果不使用音频输入，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoInptRsltFrmPt：\[输入\]，存放已编码格式音频输入结果帧的指针。如果不使用音频输入，或音频输入编码器要使用PCM原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoInptRsltFrmLenByt：\[输入\]，存放已编码格式音频输入结果帧的长度，单位为字节。如果不使用音频输入，或音频输入编码器要使用PCM原始数据，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoInptRsltFrmIsNeedTrans：\[输入\]，存放已编码格式音频输入结果帧是否需要传输，为非0表示需要传输，为0表示不需要传输。如果不使用音频输入，或音频输入编码器要使用PCM原始数据，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;NV21VdoInptSrcFrmPt：\[输入\]，存放NV21格式视频输入原始帧的指针。如果不使用视频输入，或本次没有读取到视频输入帧，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;NV21VdoInptSrcFrmWidth：\[输入\]，存放NV21格式视频输入原始帧的宽度，单位为像素。如果不使用视频输入，或本次没有读取到视频输入帧，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;NV21VdoInptSrcFrmHeight：\[输入\]，存放NV21格式视频输入原始帧的高度，单位为像素。如果不使用视频输入，或本次没有读取到视频输入帧，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;NV21VdoInptSrcFrmLenByt：\[输入\]，存放NV21格式视频输入原始帧的长度，单位为字节。如果不使用视频输入，或本次没有读取到视频输入帧，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptRsltFrmPt：\[输入\]，存放YU12格式视频输入结果帧的指针。如果不使用视频输入，或本次没有读取到视频输入帧，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptRsltFrmWidth：\[输入\]，存放YU12格式视频输入结果帧的宽度，单位为像素。如果不使用视频输入，或本次没有读取到视频输入帧，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptRsltFrmHeight：\[输入\]，存放YU12格式视频输入结果帧的高度，单位为像素。如果不使用视频输入，或本次没有读取到视频输入帧，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptRsltFrmLenByt：\[输入\]，存放YU12格式视频输入结果帧的长度，单位为字节。如果不使用视频输入，或本次没有读取到视频输入帧，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoInptRsltFrmPt：\[输入\]，存放已编码格式视频输入结果帧的指针。如果不使用视频输入，或本次没有读取到视频输入帧，或视频输入编码器要使用YU12原始数据，则本参数为为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoInptRsltFrmLenByt：\[输入\]，存放已编码格式视频输入结果帧的长度，单位为字节。如果不使用视频输入，或本次没有读取到视频输入帧，或视频输入编码器要使用YU12原始数据，则本参数无意义。  
 返回说明：0：成功。  
 &emsp;&emsp;&emsp;&emsp;&emsp;非0：失败。  
 ___
 函数名称：UserWriteAdoOtptFrm  
 功能说明：用户定义的写入音频输出帧函数，在需要写入一个音频输出帧时回调一次。如果没有使用音频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。  
-参数说明：PcmAdoOtptFrmPt：\[输出\]，存放PCM格式音频输出帧的指针。如果音频输出解码器没有使用PCM原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoOtptFrmPt：\[输出\]，存放已编码格式音频输出帧的指针。如果音频输出解码器使用PCM原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptFrmLenPt：\[输入&输出\]，输入时，存放音频输出帧最大长度的指针，输出时，存放音频输出帧长度的指针。如果音频输出解码器使用PCM原始数据，则单位为采样。如果音频输出解码器没有使用PCM原始数据，则单位为字节。  
+参数说明：AdoOtptStrmIdx：\[输入\]，存放音频输出流索引。  
+&emsp;&emsp;&emsp;&emsp;&emsp;PcmAdoOtptSrcFrmPt：\[输出\]，存放PCM格式音频输出原始帧的指针。如果音频输出解码器不使用PCM原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;PcmAdoOtptFrmLenUnit：\[输入\]，存放PCM格式音频输出帧的长度，单位为采样单元。如果音频输出解码器不使用PCM原始数据，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoOtptSrcFrmPt：\[输出\]，存放已编码格式音频输出原始帧的指针。如果音频输出解码器要使用PCM原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoOtptSrcFrmSzByt：\[输入\]，存放已编码格式音频输出原始帧的大小，单位为字节。如果音频输出解码器要使用PCM原始数据，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoOtptSrcFrmLenBytPt：\[输出\]，存放已编码格式音频输出原始帧长度的指针，单位为字节。如果音频输出解码器要使用PCM原始数据，则本参数为null。  
 返回说明：无。  
 ___
-函数名称：UserGetPcmAdoOtptFrm  
-功能说明：用户定义的获取PCM格式音频输出帧函数，在解码完一个已编码音频输出帧时回调一次。如果没有使用音频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。  
-参数说明：PcmAdoOtptFrmPt：\[输入\]，存放PCM格式音频输出帧的指针。  
-&emsp;&emsp;&emsp;&emsp;&emsp;PcmAdoOtptFrmLen：\[输入\]，存放PCM格式音频输出帧的长度，单位为采样。  
+函数名称：UserGetAdoOtptFrm  
+功能说明：用户定义的获取Pcm格式音频输出帧函数，在解码完一个已编码音频输出帧时回调一次。如果没有使用音频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。  
+参数说明：AdoOtptStrmIdx：\[输入\]，存放音频输出流索引。  
+&emsp;&emsp;&emsp;&emsp;&emsp;PcmAdoOtptSrcFrmPt：\[输入\]，存放PCM格式音频输出原始帧的指针。  
+&emsp;&emsp;&emsp;&emsp;&emsp;PcmAdoOtptFrmLenUnit：\[输入\]，存放PCM格式音频输出帧的长度，单位为采样单元。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoOtptSrcFrmPt：\[输入\]，存放已编码格式音频输出原始帧的指针。如果音频输出解码器要使用PCM原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdAdoOtptSrcFrmLenByt：\[输入\]，存放已编码格式音频输出原始帧的长度，单位为字节。如果音频输出解码器要使用PCM原始数据，则本参数无意义。  
 返回说明：无。  
 ___
 函数名称：UserWriteVdoOtptFrm  
 功能说明：用户定义的写入视频输出帧函数，在可以显示一个视频输出帧时回调一次。如果没有使用视频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。  
-参数说明：YU12VdoOtptFrmPt：\[输出\]，存放YU12格式视频输出帧的指针。如果视频输出解码器没有使用YU12原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptFrmWidthPt：\[输出\]，存放YU12格式视频输出帧宽度的指针。如果视频输出解码器没有使用YU12原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoInptFrmHeightPt：\[输出\]，存放YU12格式视频输出帧高度的指针。如果视频输出解码器没有使用YU12原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoOtptFrmPt：\[输出\]，存放已编码格式视频输出帧的指针。如果视频输出解码器使用YU12原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptFrmLenPt：\[输入&输出\]，输入时，存放视频输出帧最大长度的指针，输出时，存放视频输出帧长度的指针。单位为字节。   
+参数说明：VdoOtptStrmIdx：\[输入\]，存放视频输出流索引。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoOtptSrcFrmPt：\[输出\]，存放YU12格式视频输出原始帧的指针。如果视频输出解码器不使用YU12原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoOtptSrcFrmWidthPt：\[输出\]，存放YU12格式视频输出原始帧宽度的指针，单位为像素。如果视频输出解码器不使用YU12原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoOtptSrcFrmHeightPt：\[输出\]，存放YU12格式视频输出原始帧高度的指针，单位为像素。如果视频输出解码器不使用YU12原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoOtptSrcFrmPt：\[输出\]，存放已编码格式视频输出原始帧的指针。如果视频输出解码器要使用YU12原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoOtptSrcFrmSzByt：\[输入\]，存放已编码格式视频输出原始帧的大小，单位为字节。如果视频输出解码器要使用YU12原始数据，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoOtptSrcFrmLenBytPt：\[输出\]，输入时，存放已编码格式视频输出原始帧长度的指针，单位为字节。如果视频输出解码器要使用YU12原始数据，则本参数为null。  
 返回说明：无。  
 ___
-函数名称：UserGetYU12VdoOtptFrm  
+函数名称：UserGetVdoOtptFrm  
 功能说明：用户定义的获取YU12格式视频输出帧函数，在解码完一个已编码视频输出帧时回调一次。如果没有使用视频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。  
-参数说明：YU12VdoOtptFrmPt：\[输入\]，存放YU12格式视频输出帧的指针。  
-&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoOtptFrmWidth：\[输入\]，存放YU12格式视频输出帧的宽度。  
-&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoOtptFrmHeight：\[输入\]，存放YU12格式视频输出帧的高度。  
+参数说明：VdoOtptStrmIdx：\[输入\]，存放视频输出流索引。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoOtptFrmPt：\[输入\]，存放YU12格式视频输出帧的指针。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoOtptFrmWidth：\[输入\]，存放YU12格式视频输出原始帧的宽度，单位为像素。  
+&emsp;&emsp;&emsp;&emsp;&emsp;YU12VdoOtptFrmHeight：\[输入\]，存放YU12格式视频输出原始帧的高度，单位为像素。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoOtptSrcFrmPt：\[输入\]，存放已编码格式视频输出原始帧的指针。如果视频输出解码器要使用YU12原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;EncdVdoOtptSrcFrmLenByt：\[输入\]，存放已编码格式视频输出原始帧的长度，单位为字节。如果视频输出解码器要使用YU12原始数据，则本参数无意义。  
 返回说明：无。  
 ___

@@ -1,6 +1,6 @@
 package HeavenTao.Data;
 
-//字符串类。
+//字符串。
 public class HTString
 {
     public String m_Val;

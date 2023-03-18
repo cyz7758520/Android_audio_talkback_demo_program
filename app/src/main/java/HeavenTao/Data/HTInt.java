@@ -1,6 +1,6 @@
 package HeavenTao.Data;
 
-//整型类。
+//整型。
 public class HTInt
 {
     public int m_Val;

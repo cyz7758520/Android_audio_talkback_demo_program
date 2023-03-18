@@ -4,7 +4,7 @@ import android.view.Surface;
 
 import HeavenTao.Data.*;
 
-//音频波形器类。
+//音频波形器。
 public class AdoWavfm
 {
     static

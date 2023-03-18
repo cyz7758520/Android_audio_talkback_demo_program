@@ -2,7 +2,7 @@ package HeavenTao.Ado;
 
 import HeavenTao.Data.*;
 
-//Speex编码器类。
+//Speex编码器。
 public class SpeexEncd
 {
     static
@@ -47,7 +47,7 @@ public class SpeexEncd
         }
     }
 
-    //用Speex编码器对单声道16位有符号整型20毫秒PCM格式帧进行Speex格式编码。
+    //用Speex编码器对单声道16位有符号整型20毫秒Pcm格式帧进行Speex格式编码。
     public int Pocs( short PcmFrmPt[], byte SpeexFrmPt[], long SpeexFrmSz, HTLong SpeexFrmLenPt, HTInt IsNeedTransPt )
     {
         return SpeexEncdPocs( m_SpeexEncdPt, PcmFrmPt, SpeexFrmPt, SpeexFrmSz, SpeexFrmLenPt, IsNeedTransPt );
@@ -77,7 +77,7 @@ public class SpeexEncd
     //创建并初始化Speex编码器。
     public native int SpeexEncdInit( HTLong SpeexEncdPt, int SmplRate, int UseCbrOrVbr, int Qualt, int Cmplxt, int PlcExptLossRate );
 
-    //用Speex编码器对单声道16位有符号整型20毫秒PCM格式帧进行Speex格式编码。
+    //用Speex编码器对单声道16位有符号整型20毫秒Pcm格式帧进行Speex格式编码。
     public native int SpeexEncdPocs( long SpeexEncdPt, short PcmFrmPt[], byte SpeexFrmPt[], long SpeexFrmSz, HTLong SpeexFrmLenPt, HTInt IsNeedTransPt );
 
     //销毁Speex编码器。

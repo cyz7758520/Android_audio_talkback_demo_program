@@ -1,17 +1,17 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdk 31
-    buildToolsVersion = '33.0.1'
+    compileSdk 33
+    buildToolsVersion = '34.0.0 rc2'
 
     defaultConfig {
         applicationId "com.example.andrd_ado_vdo_tkbk_demo"
 
-        minSdkVersion 14
-        targetSdk 31
         //minSdkVersion 9
+        minSdkVersion 14
+        targetSdk 33
         versionCode 1
-        versionName "2022.12.30"
+        versionName "2023.03.18"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

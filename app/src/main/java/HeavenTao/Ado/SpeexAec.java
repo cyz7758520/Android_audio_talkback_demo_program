@@ -2,7 +2,7 @@ package HeavenTao.Ado;
 
 import HeavenTao.Data.*;
 
-//Speex声学回音消除器类。
+//Speex声学回音消除器。
 public class SpeexAec
 {
     static
@@ -109,7 +109,7 @@ public class SpeexAec
         return SpeexAecSaveMemFile( m_SpeexAecPt, SmplRate, FrmLen, FilterLen, IsUseRec, EchoMutp, EchoCntu, EchoSupes, EchoSupesAct, SpeexAecMemFileFullPathStrPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
-    //用Speex声学回音消除器对单声道16位有符号整型PCM格式输入帧进行Speex声学回音消除。
+    //用Speex声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行Speex声学回音消除。
     public int Pocs( short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] )
     {
         return SpeexAecPocs( m_SpeexAecPt, InptFrmPt, OtptFrmPt, RsltFrmPt );
@@ -154,7 +154,7 @@ public class SpeexAec
     //将Speex声学回音消除器内存块保存到指定的文件。
     public native int SpeexAecSaveMemFile( long SpeexAecPt, int SmplRate, int FrmLen, int FilterLen, int IsUseRec, float EchoMutp, float EchoCntu, int EchoSupes, int EchoSupesAct, String SpeexAecMemFileFullPathStrPt, long ErrInfoVstrPt );
 
-    //用Speex声学回音消除器对单声道16位有符号整型PCM格式输入帧进行Speex声学回音消除。
+    //用Speex声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行Speex声学回音消除。
     public native int SpeexAecPocs( long SpeexAecPt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );
 
     //销毁Speex声学回音消除器。

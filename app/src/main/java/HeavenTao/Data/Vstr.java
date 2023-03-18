@@ -1,6 +1,6 @@
 package HeavenTao.Data;
 
-//动态字符串类。
+//动态字符串。
 public class Vstr
 {
     static

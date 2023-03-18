@@ -2,7 +2,7 @@ package HeavenTao.Ado;
 
 import HeavenTao.Data.*;
 
-//SpeexWebRtc三重声学回音消除器类。
+//SpeexWebRtc三重声学回音消除器。
 public class SpeexWebRtcAec
 {
     static
@@ -74,7 +74,7 @@ public class SpeexWebRtcAec
         return SpeexWebRtcAecGetWebRtcAecDelay( m_SpeexWebRtcAecPt, WebRtcAecDelayPt );
     }
 
-    //用SpeexWebRtc三重声学回音消除器对单声道16位有符号整型PCM格式输入帧进行SpeexWebRtc三重声学回音消除。
+    //用SpeexWebRtc三重声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行SpeexWebRtc三重声学回音消除。
     public int Pocs( short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] )
     {
         return SpeexWebRtcAecPocs( m_SpeexWebRtcAecPt, InptFrmPt, OtptFrmPt, RsltFrmPt );
@@ -116,7 +116,7 @@ public class SpeexWebRtcAec
     //获取SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器的回音延迟。
     public native int SpeexWebRtcAecGetWebRtcAecDelay( long SpeexWebRtcAecPt, HTInt WebRtcAecDelayPt );
 
-    //用SpeexWebRtc三重声学回音消除器对单声道16位有符号整型PCM格式输入帧进行SpeexWebRtc三重声学回音消除。
+    //用SpeexWebRtc三重声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行SpeexWebRtc三重声学回音消除。
     public native int SpeexWebRtcAecPocs( long SpeexWebRtcAecPt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );
 
     //销毁SpeexWebRtc三重声学回音消除器。

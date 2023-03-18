@@ -2,7 +2,7 @@ package HeavenTao.Ado;
 
 import HeavenTao.Data.*;
 
-//WebRtc定点版声学回音消除器类。
+//WebRtc定点版声学回音消除器。
 public class WebRtcAecm
 {
     static
@@ -60,7 +60,7 @@ public class WebRtcAecm
         return WebRtcAecmGetDelay( m_WebRtcAecmPt, DelayPt );
     }
 
-    //用WebRtc定点版声学回音消除器对单声道16位有符号整型PCM格式输入帧进行WebRtc定点版声学回音消除。
+    //用WebRtc定点版声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行WebRtc定点版声学回音消除。
     public int Pocs( short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] )
     {
         return WebRtcAecmPocs( m_WebRtcAecmPt, InptFrmPt, OtptFrmPt, RsltFrmPt );
@@ -96,7 +96,7 @@ public class WebRtcAecm
     //获取WebRtc定点版声学回音消除器的回音延迟。
     public native int WebRtcAecmGetDelay( long WebRtcAecmPt, HTInt DelayPt );
 
-    //用WebRtc定点版声学回音消除器对单声道16位有符号整型PCM格式输入帧进行WebRtc定点版声学回音消除。
+    //用WebRtc定点版声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行WebRtc定点版声学回音消除。
     public native int WebRtcAecmPocs( long WebRtcAecmPt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );
 
     //销毁WebRtc定点版声学回音消除器。

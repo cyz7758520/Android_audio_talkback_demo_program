@@ -2,7 +2,7 @@ package HeavenTao.Vdo;
 
 import HeavenTao.Data.*;
 
-//OpenH264编码器类。
+//OpenH264编码器。
 public class OpenH264Encd
 {
     static

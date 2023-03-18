@@ -3,7 +3,7 @@ package HeavenTao.Vdo;
 import HeavenTao.Data.HTLong;
 import HeavenTao.Data.Vstr;
 
-//系统自带H264编码器类。
+//系统自带H264编码器。
 public class SystemH264Encd
 {
     static

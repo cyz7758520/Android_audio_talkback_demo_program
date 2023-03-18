@@ -2,7 +2,7 @@ package HeavenTao.Vdo;
 
 import HeavenTao.Data.*;
 
-//系统自带H264编码器类。
+//系统自带H264编码器。
 public class SystemH264Decd
 {
     static

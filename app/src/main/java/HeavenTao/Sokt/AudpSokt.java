@@ -2,7 +2,7 @@ package HeavenTao.Sokt;
 
 import HeavenTao.Data.*;
 
-//本端高级UDP协议套接字类。
+//本端高级UDP协议套接字。
 public class AudpSokt
 {
     private long m_AudpSoktPt; //存放本端高级UDP协议套接字的指针。
@@ -93,41 +93,41 @@ public class AudpSokt
     }
 
     //设置本端高级UDP协议套接字的发送缓冲区大小。
-    public int SetSendBufSz( long SendBufSz, Vstr ErrInfoVstrPt )
+    public int SetSendBufSz( long SendBufSzByt, Vstr ErrInfoVstrPt )
     {
-        return AudpSetSendBufSz( m_AudpSoktPt, SendBufSz, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return AudpSetSendBufSz( m_AudpSoktPt, SendBufSzByt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
     //获取本端高级UDP协议套接字的发送缓冲区大小。
-    public int GetSendBufSz( HTLong SendBufSzPt, Vstr ErrInfoVstrPt )
+    public int GetSendBufSz( HTLong SendBufSzBytPt, Vstr ErrInfoVstrPt )
     {
-        return AudpGetSendBufSz( m_AudpSoktPt, SendBufSzPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return AudpGetSendBufSz( m_AudpSoktPt, SendBufSzBytPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
     //设置本端高级UDP协议套接字的接收缓冲区大小。
-    public int SetRecvBufSz( long RecvBufSz, Vstr ErrInfoVstrPt )
+    public int SetRecvBufSz( long RecvBufSzByt, Vstr ErrInfoVstrPt )
     {
-        return AudpSetRecvBufSz( m_AudpSoktPt, RecvBufSz, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return AudpSetRecvBufSz( m_AudpSoktPt, RecvBufSzByt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
     //获取本端高级UDP协议套接字的接收缓冲区大小。
-    public int GetRecvBufSz( HTLong RecvBufSzPt, Vstr ErrInfoVstrPt )
+    public int GetRecvBufSz( HTLong RecvBufSzBytPt, Vstr ErrInfoVstrPt )
     {
-        return AudpGetRecvBufSz( m_AudpSoktPt, RecvBufSzPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return AudpGetRecvBufSz( m_AudpSoktPt, RecvBufSzBytPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
     //获取本端高级UDP协议套接字的接收缓冲区长度。
-    public int GetRecvBufLen( HTLong RecvBufLenPt, Vstr ErrInfoVstrPt )
+    public int GetRecvBufLen( HTLong RecvBufLenBytPt, Vstr ErrInfoVstrPt )
     {
-        return AudpGetRecvBufLen( m_AudpSoktPt, RecvBufLenPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return AudpGetRecvBufLen( m_AudpSoktPt, RecvBufLenBytPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
-    //用本端高级UDP协议套接字发送数据包到连接的远端高级UDP协议套接字。
-    public int SendPkt( long CnctIdx, byte DataBufPt[], long DataBufLen, int Times, Vstr ErrInfoVstrPt )
+    //用本端高级UDP协议套接字发送高级数据包到连接的远端高级UDP协议套接字。
+    public int SendApkt( long CnctIdx, byte PktPt[], long PktLenByt, int Times, Vstr ErrInfoVstrPt )
     {
-        return AudpSendPkt( m_AudpSoktPt, CnctIdx, DataBufPt, DataBufLen, Times, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return AudpSendApkt( m_AudpSoktPt, CnctIdx, PktPt, PktLenByt, Times, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
-    //用本端高级UDP协议套接字接收连接的远端高级UDP协议套接字发送的数据包。
-    public int RecvPkt( long CnctIdx, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TmotMsec, Vstr ErrInfoVstrPt )
+    //用本端高级UDP协议套接字接收连接的远端高级UDP协议套接字发送的高级数据包。
+    public int RecvApkt( long CnctIdx, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, short TmotMsec, Vstr ErrInfoVstrPt )
     {
-        return AudpRecvPkt( m_AudpSoktPt, CnctIdx, DataBufPt, DataBufSz, DataBufLenPt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return AudpRecvApkt( m_AudpSoktPt, CnctIdx, PktPt, PktSzByt, PktLenBytPt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
     //关闭并销毁本端高级UDP协议套接字。
@@ -170,21 +170,21 @@ public class AudpSokt
     private native int AudpGetRmtAddr( long AudpSoktPt, long CnctIdx, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, long ErrInfoVstrPt );
 
     //设置本端高级UDP协议套接字的发送缓冲区大小。
-    private native int AudpSetSendBufSz( long AudpSoktPt, long SendBufSz, long ErrInfoVstrPt );
+    private native int AudpSetSendBufSz( long AudpSoktPt, long SendBufSzByt, long ErrInfoVstrPt );
     //获取本端高级UDP协议套接字的发送缓冲区大小。
-    private native int AudpGetSendBufSz( long AudpSoktPt, HTLong SendBufSzPt, long ErrInfoVstrPt );
+    private native int AudpGetSendBufSz( long AudpSoktPt, HTLong SendBufSzBytPt, long ErrInfoVstrPt );
 
     //设置本端高级UDP协议套接字的接收缓冲区大小。
-    private native int AudpSetRecvBufSz( long AudpSoktPt, long RecvBufSz, long ErrInfoVstrPt );
+    private native int AudpSetRecvBufSz( long AudpSoktPt, long RecvBufSzByt, long ErrInfoVstrPt );
     //获取本端高级UDP协议套接字的接收缓冲区大小。
-    private native int AudpGetRecvBufSz( long AudpSoktPt, HTLong RecvBufSzPt, long ErrInfoVstrPt );
+    private native int AudpGetRecvBufSz( long AudpSoktPt, HTLong RecvBufSzBytPt, long ErrInfoVstrPt );
     //获取本端高级UDP协议套接字的接收缓冲区长度。
-    private native int AudpGetRecvBufLen( long AudpSoktPt, HTLong RecvBufLenPt, long ErrInfoVstrPt );
+    private native int AudpGetRecvBufLen( long AudpSoktPt, HTLong RecvBufLenBytPt, long ErrInfoVstrPt );
 
-    //用本端高级UDP协议套接字发送数据包到连接的远端高级UDP协议套接字。
-    private native int AudpSendPkt( long AudpSoktPt, long CnctIdx, byte DataBufPt[], long DataBufLen, int Times, long ErrInfoVstrPt );
-    //用本端高级UDP协议套接字接收连接的远端高级UDP协议套接字发送的数据包。
-    private native int AudpRecvPkt( long AudpSoktPt, long CnctIdx, byte DataBufPt[], long DataBufSz, HTLong DataBufLenPt, short TmotMsec, long ErrInfoVstrPt );
+    //用本端高级UDP协议套接字发送高级数据包到连接的远端高级UDP协议套接字。
+    private native int AudpSendApkt( long AudpSoktPt, long CnctIdx, byte PktPt[], long PktLenByt, int Times, long ErrInfoVstrPt );
+    //用本端高级UDP协议套接字接收连接的远端高级UDP协议套接字发送的高级数据包。
+    private native int AudpRecvApkt( long AudpSoktPt, long CnctIdx, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, short TmotMsec, long ErrInfoVstrPt );
 
     //关闭并销毁本端高级UDP协议套接字。
     private native int AudpDstoy( long AudpSoktPt, long ErrInfoVstrPt );
