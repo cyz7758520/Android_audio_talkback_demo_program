@@ -80,7 +80,7 @@
                 android:text="Speex声学回音消除器的滤波器数据长度，单位毫秒：" />
 
             <EditText
-                android:id="@+id/SpeexWebRtcAecSpeexAecFilterLenEdTxtId"
+                android:id="@+id/SpeexWebRtcAecSpeexAecFilterLenMsecEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"

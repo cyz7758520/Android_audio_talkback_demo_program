@@ -62,25 +62,25 @@ public class Vstr
         return VstrCat( m_VstrPt, SrcStrPt );
     }
 
-    //清空动态字符串的字符串。
+    //清空动态字符串。
     public int SetEmpty()
     {
         return VstrSetEmpty( m_VstrPt );
     }
 
-    //设置动态字符串的字符串内存大小。
+    //设置动态字符串的大小。
     public int SetSz( long StrSz )
     {
         return VstrSetSz( m_VstrPt, StrSz );
     }
 
-    //获取动态字符串的字符串内存大小。
+    //获取动态字符串的大小。
     public int GetSz( HTLong StrSzPt )
     {
         return VstrGetSz( m_VstrPt, StrSzPt );
     }
 
-    //获取动态字符串的字符串。
+    //获取动态字符串。
     public String GetStr()
     {
         return VstrGetStr( m_VstrPt );
@@ -108,29 +108,29 @@ public class Vstr
     }
 
     //创建并初始化动态字符串。
-    public native int VstrInit( HTLong VstrPt, String SrcStrPt );
+    private native int VstrInit( HTLong VstrPt, String SrcStrPt );
 
     //复制字符串到动态字符串。
-    public native int VstrCpy( long VstrPt, String SrcStrPt );
+    private native int VstrCpy( long VstrPt, String SrcStrPt );
 
     //插入字符串到动态字符串的指定位置。
-    public native int VstrIns( long VstrPt, long Pos, String SrcStrPt );
+    private native int VstrIns( long VstrPt, long Pos, String SrcStrPt );
 
     //追加字符串到动态字符串的末尾。
-    public native int VstrCat( long VstrPt, String SrcStrPt );
+    private native int VstrCat( long VstrPt, String SrcStrPt );
 
-    //清空动态字符串的字符串。
-    public native int VstrSetEmpty( long VstrPt );
+    //清空动态字符串。
+    private native int VstrSetEmpty( long VstrPt );
 
-    //设置动态字符串的字符串内存大小。
-    public native int VstrSetSz( long VstrPt, long StrSz );
+    //设置动态字符串的大小。
+    private native int VstrSetSz( long VstrPt, long VstrSzChr );
 
-    //获取动态字符串的字符串内存大小。
-    public native int VstrGetSz( long VstrPt, HTLong StrSzPt );
+    //获取动态字符串的大小。
+    private native int VstrGetSz( long VstrPt, HTLong VstrSzChrPt );
 
-    //获取动态字符串的字符串。
-    public native String VstrGetStr( long VstrPt );
+    //获取动态字符串。
+    private native String VstrGetStr( long VstrPt );
 
     //销毁动态字符串。
-    public native int VstrDstoy( long VstrPt );
+    private native int VstrDstoy( long VstrPt );
 }

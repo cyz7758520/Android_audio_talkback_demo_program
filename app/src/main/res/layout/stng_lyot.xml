@@ -576,18 +576,18 @@
             android:layout_height="wrap_content" >
 
             <CheckBox
-                android:id="@+id/IsUseSpeexPrpocsOtherCkBoxId"
+                android:id="@+id/IsUseSpeexPrpocsCkBoxId"
                 android:layout_weight="10"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="使用Speex预处理器的其他功能"/>
+                android:text="使用Speex预处理器"/>
 
             <Button
                 android:layout_weight="2"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:text="设置"
-                android:onClick="OnClickSpeexPrpocsOtherStngBtn"/>
+                android:onClick="OnClickSpeexPrpocsStngBtn"/>
 
         </LinearLayout>
 
@@ -753,32 +753,46 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:text="120×160"
-                    android:id="@+id/UseVdoFrmSize120_160RdBtnId"
-                    android:layout_weight="1"
+                    android:id="@+id/UseVdoFrmSzPrsetRdBtnId"
+                    android:layout_weight="3"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent" />
+
+                <Spinner
+                    android:id="@+id/VdoFrmSzPrsetSpinnerId"
+                    android:layout_weight="12"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:entries="@android:array/phoneTypes" />
+
+                <RadioButton
+                    android:id="@+id/UseVdoFrmSzOtherRdBtnId"
+                    android:layout_weight="3"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"/>
 
-                <RadioButton
-                    android:text="240×320"
-                    android:id="@+id/UseVdoFrmSize240_320RdBtnId"
-                    android:layout_weight="1"
+                <EditText
+                    android:id="@+id/VdoFrmSzOtherWidthEdTxtId"
+                    android:layout_weight="5"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:inputType="number"
+                    android:text="640" />
 
-                <RadioButton
-                    android:text="480×640"
-                    android:id="@+id/UseVdoFrmSize480_640RdBtnId"
+                <TextView
                     android:layout_weight="1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:text="×" />
 
-                <RadioButton
-                    android:text="960×1280"
-                    android:id="@+id/UseVdoFrmSize960_1280RdBtnId"
-                    android:layout_weight="1"
+                <EditText
+                    android:id="@+id/VdoFrmSzOtherHeightEdTxtId"
+                    android:layout_weight="5"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:inputType="number"
+                    android:text="480" />
 
             </RadioGroup>
 

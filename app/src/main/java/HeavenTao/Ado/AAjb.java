@@ -27,12 +27,12 @@ public class AAjb
     }
 
     //创建并初始化音频自适应抖动缓冲器。
-    public int Init( int SmplRate, int FrmLen, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, int IsDelObsltFrm, Vstr ErrInfoVstrPt )
+    public int Init( int SmplRate, long FrmLenUnit, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, int IsDelObsltFrm, Vstr ErrInfoVstrPt )
     {
         if( m_AAjbPt == 0 )
         {
             HTLong p_AAjbPt = new HTLong();
-            if( AAjbInit( p_AAjbPt, SmplRate, FrmLen, IsHaveTimeStamp, TimeStampStep, InactIsContPut, MinNeedBufFrmCnt, MaxNeedBufFrmCnt, MaxCntuLostFrmCnt, AdaptSensitivity, IsDelObsltFrm, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            if( AAjbInit( p_AAjbPt, SmplRate, FrmLenUnit, IsHaveTimeStamp, TimeStampStep, InactIsContPut, MinNeedBufFrmCnt, MaxNeedBufFrmCnt, MaxCntuLostFrmCnt, AdaptSensitivity, IsDelObsltFrm, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_AAjbPt = p_AAjbPt.m_Val;
                 return 0;
@@ -106,26 +106,26 @@ public class AAjb
     }
 
     //创建并初始化音频自适应抖动缓冲器。
-    public native int AAjbInit( HTLong AAjbPt, int SmplRate, int FrmLen, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, int IsDelObsltFrm, long ErrInfoVstrPt );
+    private native int AAjbInit( HTLong AAjbPt, int SmplRate, long FrmLenUnit, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, int IsDelObsltFrm, long ErrInfoVstrPt );
 
     //放入字节型帧到音频自适应抖动缓冲器。
-    public native int AAjbPutByteFrm( long AAjbPt, int TimeStamp, byte ByteFrmPt[], long FrmStart, long FrmLen, int IsAutoLock, long ErrInfoVstrPt );
+    private native int AAjbPutByteFrm( long AAjbPt, int TimeStamp, byte ByteFrmPt[], long FrmStart, long FrmStartLenByt, int IsAutoLock, long ErrInfoVstrPt );
 
     //放入短整型帧到音频自适应抖动缓冲器。
-    public native int AAjbPutShortFrm( long AAjbPt, int TimeStamp, short ShortFrmPt[], long FrmStart, long FrmLen, int IsAutoLock, long ErrInfoVstrPt );
+    private native int AAjbPutShortFrm( long AAjbPt, int TimeStamp, short ShortFrmPt[], long FrmStart, long FrmStartLenTwoByt, int IsAutoLock, long ErrInfoVstrPt );
 
     //从音频自适应抖动缓冲器取出字节型帧。
-    public native int AAjbGetByteFrm( long AAjbPt, HTInt TimeStampPt, byte ByteFrmPt[], long FrmStart, long FrmSz, HTLong FrmLenPt, int IsAutoLock, long ErrInfoVstrPt );
+    private native int AAjbGetByteFrm( long AAjbPt, HTInt TimeStampPt, byte ByteFrmPt[], long FrmStart, long FrmStartSzByt, HTLong FrmLenBytPt, int IsAutoLock, long ErrInfoVstrPt );
 
     //从音频自适应抖动缓冲器取出短整型帧。
-    public native int AAjbGetShortFrm( long AAjbPt, HTInt TimeStampPt, short ShortFrmPt[], long FrmStart, long FrmSz, HTLong FrmLenPt, int IsAutoLock, long ErrInfoVstrPt );
+    private native int AAjbGetShortFrm( long AAjbPt, HTInt TimeStampPt, short ShortFrmPt[], long FrmStart, long FrmStartSzTwoByt, HTLong FrmLenTwoBytPt, int IsAutoLock, long ErrInfoVstrPt );
 
     //获取缓冲帧的数量。
-    public native int AAjbGetBufFrmCnt( long AAjbPt, HTInt CurHaveBufActFrmCntPt, HTInt CurHaveBufInactFrmCntPt, HTInt CurHaveBufFrmCntPt, HTInt MinNeedBufFrmCntPt, HTInt MaxNeedBufFrmCntPt, HTInt MaxCntuLostFrmCntPt, HTInt CurNeedBufFrmCntPt, int IsAutoLock, long ErrInfoVstrPt );
+    private native int AAjbGetBufFrmCnt( long AAjbPt, HTInt CurHaveBufActFrmCntPt, HTInt CurHaveBufInactFrmCntPt, HTInt CurHaveBufFrmCntPt, HTInt MinNeedBufFrmCntPt, HTInt MaxNeedBufFrmCntPt, HTInt MaxCntuLostFrmCntPt, HTInt CurNeedBufFrmCntPt, int IsAutoLock, long ErrInfoVstrPt );
 
     //清空音频自适应抖动缓冲器。
-    public native int AAjbClear( long AAjbPt, int IsAutoLock, long ErrInfoVstrPt);
+    private native int AAjbClear( long AAjbPt, int IsAutoLock, long ErrInfoVstrPt);
 
     //销毁音频自适应抖动缓冲器。
-    public native int AAjbDstoy( long AAjbPt, long ErrInfoVstrPt);
+    private native int AAjbDstoy( long AAjbPt, long ErrInfoVstrPt);
 }

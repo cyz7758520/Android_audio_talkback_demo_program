@@ -10,16 +10,11 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.media.AudioManager;
-import android.media.MediaCodec;
-import android.media.MediaCodecInfo;
-import android.media.MediaFormat;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.SystemClock;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -28,32 +23,27 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.LinkedList;
 
-import HeavenTao.Ado.*;
-import HeavenTao.Vdo.*;
 import HeavenTao.Media.*;
-import HeavenTao.Data.*;
-import HeavenTao.Sokt.*;
 
 //主界面消息处理。
 class MainActivityHandler extends Handler
@@ -82,7 +72,7 @@ class MainActivityHandler extends Handler
         {
             case MediaPocsThrdInit:
             {
-                if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
+                if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_NtwkPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
                 {
                     ( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseTcpPrtclRdBtnId ) ).setEnabled( false ); //设置TCP协议按钮为不可用。
                     ( ( RadioButton ) m_MainActivityPt.findViewById( R.id.UseUdpPrtclRdBtnId ) ).setEnabled( false ); //设置UDP协议按钮为不可用。
@@ -163,7 +153,7 @@ class MainActivityHandler extends Handler
                 builder.setCancelable( false ); //点击对话框以外的区域是否让对话框消失
                 builder.setTitle( R.string.app_name );
 
-                if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
+                if( m_MainActivityPt.m_MyMediaPocsThrdPt.m_NtwkPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建服务端。
                 {
                     builder.setMessage( "您是否允许远端[" + MessagePt.obj + "]的连接？" );
 
@@ -247,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     View m_SpeexPrpocsNsStngLyotViewPt; //存放Speex预处理器的噪音抑制设置布局视图的指针。
     View m_WebRtcNsxStngLyotViewPt; //存放WebRtc定点版噪音抑制器设置布局视图的指针。
     View m_WebRtcNsStngLyotViewPt; //存放WebRtc浮点版噪音抑制器设置布局视图的指针。
-    View m_SpeexPrpocsOtherStngLyotViewPt; //存放Speex预处理器的其他功能设置布局视图的指针。
+    View m_SpeexPrpocsStngLyotViewPt; //存放Speex预处理器设置布局视图的指针。
     View m_SpeexCodecStngLyotViewPt; //存放Speex编解码器设置布局视图的指针。
     View m_OpenH264CodecStngLyotViewPt; //存放OpenH264编解码器设置布局视图的指针。
     View m_SystemH264CodecStngLyotViewPt; //存放系统自带H264编解码器设置布局视图的指针。
@@ -281,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             m_SpeexPrpocsNsStngLyotViewPt = p_LyotInflater.inflate( R.layout.speex_prpocs_ns_stng_lyot, null );
             m_WebRtcNsxStngLyotViewPt = p_LyotInflater.inflate( R.layout.webrtc_nsx_stng_lyot, null );
             m_WebRtcNsStngLyotViewPt = p_LyotInflater.inflate( R.layout.webrtc_ns_stng_lyot, null );
-            m_SpeexPrpocsOtherStngLyotViewPt = p_LyotInflater.inflate( R.layout.speex_prpocs_other_stng_lyot, null );
+            m_SpeexPrpocsStngLyotViewPt = p_LyotInflater.inflate( R.layout.speex_prpocs_stng_lyot, null );
             m_SpeexCodecStngLyotViewPt = p_LyotInflater.inflate( R.layout.speex_codec_stng_lyot, null );
             m_OpenH264CodecStngLyotViewPt = p_LyotInflater.inflate( R.layout.openh264_codec_stng_lyot, null );
             m_SystemH264CodecStngLyotViewPt = p_LyotInflater.inflate( R.layout.systemh264_codec_stng_lyot, null );
@@ -376,6 +366,17 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                         }
                     },
                     p_VolumeChangedActionIntentFilterPt );
+        }
+
+        //设置视频的帧大小。
+        {
+            ArrayList< String > p_VdoFrmSzList = new ArrayList< String >();
+            p_VdoFrmSzList.add( "120×160" );
+            p_VdoFrmSzList.add( "240×320" );
+            p_VdoFrmSzList.add( "480×640" );
+            p_VdoFrmSzList.add( "960×1280" );
+            ArrayAdapter< String > p_VdoFrmSzAdapter = new ArrayAdapter< String >( this, android.R.layout.simple_spinner_dropdown_item, p_VdoFrmSzList );
+            ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setAdapter( p_VdoFrmSzAdapter );
         }
 
         //设置默认设置。
@@ -494,9 +495,9 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         {
             OnClickWebRtcNsStngOkBtn( null );
         }
-        else if( m_CurActivityLyotViewPt == m_SpeexPrpocsOtherStngLyotViewPt )
+        else if( m_CurActivityLyotViewPt == m_SpeexPrpocsStngLyotViewPt )
         {
-            OnClickSpeexPrpocsOtherStngOkBtn( null );
+            OnClickSpeexPrpocsStngOkBtn( null );
         }
         else if( m_CurActivityLyotViewPt == m_SpeexCodecStngLyotViewPt )
         {
@@ -521,23 +522,14 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     {
         super.onConfigurationChanged( newConfig );
 
-        if( m_MyMediaPocsThrdPt != null && m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsUseVdoInpt != 0 && m_MyMediaPocsThrdPt.m_RunFlag == MediaPocsThrd.RunFlag.Run ) //如果媒体处理线程已经启动，且要使用视频输入，且媒体处理线程正在运行。
+        if( m_MyMediaPocsThrdPt != null && m_MyMediaPocsThrdPt.m_VdoInptPt.m_IsInit != 0 ) //如果媒体处理线程已经启动，且已初始化视频输入。
         {
             m_MyMediaPocsThrdPt.SetVdoInpt(
-                    ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate12RdBtnId ) ).isChecked() ) ? 12 :
-                            ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).isChecked() ) ? 15 :
-                                    ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate24RdBtnId ) ).isChecked() ) ? 24 :
-                                            ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate30RdBtnId ) ).isChecked() ) ? 30 : 0,
-                    ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize120_160RdBtnId ) ).isChecked() ) ? 120 :
-                            ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize240_320RdBtnId ) ).isChecked() ) ? 240 :
-                                    ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize480_640RdBtnId ) ).isChecked() ) ? 480 :
-                                            ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize960_1280RdBtnId ) ).isChecked() ) ? 960 : 0,
-                    ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize120_160RdBtnId ) ).isChecked() ) ? 160 :
-                            ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize240_320RdBtnId ) ).isChecked() ) ? 320 :
-                                    ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize480_640RdBtnId ) ).isChecked() ) ? 640 :
-                                            ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize960_1280RdBtnId ) ).isChecked() ) ? 1280 : 0,
+                    m_MyMediaPocsThrdPt.m_VdoInptPt.m_MaxSmplRate,
+                    m_MyMediaPocsThrdPt.m_VdoInptPt.m_FrmWidth,
+                    m_MyMediaPocsThrdPt.m_VdoInptPt.m_FrmHeight,
                     getWindowManager().getDefaultDisplay().getRotation() * 90,
-                    ( ( HTSurfaceView )findViewById( R.id.VdoInptPrvwSurfaceId ) ) );
+                    ( ( HTSurfaceView ) findViewById( R.id.VdoInptPrvwSurfaceId ) ) );
         }
     }
 
@@ -553,7 +545,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     {
         if( m_MyMediaPocsThrdPt != null )
         {
-            m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsg.LclTkbkMode, MyMediaPocsThrd.TkbkMode.Ado );
+            m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsgTyp.LclTkbkMode, MyMediaPocsThrd.TkbkMode.Ado );
         }
     }
 
@@ -562,7 +554,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     {
         if( m_MyMediaPocsThrdPt != null )
         {
-            m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsg.LclTkbkMode, MyMediaPocsThrd.TkbkMode.Vdo );
+            m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsgTyp.LclTkbkMode, MyMediaPocsThrd.TkbkMode.Vdo );
         }
     }
 
@@ -571,7 +563,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     {
         if( m_MyMediaPocsThrdPt != null )
         {
-            m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsg.LclTkbkMode, MyMediaPocsThrd.TkbkMode.AdoVdo );
+            m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsgTyp.LclTkbkMode, MyMediaPocsThrd.TkbkMode.AdoVdo );
         }
     }
 
@@ -580,7 +572,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     {
         if( m_MyMediaPocsThrdPt != null )
         {
-            m_MyMediaPocsThrdPt.SetAdoOtptUseDvc( 0, 0 );
+            m_MyMediaPocsThrdPt.AdoOtptSetUseDvc( 0, 0 );
         }
     }
 
@@ -589,7 +581,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     {
         if( m_MyMediaPocsThrdPt != null )
         {
-            m_MyMediaPocsThrdPt.SetAdoOtptUseDvc( 1, 0 );
+            m_MyMediaPocsThrdPt.AdoOtptSetUseDvc( 1, 0 );
         }
     }
 
@@ -598,7 +590,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     {
         if( m_MyMediaPocsThrdPt != null )
         {
-            m_MyMediaPocsThrdPt.SetVdoInptUseDvc( 0, -1, -1 );
+            m_MyMediaPocsThrdPt.VdoInptSetUseDvc( 0, -1, -1 );
         }
     }
 
@@ -607,7 +599,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     {
         if( m_MyMediaPocsThrdPt != null )
         {
-            m_MyMediaPocsThrdPt.SetVdoInptUseDvc( 1, -1, -1 );
+            m_MyMediaPocsThrdPt.VdoInptSetUseDvc( 1, -1, -1 );
         }
     }
 
@@ -616,7 +608,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     {
         if( m_MyMediaPocsThrdPt != null )
         {
-            m_MyMediaPocsThrdPt.SetAdoInptIsMute( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.AdoInptIsMuteCkBoxId ) ).isChecked() ) ? 1 : 0 );
+            m_MyMediaPocsThrdPt.AdoInptSetIsMute( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.AdoInptIsMuteCkBoxId ) ).isChecked() ) ? 1 : 0 );
         }
     }
 
@@ -625,7 +617,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     {
         if( m_MyMediaPocsThrdPt != null )
         {
-            m_MyMediaPocsThrdPt.SetAdoOtptIsMute( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.AdoOtptIsMuteCkBoxId ) ).isChecked() ) ? 1 : 0 );
+            m_MyMediaPocsThrdPt.AdoOtptSetIsMute( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.AdoOtptIsMuteCkBoxId ) ).isChecked() ) ? 1 : 0 );
         }
     }
 
@@ -634,7 +626,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     {
         if( m_MyMediaPocsThrdPt != null )
         {
-            m_MyMediaPocsThrdPt.SetVdoInptIsBlack( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.VdoInptIsBlackCkBoxId ) ).isChecked() ) ? 1 : 0 );
+            m_MyMediaPocsThrdPt.VdoInptSetIsBlack( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.VdoInptIsBlackCkBoxId ) ).isChecked() ) ? 1 : 0 );
         }
     }
 
@@ -643,7 +635,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     {
         if( m_MyMediaPocsThrdPt != null )
         {
-            m_MyMediaPocsThrdPt.SetVdoOtptStrmIsBlack( 0, ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.VdoOtptIsBlackCkBoxId ) ).isChecked() ) ? 1 : 0 );
+            m_MyMediaPocsThrdPt.VdoOtptSetStrmIsBlack( 0, ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.VdoOtptIsBlackCkBoxId ) ).isChecked() ) ? 1 : 0 );
         }
     }
 
@@ -664,28 +656,28 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 //设置网络。
                 {
                     //设置IP地址字符串。
-                    m_MyMediaPocsThrdPt.m_IPAddrStrPt = ( ( EditText ) m_MainLyotViewPt.findViewById( R.id.IPAddrEdTxtId ) ).getText().toString();
+                    m_MyMediaPocsThrdPt.m_NtwkPt.m_IPAddrStrPt = ( ( EditText ) m_MainLyotViewPt.findViewById( R.id.IPAddrEdTxtId ) ).getText().toString();
 
                     //设置端口字符串。
-                    m_MyMediaPocsThrdPt.m_PortStrPt = ( ( EditText ) m_MainLyotViewPt.findViewById( R.id.PortEdTxtId ) ).getText().toString();
+                    m_MyMediaPocsThrdPt.m_NtwkPt.m_PortStrPt = ( ( EditText ) m_MainLyotViewPt.findViewById( R.id.PortEdTxtId ) ).getText().toString();
 
                     //设置使用什么传输协议。
-                    m_MyMediaPocsThrdPt.m_UseWhatXfrPrtcl = ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseTcpPrtclRdBtnId ) ).isChecked() ) ? 0 : 1;
+                    m_MyMediaPocsThrdPt.m_NtwkPt.m_UseWhatXfrPrtcl = ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseTcpPrtclRdBtnId ) ).isChecked() ) ? 0 : 1;
 
                     //设置传输模式。
                     if( ( ( RadioButton ) m_XfrPrtclStngLyotViewPt.findViewById( R.id.UsePttRdBtnId ) ).isChecked() )
                     {
-                        m_MyMediaPocsThrdPt.m_XfrMode = 0;
+                        m_MyMediaPocsThrdPt.m_NtwkPt.m_XfrMode = 0;
                     }
                     else
                     {
-                        m_MyMediaPocsThrdPt.m_XfrMode = 1;
+                        m_MyMediaPocsThrdPt.m_NtwkPt.m_XfrMode = 1;
                     }
 
                     //设置最大连接次数。
                     try
                     {
-                        m_MyMediaPocsThrdPt.m_MaxCnctTimes = Integer.parseInt( ( ( TextView ) m_XfrPrtclStngLyotViewPt.findViewById( R.id.MaxCnctTimesEdTxtId ) ).getText().toString() );
+                        m_MyMediaPocsThrdPt.m_NtwkPt.m_MaxCnctTimes = Integer.parseInt( ( ( TextView ) m_XfrPrtclStngLyotViewPt.findViewById( R.id.MaxCnctTimesEdTxtId ) ).getText().toString() );
                     }
                     catch( NumberFormatException e )
                     {
@@ -694,7 +686,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     }
 
                     //设置创建服务端或者客户端标记。
-                    m_MyMediaPocsThrdPt.m_IsCreateSrvrOrClnt = ( ViewPt.getId() == R.id.CreateSrvrBtnId ) ? 1 : 0; //标记创建服务端接受客户端。
+                    m_MyMediaPocsThrdPt.m_NtwkPt.m_IsCreateSrvrOrClnt = ( ViewPt.getId() == R.id.CreateSrvrBtnId ) ? 1 : 0; //标记创建服务端接受客户端。
 
                     //设置是否自动允许连接。
                     m_MyMediaPocsThrdPt.m_IsAutoAllowCnct = ( ( ( CheckBox ) m_XfrPrtclStngLyotViewPt.findViewById( R.id.IsAutoAllowCnctCkBoxId ) ).isChecked() ) ? 1 : 0;
@@ -713,14 +705,14 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
                     try
                     {
-                        m_MyMediaPocsThrdPt.m_AAjbMinNeedBufFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.AAjbMinNeedBufFrmCntEdTxtId ) ).getText().toString() );
-                        m_MyMediaPocsThrdPt.m_AAjbMaxNeedBufFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.AAjbMaxNeedBufFrmCntEdTxtId ) ).getText().toString() );
-                        m_MyMediaPocsThrdPt.m_AAjbMaxCntuLostFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.AAjbMaxCntuLostFrmCntEdTxtId ) ).getText().toString() );
-                        m_MyMediaPocsThrdPt.m_AAjbAdaptSensitivity = Float.parseFloat( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.AAjbAdaptSensitivityEdTxtId ) ).getText().toString() );
+                        m_MyMediaPocsThrdPt.m_AAjbPt.m_MinNeedBufFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.AAjbMinNeedBufFrmCntEdTxtId ) ).getText().toString() );
+                        m_MyMediaPocsThrdPt.m_AAjbPt.m_MaxNeedBufFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.AAjbMaxNeedBufFrmCntEdTxtId ) ).getText().toString() );
+                        m_MyMediaPocsThrdPt.m_AAjbPt.m_MaxCntuLostFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.AAjbMaxCntuLostFrmCntEdTxtId ) ).getText().toString() );
+                        m_MyMediaPocsThrdPt.m_AAjbPt.m_AdaptSensitivity = Float.parseFloat( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.AAjbAdaptSensitivityEdTxtId ) ).getText().toString() );
 
-                        m_MyMediaPocsThrdPt.m_VAjbMinNeedBufFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.VAjbMinNeedBufFrmCntEdTxtId ) ).getText().toString() );
-                        m_MyMediaPocsThrdPt.m_VAjbMaxNeedBufFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.VAjbMaxNeedBufFrmCntEdTxtId ) ).getText().toString() );
-                        m_MyMediaPocsThrdPt.m_VAjbAdaptSensitivity = Float.parseFloat( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.VAjbAdaptSensitivityEdTxtId ) ).getText().toString() );
+                        m_MyMediaPocsThrdPt.m_VAjbPt.m_MinNeedBufFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.VAjbMinNeedBufFrmCntEdTxtId ) ).getText().toString() );
+                        m_MyMediaPocsThrdPt.m_VAjbPt.m_MaxNeedBufFrmCnt = Integer.parseInt( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.VAjbMaxNeedBufFrmCntEdTxtId ) ).getText().toString() );
+                        m_MyMediaPocsThrdPt.m_VAjbPt.m_AdaptSensitivity = Float.parseFloat( ( ( TextView ) m_AjbStngLyotViewPt.findViewById( R.id.VAjbAdaptSensitivityEdTxtId ) ).getText().toString() );
                     }
                     catch( NumberFormatException e )
                     {
@@ -758,19 +750,19 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                                         ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen30msRdBtnId ) ).isChecked() ) ? 30 : 0 );
 
                 //设置音频输入是否使用系统自带的声学回音消除器、噪音抑制器和自动增益控制器。
-                m_MyMediaPocsThrdPt.SetAdoInptIsUseSystemAecNsAgc(
+                m_MyMediaPocsThrdPt.AdoInptSetIsUseSystemAecNsAgc(
                         ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSystemAecNsAgcCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
-                if( m_MyMediaPocsThrdPt.m_XfrMode == 0 ) //如果传输模式为实时半双工（一键通）。
+                if( m_MyMediaPocsThrdPt.m_NtwkPt.m_XfrMode == 0 ) //如果传输模式为实时半双工（一键通）。
                 {
-                    m_MyMediaPocsThrdPt.SetAdoInptUseNoAec();
+                    m_MyMediaPocsThrdPt.AdoInptSetUseNoAec();
                 }
                 else //如果传输模式为实时全双工。
                 {
                     //设置音频输入是否不使用声学回音消除器。
                     if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseNoAecRdBtnId ) ).isChecked() )
                     {
-                        m_MyMediaPocsThrdPt.SetAdoInptUseNoAec();
+                        m_MyMediaPocsThrdPt.AdoInptSetUseNoAec();
                     }
 
                     //设置音频输入是否使用Speex声学回音消除器。
@@ -778,8 +770,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     {
                         try
                         {
-                            m_MyMediaPocsThrdPt.SetAdoInptUseSpeexAec(
-                                    Integer.parseInt( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenEdTxtId ) ).getText().toString() ),
+                            m_MyMediaPocsThrdPt.AdoInptSetUseSpeexAec(
+                                    Integer.parseInt( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenMsecEdTxtId ) ).getText().toString() ),
                                     ( ( ( CheckBox ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsUseRecCkBoxId ) ).isChecked() ) ? 1 : 0,
                                     Float.parseFloat( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoMutpEdTxtId ) ).getText().toString() ),
                                     Float.parseFloat( ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoCntuEdTxtId ) ).getText().toString() ),
@@ -800,7 +792,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     {
                         try
                         {
-                            m_MyMediaPocsThrdPt.SetAdoInptUseWebRtcAecm(
+                            m_MyMediaPocsThrdPt.AdoInptSetUseWebRtcAecm(
                                     ( ( ( CheckBox ) m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmIsUseCNGModeCkBoxId ) ).isChecked() ) ? 1 : 0,
                                     Integer.parseInt( ( ( TextView ) m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmEchoModeEdTxtId ) ).getText().toString() ),
                                     Integer.parseInt( ( ( TextView ) m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmDelayEdTxtId ) ).getText().toString() ) );
@@ -817,7 +809,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     {
                         try
                         {
-                            m_MyMediaPocsThrdPt.SetAdoInptUseWebRtcAec(
+                            m_MyMediaPocsThrdPt.AdoInptSetUseWebRtcAec(
                                     Integer.parseInt( ( ( TextView ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecEchoModeEdTxtId ) ).getText().toString() ),
                                     Integer.parseInt( ( ( TextView ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecDelayEdTxtId ) ).getText().toString() ),
                                     ( ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgstcModeCkBoxId ) ).isChecked() ) ? 1 : 0,
@@ -839,11 +831,11 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     {
                         try
                         {
-                            m_MyMediaPocsThrdPt.SetAdoInptUseSpeexWebRtcAec(
+                            m_MyMediaPocsThrdPt.AdoInptSetUseSpeexWebRtcAec(
                                     ( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRdBtnId ) ).isChecked() ? 1 :
                                             ( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? 2 :
                                                     ( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? 3 : 0,
-                                    Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdTxtId ) ).getText().toString() ),
+                                    Integer.parseInt( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenMsecEdTxtId ) ).getText().toString() ),
                                     ( ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCkBoxId ) ).isChecked() ) ? 1 : 0,
                                     Float.parseFloat( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMutpEdTxtId ) ).getText().toString() ),
                                     Float.parseFloat( ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoCntuEdTxtId ) ).getText().toString() ),
@@ -872,7 +864,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 //设置音频输入是否不使用噪音抑制器。
                 if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseNoNsRdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.SetAdoInptUseNoNs();
+                    m_MyMediaPocsThrdPt.AdoInptSetUseNoNs();
                 }
 
                 //设置音频输入是否使用Speex预处理器的噪音抑制。
@@ -880,7 +872,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 {
                     try
                     {
-                        m_MyMediaPocsThrdPt.SetAdoInptUseSpeexPrpocsNs(
+                        m_MyMediaPocsThrdPt.AdoInptSetUseSpeexPrpocsNs(
                                 ( ( ( CheckBox ) m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseNsCkBoxId ) ).isChecked() ) ? 1 : 0,
                                 Integer.parseInt( ( ( TextView ) m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsNoiseSupesEdTxtId ) ).getText().toString() ),
                                 ( ( ( CheckBox ) m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseDereverbCkBoxId ) ).isChecked() ) ? 1 : 0 );
@@ -897,7 +889,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 {
                     try
                     {
-                        m_MyMediaPocsThrdPt.SetAdoInptUseWebRtcNsx(
+                        m_MyMediaPocsThrdPt.AdoInptSetUseWebRtcNsx(
                                 Integer.parseInt( ( ( TextView ) m_WebRtcNsxStngLyotViewPt.findViewById( R.id.WebRtcNsxPolicyModeEdTxtId ) ).getText().toString() ) );
                     }
                     catch( NumberFormatException e )
@@ -912,7 +904,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 {
                     try
                     {
-                        m_MyMediaPocsThrdPt.SetAdoInptUseWebRtcNs(
+                        m_MyMediaPocsThrdPt.AdoInptSetUseWebRtcNs(
                                 Integer.parseInt( ( ( TextView ) m_WebRtcNsStngLyotViewPt.findViewById( R.id.WebRtcNsPolicyModeEdTxtId ) ).getText().toString() ) );
                     }
                     catch( NumberFormatException e )
@@ -927,7 +919,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 {
                     try
                     {
-                        m_MyMediaPocsThrdPt.SetAdoInptUseRNNoise();
+                        m_MyMediaPocsThrdPt.AdoInptSetUseRNNoise();
                     }
                     catch( NumberFormatException e )
                     {
@@ -936,19 +928,19 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     }
                 }
 
-                //设置音频输入是否使用Speex预处理器的其他功能。
+                //设置音频输入是否使用Speex预处理器。
                 try
                 {
-                    m_MyMediaPocsThrdPt.SetAdoInptIsUseSpeexPrpocsOther(
-                            ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsOtherCkBoxId ) ).isChecked() ) ? 1 : 0,
-                            ( ( ( CheckBox ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCkBoxId ) ).isChecked() ) ? 1 : 0,
-                            Integer.parseInt( ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdTxtId ) ).getText().toString() ),
-                            Integer.parseInt( ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbCntuEdTxtId ) ).getText().toString() ),
-                            ( ( ( CheckBox ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCkBoxId ) ).isChecked() ) ? 1 : 0,
-                            Integer.parseInt( ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdTxtId ) ).getText().toString() ),
-                            Integer.parseInt( ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdTxtId ) ).getText().toString() ),
-                            Integer.parseInt( ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdTxtId ) ).getText().toString() ),
-                            Integer.parseInt( ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdTxtId ) ).getText().toString() ) );
+                    m_MyMediaPocsThrdPt.AdoInptSetIsUseSpeexPrpocs(
+                            ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).isChecked() ) ? 1 : 0,
+                            ( ( ( CheckBox ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCkBoxId ) ).isChecked() ) ? 1 : 0,
+                            Integer.parseInt( ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdTxtId ) ).getText().toString() ),
+                            Integer.parseInt( ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbCntuEdTxtId ) ).getText().toString() ),
+                            ( ( ( CheckBox ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCkBoxId ) ).isChecked() ) ? 1 : 0,
+                            Integer.parseInt( ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdTxtId ) ).getText().toString() ),
+                            Integer.parseInt( ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdTxtId ) ).getText().toString() ),
+                            Integer.parseInt( ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdTxtId ) ).getText().toString() ),
+                            Integer.parseInt( ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdTxtId ) ).getText().toString() ) );
                 }
                 catch( NumberFormatException e )
                 {
@@ -959,7 +951,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 //设置音频输入是否使用PCM原始数据。
                 if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UsePcmRdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.SetAdoInptUsePcm();
+                    m_MyMediaPocsThrdPt.AdoInptSetUsePcm();
                 }
 
                 //设置音频输入是否使用Speex编码器。
@@ -967,7 +959,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 {
                     try
                     {
-                        m_MyMediaPocsThrdPt.SetAdoInptUseSpeexEncd(
+                        m_MyMediaPocsThrdPt.AdoInptSetUseSpeexEncd(
                                 ( ( ( RadioButton ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdUseCbrRdBtnId ) ).isChecked() ) ? 0 : 1,
                                 Integer.parseInt( ( ( TextView ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdQualtEdTxtId ) ).getText().toString() ),
                                 Integer.parseInt( ( ( TextView ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdCmplxtEdTxtId ) ).getText().toString() ),
@@ -983,24 +975,24 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 //设置音频输入是否使用Opus编码器。
                 if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseOpusCodecRdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.SetAdoInptUseOpusEncd();
+                    m_MyMediaPocsThrdPt.AdoInptSetUseOpusEncd();
                 }
 
                 //设置音频输入是否保存音频到文件。
-                m_MyMediaPocsThrdPt.SetAdoInptIsSaveAdoToWaveFile(
+                m_MyMediaPocsThrdPt.AdoInptSetIsSaveAdoToWaveFile(
                         ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveAdoToWaveFileCkBoxId ) ).isChecked() ) ? 1 : 0,
                         m_ExternalDirFullAbsPathStrPt + "/AdoInpt.wav",
                         m_ExternalDirFullAbsPathStrPt + "/AdoRslt.wav",
                         8 * 1024 );
 
                 //设置音频输入是否绘制音频波形到Surface。
-                m_MyMediaPocsThrdPt.SetAdoInptIsDrawAdoWavfmToSurface(
+                m_MyMediaPocsThrdPt.AdoInptSetIsDrawAdoWavfmToSurface(
                         ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
                         ( ( SurfaceView )findViewById( R.id.AdoInptWavfmSurfaceId ) ),
                         ( ( SurfaceView )findViewById( R.id.AdoRsltWavfmSurfaceId ) ) );
 
                 //设置音频输入是否静音。
-                m_MyMediaPocsThrdPt.SetAdoInptIsMute(
+                m_MyMediaPocsThrdPt.AdoInptSetIsMute(
                         ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.AdoInptIsMuteCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
                 //设置音频输出。
@@ -1017,7 +1009,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 //设置音频输出是否使用PCM原始数据。
                 if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UsePcmRdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.SetAdoOtptStrmUsePcm( 0 );
+                    m_MyMediaPocsThrdPt.AdoOtptSetStrmUsePcm( 0 );
                 }
 
                 //设置音频输出是否使用Speex解码器。
@@ -1025,7 +1017,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 {
                     try
                     {
-                        m_MyMediaPocsThrdPt.SetAdoOtptStrmUseSpeexDecd(
+                        m_MyMediaPocsThrdPt.AdoOtptSetStrmUseSpeexDecd(
                                 0,
                                 ( ( ( CheckBox ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexDecdIsUsePrcplEnhsmtCkBoxId ) ).isChecked() ) ? 1 : 0 );
                     }
@@ -1039,59 +1031,82 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 //设置音频输出是否使用Opus解码器。
                 if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseOpusCodecRdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.SetAdoOtptStrmUseOpusDecd( 0 );
+                    m_MyMediaPocsThrdPt.AdoOtptSetStrmUseOpusDecd( 0 );
                 }
 
                 //设置音频输出流是否使用。
-                m_MyMediaPocsThrdPt.SetAdoOtptStrmIsUse( 0, 1 );
+                m_MyMediaPocsThrdPt.AdoOtptSetStrmIsUse( 0, 1 );
 
                 //设置音频输出是否保存音频到文件。
-                m_MyMediaPocsThrdPt.SetAdoOtptIsSaveAdoToWaveFile(
+                m_MyMediaPocsThrdPt.AdoOtptSetIsSaveAdoToWaveFile(
                         ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveAdoToWaveFileCkBoxId ) ).isChecked() ) ? 1 : 0,
                         m_ExternalDirFullAbsPathStrPt + "/AdoOtpt.wav",
                         8 * 1024 );
 
                 //设置音频输出是否绘制音频波形到Surface。
-                m_MyMediaPocsThrdPt.SetAdoOtptIsDrawAdoWavfmToSurface(
+                m_MyMediaPocsThrdPt.AdoOtptSetIsDrawAdoWavfmToSurface(
                         ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
                         ( ( SurfaceView )findViewById( R.id.AdoOtptWavfmSurfaceId ) ) );
 
                 //设置音频输出使用的设备。
-                m_MyMediaPocsThrdPt.SetAdoOtptUseDvc(
+                m_MyMediaPocsThrdPt.AdoOtptSetUseDvc(
                         ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseSpeakerRdBtnId ) ).isChecked() ) ? 0 : 1,
                         0 );
 
                 //设置音频输出是否静音。
-                m_MyMediaPocsThrdPt.SetAdoOtptIsMute(
+                m_MyMediaPocsThrdPt.AdoOtptSetIsMute(
                         ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.AdoOtptIsMuteCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
                 //设置视频输入。
-                m_MyMediaPocsThrdPt.SetVdoInpt(
-                        ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate12RdBtnId ) ).isChecked() ) ? 12 :
-                                ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).isChecked() ) ? 15 :
-                                        ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate24RdBtnId ) ).isChecked() ) ? 24 :
-                                                ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate30RdBtnId ) ).isChecked() ) ? 30 : 0,
-                        ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize120_160RdBtnId ) ).isChecked() ) ? 120 :
-                                ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize240_320RdBtnId ) ).isChecked() ) ? 240 :
-                                        ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize480_640RdBtnId ) ).isChecked() ) ? 480 :
-                                                ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize960_1280RdBtnId ) ).isChecked() ) ? 960 : 0,
-                        ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize120_160RdBtnId ) ).isChecked() ) ? 160 :
-                                ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize240_320RdBtnId ) ).isChecked() ) ? 320 :
-                                        ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize480_640RdBtnId ) ).isChecked() ) ? 640 :
-                                                ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize960_1280RdBtnId ) ).isChecked() ) ? 1280 : 0,
-                        getWindowManager().getDefaultDisplay().getRotation() * 90,
-                        ( ( HTSurfaceView )findViewById( R.id.VdoInptPrvwSurfaceId ) ) );
+                if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).isChecked() ) //如果要使用预设的帧大小。
+                {
+                    m_MyMediaPocsThrdPt.SetVdoInpt(
+                            ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate12RdBtnId ) ).isChecked() ) ? 12 :
+                                    ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).isChecked() ) ? 15 :
+                                            ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate24RdBtnId ) ).isChecked() ) ? 24 :
+                                                    ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate30RdBtnId ) ).isChecked() ) ? 30 : 0,
+                            ( ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).getSelectedItemPosition() == 0 ) ? 120 :
+                                    ( ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).getSelectedItemPosition() == 1 ) ? 240 :
+                                            ( ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).getSelectedItemPosition() == 2 ) ? 480 :
+                                                    ( ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).getSelectedItemPosition() == 3 ) ? 960 : 0,
+                            ( ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).getSelectedItemPosition() == 0 ) ? 160 :
+                                    ( ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).getSelectedItemPosition() == 1 ) ? 320 :
+                                            ( ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).getSelectedItemPosition() == 2 ) ? 640 :
+                                                    ( ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).getSelectedItemPosition() == 3 ) ? 1280 : 0,
+                            getWindowManager().getDefaultDisplay().getRotation() * 90,
+                            ( ( HTSurfaceView ) findViewById( R.id.VdoInptPrvwSurfaceId ) ) );
+                }
+                else //如果要使用其他的帧大小。
+                {
+                    try
+                    {
+                        m_MyMediaPocsThrdPt.SetVdoInpt(
+                                ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate12RdBtnId ) ).isChecked() ) ? 12 :
+                                        ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).isChecked() ) ? 15 :
+                                                ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate24RdBtnId ) ).isChecked() ) ? 24 :
+                                                        ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate30RdBtnId ) ).isChecked() ) ? 30 : 0,
+                                Integer.parseInt( ( ( TextView ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzOtherWidthEdTxtId ) ).getText().toString() ),
+                                Integer.parseInt( ( ( TextView ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzOtherHeightEdTxtId ) ).getText().toString() ),
+                                getWindowManager().getDefaultDisplay().getRotation() * 90,
+                                ( ( HTSurfaceView ) findViewById( R.id.VdoInptPrvwSurfaceId ) ) );
+                    }
+                    catch( NumberFormatException e )
+                    {
+                        Toast.makeText( this, "请输入数字", Toast.LENGTH_LONG ).show();
+                        break Out;
+                    }
+                }
 
                 //设置视频输入是否使用YU12原始数据。
                 if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseYU12RdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.SetVdoInptUseYU12();
+                    m_MyMediaPocsThrdPt.VdoInptSetUseYU12();
                 }
 
                 //设置视频输入是否使用OpenH264编码器。
                 if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseOpenH264CodecRdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.SetVdoInptUseOpenH264Encd(
+                    m_MyMediaPocsThrdPt.VdoInptSetUseOpenH264Encd(
                             Integer.parseInt( ( ( TextView ) m_OpenH264CodecStngLyotViewPt.findViewById( R.id.OpenH264EncdVdoTypeEdTxtId ) ).getText().toString() ),
                             Integer.parseInt( ( ( TextView ) m_OpenH264CodecStngLyotViewPt.findViewById( R.id.OpenH264EncdEncdBitrateEdTxtId ) ).getText().toString() ) * 1024 * 8,
                             Integer.parseInt( ( ( TextView ) m_OpenH264CodecStngLyotViewPt.findViewById( R.id.OpenH264EncdBitrateCtrlModeEdTxtId ) ).getText().toString() ),
@@ -1102,7 +1117,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 //设置视频输入是否使用系统自带H264编码器。
                 if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSystemH264CodecRdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.SetVdoInptUseSystemH264Encd(
+                    m_MyMediaPocsThrdPt.VdoInptSetUseSystemH264Encd(
                             Integer.parseInt( ( ( TextView ) m_SystemH264CodecStngLyotViewPt.findViewById( R.id.SystemH264EncdEncdBitrateEdTxtId ) ).getText().toString() ) * 1024 * 8,
                             Integer.parseInt( ( ( TextView ) m_SystemH264CodecStngLyotViewPt.findViewById( R.id.SystemH264EncdBitrateCtrlModeEdTxtId ) ).getText().toString() ),
                             Integer.parseInt( ( ( TextView ) m_SystemH264CodecStngLyotViewPt.findViewById( R.id.SystemH264EncdIDRFrmIntvlEdTxtId ) ).getText().toString() ),
@@ -1110,50 +1125,50 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 }
 
                 //设置视频输入使用的设备。
-                m_MyMediaPocsThrdPt.SetVdoInptUseDvc(
+                m_MyMediaPocsThrdPt.VdoInptSetUseDvc(
                         ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseFrontCamereRdBtnId ) ).isChecked() ) ? 0 : 1,
                         -1,
                         -1 );
 
                 //设置视频输入是否黑屏。
-                m_MyMediaPocsThrdPt.SetVdoInptIsBlack(
+                m_MyMediaPocsThrdPt.VdoInptSetIsBlack(
                         ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.VdoInptIsBlackCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
                 //设置视频输出。
-                m_MyMediaPocsThrdPt.AddVdoOtptStrm( 0 );
-                m_MyMediaPocsThrdPt.SetVdoOtptStrm(
+                m_MyMediaPocsThrdPt.VdoOtptAddStrm( 0 );
+                m_MyMediaPocsThrdPt.VdoOtptSetStrm(
                         0,
                         ( ( HTSurfaceView )findViewById( R.id.VdoOtptDspySurfaceId ) ) );
 
                 //设置视频输出是否使用YU12原始数据。
                 if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseYU12RdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.SetVdoOtptStrmUseYU12( 0 );
+                    m_MyMediaPocsThrdPt.VdoOtptSetStrmUseYU12( 0 );
                 }
 
                 //设置视频输出是否使用OpenH264解码器。
                 if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseOpenH264CodecRdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.SetVdoOtptStrmUseOpenH264Decd( 0, 0 );
+                    m_MyMediaPocsThrdPt.VdoOtptSetStrmUseOpenH264Decd( 0, 0 );
                 }
 
                 //设置视频输出是否使用系统自带H264解码器。
                 if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSystemH264CodecRdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.SetVdoOtptStrmUseSystemH264Decd( 0 );
+                    m_MyMediaPocsThrdPt.VdoOtptSetStrmUseSystemH264Decd( 0 );
                 }
 
                 //设置视频输出是否黑屏。
-                m_MyMediaPocsThrdPt.SetVdoOtptStrmIsBlack(
+                m_MyMediaPocsThrdPt.VdoOtptSetStrmIsBlack(
                         0,
                         ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.VdoOtptIsBlackCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
                 //设置视频输出流是否使用。
-                m_MyMediaPocsThrdPt.SetVdoOtptStrmIsUse( 0, 1 );
+                m_MyMediaPocsThrdPt.VdoOtptSetStrmIsUse( 0, 1 );
 
                 //设置本端对讲模式。
                 m_MyMediaPocsThrdPt.SendUserMsg(
-                        MyMediaPocsThrd.UserMsg.LclTkbkMode,
+                        MyMediaPocsThrd.UserMsgTyp.LclTkbkMode,
                         ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoTkbkModeRdBtnId ) ).isChecked() ) ? MyMediaPocsThrd.TkbkMode.Ado :
                                 ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseVdoTkbkModeRdBtnId ) ).isChecked() ) ? MyMediaPocsThrd.TkbkMode.Vdo :
                                         ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? MyMediaPocsThrd.TkbkMode.AdoVdo : MyMediaPocsThrd.TkbkMode.NoChg );
@@ -1229,7 +1244,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 {
                     if( m_MyMediaPocsThrdPt != null )
                     {
-                        m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsg.PttBtnDown );
+                        m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsgTyp.PttBtnDown );
                     }
                     break;
                 }
@@ -1237,7 +1252,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 {
                     if( m_MyMediaPocsThrdPt != null )
                     {
-                        m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsg.PttBtnUp );
+                        m_MyMediaPocsThrdPt.SendUserMsg( MyMediaPocsThrd.UserMsgTyp.PttBtnUp );
                     }
                     break;
                 }
@@ -1262,15 +1277,17 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSystemAecNsAgcCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecmRdBtnId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexPrpocsNsRdBtnId ) ).setChecked( true );
-        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsOtherCkBoxId ) ).setChecked( true );
+        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveAdoToWaveFileCkBoxId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate12RdBtnId ) ).setChecked( true );
-        ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize120_160RdBtnId ) ).setChecked( true );
+        ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
+        ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
+        ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 0 );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseOpenH264CodecRdBtnId ) ).setChecked( true );
 
-        ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenEdTxtId ) ).setText( "500" );
+        ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenMsecEdTxtId ) ).setText( "500" );
         ( ( CheckBox ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsUseRecCkBoxId ) ).setChecked( true );
         ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoMutpEdTxtId ) ).setText( "3.0" );
         ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoCntuEdTxtId ) ).setText( "0.65" );
@@ -1291,7 +1308,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCkBoxId ) ).setChecked( false );
 
         ( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRdBtnId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdTxtId ) ).setText( "500" );
+        ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenMsecEdTxtId ) ).setText( "500" );
         ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCkBoxId ) ).setChecked( true );
         ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMutpEdTxtId ) ).setText( "1.0" );
         ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoCntuEdTxtId ) ).setText( "0.6" );
@@ -1317,14 +1334,14 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
         ( ( TextView ) m_WebRtcNsStngLyotViewPt.findViewById( R.id.WebRtcNsPolicyModeEdTxtId ) ).setText( "3" );
 
-        ( ( CheckBox ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCkBoxId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdTxtId ) ).setText( "95" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbCntuEdTxtId ) ).setText( "95" );
-        ( ( CheckBox ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCkBoxId ) ).setChecked( false );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdTxtId ) ).setText( "20000" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdTxtId ) ).setText( "10" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdTxtId ) ).setText( "-200" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdTxtId ) ).setText( "20" );
+        ( ( CheckBox ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCkBoxId ) ).setChecked( true );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdTxtId ) ).setText( "95" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbCntuEdTxtId ) ).setText( "95" );
+        ( ( CheckBox ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCkBoxId ) ).setChecked( false );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdTxtId ) ).setText( "20000" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdTxtId ) ).setText( "10" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdTxtId ) ).setText( "-200" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdTxtId ) ).setText( "20" );
 
         ( ( RadioButton ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdUseCbrRdBtnId ) ).setChecked( true );
         ( ( TextView ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdCmplxtEdTxtId ) ).setText( "1" );
@@ -1349,15 +1366,16 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSystemAecNsAgcCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecRdBtnId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseWebRtcNsxRdBtnId ) ).setChecked( true );
-        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsOtherCkBoxId ) ).setChecked( true );
+        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveAdoToWaveFileCkBoxId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).setChecked( true );
-        ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize240_320RdBtnId ) ).setChecked( true );
+        ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
+        ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 1 );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseOpenH264CodecRdBtnId ) ).setChecked( true );
 
-        ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenEdTxtId ) ).setText( "500" );
+        ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenMsecEdTxtId ) ).setText( "500" );
         ( ( CheckBox ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsUseRecCkBoxId ) ).setChecked( true );
         ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoMutpEdTxtId ) ).setText( "3.0" );
         ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoCntuEdTxtId ) ).setText( "0.65" );
@@ -1378,7 +1396,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCkBoxId ) ).setChecked( false );
 
         ( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRdBtnId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdTxtId ) ).setText( "500" );
+        ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenMsecEdTxtId ) ).setText( "500" );
         ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCkBoxId ) ).setChecked( true );
         ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMutpEdTxtId ) ).setText( "1.0" );
         ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoCntuEdTxtId ) ).setText( "0.6" );
@@ -1404,14 +1422,14 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
         ( ( TextView ) m_WebRtcNsStngLyotViewPt.findViewById( R.id.WebRtcNsPolicyModeEdTxtId ) ).setText( "3" );
 
-        ( ( CheckBox ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCkBoxId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdTxtId ) ).setText( "95" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbCntuEdTxtId ) ).setText( "95" );
-        ( ( CheckBox ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCkBoxId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdTxtId ) ).setText( "20000" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdTxtId ) ).setText( "10" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdTxtId ) ).setText( "-200" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdTxtId ) ).setText( "20" );
+        ( ( CheckBox ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCkBoxId ) ).setChecked( true );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdTxtId ) ).setText( "95" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbCntuEdTxtId ) ).setText( "95" );
+        ( ( CheckBox ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCkBoxId ) ).setChecked( true );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdTxtId ) ).setText( "20000" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdTxtId ) ).setText( "10" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdTxtId ) ).setText( "-200" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdTxtId ) ).setText( "20" );
 
         ( ( RadioButton ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdUseCbrRdBtnId ) ).setChecked( true );
         ( ( TextView ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdCmplxtEdTxtId ) ).setText( "4" );
@@ -1436,15 +1454,16 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSystemAecNsAgcCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexWebRtcAecRdBtnId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseWebRtcNsRdBtnId ) ).setChecked( true );
-        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsOtherCkBoxId ) ).setChecked( true );
+        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveAdoToWaveFileCkBoxId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).setChecked( true );
-        ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize480_640RdBtnId ) ).setChecked( true );
+        ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
+        ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 2 );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseOpenH264CodecRdBtnId ) ).setChecked( true );
 
-        ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenEdTxtId ) ).setText( "500" );
+        ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenMsecEdTxtId ) ).setText( "500" );
         ( ( CheckBox ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsUseRecCkBoxId ) ).setChecked( true );
         ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoMutpEdTxtId ) ).setText( "3.0" );
         ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoCntuEdTxtId ) ).setText( "0.65" );
@@ -1465,7 +1484,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCkBoxId ) ).setChecked( false );
 
         ( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRdBtnId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdTxtId ) ).setText( "500" );
+        ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenMsecEdTxtId ) ).setText( "500" );
         ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCkBoxId ) ).setChecked( true );
         ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMutpEdTxtId ) ).setText( "1.0" );
         ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoCntuEdTxtId ) ).setText( "0.6" );
@@ -1491,14 +1510,14 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
         ( ( TextView ) m_WebRtcNsStngLyotViewPt.findViewById( R.id.WebRtcNsPolicyModeEdTxtId ) ).setText( "3" );
 
-        ( ( CheckBox ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCkBoxId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdTxtId ) ).setText( "95" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbCntuEdTxtId ) ).setText( "95" );
-        ( ( CheckBox ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCkBoxId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdTxtId ) ).setText( "20000" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdTxtId ) ).setText( "10" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdTxtId ) ).setText( "-200" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdTxtId ) ).setText( "20" );
+        ( ( CheckBox ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCkBoxId ) ).setChecked( true );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdTxtId ) ).setText( "95" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbCntuEdTxtId ) ).setText( "95" );
+        ( ( CheckBox ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCkBoxId ) ).setChecked( true );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdTxtId ) ).setText( "20000" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdTxtId ) ).setText( "10" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdTxtId ) ).setText( "-200" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdTxtId ) ).setText( "20" );
 
         ( ( RadioButton ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdUseVbrRdBtnId ) ).setChecked( true );
         ( ( TextView ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdCmplxtEdTxtId ) ).setText( "8" );
@@ -1523,15 +1542,16 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSystemAecNsAgcCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexWebRtcAecRdBtnId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseRNNoiseRdBtnId ) ).setChecked( true );
-        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsOtherCkBoxId ) ).setChecked( true );
+        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveAdoToWaveFileCkBoxId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate24RdBtnId ) ).setChecked( true );
-        ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize480_640RdBtnId ) ).setChecked( true );
+        ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
+        ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 2 );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseOpenH264CodecRdBtnId ) ).setChecked( true );
 
-        ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenEdTxtId ) ).setText( "500" );
+        ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenMsecEdTxtId ) ).setText( "500" );
         ( ( CheckBox ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsUseRecCkBoxId ) ).setChecked( true );
         ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoMutpEdTxtId ) ).setText( "3.0" );
         ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoCntuEdTxtId ) ).setText( "0.65" );
@@ -1552,7 +1572,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCkBoxId ) ).setChecked( false );
 
         ( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRdBtnId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdTxtId ) ).setText( "500" );
+        ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenMsecEdTxtId ) ).setText( "500" );
         ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCkBoxId ) ).setChecked( true );
         ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMutpEdTxtId ) ).setText( "1.0" );
         ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoCntuEdTxtId ) ).setText( "0.6" );
@@ -1578,14 +1598,14 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
         ( ( TextView ) m_WebRtcNsStngLyotViewPt.findViewById( R.id.WebRtcNsPolicyModeEdTxtId ) ).setText( "3" );
 
-        ( ( CheckBox ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCkBoxId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdTxtId ) ).setText( "95" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbCntuEdTxtId ) ).setText( "95" );
-        ( ( CheckBox ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCkBoxId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdTxtId ) ).setText( "20000" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdTxtId ) ).setText( "10" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdTxtId ) ).setText( "-200" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdTxtId ) ).setText( "20" );
+        ( ( CheckBox ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCkBoxId ) ).setChecked( true );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdTxtId ) ).setText( "95" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbCntuEdTxtId ) ).setText( "95" );
+        ( ( CheckBox ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCkBoxId ) ).setChecked( true );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdTxtId ) ).setText( "20000" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdTxtId ) ).setText( "10" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdTxtId ) ).setText( "-200" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdTxtId ) ).setText( "20" );
 
         ( ( RadioButton ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdUseVbrRdBtnId ) ).setChecked( true );
         ( ( TextView ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdCmplxtEdTxtId ) ).setText( "10" );
@@ -1610,15 +1630,16 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSystemAecNsAgcCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexWebRtcAecRdBtnId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseRNNoiseRdBtnId ) ).setChecked( true );
-        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsOtherCkBoxId ) ).setChecked( true );
+        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveAdoToWaveFileCkBoxId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate30RdBtnId ) ).setChecked( true );
-        ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSize960_1280RdBtnId ) ).setChecked( true );
+        ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
+        ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 3 );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseOpenH264CodecRdBtnId ) ).setChecked( true );
 
-        ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenEdTxtId ) ).setText( "500" );
+        ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenMsecEdTxtId ) ).setText( "500" );
         ( ( CheckBox ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsUseRecCkBoxId ) ).setChecked( true );
         ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoMutpEdTxtId ) ).setText( "3.0" );
         ( ( TextView ) m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoCntuEdTxtId ) ).setText( "0.65" );
@@ -1639,7 +1660,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCkBoxId ) ).setChecked( false );
 
         ( ( RadioButton ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRdBtnId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenEdTxtId ) ).setText( "500" );
+        ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenMsecEdTxtId ) ).setText( "500" );
         ( ( CheckBox ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCkBoxId ) ).setChecked( true );
         ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMutpEdTxtId ) ).setText( "1.0" );
         ( ( TextView ) m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoCntuEdTxtId ) ).setText( "0.6" );
@@ -1665,14 +1686,14 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
         ( ( TextView ) m_WebRtcNsStngLyotViewPt.findViewById( R.id.WebRtcNsPolicyModeEdTxtId ) ).setText( "3" );
 
-        ( ( CheckBox ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCkBoxId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdTxtId ) ).setText( "95" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbCntuEdTxtId ) ).setText( "95" );
-        ( ( CheckBox ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCkBoxId ) ).setChecked( true );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdTxtId ) ).setText( "20000" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdTxtId ) ).setText( "10" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdTxtId ) ).setText( "-200" );
-        ( ( TextView ) m_SpeexPrpocsOtherStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdTxtId ) ).setText( "20" );
+        ( ( CheckBox ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseVadCkBoxId ) ).setChecked( true );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbStartEdTxtId ) ).setText( "95" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsVadProbCntuEdTxtId ) ).setText( "95" );
+        ( ( CheckBox ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseAgcCkBoxId ) ).setChecked( true );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcLevelEdTxtId ) ).setText( "20000" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcIncrementEdTxtId ) ).setText( "10" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcDecrementEdTxtId ) ).setText( "-200" );
+        ( ( TextView ) m_SpeexPrpocsStngLyotViewPt.findViewById( R.id.SpeexPrpocsAgcMaxGainEdTxtId ) ).setText( "20" );
 
         ( ( RadioButton ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdUseVbrRdBtnId ) ).setChecked( true );
         ( ( TextView ) m_SpeexCodecStngLyotViewPt.findViewById( R.id.SpeexEncdCmplxtEdTxtId ) ).setText( "10" );
@@ -1802,11 +1823,11 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         m_CurActivityLyotViewPt = m_WebRtcNsStngLyotViewPt;
     }
 
-    //Speex预处理器的其他功能设置按钮。
-    public void OnClickSpeexPrpocsOtherStngBtn( View ViewPt )
+    //Speex预处理器设置按钮。
+    public void OnClickSpeexPrpocsStngBtn( View ViewPt )
     {
-        setContentView( m_SpeexPrpocsOtherStngLyotViewPt );
-        m_CurActivityLyotViewPt = m_SpeexPrpocsOtherStngLyotViewPt;
+        setContentView( m_SpeexPrpocsStngLyotViewPt );
+        m_CurActivityLyotViewPt = m_SpeexPrpocsStngLyotViewPt;
     }
 
     //Speex编解码器设置按钮。
@@ -1860,22 +1881,22 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     //Speex声学回音消除器设置布局的删除内存块文件按钮。
     public void OnClickSpeexAecDelMemFileBtn( View ViewPt )
     {
-        String p_pclSpeexAecMemoryFullPath = m_ExternalDirFullAbsPathStrPt + "/SpeexAecMem";
-        File file = new File( p_pclSpeexAecMemoryFullPath );
+        String p_SpeexAecMemFileFullPathStrPt = m_ExternalDirFullAbsPathStrPt + "/SpeexAecMem";
+        File file = new File( p_SpeexAecMemFileFullPathStrPt );
         if( file.exists() )
         {
             if( file.delete() )
             {
-                Toast.makeText( this, "删除Speex声学回音消除器的内存块文件 " + p_pclSpeexAecMemoryFullPath + " 成功。", Toast.LENGTH_LONG ).show();
+                Toast.makeText( this, "删除Speex声学回音消除器的内存块文件 " + p_SpeexAecMemFileFullPathStrPt + " 成功。", Toast.LENGTH_LONG ).show();
             }
             else
             {
-                Toast.makeText( this, "删除Speex声学回音消除器的内存块文件 " + p_pclSpeexAecMemoryFullPath + " 失败。", Toast.LENGTH_LONG ).show();
+                Toast.makeText( this, "删除Speex声学回音消除器的内存块文件 " + p_SpeexAecMemFileFullPathStrPt + " 失败。", Toast.LENGTH_LONG ).show();
             }
         }
         else
         {
-            Toast.makeText( this, "Speex声学回音消除器的内存块文件 " + p_pclSpeexAecMemoryFullPath + " 不存在。", Toast.LENGTH_LONG ).show();
+            Toast.makeText( this, "Speex声学回音消除器的内存块文件 " + p_SpeexAecMemFileFullPathStrPt + " 不存在。", Toast.LENGTH_LONG ).show();
         }
     }
 
@@ -1896,22 +1917,22 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     //WebRtc浮点版声学回音消除器设置布局的删除内存块文件按钮。
     public void OnClickWebRtcAecDelMemFileBtn( View ViewPt )
     {
-        String p_pclWebRtcAecMemoryFullPath = m_ExternalDirFullAbsPathStrPt + "/WebRtcAecMem";
-        File file = new File( p_pclWebRtcAecMemoryFullPath );
+        String p_WebRtcAecMemFileFullPathStrPt = m_ExternalDirFullAbsPathStrPt + "/WebRtcAecMem";
+        File file = new File( p_WebRtcAecMemFileFullPathStrPt );
         if( file.exists() )
         {
             if( file.delete() )
             {
-                Toast.makeText( this, "删除WebRtc浮点版声学回音消除器的内存块文件 " + p_pclWebRtcAecMemoryFullPath + " 成功。", Toast.LENGTH_LONG ).show();
+                Toast.makeText( this, "删除WebRtc浮点版声学回音消除器的内存块文件 " + p_WebRtcAecMemFileFullPathStrPt + " 成功。", Toast.LENGTH_LONG ).show();
             }
             else
             {
-                Toast.makeText( this, "删除WebRtc浮点版声学回音消除器的内存块文件 " + p_pclWebRtcAecMemoryFullPath + " 失败。", Toast.LENGTH_LONG ).show();
+                Toast.makeText( this, "删除WebRtc浮点版声学回音消除器的内存块文件 " + p_WebRtcAecMemFileFullPathStrPt + " 失败。", Toast.LENGTH_LONG ).show();
             }
         }
         else
         {
-            Toast.makeText( this, "WebRtc浮点版声学回音消除器的内存块文件 " + p_pclWebRtcAecMemoryFullPath + " 不存在。", Toast.LENGTH_LONG ).show();
+            Toast.makeText( this, "WebRtc浮点版声学回音消除器的内存块文件 " + p_WebRtcAecMemFileFullPathStrPt + " 不存在。", Toast.LENGTH_LONG ).show();
         }
     }
 
@@ -1951,7 +1972,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     //Speex预处理器的其他功能设置布局的确定按钮。
-    public void OnClickSpeexPrpocsOtherStngOkBtn( View ViewPt )
+    public void OnClickSpeexPrpocsStngOkBtn( View ViewPt )
     {
         setContentView( m_StngLyotViewPt );
         m_CurActivityLyotViewPt = m_StngLyotViewPt;

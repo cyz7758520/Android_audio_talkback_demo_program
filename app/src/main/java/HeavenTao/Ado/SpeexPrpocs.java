@@ -26,12 +26,12 @@ public class SpeexPrpocs
     }
 
     //创建并初始化Speex预处理器。
-    public int Init( int SmplRate, int FrmLen, int IsUseNs, int NoiseSupes, int IsUseDereverb, int IsUseVad, int VadProbStart, int VadProbCntu, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain, Vstr ErrInfoVstrPt )
+    public int Init( int SmplRate, long FrmLenUnit, int IsUseNs, int NoiseSupes, int IsUseDereverb, int IsUseVad, int VadProbStart, int VadProbCntu, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain, Vstr ErrInfoVstrPt )
     {
         if( m_SpeexPrpocsPt == 0 )
         {
             HTLong p_SpeexPrpocsPt = new HTLong();
-            if( SpeexPrpocsInit( p_SpeexPrpocsPt, SmplRate, FrmLen, IsUseNs, NoiseSupes, IsUseDereverb, IsUseVad, VadProbStart, VadProbCntu, IsUseAgc, AgcLevel, AgcIncrement, AgcDecrement, AgcMaxGain, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            if( SpeexPrpocsInit( p_SpeexPrpocsPt, SmplRate, FrmLenUnit, IsUseNs, NoiseSupes, IsUseDereverb, IsUseVad, VadProbStart, VadProbCntu, IsUseAgc, AgcLevel, AgcIncrement, AgcDecrement, AgcMaxGain, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_SpeexPrpocsPt = p_SpeexPrpocsPt.m_Val;
                 return 0;
@@ -75,11 +75,11 @@ public class SpeexPrpocs
     }
 
     //创建并初始化Speex预处理器。
-    public native int SpeexPrpocsInit( HTLong SpeexPrpocsPt, int SmplRate, int FrmLen, int IsUseNs, int NoiseSupes, int IsUseDereverb, int IsUseVad, int VadProbStart, int VadProbCntu, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain, long ErrInfoVstrPt );
+    private native int SpeexPrpocsInit( HTLong SpeexPrpocsPt, int SmplRate, long FrmLenUnit, int IsUseNs, int NoiseSupes, int IsUseDereverb, int IsUseVad, int VadProbStart, int VadProbCntu, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain, long ErrInfoVstrPt );
 
     //用Speex预处理器对单声道16位有符号整型Pcm格式帧进行Speex预处理。
-    public native int SpeexPrpocsPocs( long SpeexPrpocsPt, short FrmPt[], short RsltFrmPt[], HTInt VoiceActStsPt );
+    private native int SpeexPrpocsPocs( long SpeexPrpocsPt, short FrmPt[], short RsltFrmPt[], HTInt VoiceActStsPt );
 
     //销毁Speex预处理器。
-    public native int SpeexPrpocsDstoy( long SpeexPrpocsPt );
+    private native int SpeexPrpocsDstoy( long SpeexPrpocsPt );
 }

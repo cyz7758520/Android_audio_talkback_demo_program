@@ -50,9 +50,9 @@ public class AdoWavfm
     }
 
     //绘制音频波形到Surface。
-    public int Draw( short PcmFrmPt[], int FrmLen, Surface DstSurfacePt, Vstr ErrInfoVstrPt )
+    public int Draw( short PcmFrmPt[], long FrmLenUnit, Surface DstSurfacePt, Vstr ErrInfoVstrPt )
     {
-        return AdoWavfmDraw( m_AdoWavfmPt, PcmFrmPt, FrmLen, DstSurfacePt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return AdoWavfmDraw( m_AdoWavfmPt, PcmFrmPt, FrmLenUnit, DstSurfacePt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
     //销毁音频波形器。
@@ -77,11 +77,11 @@ public class AdoWavfm
     }
 
     //创建并初始化音频波形器。
-    public native int AdoWavfmInit( HTLong AdoWavfmPt, long ErrInfoVstrPt );
+    private native int AdoWavfmInit( HTLong AdoWavfmPt, long ErrInfoVstrPt );
 
     //绘制音频波形到Surface。
-    public native int AdoWavfmDraw( long AdoWavfmPt, short PcmFrmPt[], int FrmLen, Surface DstSurfacePt, long ErrInfoVstrPt );
+    private native int AdoWavfmDraw( long AdoWavfmPt, short PcmFrmPt[], long FrmLenUnit, Surface DstSurfacePt, long ErrInfoVstrPt );
 
     //销毁音频波形器。
-    public native int AdoWavfmDstoy( long AdoWavfmPt, long ErrInfoVstrPt );
+    private native int AdoWavfmDstoy( long AdoWavfmPt, long ErrInfoVstrPt );
 }

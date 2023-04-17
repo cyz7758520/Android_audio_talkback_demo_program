@@ -75,11 +75,11 @@ public class SpeexEncd
     }
 
     //创建并初始化Speex编码器。
-    public native int SpeexEncdInit( HTLong SpeexEncdPt, int SmplRate, int UseCbrOrVbr, int Qualt, int Cmplxt, int PlcExptLossRate );
+    private native int SpeexEncdInit( HTLong SpeexEncdPt, int SmplRate, int UseCbrOrVbr, int Qualt, int Cmplxt, int PlcExptLossRate );
 
     //用Speex编码器对单声道16位有符号整型20毫秒Pcm格式帧进行Speex格式编码。
-    public native int SpeexEncdPocs( long SpeexEncdPt, short PcmFrmPt[], byte SpeexFrmPt[], long SpeexFrmSz, HTLong SpeexFrmLenPt, HTInt IsNeedTransPt );
+    private native int SpeexEncdPocs( long SpeexEncdPt, short PcmFrmPt[], byte SpeexFrmPt[], long SpeexFrmSz, HTLong SpeexFrmLenPt, HTInt IsNeedTransPt );
 
     //销毁Speex编码器。
-    public native int SpeexEncdDstoy( long SpeexEncdPt );
+    private native int SpeexEncdDstoy( long SpeexEncdPt );
 }

@@ -27,12 +27,12 @@ public class WebRtcAecm
     }
 
     //创建并初始化WebRtc定点版声学回音消除器。
-    public int Init( int SmplRate, int FrmLen, int IsUseCNGMode, int EchoMode, int Delay, Vstr ErrInfoVstrPt )
+    public int Init( int SmplRate, long FrmLenUnit, int IsUseCNGMode, int EchoMode, int Delay, Vstr ErrInfoVstrPt )
     {
         if( m_WebRtcAecmPt == 0 )
         {
             HTLong p_WebRtcAecmPt = new HTLong();
-            if( WebRtcAecmInit( p_WebRtcAecmPt, SmplRate, FrmLen, IsUseCNGMode, EchoMode, Delay, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            if( WebRtcAecmInit( p_WebRtcAecmPt, SmplRate, FrmLenUnit, IsUseCNGMode, EchoMode, Delay, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_WebRtcAecmPt = p_WebRtcAecmPt.m_Val;
                 return 0;
@@ -88,17 +88,17 @@ public class WebRtcAecm
     }
 
     //创建并初始化WebRtc定点版声学回音消除器。
-    public native int WebRtcAecmInit( HTLong WebRtcAecmPt, int SmplRate, int FrmLen, int IsUseCNGMode, int EchoMode, int Delay, long ErrInfoVstrPt );
+    private native int WebRtcAecmInit( HTLong WebRtcAecmPt, int SmplRate, long FrmLenUnit, int IsUseCNGMode, int EchoMode, int Delay, long ErrInfoVstrPt );
 
     //设置WebRtc定点版声学回音消除器的回音延迟。
-    public native int WebRtcAecmSetDelay( long WebRtcAecmPt, int Delay );
+    private native int WebRtcAecmSetDelay( long WebRtcAecmPt, int Delay );
 
     //获取WebRtc定点版声学回音消除器的回音延迟。
-    public native int WebRtcAecmGetDelay( long WebRtcAecmPt, HTInt DelayPt );
+    private native int WebRtcAecmGetDelay( long WebRtcAecmPt, HTInt DelayPt );
 
     //用WebRtc定点版声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行WebRtc定点版声学回音消除。
-    public native int WebRtcAecmPocs( long WebRtcAecmPt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );
+    private native int WebRtcAecmPocs( long WebRtcAecmPt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );
 
     //销毁WebRtc定点版声学回音消除器。
-    public native int WebRtcAecmDstoy( long WebRtcAecmPt );
+    private native int WebRtcAecmDstoy( long WebRtcAecmPt );
 }

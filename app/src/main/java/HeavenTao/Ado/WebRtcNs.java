@@ -27,12 +27,12 @@ public class WebRtcNs
     }
 
     //创建并初始化WebRtc浮点版噪音抑制器。
-    public int Init( int SmplRate, int FrmLen, int PolicyMode, Vstr ErrInfoVstrPt )
+    public int Init( int SmplRate, long FrmLenUnit, int PolicyMode, Vstr ErrInfoVstrPt )
     {
         if( m_WebRtcNsPt == 0 )
         {
             HTLong p_WebRtcNsPt = new HTLong();
-            if( WebRtcNsInit( p_WebRtcNsPt, SmplRate, FrmLen, PolicyMode, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            if( WebRtcNsInit( p_WebRtcNsPt, SmplRate, FrmLenUnit, PolicyMode, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_WebRtcNsPt = p_WebRtcNsPt.m_Val;
                 return 0;
@@ -76,11 +76,11 @@ public class WebRtcNs
     }
 
     //创建并初始化WebRtc浮点版噪音抑制器。
-    public native int WebRtcNsInit( HTLong WebRtcNsPt, int SmplRate, int FrmLen, int PolicyMode, long ErrInfoVstrPt );
+    private native int WebRtcNsInit( HTLong WebRtcNsPt, int SmplRate, long FrmLenUnit, int PolicyMode, long ErrInfoVstrPt );
 
     //用WebRtc浮点版噪音抑制器对单声道16位有符号整型Pcm格式帧进行WebRtc浮点版噪音抑制。
-    public native int WebRtcNsPocs( long WebRtcNsPt, short FrmObj[], short RsltFrmObj[] );
+    private native int WebRtcNsPocs( long WebRtcNsPt, short FrmObj[], short RsltFrmObj[] );
 
     //销毁WebRtc浮点版噪音抑制器。
-    public native int WebRtcNsDstoy( long WebRtcNsPt );
+    private native int WebRtcNsDstoy( long WebRtcNsPt );
 }

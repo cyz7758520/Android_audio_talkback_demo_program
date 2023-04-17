@@ -75,11 +75,11 @@ public class WaveFileWriter
     }
 
     //创建并初始化Wave文件写入器。
-    public native int WaveFileWriterInit( HTLong WaveFileWriterPt, String WaveFileFullPathStrPt, long WaveFileWrBufSzByt, int NumChanl, int SmplRate, int SmplBit );
+    private native int WaveFileWriterInit( HTLong WaveFileWriterPt, String WaveFileFullPathStrPt, long WaveFileWrBufSzByt, int NumChanl, int SmplRate, int SmplBit );
 
     //用Wave文件写入器写入数据。
-    public native int WaveFileWriterWriteShort( long WaveFileWriterPt, short DataPt[], long DataLen );
+    private native int WaveFileWriterWriteShort( long WaveFileWriterPt, short DataPt[], long DataLen );
 
     //销毁Wave文件写入器。
-    public native int WaveFileWriterDstoy( long WaveFileWriterPt );
+    private native int WaveFileWriterDstoy( long WaveFileWriterPt );
 }

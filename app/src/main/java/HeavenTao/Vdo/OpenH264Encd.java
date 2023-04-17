@@ -92,20 +92,20 @@ public class OpenH264Encd
     }
 
     //创建并初始化OpenH264编码器。
-    public native int OpenH264EncdInit( HTLong OpenH264EncdPt, int EncdPictrWidth, int EncdPictrHeight, int VdoType, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlFrmCnt, int Cmplxt, long ErrInfoVstrPt );
+    private native int OpenH264EncdInit( HTLong OpenH264EncdPt, int EncdPictrWidth, int EncdPictrHeight, int VdoType, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlFrmCnt, int Cmplxt, long ErrInfoVstrPt );
 
     //设置OpenH264编码器的编码后比特率。
-    public native int OpenH264EncdSetEncdBitrate( long OpenH264EncdPt, int EncdBitrate, long ErrInfoVstrPt );
+    private native int OpenH264EncdSetEncdBitrate( long OpenH264EncdPt, int EncdBitrate, long ErrInfoVstrPt );
 
     //获取OpenH264编码器的编码后比特率。
-    public native int OpenH264EncdGetEncdBitrate( long OpenH264EncdPt, HTInt EncdBitratePt, long ErrInfoVstrPt );
+    private native int OpenH264EncdGetEncdBitrate( long OpenH264EncdPt, HTInt EncdBitratePt, long ErrInfoVstrPt );
 
     //用OpenH264编码器对8位无符号整型YU12格式帧进行H264格式编码。
-    public native int OpenH264EncdPocs( long OpenH264EncdPt,
-                                           byte YU12FrmPt[], int YU12FrmWidth, int YU12FrmHeight, long YU12FrmTimeStampMsec,
-                                           byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt,
-                                           long ErrInfoVstrPt );
+    private native int OpenH264EncdPocs( long OpenH264EncdPt,
+                                         byte YU12FrmPt[], int YU12FrmWidth, int YU12FrmHeight, long YU12FrmTimeStampMsec,
+                                         byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt,
+                                         long ErrInfoVstrPt );
 
     //销毁OpenH264编码器。
-    public native int OpenH264EncdDstoy( long OpenH264EncdPt, long ErrInfoVstrPt );
+    private native int OpenH264EncdDstoy( long OpenH264EncdPt, long ErrInfoVstrPt );
 }

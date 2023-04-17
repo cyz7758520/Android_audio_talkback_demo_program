@@ -80,14 +80,14 @@ public class OpenH264Decd
     }
 
     //创建并初始化OpenH264解码器。
-    public native int OpenH264DecdInit( HTLong OpenH264DecdPt, int DecdThrdNum, long ErrInfoVstrPt );
+    private native int OpenH264DecdInit( HTLong OpenH264DecdPt, int DecdThrdNum, long ErrInfoVstrPt );
 
     //用OpenH264解码器对H264格式进行8位无符号整型YU12格式帧解码。
-    public native int OpenH264DecdPocs( long OpenH264DecdPt,
-                                           byte H264FrmPt[], long H264FrmLen,
-                                           byte YU12FrmPt[], long YU12FrmSz, HTInt YU12FrmWidth, HTInt YU12FrmHeight,
-                                           long ErrInfoVstrPt );
+    private native int OpenH264DecdPocs( long OpenH264DecdPt,
+                                         byte H264FrmPt[], long H264FrmLen,
+                                         byte YU12FrmPt[], long YU12FrmSz, HTInt YU12FrmWidth, HTInt YU12FrmHeight,
+                                         long ErrInfoVstrPt );
 
     //销毁OpenH264解码器。
-    public native int OpenH264DecdDstoy( long OpenH264DecdPt, long ErrInfoVstrPt );
+    private native int OpenH264DecdDstoy( long OpenH264DecdPt, long ErrInfoVstrPt );
 }

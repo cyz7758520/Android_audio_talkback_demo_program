@@ -29,12 +29,12 @@ public class SpeexWebRtcAec
     }
 
     //创建并初始化SpeexWebRtc三重声学回音消除器。
-    public int Init( int SmplRate, int FrmLen, int WorkMode, int SpeexAecFilterLen, int SpeexAecIsUseRec, float SpeexAecEchoMultiple, float SpeexAecEchoCont, int SpeexAecEchoSupes, int SpeexAecEchoSupesAct, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgstcMode, int WebRtcAecIsUseExtdFilterMode, int WebRtcAecIsUseRefinedFilterAdaptAecMode, int WebRtcAecIsUseAdaptAdjDelay, int IsUseSameRoomAec, int SameRoomEchoMinDelay, Vstr ErrInfoVstrPt )
+    public int Init( int SmplRate, long FrmLenUnit, int WorkMode, int SpeexAecFilterLenMsec, int SpeexAecIsUseRec, float SpeexAecEchoMultiple, float SpeexAecEchoCont, int SpeexAecEchoSupes, int SpeexAecEchoSupesAct, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgstcMode, int WebRtcAecIsUseExtdFilterMode, int WebRtcAecIsUseRefinedFilterAdaptAecMode, int WebRtcAecIsUseAdaptAdjDelay, int IsUseSameRoomAec, int SameRoomEchoMinDelay, Vstr ErrInfoVstrPt )
     {
         if( m_SpeexWebRtcAecPt == 0 )
         {
             HTLong p_SpeexWebRtcAecPt = new HTLong();
-            if( SpeexWebRtcAecInit( p_SpeexWebRtcAecPt, SmplRate, FrmLen, WorkMode, SpeexAecFilterLen, SpeexAecIsUseRec, SpeexAecEchoMultiple, SpeexAecEchoCont, SpeexAecEchoSupes, SpeexAecEchoSupesAct, WebRtcAecmIsUseCNGMode, WebRtcAecmEchoMode, WebRtcAecmDelay, WebRtcAecEchoMode, WebRtcAecDelay, WebRtcAecIsUseDelayAgstcMode, WebRtcAecIsUseExtdFilterMode, WebRtcAecIsUseRefinedFilterAdaptAecMode, WebRtcAecIsUseAdaptAdjDelay, IsUseSameRoomAec, SameRoomEchoMinDelay, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            if( SpeexWebRtcAecInit( p_SpeexWebRtcAecPt, SmplRate, FrmLenUnit, WorkMode, SpeexAecFilterLenMsec, SpeexAecIsUseRec, SpeexAecEchoMultiple, SpeexAecEchoCont, SpeexAecEchoSupes, SpeexAecEchoSupesAct, WebRtcAecmIsUseCNGMode, WebRtcAecmEchoMode, WebRtcAecmDelay, WebRtcAecEchoMode, WebRtcAecDelay, WebRtcAecIsUseDelayAgstcMode, WebRtcAecIsUseExtdFilterMode, WebRtcAecIsUseRefinedFilterAdaptAecMode, WebRtcAecIsUseAdaptAdjDelay, IsUseSameRoomAec, SameRoomEchoMinDelay, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_SpeexWebRtcAecPt = p_SpeexWebRtcAecPt.m_Val;
                 return 0;
@@ -102,23 +102,23 @@ public class SpeexWebRtcAec
     }
 
     //创建并初始化SpeexWebRtc三重声学回音消除器。
-    public native int SpeexWebRtcAecInit( HTLong SpeexWebRtcAecPt, int SmplRate, int FrmLen, int WorkMode, int SpeexAecFilterLen, int SpeexAecIsUseRec, float SpeexAecEchoMultiple, float SpeexAecEchoCont, int SpeexAecEchoSupes, int SpeexAecEchoSupesAct, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgstcMode, int WebRtcAecIsUseExtdFilterMode, int WebRtcAecIsUseRefinedFilterAdaptAecMode, int WebRtcAecIsUseAdaptAdjDelay, int IsUseSameRoomAec, int SameRoomEchoMinDelay, long ErrInfoVstrPt );
+    private native int SpeexWebRtcAecInit( HTLong SpeexWebRtcAecPt, int SmplRate, long FrmLenUnit, int WorkMode, int SpeexAecFilterLenMsec, int SpeexAecIsUseRec, float SpeexAecEchoMultiple, float SpeexAecEchoCont, int SpeexAecEchoSupes, int SpeexAecEchoSupesAct, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgstcMode, int WebRtcAecIsUseExtdFilterMode, int WebRtcAecIsUseRefinedFilterAdaptAecMode, int WebRtcAecIsUseAdaptAdjDelay, int IsUseSameRoomAec, int SameRoomEchoMinDelay, long ErrInfoVstrPt );
 
     //设置SpeexWebRtc三重声学回音消除器的WebRtc定点版声学回音消除器的回音延迟。
-    public native int SpeexWebRtcAecSetWebRtcAecmDelay( long SpeexWebRtcAecPt, int WebRtcAecmDelay );
+    private native int SpeexWebRtcAecSetWebRtcAecmDelay( long SpeexWebRtcAecPt, int WebRtcAecmDelay );
 
     //获取SpeexWebRtc三重声学回音消除器的WebRtc定点版声学回音消除器的回音延迟。
-    public native int SpeexWebRtcAecGetWebRtcAecmDelay( long SpeexWebRtcAecPt, HTInt WebRtcAecmDelayPt );
+    private native int SpeexWebRtcAecGetWebRtcAecmDelay( long SpeexWebRtcAecPt, HTInt WebRtcAecmDelayPt );
 
     //设置SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器的回音延迟。
-    public native int SpeexWebRtcAecSetWebRtcAecDelay( long SpeexWebRtcAecPt, int WebRtcAecDelay );
+    private native int SpeexWebRtcAecSetWebRtcAecDelay( long SpeexWebRtcAecPt, int WebRtcAecDelay );
 
     //获取SpeexWebRtc三重声学回音消除器的WebRtc浮点版声学回音消除器的回音延迟。
-    public native int SpeexWebRtcAecGetWebRtcAecDelay( long SpeexWebRtcAecPt, HTInt WebRtcAecDelayPt );
+    private native int SpeexWebRtcAecGetWebRtcAecDelay( long SpeexWebRtcAecPt, HTInt WebRtcAecDelayPt );
 
     //用SpeexWebRtc三重声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行SpeexWebRtc三重声学回音消除。
-    public native int SpeexWebRtcAecPocs( long SpeexWebRtcAecPt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );
+    private native int SpeexWebRtcAecPocs( long SpeexWebRtcAecPt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );
 
     //销毁SpeexWebRtc三重声学回音消除器。
-    public native int SpeexWebRtcAecDstoy( long SpeexWebRtcAecPt );
+    private native int SpeexWebRtcAecDstoy( long SpeexWebRtcAecPt );
 }

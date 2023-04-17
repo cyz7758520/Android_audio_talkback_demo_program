@@ -37,7 +37,7 @@
                 android:text="滤波器的数据长度，单位毫秒：" />
 
             <EditText
-                android:id="@+id/SpeexAecFilterLenEdTxtId"
+                android:id="@+id/SpeexAecFilterLenMsecEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"

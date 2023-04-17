@@ -84,11 +84,11 @@ public class SystemH264Decd
     }
 
     //创建并初始化系统自带H264解码器。
-    public native int SystemH264DecdInit( HTLong SystemH264DecdPt, long ErrInfoVstrPt );
+    private native int SystemH264DecdInit( HTLong SystemH264DecdPt, long ErrInfoVstrPt );
 
     //用系统自带H264解码器对H264格式进行8位无符号整型YU12格式帧解码。
-    public native int SystemH264DecdPocs( long SystemH264DecdPt, byte H264FrmPt[], long H264FrmLen, byte YU12FrmPt[], long YU12FrmSz, HTInt YU12FrmWidth, HTInt YU12FrmHeight, long TimeOutMsec, long ErrInfoVstrPt );
+    private native int SystemH264DecdPocs( long SystemH264DecdPt, byte H264FrmPt[], long H264FrmLen, byte YU12FrmPt[], long YU12FrmSz, HTInt YU12FrmWidth, HTInt YU12FrmHeight, long TimeOutMsec, long ErrInfoVstrPt );
 
     //销毁系统自带H264解码器。
-    public native int SystemH264DecdDstoy( long SystemH264DecdPt, long ErrInfoVstrPt );
+    private native int SystemH264DecdDstoy( long SystemH264DecdPt, long ErrInfoVstrPt );
 }

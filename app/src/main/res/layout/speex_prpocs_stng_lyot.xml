@@ -16,7 +16,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:text="Speex预处理器的其他功能\n设置\n"
+            android:text="Speex预处理器\n设置\n"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
@@ -165,7 +165,7 @@
 
         <Button
             android:text="确定"
-            android:onClick="OnClickSpeexPrpocsOtherStngOkBtn"
+            android:onClick="OnClickSpeexPrpocsStngOkBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
