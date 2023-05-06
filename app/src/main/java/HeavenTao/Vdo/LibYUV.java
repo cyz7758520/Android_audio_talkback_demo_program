@@ -29,7 +29,7 @@ public class LibYUV
     //图片格式。
     public static final int PICTR_FMT_BT601F8_NV12      = 0;   //BT.601标准，Full Range，8位，内存排列：'YYYYYYYY……','UVUVUVUV……'。
     public static final int PICTR_FMT_BT601F8_NV21      = 1;   //BT.601标准，Full Range，8位，内存排列：'YYYYYYYY……','VUVUVUVU……'。
-    public static final int PICTR_FMT_BT601F8_YU12_I420 = 2;   //BT.601标准，Full Range，8位，内存排列：'YYYYYYYY……','UUUU……','VVVV……'。
+    public static final int PICTR_FMT_BT601F8_Yu12_I420 = 2;   //BT.601标准，Full Range，8位，内存排列：'YYYYYYYY……','UUUU……','VVVV……'。
     public static final int PICTR_FMT_BT601F8_YV12      = 3;   //BT.601标准，Full Range，8位，内存排列：'YYYYYYYY……','VVVV……','UUUU……'。
     public static final int PICTR_FMT_SRGBF8_RGB555     = 4;   //sRGB标准，Full Range，8位，内存排列：'R','G','B'。
     public static final int PICTR_FMT_SRGBF8_BGR555     = 5;   //sRGB标准，Full Range，8位，内存排列：'B','G','R'。

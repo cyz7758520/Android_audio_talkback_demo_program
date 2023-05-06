@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="版本：2023年04月17日"
+                android:text="版本：2023年05月06日"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="normal|bold" />
@@ -68,7 +68,7 @@
                 <TextView
                     android:text="传输协议："
                     android:layout_width="0dp"
-                    android:layout_weight="4"
+                    android:layout_weight="3"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"/>
 
@@ -113,7 +113,7 @@
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="4"
+                    android:layout_weight="3"
                     android:gravity="center_vertical"
                     android:text="IP地址或域名：" />
 
@@ -121,10 +121,17 @@
                     android:id="@+id/IPAddrEdTxtId"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="7"
+                    android:layout_weight="6"
                     android:hint="请输入IP地址或者域名"
                     android:singleLine="true"
                     android:textStyle="normal"/>
+
+                <Spinner
+                    android:id="@+id/IPAddrSpinnerId"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:entries="@android:array/phoneTypes" />
 
             </LinearLayout>
 
@@ -136,7 +143,7 @@
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="4"
+                    android:layout_weight="3"
                     android:gravity="center_vertical"
                     android:text="端口："/>
 
@@ -159,7 +166,7 @@
                 <TextView
                     android:text="对讲模式："
                     android:layout_width="0dp"
-                    android:layout_weight="4"
+                    android:layout_weight="3"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"/>
 
@@ -206,7 +213,7 @@
                 <TextView
                     android:text="音频输出设备："
                     android:layout_width="0dp"
-                    android:layout_weight="4"
+                    android:layout_weight="3"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"/>
 
@@ -245,7 +252,7 @@
                 <TextView
                     android:text="视频输入设备："
                     android:layout_width="0dp"
-                    android:layout_weight="4"
+                    android:layout_weight="3"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"/>
 
@@ -298,13 +305,6 @@
                     android:checked="false"
                     android:onClick="onClickAdoOtptIsMuteCkBox"
                     android:text="音频输出静音"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
 
                 <CheckBox
                     android:id="@+id/VdoInptIsBlackCkBoxId"
@@ -429,65 +429,82 @@
 
             </LinearLayout>
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <CheckBox
+                android:id="@+id/IsDrawAdoWavfmToSurfaceCkBoxId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:layout_gravity="center"
+                android:onClick="onClickIsDrawAdoWavfmToSurfaceCkBox"
+                android:text="" />
+
             <LinearLayout
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" >
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="4"
-                    android:gravity="center_vertical"
-                    android:text="音频输入原始波形："/>
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" >
 
-                <SurfaceView
-                    android:id="@+id/AdoInptWavfmSurfaceId"
-                    android:layout_width="0dp"
-                    android:layout_height="65dp"
-                    android:layout_weight="7" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="音频输入\n原始波形："/>
+
+                    <SurfaceView
+                        android:id="@+id/AdoInptWavfmSurfaceId"
+                        android:layout_width="match_parent"
+                        android:layout_height="65dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="音频输入\n结果波形："/>
+
+                    <SurfaceView
+                        android:id="@+id/AdoRsltWavfmSurfaceId"
+                        android:layout_width="match_parent"
+                        android:layout_height="65dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="音频输出\n原始波形："/>
+
+                    <SurfaceView
+                        android:id="@+id/AdoOtptWavfmSurfaceId"
+                        android:layout_width="match_parent"
+                        android:layout_height="65dp" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="4"
-                    android:gravity="center_vertical"
-                    android:text="音频输出原始波形："/>
-
-                <SurfaceView
-                    android:id="@+id/AdoOtptWavfmSurfaceId"
-                    android:layout_width="0dp"
-                    android:layout_height="65dp"
-                    android:layout_weight="7" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="4"
-                    android:gravity="center_vertical"
-                    android:text="音频输入结果波形："/>
-
-                <SurfaceView
-                    android:id="@+id/AdoRsltWavfmSurfaceId"
-                    android:layout_width="0dp"
-                    android:layout_height="65dp"
-                    android:layout_weight="7" />
-
-            </LinearLayout>
+        </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

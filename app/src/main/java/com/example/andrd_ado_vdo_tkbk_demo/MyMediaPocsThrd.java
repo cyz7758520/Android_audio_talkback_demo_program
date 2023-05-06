@@ -6,6 +6,8 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.LinkedList;
 
@@ -123,6 +125,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
     @Override public int UserInit()
     {
         int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_RmtNodeAddrFamly; //存放远端节点的地址族，为4表示IPv4，为6表示IPv6，为0表示自动选择。
         HTString p_LclNodeAddrPt = new HTString();
         HTString p_LclNodePortPt = new HTString();
         HTString p_RmtNodeAddrPt = new HTString();
@@ -134,6 +137,18 @@ public class MyMediaPocsThrd extends MediaPocsThrd
 
             m_RqstCnctRslt = 0; //设置请求连接的结果为没有选择。
             m_IsRecvExitPkt = 0; //设置没有接收到退出包。
+            { //设置远端节点的地址族。
+                try
+                {
+                    InetAddress inetAddress = InetAddress.getByName( m_NtwkPt.m_IPAddrStrPt );
+                    if( inetAddress.getAddress().length == 4 ) p_RmtNodeAddrFamly = 4;
+                    else p_RmtNodeAddrFamly = 6;
+                }
+                catch( UnknownHostException e )
+                {
+                    p_RmtNodeAddrFamly = 0;
+                }
+            }
             if( m_TmpBytePt == null ) m_TmpBytePt = new byte[ 1024 * 1024 ]; //初始化临时数据。
             if( m_TmpByte2Pt == null ) m_TmpByte2Pt = new byte[ 1024 * 1024 ]; //初始化临时数据。
             if( m_TmpByte3Pt == null ) m_TmpByte3Pt = new byte[ 1024 * 1024 ]; //初始化临时数据。
@@ -150,7 +165,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                 {
                     m_NtwkPt.m_TcpSrvrSoktPt = new TcpSrvrSokt();
 
-                    if( m_NtwkPt.m_TcpSrvrSoktPt.Init( 4, m_NtwkPt.m_IPAddrStrPt, m_NtwkPt.m_PortStrPt, 1, 1, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端TCP协议服务端套接字成功。
+                    if( m_NtwkPt.m_TcpSrvrSoktPt.Init( p_RmtNodeAddrFamly, m_NtwkPt.m_IPAddrStrPt, m_NtwkPt.m_PortStrPt, 1, 1, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端TCP协议服务端套接字成功。
                     {
                         if( m_NtwkPt.m_TcpSrvrSoktPt.GetLclAddr( null, p_LclNodeAddrPt, p_LclNodePortPt, 0, m_ErrInfoVstrPt ) != 0 ) //如果获取本端TCP协议服务端套接字绑定的本地节点地址和端口失败。
                         {
@@ -230,7 +245,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                             Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                         }
 
-                        if( m_NtwkPt.m_TcpClntSoktPt.Init( 4, m_NtwkPt.m_IPAddrStrPt, m_NtwkPt.m_PortStrPt, null, null, ( short ) 5000, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字成功。
+                        if( m_NtwkPt.m_TcpClntSoktPt.Init( p_RmtNodeAddrFamly, m_NtwkPt.m_IPAddrStrPt, m_NtwkPt.m_PortStrPt, null, null, ( short ) 5000, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字成功。
                         {
                             if( m_NtwkPt.m_TcpClntSoktPt.GetLclAddr( null, p_LclNodeAddrPt, p_LclNodePortPt, 0, m_ErrInfoVstrPt ) != 0 )
                             {
@@ -318,7 +333,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
 
                 if( m_NtwkPt.m_IsCreateSrvrOrClnt == 1 ) //如果是创建本端高级UDP协议套接字接受远端高级UDP协议套接字的连接。
                 {
-                    if( m_NtwkPt.m_AudpSoktPt.Init( 4, m_NtwkPt.m_IPAddrStrPt, m_NtwkPt.m_PortStrPt, ( short )1, ( short )5000, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端高级UDP协议套接字成功。
+                    if( m_NtwkPt.m_AudpSoktPt.Init( p_RmtNodeAddrFamly, m_NtwkPt.m_IPAddrStrPt, m_NtwkPt.m_PortStrPt, ( short )1, ( short )5000, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端高级UDP协议套接字成功。
                     {
                         if( m_NtwkPt.m_AudpSoktPt.GetLclAddr( null, p_LclNodeAddrPt, p_LclNodePortPt, m_ErrInfoVstrPt ) != 0 ) //如果获取本端高级UDP协议套接字绑定的本地节点地址和端口失败。
                         {
@@ -378,7 +393,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                     {
                     }
 
-                    if( m_NtwkPt.m_AudpSoktPt.Init( 4, null, null, ( short )0, ( short )5000, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端高级UDP协议套接字成功。
+                    if( m_NtwkPt.m_AudpSoktPt.Init( p_RmtNodeAddrFamly, null, null, ( short )0, ( short )5000, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端高级UDP协议套接字成功。
                     {
                         if( m_NtwkPt.m_AudpSoktPt.GetLclAddr( null, p_LclNodeAddrPt, p_LclNodePortPt, m_ErrInfoVstrPt ) != 0 ) //如果获取本端高级UDP协议套接字绑定的本地节点地址和端口失败。
                         {
@@ -411,7 +426,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                                 Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                             }
 
-                            if( m_NtwkPt.m_AudpSoktPt.Cnct( 4, m_NtwkPt.m_IPAddrStrPt, m_NtwkPt.m_PortStrPt, m_NtwkPt.m_AudpCnctIdx, m_ErrInfoVstrPt ) == 0 ) //如果连接远端高级UDP协议套接字成功。
+                            if( m_NtwkPt.m_AudpSoktPt.Cnct( p_RmtNodeAddrFamly, m_NtwkPt.m_IPAddrStrPt, m_NtwkPt.m_PortStrPt, m_NtwkPt.m_AudpCnctIdx, m_ErrInfoVstrPt ) == 0 ) //如果连接远端高级UDP协议套接字成功。
                             {
                                 HTInt p_AudpCnctSts = new HTInt();
 
@@ -1320,40 +1335,40 @@ public class MyMediaPocsThrd extends MediaPocsThrd
     }
 
     //用户定义的读取音视频输入帧函数。
-    @Override public void UserReadAdoVdoInptFrm( short PcmAdoInptSrcFrmPt[], short PcmAdoInptRsltFrmPt[], long PcmAdoInptFrmLenUnit, int PcmAdoInptRsltFrmVoiceActSts,
-                                                 byte EncdAdoInptRsltFrmPt[], long EncdAdoInptRsltFrmLenByt, int EncdAdoInptRsltFrmIsNeedTrans,
-                                                 byte NV21VdoInptSrcFrmPt[], int NV21VdoInptSrcFrmWidthPt, int NV21VdoInptSrcFrmHeightPt, long NV21VdoInptSrcFrmLenByt,
-                                                 byte YU12VdoInptRsltFrmPt[], int YU12VdoInptRsltFrmWidth, int YU12VdoInptRsltFrmHeight, long YU12VdoInptRsltFrmLenByt,
-                                                 byte EncdVdoInptRsltFrmPt[], long EncdVdoInptRsltFrmLenByt )
+    @Override public void UserReadAdoVdoInptFrm( short AdoInptPcmSrcFrmPt[], short AdoInptPcmRsltFrmPt[], long AdoInptPcmFrmLenUnit, int AdoInptPcmRsltFrmVoiceActSts,
+                                                 byte AdoInptEncdRsltFrmPt[], long AdoInptEncdRsltFrmLenByt, int AdoInptEncdRsltFrmIsNeedTrans,
+                                                 byte VdoInptNv21SrcFrmPt[], int VdoInptNv21SrcFrmWidthPt, int VdoInptNv21SrcFrmHeightPt, long VdoInptNv21SrcFrmLenByt,
+                                                 byte VdoInptYu12RsltFrmPt[], int VdoInptYu12RsltFrmWidth, int VdoInptYu12RsltFrmHeight, long VdoInptYu12RsltFrmLenByt,
+                                                 byte VdoInptEncdRsltFrmPt[], long VdoInptEncdRsltFrmLenByt )
     {
         int p_FrmPktLen = 0; //存放输入输出帧数据包的数据长度，单位字节。
         int p_TmpInt32 = 0;
 
         //发送音频输入帧。
-        if( PcmAdoInptSrcFrmPt != null ) //如果有Pcm格式音频输入原始帧。
+        if( AdoInptPcmSrcFrmPt != null ) //如果有音频输入Pcm格式原始帧。
         {
-            if( EncdAdoInptRsltFrmPt == null ) //如果没有已编码格式音频输入结果帧。
+            if( AdoInptEncdRsltFrmPt == null ) //如果没有音频输入已编码格式结果帧。
             {
-                if( PcmAdoInptRsltFrmVoiceActSts != 0 ) //如果本次音频输入帧为有语音活动。
+                if( AdoInptPcmRsltFrmVoiceActSts != 0 ) //如果本次音频输入帧为有语音活动。
                 {
-                    for( p_TmpInt32 = 0; p_TmpInt32 < PcmAdoInptRsltFrmPt.length; p_TmpInt32++ ) //设置音频输入帧。
+                    for( p_TmpInt32 = 0; p_TmpInt32 < AdoInptPcmRsltFrmPt.length; p_TmpInt32++ ) //设置音频输入帧。
                     {
-                        m_TmpBytePt[ 1 + 4 + p_TmpInt32 * 2 ] = ( byte ) ( PcmAdoInptRsltFrmPt[ p_TmpInt32 ] & 0xFF );
-                        m_TmpBytePt[ 1 + 4 + p_TmpInt32 * 2 + 1 ] = ( byte ) ( ( PcmAdoInptRsltFrmPt[ p_TmpInt32 ] & 0xFF00 ) >> 8 );
+                        m_TmpBytePt[ 1 + 4 + p_TmpInt32 * 2 ] = ( byte ) ( AdoInptPcmRsltFrmPt[ p_TmpInt32 ] & 0xFF );
+                        m_TmpBytePt[ 1 + 4 + p_TmpInt32 * 2 + 1 ] = ( byte ) ( ( AdoInptPcmRsltFrmPt[ p_TmpInt32 ] & 0xFF00 ) >> 8 );
                     }
-                    p_FrmPktLen = 1 + 4 + PcmAdoInptRsltFrmPt.length * 2; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + Pcm格式音频输入帧。
+                    p_FrmPktLen = 1 + 4 + AdoInptPcmRsltFrmPt.length * 2; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 音频输入Pcm格式结果帧。
                 }
                 else //如果本次音频输入帧为无语音活动，或不需要传输。
                 {
                     p_FrmPktLen = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
                 }
             }
-            else //如果有已编码格式音频输入结果帧。
+            else //如果有音频输入已编码格式结果帧。
             {
-                if( PcmAdoInptRsltFrmVoiceActSts != 0 && EncdAdoInptRsltFrmIsNeedTrans != 0 ) //如果本次音频输入帧为有语音活动，且需要传输。
+                if( AdoInptPcmRsltFrmVoiceActSts != 0 && AdoInptEncdRsltFrmIsNeedTrans != 0 ) //如果本次音频输入帧为有语音活动，且需要传输。
                 {
-                    System.arraycopy( EncdAdoInptRsltFrmPt, 0, m_TmpBytePt, 1 + 4, ( int ) EncdAdoInptRsltFrmLenByt ); //设置音频输入帧。
-                    p_FrmPktLen = 1 + 4 + ( int ) EncdAdoInptRsltFrmLenByt; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 已编码格式音频输入帧。
+                    System.arraycopy( AdoInptEncdRsltFrmPt, 0, m_TmpBytePt, 1 + 4, ( int ) AdoInptEncdRsltFrmLenByt ); //设置音频输入帧。
+                    p_FrmPktLen = 1 + 4 + ( int ) AdoInptEncdRsltFrmLenByt; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 音频输入已编码格式结果帧。
                 }
                 else //如果本次音频输入帧为无语音活动，或不需要传输。
                 {
@@ -1423,30 +1438,30 @@ public class MyMediaPocsThrd extends MediaPocsThrd
         }
 
         //发送视频输入帧。
-        if( YU12VdoInptRsltFrmPt != null ) //如果有YU12格式视频输入结果帧。
+        if( VdoInptYu12RsltFrmPt != null ) //如果有视频输入Yu12格式结果帧。
         {
-            if( EncdVdoInptRsltFrmPt == null ) //如果没有已编码格式视频输入结果帧。
+            if( VdoInptEncdRsltFrmPt == null ) //如果没有视频输入已编码格式结果帧。
             {
                 //设置视频输入帧宽度。
-                m_TmpBytePt[5] = ( byte ) ( YU12VdoInptRsltFrmWidth & 0xFF );
-                m_TmpBytePt[6] = ( byte ) ( ( YU12VdoInptRsltFrmWidth & 0xFF00 ) >> 8 );
-                m_TmpBytePt[7] = ( byte ) ( ( YU12VdoInptRsltFrmWidth & 0xFF0000 ) >> 16 );
-                m_TmpBytePt[8] = ( byte ) ( ( YU12VdoInptRsltFrmWidth & 0xFF000000 ) >> 24 );
+                m_TmpBytePt[5] = ( byte ) ( VdoInptYu12RsltFrmWidth & 0xFF );
+                m_TmpBytePt[6] = ( byte ) ( ( VdoInptYu12RsltFrmWidth & 0xFF00 ) >> 8 );
+                m_TmpBytePt[7] = ( byte ) ( ( VdoInptYu12RsltFrmWidth & 0xFF0000 ) >> 16 );
+                m_TmpBytePt[8] = ( byte ) ( ( VdoInptYu12RsltFrmWidth & 0xFF000000 ) >> 24 );
                 //设置视频输入帧高度。
-                m_TmpBytePt[9] = ( byte ) ( YU12VdoInptRsltFrmHeight & 0xFF );
-                m_TmpBytePt[10] = ( byte ) ( ( YU12VdoInptRsltFrmHeight & 0xFF00 ) >> 8 );
-                m_TmpBytePt[11] = ( byte ) ( ( YU12VdoInptRsltFrmHeight & 0xFF0000 ) >> 16 );
-                m_TmpBytePt[12] = ( byte ) ( ( YU12VdoInptRsltFrmHeight & 0xFF000000 ) >> 24 );
+                m_TmpBytePt[9] = ( byte ) ( VdoInptYu12RsltFrmHeight & 0xFF );
+                m_TmpBytePt[10] = ( byte ) ( ( VdoInptYu12RsltFrmHeight & 0xFF00 ) >> 8 );
+                m_TmpBytePt[11] = ( byte ) ( ( VdoInptYu12RsltFrmHeight & 0xFF0000 ) >> 16 );
+                m_TmpBytePt[12] = ( byte ) ( ( VdoInptYu12RsltFrmHeight & 0xFF000000 ) >> 24 );
 
-                System.arraycopy( YU12VdoInptRsltFrmPt, 0, m_TmpBytePt, 1 + 4 + 4 + 4, YU12VdoInptRsltFrmPt.length ); //设置视频输入帧。
-                p_FrmPktLen = 1 + 4 + 4 + 4 + YU12VdoInptRsltFrmPt.length; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 视频输入帧宽度 + 视频输入帧高度 + YU12格式视频输入结果帧。
+                System.arraycopy( VdoInptYu12RsltFrmPt, 0, m_TmpBytePt, 1 + 4 + 4 + 4, VdoInptYu12RsltFrmPt.length ); //设置视频输入帧。
+                p_FrmPktLen = 1 + 4 + 4 + 4 + VdoInptYu12RsltFrmPt.length; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 视频输入帧宽度 + 视频输入帧高度 + 视频输入Yu12格式结果帧。
             }
-            else //如果有已编码格式视频输入结果帧。
+            else //如果有视频输入已编码格式结果帧。
             {
-                if( EncdVdoInptRsltFrmLenByt != 0 ) //如果本次视频输入帧为有图像活动。
+                if( VdoInptEncdRsltFrmLenByt != 0 ) //如果本次视频输入帧为有图像活动。
                 {
-                    System.arraycopy( EncdVdoInptRsltFrmPt, 0, m_TmpBytePt, 1 + 4, ( int ) EncdVdoInptRsltFrmLenByt ); //设置视频输入帧。
-                    p_FrmPktLen = 1 + 4 + ( int ) EncdVdoInptRsltFrmLenByt; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 已编码格式视频输入结果帧。
+                    System.arraycopy( VdoInptEncdRsltFrmPt, 0, m_TmpBytePt, 1 + 4, ( int ) VdoInptEncdRsltFrmLenByt ); //设置视频输入帧。
+                    p_FrmPktLen = 1 + 4 + ( int ) VdoInptEncdRsltFrmLenByt; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 视频输入已编码格式结果帧。
                 }
                 else
                 {
@@ -1487,8 +1502,8 @@ public class MyMediaPocsThrd extends MediaPocsThrd
 
     //用户定义的写入音频输出帧函数。
     @Override public void UserWriteAdoOtptFrm( int AdoOtptStrmIdx,
-                                               short PcmAdoOtptSrcFrmPt[], int PcmAdoOtptFrmLenUnit,
-                                               byte EncdAdoOtptSrcFrmPt[], long EncdAdoOtptSrcFrmSzByt, HTLong EncdAdoOtptSrcFrmLenBytPt )
+                                               short AdoOtptPcmSrcFrmPt[], int AdoOtptPcmFrmLenUnit,
+                                               byte AdoOtptEncdSrcFrmPt[], long AdoOtptEncdSrcFrmSzByt, HTLong AdoOtptEncdSrcFrmLenBytPt )
     {
         int p_AdoOtptFrmTimeStamp = 0;
         byte p_AdoOtptFrmPt[] = null;
@@ -1562,55 +1577,55 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                 //写入音频输出帧。
                 if( p_AdoOtptFrmLen > 0 ) //如果音频输出帧为有语音活动。
                 {
-                    if( PcmAdoOtptSrcFrmPt != null ) //如果要使用Pcm格式音频输出帧。
+                    if( AdoOtptPcmSrcFrmPt != null ) //如果要使用音频输出Pcm格式原始帧。
                     {
-                        if( p_AdoOtptFrmLen != PcmAdoOtptFrmLenUnit * 2 )
+                        if( p_AdoOtptFrmLen != AdoOtptPcmFrmLenUnit * 2 )
                         {
-                            Arrays.fill( PcmAdoOtptSrcFrmPt, ( short ) 0 );
-                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频输出帧的数据长度不等于Pcm格式的数据长度。音频输出帧：" + ( p_AdoOtptFrmLen ) + "，Pcm格式：" + ( PcmAdoOtptSrcFrmPt.length * 2 ) + "。" );
+                            Arrays.fill( AdoOtptPcmSrcFrmPt, ( short ) 0 );
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频输出帧的数据长度不等于Pcm格式的数据长度。音频输出帧：" + ( p_AdoOtptFrmLen ) + "，Pcm格式：" + ( AdoOtptPcmSrcFrmPt.length * 2 ) + "。" );
                             break Out;
                         }
 
-                        //写入Pcm格式音频输出帧。
-                        for( p_TmpInt32 = 0; p_TmpInt32 < PcmAdoOtptSrcFrmPt.length; p_TmpInt32++ )
+                        //写入音频输出Pcm格式原始帧。
+                        for( p_TmpInt32 = 0; p_TmpInt32 < AdoOtptPcmSrcFrmPt.length; p_TmpInt32++ )
                         {
-                            PcmAdoOtptSrcFrmPt[ p_TmpInt32 ] = ( short ) ( ( p_AdoOtptFrmPt[ p_TmpInt32 * 2 ] & 0xFF ) | ( p_AdoOtptFrmPt[ p_TmpInt32 * 2 + 1 ] << 8 ) );
+                            AdoOtptPcmSrcFrmPt[ p_TmpInt32 ] = ( short ) ( ( p_AdoOtptFrmPt[ p_TmpInt32 * 2 ] & 0xFF ) | ( p_AdoOtptFrmPt[ p_TmpInt32 * 2 + 1 ] << 8 ) );
                         }
                     }
-                    else //如果要使用已编码格式音频输出帧。
+                    else //如果要使用音频输出已编码格式原始帧。
                     {
-                        if( p_AdoOtptFrmLen > EncdAdoOtptSrcFrmPt.length )
+                        if( p_AdoOtptFrmLen > AdoOtptEncdSrcFrmPt.length )
                         {
-                            EncdAdoOtptSrcFrmLenBytPt.m_Val = 0;
-                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频输出帧的数据长度已超过已编码格式的数据长度。音频输出帧：" + ( p_AdoOtptFrmLen ) + "，已编码格式：" + EncdAdoOtptSrcFrmPt.length + "。" );
+                            AdoOtptEncdSrcFrmLenBytPt.m_Val = 0;
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "音频输出帧的数据长度已超过已编码格式的数据长度。音频输出帧：" + ( p_AdoOtptFrmLen ) + "，已编码格式：" + AdoOtptEncdSrcFrmPt.length + "。" );
                             break Out;
                         }
 
-                        //写入已编码格式音频输出帧。
-                        System.arraycopy( p_AdoOtptFrmPt, 0, EncdAdoOtptSrcFrmPt, 0, ( int ) ( p_AdoOtptFrmLen ) );
-                        EncdAdoOtptSrcFrmLenBytPt.m_Val = p_AdoOtptFrmLen;
+                        //写入音频输出已编码格式原始帧。
+                        System.arraycopy( p_AdoOtptFrmPt, 0, AdoOtptEncdSrcFrmPt, 0, ( int ) ( p_AdoOtptFrmLen ) );
+                        AdoOtptEncdSrcFrmLenBytPt.m_Val = p_AdoOtptFrmLen;
                     }
                 }
                 else if( p_AdoOtptFrmLen == 0 ) //如果音频输出帧为无语音活动。
                 {
-                    if( PcmAdoOtptSrcFrmPt != null ) //如果要使用Pcm格式音频输出帧。
+                    if( AdoOtptPcmSrcFrmPt != null ) //如果要使用音频输出Pcm格式原始帧。
                     {
-                        Arrays.fill( PcmAdoOtptSrcFrmPt, ( short ) 0 );
+                        Arrays.fill( AdoOtptPcmSrcFrmPt, ( short ) 0 );
                     }
-                    else //如果要使用已编码格式音频输出帧。
+                    else //如果要使用音频输出已编码格式原始帧。
                     {
-                        EncdAdoOtptSrcFrmLenBytPt.m_Val = 0;
+                        AdoOtptEncdSrcFrmLenBytPt.m_Val = 0;
                     }
                 }
                 else //如果音频输出帧为丢失。
                 {
-                    if( PcmAdoOtptSrcFrmPt != null ) //如果要使用Pcm格式音频输出帧。
+                    if( AdoOtptPcmSrcFrmPt != null ) //如果要使用音频输出Pcm格式原始帧。
                     {
-                        Arrays.fill( PcmAdoOtptSrcFrmPt, ( short ) 0 );
+                        Arrays.fill( AdoOtptPcmSrcFrmPt, ( short ) 0 );
                     }
-                    else //如果要使用已编码格式音频输出帧。
+                    else //如果要使用音频输出已编码格式原始帧。
                     {
-                        EncdAdoOtptSrcFrmLenBytPt.m_Val = p_AdoOtptFrmLen;
+                        AdoOtptEncdSrcFrmLenBytPt.m_Val = p_AdoOtptFrmLen;
                     }
                 }
             }
@@ -1619,16 +1634,16 @@ public class MyMediaPocsThrd extends MediaPocsThrd
 
     //用户定义的获取音频输出帧函数。
     @Override public void UserGetAdoOtptFrm( int AdoOtptStrmIdx,
-                                             short PcmAdoOtptSrcFrmPt[], long PcmAdoOtptFrmLenUnit,
-                                             byte EncdAdoOtptSrcFrmPt[], long EncdAdoOtptSrcFrmLenByt )
+                                             short AdoOtptPcmSrcFrmPt[], long AdoOtptPcmFrmLenUnit,
+                                             byte AdoOtptEncdSrcFrmPt[], long AdoOtptEncdSrcFrmLenByt )
     {
 
     }
 
     //用户定义的写入视频输出帧函数。
     @Override public void UserWriteVdoOtptFrm( int VdoOtptStrmIdx,
-                                               byte YU12VdoOtptSrcFrmPt[], HTInt YU12VdoOtptSrcFrmWidthPt, HTInt YU12VdoOtptSrcFrmHeightPt,
-                                               byte EncdVdoOtptSrcFrmPt[], long EncdVdoOtptSrcFrmSzByt, HTLong EncdVdoOtptSrcFrmLenBytPt )
+                                               byte VdoOtptYu12SrcFrmPt[], HTInt VdoOtptYu12SrcFrmWidthPt, HTInt VdoOtptYu12SrcFrmHeightPt,
+                                               byte VdoOtptEncdSrcFrmPt[], long VdoOtptEncdSrcFrmSzByt, HTLong VdoOtptEncdSrcFrmLenBytPt )
     {
         byte p_VdoOtptFrmPt[] = null;
         long p_VdoOtptFrmLen = 0;
@@ -1695,45 +1710,45 @@ public class MyMediaPocsThrd extends MediaPocsThrd
         //写入视频输出帧。
         if( p_VdoOtptFrmLen > 0 ) //如果视频输出帧为有图像活动。
         {
-            if( YU12VdoOtptSrcFrmPt != null ) //如果要使用YU12格式视频输出帧。
+            if( VdoOtptYu12SrcFrmPt != null ) //如果要使用视频输出Yu12格式原始帧。
             {
                 //读取视频输出帧宽度。
-                YU12VdoOtptSrcFrmWidthPt.m_Val = ( p_VdoOtptFrmPt[ 0 ] & 0xFF ) + ( ( p_VdoOtptFrmPt[ 1 ] & 0xFF ) << 8 ) + ( ( p_VdoOtptFrmPt[ 2 ] & 0xFF ) << 16 ) + ( ( p_VdoOtptFrmPt[ 3 ] & 0xFF ) << 24 );
+                VdoOtptYu12SrcFrmWidthPt.m_Val = ( p_VdoOtptFrmPt[ 0 ] & 0xFF ) + ( ( p_VdoOtptFrmPt[ 1 ] & 0xFF ) << 8 ) + ( ( p_VdoOtptFrmPt[ 2 ] & 0xFF ) << 16 ) + ( ( p_VdoOtptFrmPt[ 3 ] & 0xFF ) << 24 );
                 //读取视频输出帧高度。
-                YU12VdoOtptSrcFrmHeightPt.m_Val = ( p_VdoOtptFrmPt[ 4 ] & 0xFF ) + ( ( p_VdoOtptFrmPt[ 5 ] & 0xFF ) << 8 ) + ( ( p_VdoOtptFrmPt[ 6 ] & 0xFF ) << 16 ) + ( ( p_VdoOtptFrmPt[ 7 ] & 0xFF ) << 24 );
+                VdoOtptYu12SrcFrmHeightPt.m_Val = ( p_VdoOtptFrmPt[ 4 ] & 0xFF ) + ( ( p_VdoOtptFrmPt[ 5 ] & 0xFF ) << 8 ) + ( ( p_VdoOtptFrmPt[ 6 ] & 0xFF ) << 16 ) + ( ( p_VdoOtptFrmPt[ 7 ] & 0xFF ) << 24 );
 
-                if( p_VdoOtptFrmLen - 4 - 4 != ( ( long ) YU12VdoOtptSrcFrmWidthPt.m_Val * YU12VdoOtptSrcFrmHeightPt.m_Val * 3 / 2 ) )
+                if( p_VdoOtptFrmLen - 4 - 4 != ( ( long ) VdoOtptYu12SrcFrmWidthPt.m_Val * VdoOtptYu12SrcFrmHeightPt.m_Val * 3 / 2 ) )
                 {
-                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输出帧的数据长度不等于YU12格式的数据长度。视频输出帧：" + ( p_VdoOtptFrmLen - 4 - 4 ) + "，YU12格式：" + ( YU12VdoOtptSrcFrmWidthPt.m_Val * YU12VdoOtptSrcFrmHeightPt.m_Val * 3 / 2 ) + "。" );
-                    YU12VdoOtptSrcFrmWidthPt.m_Val = 0;
-                    YU12VdoOtptSrcFrmHeightPt.m_Val = 0;
+                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输出帧的数据长度不等于Yu12格式的数据长度。视频输出帧：" + ( p_VdoOtptFrmLen - 4 - 4 ) + "，Yu12格式：" + ( VdoOtptYu12SrcFrmWidthPt.m_Val * VdoOtptYu12SrcFrmHeightPt.m_Val * 3 / 2 ) + "。" );
+                    VdoOtptYu12SrcFrmWidthPt.m_Val = 0;
+                    VdoOtptYu12SrcFrmHeightPt.m_Val = 0;
                     return;
                 }
 
-                //写入YU12格式视频输出帧。
-                System.arraycopy( p_VdoOtptFrmPt, 4 + 4, YU12VdoOtptSrcFrmPt, 0, ( int )( p_VdoOtptFrmLen - 4 - 4 ) );
+                //写入视频输出Yu12格式原始帧。
+                System.arraycopy( p_VdoOtptFrmPt, 4 + 4, VdoOtptYu12SrcFrmPt, 0, ( int )( p_VdoOtptFrmLen - 4 - 4 ) );
             }
-            else //如果要使用已编码格式视频输出帧。
+            else //如果要使用视频输出已编码格式原始帧。
             {
-                if( p_VdoOtptFrmLen > EncdVdoOtptSrcFrmSzByt )
+                if( p_VdoOtptFrmLen > VdoOtptEncdSrcFrmSzByt )
                 {
-                    EncdVdoOtptSrcFrmLenBytPt.m_Val = 0;
-                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输出帧的数据长度已超过已编码格式的数据长度。视频输出帧：" + p_VdoOtptFrmLen + "，已编码格式：" + EncdVdoOtptSrcFrmSzByt + "。" );
+                    VdoOtptEncdSrcFrmLenBytPt.m_Val = 0;
+                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "视频输出帧的数据长度已超过已编码格式的数据长度。视频输出帧：" + p_VdoOtptFrmLen + "，已编码格式：" + VdoOtptEncdSrcFrmSzByt + "。" );
                     return;
                 }
 
-                //写入已编码格式视频输出帧。
-                System.arraycopy( p_VdoOtptFrmPt, 0, EncdVdoOtptSrcFrmPt, 0, ( int )( p_VdoOtptFrmLen ) );
-                EncdVdoOtptSrcFrmLenBytPt.m_Val = p_VdoOtptFrmLen;
+                //写入视频输出已编码格式原始帧。
+                System.arraycopy( p_VdoOtptFrmPt, 0, VdoOtptEncdSrcFrmPt, 0, ( int )( p_VdoOtptFrmLen ) );
+                VdoOtptEncdSrcFrmLenBytPt.m_Val = p_VdoOtptFrmLen;
             }
         }
         else if( p_VdoOtptFrmLen == 0 ) //如果视频输出帧为无图像活动。
         {
-            if( YU12VdoOtptSrcFrmPt != null ) //如果要使用YU12格式视频输出帧。
+            if( VdoOtptYu12SrcFrmPt != null ) //如果要使用视频输出Yu12格式原始帧。
             {
 
             }
-            else //如果要使用已编码格式视频输出帧。
+            else //如果要使用视频输出已编码格式原始帧。
             {
 
             }
@@ -1742,8 +1757,8 @@ public class MyMediaPocsThrd extends MediaPocsThrd
 
     //用户定义的获取视频输出帧函数。
     @Override public void UserGetVdoOtptFrm( int VdoOtptStrmIdx,
-                                             byte YU12VdoOtptSrcFrmPt[], int YU12VdoOtptSrcFrmWidth, int YU12VdoOtptSrcFrmHeight,
-                                             byte EncdVdoOtptSrcFrmPt[], long EncdVdoOtptSrcFrmLenByt )
+                                             byte VdoOtptYu12SrcFrmPt[], int VdoOtptYu12SrcFrmWidth, int VdoOtptYu12SrcFrmHeight,
+                                             byte VdoOtptEncdSrcFrmPt[], long VdoOtptEncdSrcFrmLenByt )
     {
 
     }

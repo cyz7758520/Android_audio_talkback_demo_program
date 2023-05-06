@@ -25,9 +25,9 @@ public class VdoOtpt //视频输出。
     public class Frm //存放帧。
     {
         int m_StrmIdx; //存放流索引。
-        byte m_YU12SrcFrmPt[]; //存放YU12格式原始帧的指针，大小为m_FrmMaxWidth * m_FrmMaxHeight * 3 / 2字节。
-        HTInt m_YU12SrcFrmWidthPt; //存放YU12格式原始帧的宽度，单位为像素。
-        HTInt m_YU12SrcFrmHeightPt; //存放YU12格式原始帧的高度，单位为像素。
+        byte m_Yu12SrcFrmPt[]; //存放Yu12格式原始帧的指针，大小为m_FrmMaxWidth * m_FrmMaxHeight * 3 / 2字节。
+        HTInt m_Yu12SrcFrmWidthPt; //存放Yu12格式原始帧的宽度，单位为像素。
+        HTInt m_Yu12SrcFrmHeightPt; //存放Yu12格式原始帧的高度，单位为像素。
         byte m_EncdSrcFrmPt[]; //存放已编码格式原始帧的指针，大小为m_FrmMaxWidth * m_FrmMaxHeight * 3 / 2字节。
         HTLong m_EncdSrcFrmLenBytPt; //存放已编码格式原始帧的长度，单位为字节。
         long m_TimeStampMsec; //存放时间戳，单位为毫秒。
@@ -41,7 +41,7 @@ public class VdoOtpt //视频输出。
 
         public int m_IsUse; //存放是否使用流，为0表示不使用，为非0表示要使用。
 
-        public int m_UseWhatDecd; //存放使用什么编码器，为0表示YU12原始数据，为1表示OpenH264解码器，为2表示系统自带H264解码器。
+        public int m_UseWhatDecd; //存放使用什么编码器，为0表示Yu12原始数据，为1表示OpenH264解码器，为2表示系统自带H264解码器。
 
         class OpenH264Decd //存放OpenH264解码器。
         {
@@ -86,9 +86,9 @@ public class VdoOtpt //视频输出。
             {
                 switch( m_UseWhatDecd )
                 {
-                    case 0: //如果要使用YU12原始数据。
+                    case 0: //如果要使用Yu12原始数据。
                     {
-                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_Idx + "：初始化YU12原始数据成功。" );
+                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_Idx + "：初始化Yu12原始数据成功。" );
                         break;
                     }
                     case 1: //如果要使用OpenH264解码器。
@@ -137,9 +137,9 @@ public class VdoOtpt //视频输出。
         {
             switch( m_UseWhatDecd )
             {
-                case 0: //如果要使用YU12原始数据。
+                case 0: //如果要使用Yu12原始数据。
                 {
-                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_Idx + "：销毁YU12原始数据成功。" );
+                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_Idx + "：销毁Yu12原始数据成功。" );
                     break;
                 }
                 case 1: //如果要使用OpenH264解码器。
@@ -308,13 +308,13 @@ public class VdoOtpt //视频输出。
                             m_ThrdPt.m_LnkLstElmTotal = m_IdleFrmLnkLstPt.size(); //获取空闲帧链表的元素总数。
                             if( m_ThrdPt.m_LnkLstElmTotal > 0 ) //如果空闲帧链表中有帧。
                             {
-                                //从空闲帧链表中取出第一个帧。
+                                //从空闲帧链表中取出并删除第一个帧。
                                 synchronized( m_IdleFrmLnkLstPt )
                                 {
                                     m_ThrdPt.m_FrmPt = m_IdleFrmLnkLstPt.getFirst();
                                     m_IdleFrmLnkLstPt.removeFirst();
                                 }
-                                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：从空闲帧链表中取出第一个帧，空闲帧链表元素总数：" + m_ThrdPt.m_LnkLstElmTotal + "。" );
+                                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：从空闲帧链表中取出并删除第一个帧，空闲帧链表元素总数：" + m_ThrdPt.m_LnkLstElmTotal + "。" );
                             }
                             else //如果空闲帧链表中没有帧。
                             {
@@ -322,9 +322,9 @@ public class VdoOtpt //视频输出。
                                 if( m_ThrdPt.m_LnkLstElmTotal <= 20 )
                                 {
                                     m_ThrdPt.m_FrmPt = new VdoOtpt.Frm(); //创建一个空闲帧。
-                                    m_ThrdPt.m_FrmPt.m_YU12SrcFrmPt = new byte[ m_FrmMaxWidth * m_FrmMaxHeight * 3 / 2 ];
-                                    m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt = new HTInt();
-                                    m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt = new HTInt();
+                                    m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt = new byte[ m_FrmMaxWidth * m_FrmMaxHeight * 3 / 2 ];
+                                    m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt = new HTInt();
+                                    m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt = new HTInt();
                                     if( m_UseWhatDecd != 0 )
                                     {
                                         m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt = new byte[ m_FrmMaxWidth * m_FrmMaxHeight * 3 / 2 ];
@@ -346,22 +346,22 @@ public class VdoOtpt //视频输出。
 
                         m_ThrdPt.m_LastTickMsec = SystemClock.uptimeMillis();
 
-                        //调用用户定义的写入视频输出帧函数，并解码成YU12原始数据。
+                        //调用用户定义的写入视频输出帧函数，并解码成Yu12原始数据。
                         switch( m_UseWhatDecd ) //使用什么解码器。
                         {
-                            case 0: //如果要使用YU12原始数据。
+                            case 0: //如果要使用Yu12原始数据。
                             {
                                 //调用用户定义的写入视频输出帧函数。
-                                m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val = 0;
-                                m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val = 0;
+                                m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val = 0;
+                                m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val = 0;
                                 m_MediaPocsThrdPt.UserWriteVdoOtptFrm(
                                         m_Idx,
-                                        m_ThrdPt.m_FrmPt.m_YU12SrcFrmPt, m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt, m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt,
+                                        m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt,
                                         null, 0, null );
 
-                                if( ( m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val > 0 ) && ( m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val > 0 ) ) //如果本次写入了帧。
+                                if( ( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val > 0 ) && ( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val > 0 ) ) //如果本次写入了帧。
                                 {
-                                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：使用YU12原始数据成功。YU12格式原始帧宽度：" + m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val + "，高度：" + m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val + "。" );
+                                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：使用Yu12原始数据成功。Yu12格式原始帧宽度：" + m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val + "，高度：" + m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val + "。" );
                                 }
                                 else //如果本次没写入帧。
                                 {
@@ -371,7 +371,7 @@ public class VdoOtpt //视频输出。
                                 //用户定义的获取视频输出帧函数。
                                 m_MediaPocsThrdPt.UserGetVdoOtptFrm(
                                         m_Idx,
-                                        m_ThrdPt.m_FrmPt.m_YU12SrcFrmPt, m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val,
+                                        m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
                                         null, 0 );
                                 break;
                             }
@@ -389,11 +389,11 @@ public class VdoOtpt //视频输出。
                                     //使用OpenH264解码器。
                                     if( m_OpenH264DecdPt.m_Pt.Pocs(
                                             m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val,
-                                            m_ThrdPt.m_FrmPt.m_YU12SrcFrmPt, m_ThrdPt.m_FrmPt.m_YU12SrcFrmPt.length, m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt, m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt,
+                                            m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt.length, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt,
                                             null ) == 0 )
                                     {
-                                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：使用OpenH264解码器成功。YU12格式原始帧宽度：" + m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val + "，高度：" + m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val + "。" );
-                                        if( ( m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val == 0 ) || ( m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val == 0 ) ) break OutPocs; //如果未解码出YU12格式帧，就把本次帧丢弃。
+                                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：使用OpenH264解码器成功。Yu12格式原始帧宽度：" + m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val + "，高度：" + m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val + "。" );
+                                        if( ( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val == 0 ) || ( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val == 0 ) ) break OutPocs; //如果未解码出Yu12格式帧，就把本次帧丢弃。
                                     }
                                     else
                                     {
@@ -409,7 +409,7 @@ public class VdoOtpt //视频输出。
                                 //用户定义的获取视频输出帧函数。
                                 m_MediaPocsThrdPt.UserGetVdoOtptFrm(
                                         m_Idx,
-                                        m_ThrdPt.m_FrmPt.m_YU12SrcFrmPt, m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val,
+                                        m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
                                         m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val );
                                 break;
                             }
@@ -427,11 +427,11 @@ public class VdoOtpt //视频输出。
                                     //使用系统自带H264解码器。
                                     if( m_SystemH264DecdPt.m_Pt.Pocs(
                                             m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val,
-                                            m_ThrdPt.m_FrmPt.m_YU12SrcFrmPt, m_ThrdPt.m_FrmPt.m_YU12SrcFrmPt.length, m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt, m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt,
+                                            m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt.length, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt,
                                             40, null ) == 0 )
                                     {
-                                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：使用系统自带H264解码器成功。YU12格式原始帧宽度：" + m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val + "，高度：" + m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val + "。" );
-                                        if( ( m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val == 0 ) || ( m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val == 0 ) ) break OutPocs; //如果未解码出YU12格式帧，就把本次帧丢弃。
+                                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：使用系统自带H264解码器成功。Yu12格式原始帧宽度：" + m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val + "，高度：" + m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val + "。" );
+                                        if( ( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val == 0 ) || ( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val == 0 ) ) break OutPocs; //如果未解码出Yu12格式帧，就把本次帧丢弃。
                                     }
                                     else
                                     {
@@ -447,7 +447,7 @@ public class VdoOtpt //视频输出。
                                 //用户定义的获取视频输出帧函数。
                                 m_MediaPocsThrdPt.UserGetVdoOtptFrm(
                                         m_Idx,
-                                        m_ThrdPt.m_FrmPt.m_YU12SrcFrmPt, m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val,
+                                        m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
                                         m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val );
                                 break;
                             }
@@ -456,21 +456,21 @@ public class VdoOtpt //视频输出。
                         //判断设备是否黑屏。在视频处理完后再设置黑屏，这样可以保证视频处理器的连续性。
                         if( m_DvcPt.m_IsBlack != 0 )
                         {
-                            int p_TmpLenByt = m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val * m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val;
-                            Arrays.fill( m_ThrdPt.m_FrmPt.m_YU12SrcFrmPt, 0, p_TmpLenByt, ( byte ) 0 );
-                            Arrays.fill( m_ThrdPt.m_FrmPt.m_YU12SrcFrmPt, p_TmpLenByt, p_TmpLenByt + p_TmpLenByt / 2, ( byte ) 128 );
+                            int p_TmpLenByt = m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val * m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val;
+                            Arrays.fill( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, 0, p_TmpLenByt, ( byte ) 0 );
+                            Arrays.fill( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, p_TmpLenByt, p_TmpLenByt + p_TmpLenByt / 2, ( byte ) 128 );
                         }
 
                         //设置显示SurfaceView的宽高比。
-                        m_DvcPt.m_DspySurfaceViewPt.setWidthToHeightRatio( ( float )m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val / m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val );
+                        m_DvcPt.m_DspySurfaceViewPt.setWidthToHeightRatio( ( float )m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val / m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val );
 
                         //显示帧。
                         if( LibYUV.PictrDrawToSurface(
-                                m_ThrdPt.m_FrmPt.m_YU12SrcFrmPt, 0, LibYUV.PICTR_FMT_BT601F8_YU12_I420, m_ThrdPt.m_FrmPt.m_YU12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_YU12SrcFrmHeightPt.m_Val,
+                                m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, 0, LibYUV.PICTR_FMT_BT601F8_Yu12_I420, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
                                 m_DvcPt.m_DspySurfaceViewPt.getHolder().getSurface(),
                                 null ) != 0 )
                         {
-                            Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：绘制YU12格式原始帧到显示SurfaceView失败，本次帧丢弃。" );
+                            Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：绘制Yu12格式原始帧到显示SurfaceView失败，本次帧丢弃。" );
                             break OutPocs;
                         }
 
@@ -563,8 +563,8 @@ public class VdoOtpt //视频输出。
         }
     }
 
-    //设置视频输出的流使用YU12原始数据。
-    public void SetStrmUseYU12( int StrmIdx )
+    //设置视频输出的流使用Yu12原始数据。
+    public void SetStrmUseYu12( int StrmIdx )
     {
         //查找流索引。
         for( VdoOtpt.Strm p_StrmPt : m_StrmLnkLstPt )

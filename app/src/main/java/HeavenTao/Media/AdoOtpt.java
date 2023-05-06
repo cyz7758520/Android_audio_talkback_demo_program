@@ -719,13 +719,13 @@ public class AdoOtpt //音频输出。
                     m_ThrdPt.m_LnkLstElmTotal = m_PcmIdleFrmLnkLstPt.size(); //获取Pcm格式空闲帧链表的元素总数。
                     if( m_ThrdPt.m_LnkLstElmTotal > 0 ) //如果Pcm格式空闲帧链表中有帧。
                     {
-                        //从Pcm格式空闲帧链表中取出第一个帧。
+                        //从Pcm格式空闲帧链表中取出并删除第一个帧。
                         synchronized( m_PcmIdleFrmLnkLstPt )
                         {
                             m_ThrdPt.m_PcmSrcFrmPt = m_PcmIdleFrmLnkLstPt.getFirst();
                             m_PcmIdleFrmLnkLstPt.removeFirst();
                         }
-                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：从Pcm格式空闲帧链表中取出第一个帧，Pcm格式空闲帧链表元素总数：" + m_ThrdPt.m_LnkLstElmTotal + "。" );
+                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：从Pcm格式空闲帧链表中取出并删除第一个帧，Pcm格式空闲帧链表元素总数：" + m_ThrdPt.m_LnkLstElmTotal + "。" );
                     }
                     else //如果Pcm格式空闲帧链表中没有帧。
                     {

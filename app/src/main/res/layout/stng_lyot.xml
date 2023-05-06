@@ -664,12 +664,6 @@
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/IsDrawAdoWavfmToSurfaceCkBoxId"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="将音频输入原始、音频输入结果、音频输出原始的波形绘制到Surface中" />
-
-        <CheckBox
             android:id="@+id/IsSaveAdoToWaveFileCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -817,11 +811,11 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:id="@+id/UseYU12RdBtnId"
+                    android:id="@+id/UseYu12RdBtnId"
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:text="YU12原始数据"/>
+                    android:text="Yu12原始数据"/>
 
                 <RadioButton
                     android:id="@+id/UseOpenH264CodecRdBtnId"

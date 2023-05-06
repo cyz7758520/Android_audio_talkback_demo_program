@@ -30,7 +30,7 @@ public class SystemH264Encd
     }
 
     //创建并初始化系统自带H264编码器。
-    public int Init( int YU12FrmWidth, int YU12FrmHeight, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlTimeSec, int Complexity, Vstr ErrInfoVstrPt )
+    public int Init( int Yu12FrmWidth, int Yu12FrmHeight, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlTimeSec, int Complexity, Vstr ErrInfoVstrPt )
     {
         if( m_SystemH264EncdPt == 0 )
         {
@@ -41,7 +41,7 @@ public class SystemH264Encd
             }
 
             HTLong p_WebRtcNsPt = new HTLong();
-            if( SystemH264EncdInit( p_WebRtcNsPt, YU12FrmWidth, YU12FrmHeight, EncdBitrate, BitrateCtrlMode, MaxFrmRate, IDRFrmIntvlTimeSec, Complexity, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            if( SystemH264EncdInit( p_WebRtcNsPt, Yu12FrmWidth, Yu12FrmHeight, EncdBitrate, BitrateCtrlMode, MaxFrmRate, IDRFrmIntvlTimeSec, Complexity, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_SystemH264EncdPt = p_WebRtcNsPt.m_Val;
                 return 0;
@@ -57,10 +57,10 @@ public class SystemH264Encd
         }
     }
 
-    //用系统自带H264编码器对8位无符号整型YU12格式帧进行H264格式编码。
-    public int Pocs( byte YU12FrmPt[], long YU12FrmTimeStampMsec, byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt, long TimeOutMsec, Vstr ErrInfoVstrPt )
+    //用系统自带H264编码器对8位无符号整型Yu12格式帧进行H264格式编码。
+    public int Pocs( byte Yu12FrmPt[], long Yu12FrmTimeStampMsec, byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt, long TimeOutMsec, Vstr ErrInfoVstrPt )
     {
-        return SystemH264EncdPocs( m_SystemH264EncdPt, YU12FrmPt, YU12FrmTimeStampMsec, H264FrmPt, H264FrmSz, H264FrmLenPt, TimeOutMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return SystemH264EncdPocs( m_SystemH264EncdPt, Yu12FrmPt, Yu12FrmTimeStampMsec, H264FrmPt, H264FrmSz, H264FrmLenPt, TimeOutMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
     //销毁系统自带H264编码器。
@@ -85,10 +85,10 @@ public class SystemH264Encd
     }
 
     //创建并初始化系统自带H264编码器。
-    private native int SystemH264EncdInit( HTLong SystemH264EncdPt, int YU12FrmWidth, int YU12FrmHeight, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlTimeSec, int Cmplxt, long ErrInfoVstrPt );
+    private native int SystemH264EncdInit( HTLong SystemH264EncdPt, int Yu12FrmWidth, int Yu12FrmHeight, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlTimeSec, int Cmplxt, long ErrInfoVstrPt );
 
-    //用系统自带H264编码器对8位无符号整型YU12格式帧进行H264格式编码。
-    private native int SystemH264EncdPocs( long SystemH264EncdPt, byte YU12FrmPt[], long YU12FrmTimeStampMsec, byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt, long TimeOutMsec, long ErrInfoVstrPt );
+    //用系统自带H264编码器对8位无符号整型Yu12格式帧进行H264格式编码。
+    private native int SystemH264EncdPocs( long SystemH264EncdPt, byte Yu12FrmPt[], long Yu12FrmTimeStampMsec, byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt, long TimeOutMsec, long ErrInfoVstrPt );
 
     //销毁系统自带H264编码器。
     private native int SystemH264EncdDstoy( long SystemH264EncdPt, long ErrInfoVstrPt );

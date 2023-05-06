@@ -23,6 +23,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -295,29 +296,53 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         //设置IP地址编辑框的内容。
         try
         {
-            OutSetIPAddrEdit:
+            ArrayList< String > p_IPAddrList = new ArrayList< String >();
+
+            for( Enumeration<NetworkInterface> p_EnumNtwkIntfc = NetworkInterface.getNetworkInterfaces(); p_EnumNtwkIntfc.hasMoreElements(); ) //遍历所有的网络接口设备。
             {
-                //遍历所有的网络接口设备。
-                for( Enumeration<NetworkInterface> clEnumerationNetworkInterface = NetworkInterface.getNetworkInterfaces(); clEnumerationNetworkInterface.hasMoreElements(); )
+                NetworkInterface clNetworkInterface = p_EnumNtwkIntfc.nextElement();
+                for( Enumeration<InetAddress> p_EnumIpAddr = clNetworkInterface.getInetAddresses(); p_EnumIpAddr.hasMoreElements(); ) //遍历该网络接口设备所有的IP地址。
                 {
-                    NetworkInterface clNetworkInterface = clEnumerationNetworkInterface.nextElement();
-                    if( clNetworkInterface.getName().compareTo( "usbnet0" ) != 0 ) //如果该网络接口设备不是USB接口对应的网络接口设备。
+                    InetAddress p_InetAddr = p_EnumIpAddr.nextElement();
+                    if( ( !p_InetAddr.isLoopbackAddress() ) && ( p_InetAddr.getAddress().length == 4 ) ) //如果该IP地址不是回环地址，且是IPv4的。
                     {
-                        //遍历该网络接口设备所有的IP地址。
-                        for( Enumeration<InetAddress> enumIpAddr = clNetworkInterface.getInetAddresses(); enumIpAddr.hasMoreElements(); )
-                        {
-                            InetAddress clInetAddress = enumIpAddr.nextElement();
-                            if( ( !clInetAddress.isLoopbackAddress() ) && ( clInetAddress.getAddress().length == 4 ) ) //如果该IP地址不是回环地址，且是IPv4的。
-                            {
-                                ( ( EditText ) m_MainLyotViewPt.findViewById( R.id.IPAddrEdTxtId ) ).setText( clInetAddress.getHostAddress() );
-                                break OutSetIPAddrEdit;
-                            }
-                        }
+                        p_IPAddrList.add( p_InetAddr.getHostAddress() );
                     }
                 }
-
-                ( ( EditText ) m_MainLyotViewPt.findViewById( R.id.IPAddrEdTxtId ) ).setText( "0.0.0.0" ); //如果没有获取到IP地址，就设置为本地地址。
             }
+            p_IPAddrList.add( "0.0.0.0" );
+            p_IPAddrList.add( "127.0.0.1" );
+            for( Enumeration<NetworkInterface> p_EnumNtwkIntfc = NetworkInterface.getNetworkInterfaces(); p_EnumNtwkIntfc.hasMoreElements(); ) //遍历所有的网络接口设备。
+            {
+                NetworkInterface clNetworkInterface = p_EnumNtwkIntfc.nextElement();
+                for( Enumeration<InetAddress> p_EnumIpAddr = clNetworkInterface.getInetAddresses(); p_EnumIpAddr.hasMoreElements(); ) //遍历该网络接口设备所有的IP地址。
+                {
+                    InetAddress p_InetAddr = p_EnumIpAddr.nextElement();
+                    if( ( !p_InetAddr.isLoopbackAddress() ) && ( p_InetAddr.getAddress().length != 4 ) ) //如果该IP地址不是回环地址，且是IPv6的。
+                    {
+                        p_IPAddrList.add( p_InetAddr.getHostAddress() );
+                    }
+                }
+            }
+            p_IPAddrList.add( "::" );
+            p_IPAddrList.add( "::1" );
+
+            ArrayAdapter< String > p_VdoFrmSzAdapter = new ArrayAdapter< String >( this, android.R.layout.simple_spinner_dropdown_item, p_IPAddrList );
+            ( ( Spinner ) m_MainLyotViewPt.findViewById( R.id.IPAddrSpinnerId ) ).setAdapter( p_VdoFrmSzAdapter );
+            ( ( Spinner ) m_MainLyotViewPt.findViewById( R.id.IPAddrSpinnerId ) ).setOnItemSelectedListener( new AdapterView.OnItemSelectedListener()
+            {
+                @Override
+                public void onItemSelected( AdapterView< ? > parent, View view, int position, long id )
+                {
+                    ( ( EditText ) m_MainLyotViewPt.findViewById( R.id.IPAddrEdTxtId ) ).setText( ( ( Spinner ) m_MainLyotViewPt.findViewById( R.id.IPAddrSpinnerId ) ).getSelectedItem().toString() );
+                }
+
+                @Override
+                public void onNothingSelected( AdapterView< ? > parent )
+                {
+
+                }
+            } );
         }
         catch( SocketException e )
         {
@@ -636,6 +661,24 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         if( m_MyMediaPocsThrdPt != null )
         {
             m_MyMediaPocsThrdPt.VdoOtptSetStrmIsBlack( 0, ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.VdoOtptIsBlackCkBoxId ) ).isChecked() ) ? 1 : 0 );
+        }
+    }
+
+    //是否绘制音频波形到Surface复选框。
+    public void onClickIsDrawAdoWavfmToSurfaceCkBox( View ViewPt )
+    {
+        if( m_MyMediaPocsThrdPt != null )
+        {
+            //设置音频输入是否绘制音频波形到Surface。
+            m_MyMediaPocsThrdPt.AdoInptSetIsDrawAdoWavfmToSurface(
+                    ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
+                    ( ( SurfaceView )findViewById( R.id.AdoInptWavfmSurfaceId ) ),
+                    ( ( SurfaceView )findViewById( R.id.AdoRsltWavfmSurfaceId ) ) );
+
+            //设置音频输出是否绘制音频波形到Surface。
+            m_MyMediaPocsThrdPt.AdoOtptSetIsDrawAdoWavfmToSurface(
+                    ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
+                    ( ( SurfaceView )findViewById( R.id.AdoOtptWavfmSurfaceId ) ) );
         }
     }
 
@@ -987,7 +1030,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
                 //设置音频输入是否绘制音频波形到Surface。
                 m_MyMediaPocsThrdPt.AdoInptSetIsDrawAdoWavfmToSurface(
-                        ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
+                        ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
                         ( ( SurfaceView )findViewById( R.id.AdoInptWavfmSurfaceId ) ),
                         ( ( SurfaceView )findViewById( R.id.AdoRsltWavfmSurfaceId ) ) );
 
@@ -1045,7 +1088,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
                 //设置音频输出是否绘制音频波形到Surface。
                 m_MyMediaPocsThrdPt.AdoOtptSetIsDrawAdoWavfmToSurface(
-                        ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
+                        ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
                         ( ( SurfaceView )findViewById( R.id.AdoOtptWavfmSurfaceId ) ) );
 
                 //设置音频输出使用的设备。
@@ -1097,10 +1140,10 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     }
                 }
 
-                //设置视频输入是否使用YU12原始数据。
-                if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseYU12RdBtnId ) ).isChecked() )
+                //设置视频输入是否使用Yu12原始数据。
+                if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseYu12RdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.VdoInptSetUseYU12();
+                    m_MyMediaPocsThrdPt.VdoInptSetUseYu12();
                 }
 
                 //设置视频输入是否使用OpenH264编码器。
@@ -1140,10 +1183,10 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                         0,
                         ( ( HTSurfaceView )findViewById( R.id.VdoOtptDspySurfaceId ) ) );
 
-                //设置视频输出是否使用YU12原始数据。
-                if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseYU12RdBtnId ) ).isChecked() )
+                //设置视频输出是否使用Yu12原始数据。
+                if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseYu12RdBtnId ) ).isChecked() )
                 {
-                    m_MyMediaPocsThrdPt.VdoOtptSetStrmUseYU12( 0 );
+                    m_MyMediaPocsThrdPt.VdoOtptSetStrmUseYu12( 0 );
                 }
 
                 //设置视频输出是否使用OpenH264解码器。
@@ -1280,7 +1323,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveAdoToWaveFileCkBoxId ) ).setChecked( true );
-        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate12RdBtnId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
@@ -1369,7 +1411,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveAdoToWaveFileCkBoxId ) ).setChecked( true );
-        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
         ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 1 );
@@ -1457,7 +1498,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveAdoToWaveFileCkBoxId ) ).setChecked( true );
-        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
         ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 2 );
@@ -1545,7 +1585,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveAdoToWaveFileCkBoxId ) ).setChecked( true );
-        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate24RdBtnId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
         ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 2 );
@@ -1633,7 +1672,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsSaveAdoToWaveFileCkBoxId ) ).setChecked( true );
-        ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate30RdBtnId ) ).setChecked( true );
         ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
         ( ( Spinner ) m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 3 );

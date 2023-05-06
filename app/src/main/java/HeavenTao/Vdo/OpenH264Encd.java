@@ -59,13 +59,13 @@ public class OpenH264Encd
         return OpenH264EncdGetEncdBitrate( m_OpenH264EncdPt, EncdBitratePt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
-    //用OpenH264编码器对8位无符号整型YU12格式帧进行H264格式编码。
-    public int Pocs( byte YU12FrmPt[], int YU12FrmWidth, int YU12FrmHeight, long YU12FrmTimeStampMsec,
+    //用OpenH264编码器对8位无符号整型Yu12格式帧进行H264格式编码。
+    public int Pocs( byte Yu12FrmPt[], int Yu12FrmWidth, int Yu12FrmHeight, long Yu12FrmTimeStampMsec,
                      byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt,
                      Vstr ErrInfoVstrPt )
     {
         return OpenH264EncdPocs( m_OpenH264EncdPt,
-                                    YU12FrmPt, YU12FrmWidth, YU12FrmHeight, YU12FrmTimeStampMsec,
+                                    Yu12FrmPt, Yu12FrmWidth, Yu12FrmHeight, Yu12FrmTimeStampMsec,
                                     H264FrmPt, H264FrmSz, H264FrmLenPt,
                                     ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
@@ -100,9 +100,9 @@ public class OpenH264Encd
     //获取OpenH264编码器的编码后比特率。
     private native int OpenH264EncdGetEncdBitrate( long OpenH264EncdPt, HTInt EncdBitratePt, long ErrInfoVstrPt );
 
-    //用OpenH264编码器对8位无符号整型YU12格式帧进行H264格式编码。
+    //用OpenH264编码器对8位无符号整型Yu12格式帧进行H264格式编码。
     private native int OpenH264EncdPocs( long OpenH264EncdPt,
-                                         byte YU12FrmPt[], int YU12FrmWidth, int YU12FrmHeight, long YU12FrmTimeStampMsec,
+                                         byte Yu12FrmPt[], int Yu12FrmWidth, int Yu12FrmHeight, long Yu12FrmTimeStampMsec,
                                          byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt,
                                          long ErrInfoVstrPt );
 

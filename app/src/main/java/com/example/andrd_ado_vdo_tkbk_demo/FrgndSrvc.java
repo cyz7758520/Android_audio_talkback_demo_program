@@ -28,7 +28,7 @@ public class FrgndSrvc extends Service
             if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ) //如果当前系统为Andoird 8.0及以上。
             {
                 //创建状态通知的通知渠道，并设置为静音。
-                NotificationChannel p_NotificationChannel = new NotificationChannel( "status", "状态通知", NotificationManager.IMPORTANCE_HIGH );
+                NotificationChannel p_NotificationChannel = new NotificationChannel( "前台服务通知", "前台服务通知", NotificationManager.IMPORTANCE_HIGH );
                 p_NotificationChannel.setSound( null, null );
                 p_NotificationManagerPt.createNotificationChannel( p_NotificationChannel );
             }
@@ -37,7 +37,7 @@ public class FrgndSrvc extends Service
             PendingIntent pendingIntent = PendingIntent.getActivity( m_MainActivityPt, 0, new Intent( m_MainActivityPt, MainActivity.class ), PendingIntent.FLAG_IMMUTABLE );
             Notification notification =
                     new NotificationCompat
-                            .Builder( m_MainActivityPt, "status" ) //Android API 14及以上版本使用。
+                            .Builder( m_MainActivityPt, "前台服务通知" ) //Android API 14及以上版本使用。
                             //new NotificationCompat.Builder( m_MainActivityPt ) //Android API 9~25版本使用。
                             .setSmallIcon( R.mipmap.tkbk_icon )
                             .setContentTitle( m_MainActivityPt.getString( R.string.app_name ) )
