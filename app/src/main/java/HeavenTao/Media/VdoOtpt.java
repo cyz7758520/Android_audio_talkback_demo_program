@@ -5,9 +5,10 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import HeavenTao.Vdo.*;
 import HeavenTao.Data.*;
@@ -32,8 +33,8 @@ public class VdoOtpt //视频输出。
         HTLong m_EncdSrcFrmLenBytPt; //存放已编码格式原始帧的长度，单位为字节。
         long m_TimeStampMsec; //存放时间戳，单位为毫秒。
     }
-    public LinkedList< VdoOtpt.Frm > m_FrmLnkLstPt; //存放帧链表的指针。
-    public LinkedList< VdoOtpt.Frm > m_IdleFrmLnkLstPt; //存放空闲帧链表的指针。
+    public ConcurrentLinkedQueue< Frm > m_FrmCntnrPt; //存放帧容器的指针。
+    public ConcurrentLinkedQueue< Frm > m_IdleFrmCntnrPt; //存放空闲帧容器的指针。
 
     public class Strm //存放流。
     {
@@ -68,7 +69,7 @@ public class VdoOtpt //视频输出。
         {
             int m_IsInitThrdTmpVar; //存放是否初始化线程的临时变量。
             VdoOtpt.Frm m_FrmPt; //存放帧的指针。
-            int m_LnkLstElmTotal; //存放链表的元素总数。
+            int m_ElmTotal; //存放元素总数。
             long m_LastTickMsec; //存放上次的嘀嗒钟，单位为毫秒。
             long m_NowTickMsec; //存放本次的嘀嗒钟，单位为毫秒。
 
@@ -208,7 +209,7 @@ public class VdoOtpt //视频输出。
                 {
                     m_ThrdPt.m_IsInitThrdTmpVar = 1; //设置已初始化线程的临时变量。
                     m_ThrdPt.m_FrmPt = null; //初始化帧的指针。
-                    m_ThrdPt.m_LnkLstElmTotal = 0; //初始化链表的元素总数。
+                    m_ThrdPt.m_ElmTotal = 0; //初始化元素总数。
                     m_ThrdPt.m_LastTickMsec = 0; //初始化上次的嘀嗒钟。
                     m_ThrdPt.m_NowTickMsec = 0; //初始化本次的嘀嗒钟。
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_Idx + "：初始化线程的临时变量成功。" );
@@ -253,7 +254,7 @@ public class VdoOtpt //视频输出。
             {
                 m_ThrdPt.m_IsInitThrdTmpVar = 0; //设置未初始化线程的临时变量。
                 m_ThrdPt.m_FrmPt = null; //销毁帧的指针。
-                m_ThrdPt.m_LnkLstElmTotal = 0; //销毁链表的元素总数。
+                m_ThrdPt.m_ElmTotal = 0; //销毁元素总数。
                 m_ThrdPt.m_LastTickMsec = 0; //销毁上次的嘀嗒钟。
                 m_ThrdPt.m_NowTickMsec = 0; //销毁本次的嘀嗒钟。
                 if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_Idx + "：销毁线程的临时变量成功。" );
@@ -305,21 +306,16 @@ public class VdoOtpt //视频输出。
                         if( m_ThrdPt.m_FrmPt == null ) //如果没获取一个空闲帧。
                         {
                             //获取一个空闲帧。
-                            m_ThrdPt.m_LnkLstElmTotal = m_IdleFrmLnkLstPt.size(); //获取空闲帧链表的元素总数。
-                            if( m_ThrdPt.m_LnkLstElmTotal > 0 ) //如果空闲帧链表中有帧。
+                            m_ThrdPt.m_ElmTotal = m_IdleFrmCntnrPt.size(); //获取空闲帧容器的元素总数。
+                            if( m_ThrdPt.m_ElmTotal > 0 ) //如果空闲帧容器中有帧。
                             {
-                                //从空闲帧链表中取出并删除第一个帧。
-                                synchronized( m_IdleFrmLnkLstPt )
-                                {
-                                    m_ThrdPt.m_FrmPt = m_IdleFrmLnkLstPt.getFirst();
-                                    m_IdleFrmLnkLstPt.removeFirst();
-                                }
-                                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：从空闲帧链表中取出并删除第一个帧，空闲帧链表元素总数：" + m_ThrdPt.m_LnkLstElmTotal + "。" );
+                                m_ThrdPt.m_FrmPt = m_IdleFrmCntnrPt.poll(); //从空闲帧容器中取出并删除第一个帧。
+                                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：从空闲帧容器中取出并删除第一个帧，空闲帧容器元素总数：" + m_ThrdPt.m_ElmTotal + "。" );
                             }
-                            else //如果空闲帧链表中没有帧。
+                            else //如果空闲帧容器中没有帧。
                             {
-                                m_ThrdPt.m_LnkLstElmTotal = m_FrmLnkLstPt.size(); //获取帧链表的元素总数。
-                                if( m_ThrdPt.m_LnkLstElmTotal <= 20 )
+                                m_ThrdPt.m_ElmTotal = m_FrmCntnrPt.size(); //获取帧容器的元素总数。
+                                if( m_ThrdPt.m_ElmTotal <= 20 )
                                 {
                                     m_ThrdPt.m_FrmPt = new VdoOtpt.Frm(); //创建一个空闲帧。
                                     m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt = new byte[ m_FrmMaxWidth * m_FrmMaxHeight * 3 / 2 ];
@@ -334,11 +330,11 @@ public class VdoOtpt //视频输出。
                                         m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt = null;
                                     }
                                     m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt = new HTLong( 0 );
-                                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：空闲帧链表中没有帧，创建一个空闲帧成功。" );
+                                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：空闲帧容器中没有帧，创建一个空闲帧成功。" );
                                 }
                                 else
                                 {
-                                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：帧链表中帧总数为" + m_ThrdPt.m_LnkLstElmTotal + "已经超过上限20，不再创建空闲帧。" );
+                                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：帧容器中帧总数为" + m_ThrdPt.m_ElmTotal + "已经超过上限20，不再创建空闲帧。" );
                                     break OutPocs;
                                 }
                             }
@@ -477,11 +473,8 @@ public class VdoOtpt //视频输出。
                         m_ThrdPt.m_FrmPt.m_StrmIdx = m_Idx; //设置流索引。
                         m_ThrdPt.m_FrmPt.m_TimeStampMsec = m_ThrdPt.m_LastTickMsec; //设置时间戳。
 
-                        //追加本次帧到帧链表。
-                        synchronized( m_FrmLnkLstPt )
-                        {
-                            m_FrmLnkLstPt.addLast( m_ThrdPt.m_FrmPt );
-                        }
+                        //放入本次帧到帧容器。注意：从取出到放入过程中可以跳出，跳出后会再次使用本次帧。
+                        m_FrmCntnrPt.offer( m_ThrdPt.m_FrmPt );
                         m_ThrdPt.m_FrmPt = null;
 
                         if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )
@@ -504,13 +497,13 @@ public class VdoOtpt //视频输出。
             }
         }
     }
-    public LinkedList< Strm > m_StrmLnkLstPt; //存放流链表的指针。
+    public ArrayList< Strm > m_StrmCntnrPt; //存放流容器的指针。
 
     //添加视频输出的流。
     public void AddStrm( int StrmIdx )
     {
         //查找流索引。
-        for( Strm p_StrmPt : m_StrmLnkLstPt )
+        for( Strm p_StrmPt : m_StrmCntnrPt )
         {
             if( p_StrmPt.m_Idx == StrmIdx )
             {
@@ -518,17 +511,17 @@ public class VdoOtpt //视频输出。
             }
         }
 
-        //添加到流链表。
+        //添加到流容器。
         VdoOtpt.Strm p_StrmPt = new VdoOtpt.Strm();
         p_StrmPt.m_Idx = StrmIdx;
-        m_StrmLnkLstPt.addLast( p_StrmPt );
+        m_StrmCntnrPt.add( p_StrmPt );
     }
 
     //删除视频输出的流。
     public void DelStrm( int StrmIdx )
     {
         //查找流索引。
-        for( Iterator< VdoOtpt.Strm > p_StrmItrtr = m_StrmLnkLstPt.iterator(); p_StrmItrtr.hasNext(); )
+        for( Iterator< VdoOtpt.Strm > p_StrmItrtr = m_StrmCntnrPt.iterator(); p_StrmItrtr.hasNext(); )
         {
             VdoOtpt.Strm p_StrmPt = p_StrmItrtr.next();
             if( p_StrmPt.m_Idx == StrmIdx )
@@ -549,7 +542,7 @@ public class VdoOtpt //视频输出。
         }
 
         //查找流索引。
-        for( VdoOtpt.Strm p_StrmPt : m_StrmLnkLstPt )
+        for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
         {
             if( p_StrmPt.m_Idx == StrmIdx )
             {
@@ -567,7 +560,7 @@ public class VdoOtpt //视频输出。
     public void SetStrmUseYu12( int StrmIdx )
     {
         //查找流索引。
-        for( VdoOtpt.Strm p_StrmPt : m_StrmLnkLstPt )
+        for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
         {
             if( p_StrmPt.m_Idx == StrmIdx )
             {
@@ -585,7 +578,7 @@ public class VdoOtpt //视频输出。
     public void SetStrmUseOpenH264Decd( int StrmIdx, int DecdThrdNum )
     {
         //查找流索引。
-        for( VdoOtpt.Strm p_StrmPt : m_StrmLnkLstPt )
+        for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
         {
             if( p_StrmPt.m_Idx == StrmIdx )
             {
@@ -604,7 +597,7 @@ public class VdoOtpt //视频输出。
     public void SetStrmUseSystemH264Decd( int StrmIdx )
     {
         //查找流索引。
-        for( VdoOtpt.Strm p_StrmPt : m_StrmLnkLstPt )
+        for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
         {
             if( p_StrmPt.m_Idx == StrmIdx )
             {
@@ -622,7 +615,7 @@ public class VdoOtpt //视频输出。
     public void SetStrmIsBlack( int StrmIdx, int IsBlack )
     {
         //查找流索引。
-        for( VdoOtpt.Strm p_StrmPt : m_StrmLnkLstPt )
+        for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
         {
             if( p_StrmPt.m_Idx == StrmIdx )
             {
@@ -636,7 +629,7 @@ public class VdoOtpt //视频输出。
     public void SetStrmIsUse( int StrmIdx, int IsUseStrm )
     {
         //查找流索引。
-        for( VdoOtpt.Strm p_StrmPt : m_StrmLnkLstPt )
+        for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
         {
             if( p_StrmPt.m_Idx == StrmIdx ) //如果索引找到了。
             {
@@ -687,15 +680,15 @@ public class VdoOtpt //视频输出。
         {
             if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) p_LastMsec = SystemClock.uptimeMillis(); //记录初始化开始的时间。
 
-            //初始化帧链表。
-            m_FrmLnkLstPt = new LinkedList<>();
-            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：初始化帧链表成功。" );
+            //初始化帧容器。
+            m_FrmCntnrPt = new ConcurrentLinkedQueue<>();
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：初始化帧容器成功。" );
 
-            //初始化空闲帧链表。
-            m_IdleFrmLnkLstPt = new LinkedList<>();
-            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：初始化空闲帧链表成功。" );
+            //初始化空闲帧容器。
+            m_IdleFrmCntnrPt = new ConcurrentLinkedQueue<>();
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：初始化空闲帧容器成功。" );
 
-            for( VdoOtpt.Strm p_StrmPt : m_StrmLnkLstPt )
+            for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
             {
                 if( p_StrmPt.m_IsUse != 0 )
                 {
@@ -727,25 +720,25 @@ public class VdoOtpt //视频输出。
 
         if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) p_LastMsec = SystemClock.uptimeMillis(); //记录销毁开始的时间。
 
-        for( VdoOtpt.Strm p_StrmPt : m_StrmLnkLstPt )
+        for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
         {
             p_StrmPt.Dstoy();
         }
 
-        //销毁空闲帧链表。
-        if( m_IdleFrmLnkLstPt != null )
+        //销毁空闲帧容器。
+        if( m_IdleFrmCntnrPt != null )
         {
-            m_IdleFrmLnkLstPt.clear();
-            m_IdleFrmLnkLstPt = null;
-            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：销毁空闲帧链表成功。" );
+            m_IdleFrmCntnrPt.clear();
+            m_IdleFrmCntnrPt = null;
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：销毁空闲帧容器成功。" );
         }
 
-        //销毁帧链表。
-        if( m_FrmLnkLstPt != null )
+        //销毁帧容器。
+        if( m_FrmCntnrPt != null )
         {
-            m_FrmLnkLstPt.clear();
-            m_FrmLnkLstPt = null;
-            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：销毁帧链表成功。" );
+            m_FrmCntnrPt.clear();
+            m_FrmCntnrPt = null;
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：销毁帧容器成功。" );
         }
 
         if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )

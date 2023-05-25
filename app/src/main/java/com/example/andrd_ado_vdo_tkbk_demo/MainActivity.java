@@ -329,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
             ArrayAdapter< String > p_VdoFrmSzAdapter = new ArrayAdapter< String >( this, android.R.layout.simple_spinner_dropdown_item, p_IPAddrList );
             ( ( Spinner ) m_MainLyotViewPt.findViewById( R.id.IPAddrSpinnerId ) ).setAdapter( p_VdoFrmSzAdapter );
-            ( ( Spinner ) m_MainLyotViewPt.findViewById( R.id.IPAddrSpinnerId ) ).setOnItemSelectedListener( new AdapterView.OnItemSelectedListener()
+            ( ( Spinner ) m_MainLyotViewPt.findViewById( R.id.IPAddrSpinnerId ) ).setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() //设置IP地址Spinner控件的选择监听器。
             {
                 @Override
                 public void onItemSelected( AdapterView< ? > parent, View view, int position, long id )
@@ -344,7 +344,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 }
             } );
         }
-        catch( SocketException e )
+        catch( SocketException ignored )
         {
         }
 
@@ -735,8 +735,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     m_MyMediaPocsThrdPt.m_IsAutoAllowCnct = ( ( ( CheckBox ) m_XfrPrtclStngLyotViewPt.findViewById( R.id.IsAutoAllowCnctCkBoxId ) ).isChecked() ) ? 1 : 0;
                 }
 
-                //设置是否使用链表。
-                if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseLnkLstRecvOtptFrmRdBtnId ) ).isChecked() )
+                //设置是否使用容器。
+                if( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseCntnrRecvOtptFrmRdBtnId ) ).isChecked() )
                 {
                     m_MyMediaPocsThrdPt.m_UseWhatRecvOtptFrm = 0;
                 }

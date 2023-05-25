@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="版本：2023年05月06日"
+                android:text="版本：2023年05月25日"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="normal|bold" />
@@ -117,21 +117,28 @@
                     android:gravity="center_vertical"
                     android:text="IP地址或域名：" />
 
-                <EditText
-                    android:id="@+id/IPAddrEdTxtId"
+                <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="6"
-                    android:hint="请输入IP地址或者域名"
-                    android:singleLine="true"
-                    android:textStyle="normal"/>
+                    android:layout_height="wrap_content"
+                    android:layout_weight="7" >
 
-                <Spinner
-                    android:id="@+id/IPAddrSpinnerId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:entries="@android:array/phoneTypes" />
+                    <EditText
+                        android:id="@+id/IPAddrEdTxtId"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:hint="请输入IP地址或者域名"
+                        android:singleLine="true"
+                        android:textStyle="normal"/>
+
+                    <Spinner
+                        android:id="@+id/IPAddrSpinnerId"
+                        android:layout_height="match_parent"
+                        android:layout_width="47dp"
+                        android:entries="@android:array/phoneTypes" />
+
+                </LinearLayout>
 
             </LinearLayout>
 

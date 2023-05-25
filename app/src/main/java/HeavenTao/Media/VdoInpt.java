@@ -9,8 +9,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import HeavenTao.Vdo.*;
 import HeavenTao.Data.*;
@@ -61,7 +61,7 @@ public class VdoInpt //视频输入。
         SurfaceHolder.Callback m_PrvwSurfaceClbkPt; //存放预览Surface回调函数的指针。
         byte m_PrvwClbkBufPtPt[][]; //存放预览回调函数缓冲区的指针。
         VodInptPrvwClbk m_PrvwClbkPt; //存放预览回调函数的指针。
-        LinkedList< byte[] > m_Nv21SrcFrmLnkLstPt; //存放Nv21格式原始帧链表的指针。
+        ConcurrentLinkedQueue< byte[] > m_Nv21SrcFrmCntnrPt; //存放Nv21格式原始帧容器的指针。
         int m_Nv21SrcFrmWidth; //存放Nv21格式原始帧的宽度，单位为像素。
         int m_Nv21SrcFrmHeight; //存放Nv21格式原始帧的高度，单位为像素。
         long m_Nv21SrcFrmLenByt; //存放Nv21格式原始帧的长度，单位为字节，为m_Nv21SrcFrmWidth * m_Nv21SrcFrmHeight * 3 / 2。
@@ -89,8 +89,8 @@ public class VdoInpt //视频输入。
         HTLong m_EncdRsltFrmLenBytPt; //存放已编码格式结果帧的长度，单位为字节。
         long m_TimeStampMsec; //存放时间戳，单位为毫秒。
     }
-    public LinkedList< Frm > m_FrmLnkLstPt; //存放帧链表的指针。
-    public LinkedList< Frm > m_IdleFrmLnkLstPt; //存放空闲帧链表的指针。
+    public ConcurrentLinkedQueue< Frm > m_FrmCntnrPt; //存放帧容器的指针。
+    public ConcurrentLinkedQueue< Frm > m_IdleFrmCntnrPt; //存放空闲帧容器的指针。
 
     class Thrd //存放线程。
     {
@@ -103,7 +103,7 @@ public class VdoInpt //视频输入。
         long m_TmpFrmSzByt; //存放临时帧的大小，单位为字节。
         HTLong m_TmpFrmLenBytPt; //存放临时帧的长度，单位为字节。
         Frm m_FrmPt; //存放帧的指针。
-        int m_LnkLstElmTotal; //存放链表的元素总数。
+        int m_ElmTotal; //存放元素总数。
         long m_LastTickMsec; //存放上次的嘀嗒钟，单位为毫秒。
         long m_NowTickMsec; //存放本次的嘀嗒钟，单位为毫秒。
 
@@ -433,14 +433,14 @@ public class VdoInpt //视频输入。
                 //设置预览回调函数缓冲区的指针。
                 m_DvcPt.m_PrvwClbkBufPtPt = new byte[ m_MaxSmplRate ][ ( int ) m_DvcPt.m_Nv21SrcFrmLenByt ];
                 for( int p_TmpInt = 0; p_TmpInt < m_MaxSmplRate; p_TmpInt++ )
-                    m_DvcPt.m_Pt.addCallbackBuffer( m_DvcPt.m_PrvwClbkBufPtPt[ p_TmpInt ] ); //追加Nv21格式原始帧到设备。
+                    m_DvcPt.m_Pt.addCallbackBuffer( m_DvcPt.m_PrvwClbkBufPtPt[ p_TmpInt ] ); //放入Nv21格式原始帧到设备。
 
                 //设置预览回调函数。
                 m_DvcPt.m_PrvwClbkPt = new VodInptPrvwClbk();
                 m_DvcPt.m_Pt.setPreviewCallbackWithBuffer( m_DvcPt.m_PrvwClbkPt );
 
-                //初始化Nv21格式原始帧链表。
-                m_DvcPt.m_Nv21SrcFrmLnkLstPt = new LinkedList< byte[] >();
+                //初始化Nv21格式原始帧容器。
+                m_DvcPt.m_Nv21SrcFrmCntnrPt = new ConcurrentLinkedQueue();
 
                 //设置设备开始预览。
                 try
@@ -514,19 +514,19 @@ public class VdoInpt //视频输入。
                 m_ThrdPt.m_TmpFrm2Pt = new byte[( int )m_ThrdPt.m_TmpFrmSzByt]; //初始化临时帧的指针。
                 m_ThrdPt.m_TmpFrmLenBytPt = new HTLong(); //初始化临时帧的长度。
                 m_ThrdPt.m_FrmPt = null; //初始化视频输入帧的指针。
-                m_ThrdPt.m_LnkLstElmTotal = 0; //初始化链表的元素总数。
+                m_ThrdPt.m_ElmTotal = 0; //初始化元素总数。
                 m_ThrdPt.m_LastTickMsec = 0; //初始化上次的嘀嗒钟。
                 m_ThrdPt.m_NowTickMsec = 0; //初始化本次的嘀嗒钟。
                 if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化线程的临时变量成功。" );
             }
 
-            //初始化帧链表。
-            m_FrmLnkLstPt = new LinkedList< Frm >();
-            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化帧链表成功。" );
+            //初始化帧容器。
+            m_FrmCntnrPt = new ConcurrentLinkedQueue<>();
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化帧容器成功。" );
 
-            //初始化空闲帧链表。
-            m_IdleFrmLnkLstPt = new LinkedList< Frm >();
-            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化空闲帧链表成功。" );
+            //初始化空闲帧容器。
+            m_IdleFrmCntnrPt = new ConcurrentLinkedQueue<>();
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化空闲帧容器成功。" );
 
             //初始化线程。
             {
@@ -588,7 +588,7 @@ public class VdoInpt //视频输入。
             m_ThrdPt.m_TmpFrmLenBytPt = null; //初始化结果帧的长度。
             m_ThrdPt.m_TmpFrmSzByt = 0; //销毁结果帧的大小。
             m_ThrdPt.m_FrmPt = null; //销毁帧的指针。
-            m_ThrdPt.m_LnkLstElmTotal = 0; //销毁链表的元素总数。
+            m_ThrdPt.m_ElmTotal = 0; //销毁元素总数。
             m_ThrdPt.m_LastTickMsec = 0; //销毁上次的嘀嗒钟。
             m_ThrdPt.m_NowTickMsec = 0; //销毁本次的嘀嗒钟。
             if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁线程的临时变量成功。" );
@@ -601,10 +601,10 @@ public class VdoInpt //视频输入。
             m_DvcPt.m_Pt.stopPreview(); //停止预览。
             m_DvcPt.m_Pt.release(); //销毁摄像头。
             m_DvcPt.m_Pt = null;
-            if( m_DvcPt.m_Nv21SrcFrmLnkLstPt != null )
+            if( m_DvcPt.m_Nv21SrcFrmCntnrPt != null )
             {
-                m_DvcPt.m_Nv21SrcFrmLnkLstPt.clear();
-                m_DvcPt.m_Nv21SrcFrmLnkLstPt = null;
+                m_DvcPt.m_Nv21SrcFrmCntnrPt.clear();
+                m_DvcPt.m_Nv21SrcFrmCntnrPt = null;
             }
             m_DvcPt.m_PrvwClbkPt = null;
             m_DvcPt.m_PrvwSurfaceViewPt.getHolder().removeCallback( m_DvcPt.m_PrvwSurfaceClbkPt );
@@ -623,20 +623,20 @@ public class VdoInpt //视频输入。
             if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁设备成功。" );
         }
 
-        //销毁空闲帧链表。
-        if( m_IdleFrmLnkLstPt != null )
+        //销毁空闲帧容器。
+        if( m_IdleFrmCntnrPt != null )
         {
-            m_IdleFrmLnkLstPt.clear();
-            m_IdleFrmLnkLstPt = null;
-            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁空闲帧链表成功。" );
+            m_IdleFrmCntnrPt.clear();
+            m_IdleFrmCntnrPt = null;
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁空闲帧容器成功。" );
         }
 
-        //销毁帧链表。
-        if( m_FrmLnkLstPt != null )
+        //销毁帧容器。
+        if( m_FrmCntnrPt != null )
         {
-            m_FrmLnkLstPt.clear();
-            m_FrmLnkLstPt = null;
-            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁帧链表成功。" );
+            m_FrmCntnrPt.clear();
+            m_FrmCntnrPt = null;
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁帧容器成功。" );
         }
 
         //销毁编码器。
@@ -694,11 +694,7 @@ public class VdoInpt //视频输入。
         //读取一个视频输入帧的预览回调函数，本函数是在主线程中运行的。
         @Override public void onPreviewFrame( byte[] data, Camera camera )
         {
-            //追加本次视频输入帧到视频输入帧链表。
-            synchronized( m_DvcPt.m_Nv21SrcFrmLnkLstPt )
-            {
-                m_DvcPt.m_Nv21SrcFrmLnkLstPt.addLast( data );
-            }
+            m_DvcPt.m_Nv21SrcFrmCntnrPt.offer( data ); //放入本次视频输入帧到视频输入帧容器。
             if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：读取一个Nv21格式原始帧。" );
         }
     }
@@ -715,18 +711,13 @@ public class VdoInpt //视频输入。
             {
                 OutPocs:
                 {
-                    m_ThrdPt.m_LnkLstElmTotal = m_DvcPt.m_Nv21SrcFrmLnkLstPt.size(); //获取Nv21格式原始帧链表的元素总数。
-                    if( m_ThrdPt.m_LnkLstElmTotal > 0 ) //如果Nv21格式原始帧链表中有帧了。
+                    m_ThrdPt.m_ElmTotal = m_DvcPt.m_Nv21SrcFrmCntnrPt.size(); //获取Nv21格式原始帧容器的元素总数。
+                    if( m_ThrdPt.m_ElmTotal > 0 ) //如果Nv21格式原始帧容器中有帧了。
                     {
-                        //从Nv21格式原始帧链表中取出并删除第一个帧。
-                        synchronized( m_DvcPt.m_Nv21SrcFrmLnkLstPt )
-                        {
-                            m_ThrdPt.m_Nv21SrcFrmPt = m_DvcPt.m_Nv21SrcFrmLnkLstPt.getFirst();
-                            m_DvcPt.m_Nv21SrcFrmLnkLstPt.removeFirst();
-                        }
-                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：从Nv21格式原始帧链表中取出并删除第一个帧，Nv21格式原始帧链表元素总数：" + m_ThrdPt.m_LnkLstElmTotal + "。" );
+                        m_ThrdPt.m_Nv21SrcFrmPt = ( byte[] ) m_DvcPt.m_Nv21SrcFrmCntnrPt.poll(); //从Nv21格式原始帧容器中取出并删除第一个帧。
+                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：从Nv21格式原始帧容器中取出并删除第一个帧，Nv21格式原始帧容器元素总数：" + m_ThrdPt.m_ElmTotal + "。" );
                     }
-                    else //如果Nv21格式原始帧链表中没有帧。
+                    else //如果Nv21格式原始帧容器中没有帧。
                     {
                         break OutPocs;
                     }
@@ -751,21 +742,16 @@ public class VdoInpt //视频输入。
                     }
 
                     //获取一个空闲帧。
-                    m_ThrdPt.m_LnkLstElmTotal = m_IdleFrmLnkLstPt.size(); //获取空闲帧链表的元素总数。
-                    if( m_ThrdPt.m_LnkLstElmTotal > 0 ) //如果空闲帧链表中有帧。
+                    m_ThrdPt.m_ElmTotal = m_IdleFrmCntnrPt.size(); //获取空闲帧容器的元素总数。
+                    if( m_ThrdPt.m_ElmTotal > 0 ) //如果空闲帧容器中有帧。
                     {
-                        //从空闲帧链表中取出并删除第一个帧。
-                        synchronized( m_IdleFrmLnkLstPt )
-                        {
-                            m_ThrdPt.m_FrmPt = m_IdleFrmLnkLstPt.getFirst();
-                            m_IdleFrmLnkLstPt.removeFirst();
-                        }
-                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：从空闲帧链表中取出并删除第一个帧，空闲帧链表元素总数：" + m_ThrdPt.m_LnkLstElmTotal + "。" );
+                        m_ThrdPt.m_FrmPt = m_IdleFrmCntnrPt.poll(); //从空闲帧容器中取出并删除第一个帧。
+                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：从空闲帧容器中取出并删除第一个帧，空闲帧容器元素总数：" + m_ThrdPt.m_ElmTotal + "。" );
                     }
-                    else //如果空闲帧链表中没有帧。
+                    else //如果空闲帧容器中没有帧。
                     {
-                        m_ThrdPt.m_LnkLstElmTotal = m_FrmLnkLstPt.size(); //获取帧链表的元素总数。
-                        if( m_ThrdPt.m_LnkLstElmTotal <= 20 )
+                        m_ThrdPt.m_ElmTotal = m_FrmCntnrPt.size(); //获取帧容器的元素总数。
+                        if( m_ThrdPt.m_ElmTotal <= 20 )
                         {
                             m_ThrdPt.m_FrmPt = new Frm(); //创建一个空闲帧。
                             m_ThrdPt.m_FrmPt.m_Nv21SrcFrmPt = new byte[ ( int ) m_DvcPt.m_Nv21SrcFrmLenByt ];
@@ -779,11 +765,11 @@ public class VdoInpt //视频输入。
                                 m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt = null;
                             }
                             m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt = new HTLong( 0 );
-                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：空闲帧链表中没有帧，创建一个空闲帧。" );
+                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：空闲帧容器中没有帧，创建一个空闲帧。" );
                         }
                         else
                         {
-                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：帧链表中帧数量为" + m_ThrdPt.m_LnkLstElmTotal + "已经超过上限20，不再创建一个空闲帧，本次帧丢弃。" );
+                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：帧容器中帧数量为" + m_ThrdPt.m_ElmTotal + "已经超过上限20，不再创建一个空闲帧，本次帧丢弃。" );
                             break OutPocs;
                         }
                     }
@@ -902,11 +888,8 @@ public class VdoInpt //视频输入。
 
                     m_ThrdPt.m_FrmPt.m_TimeStampMsec = m_ThrdPt.m_LastTickMsec; //设置时间戳。
 
-                    //追加本次帧到帧链表。
-                    synchronized( m_FrmLnkLstPt )
-                    {
-                        m_FrmLnkLstPt.addLast( m_ThrdPt.m_FrmPt );
-                    }
+                    //放入本次帧到帧容器。注意：从取出到放入过程中可以跳出，跳出后会重新放入到空闲帧容器。
+                    m_FrmCntnrPt.offer( m_ThrdPt.m_FrmPt );
                     m_ThrdPt.m_FrmPt = null;
 
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )
@@ -916,13 +899,13 @@ public class VdoInpt //视频输入。
                     }
                 }
 
-                if( m_ThrdPt.m_FrmPt != null ) //如果获取的空闲帧没有追加到帧链表。
+                if( m_ThrdPt.m_FrmPt != null ) //如果获取的空闲帧没有放入到帧容器。
                 {
-                    m_IdleFrmLnkLstPt.addLast( m_ThrdPt.m_FrmPt );
+                    m_IdleFrmCntnrPt.offer( m_ThrdPt.m_FrmPt );
                     m_ThrdPt.m_FrmPt = null;
                 }
 
-                //追加本次Nv21格式原始帧到设备。
+                //放入本次Nv21格式原始帧到设备。
                 if( m_ThrdPt.m_Nv21SrcFrmPt != null )
                 {
                     m_DvcPt.m_Pt.addCallbackBuffer( m_ThrdPt.m_Nv21SrcFrmPt );

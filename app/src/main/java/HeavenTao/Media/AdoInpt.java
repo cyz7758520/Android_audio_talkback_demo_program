@@ -8,7 +8,7 @@ import android.util.Log;
 import android.view.SurfaceView;
 import android.widget.Toast;
 
-import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import HeavenTao.Ado.*;
 import HeavenTao.Data.*;
@@ -178,14 +178,14 @@ public class AdoInpt //音频输入。
     }
     Dvc m_DvcPt = new Dvc();
 
-    public LinkedList< short[] > m_PcmSrcFrmLnkLstPt; //存放Pcm格式原始帧链表的指针。
-    public LinkedList< short[] > m_PcmIdleFrmLnkLstPt; //存放Pcm格式空闲帧链表的指针。
+    public ConcurrentLinkedQueue< short[] > m_PcmSrcFrmCntnrPt; //存放Pcm格式原始帧容器的指针。
+    public ConcurrentLinkedQueue< short[] > m_PcmIdleFrmCntnrPt; //存放Pcm格式空闲帧容器的指针。
 
     class Thrd //存放线程。
     {
         int m_IsInitThrdTmpVar; //存放是否初始化线程的临时变量。
         short[] m_PcmSrcFrmPt; //存放Pcm格式原始帧的指针。
-        int m_LnkLstElmTotal; //存放链表的元素总数。
+        int m_ElmTotal; //存放元素总数。
         long m_LastTickMsec; //存放上次的嘀嗒钟，单位为毫秒。
         long m_NowTickMsec; //存放本次的嘀嗒钟，单位为毫秒。
 
@@ -917,19 +917,19 @@ public class AdoInpt //音频输入。
                 break Out;
             }
 
-            //初始化Pcm格式原始帧链表。
-            m_PcmSrcFrmLnkLstPt = new LinkedList< short[] >();
-            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化Pcm格式原始帧链表成功。" );
+            //初始化Pcm格式原始帧容器。
+            m_PcmSrcFrmCntnrPt = new ConcurrentLinkedQueue<>();
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化Pcm格式原始帧容器成功。" );
 
-            //初始化Pcm格式空闲帧链表。
-            m_PcmIdleFrmLnkLstPt = new LinkedList< short[] >();
-            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化Pcm格式空闲帧链表成功。" );
+            //初始化Pcm格式空闲帧容器。
+            m_PcmIdleFrmCntnrPt = new ConcurrentLinkedQueue<>();
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化Pcm格式空闲帧容器成功。" );
 
             //初始化线程的临时变量。
             {
                 m_ThrdPt.m_IsInitThrdTmpVar = 1; //设置已初始化线程的临时变量。
                 m_ThrdPt.m_PcmSrcFrmPt = null; //初始化Pcm格式原始帧的指针。
-                m_ThrdPt.m_LnkLstElmTotal = 0; //初始化链表的元素总数。
+                m_ThrdPt.m_ElmTotal = 0; //初始化元素总数。
                 m_ThrdPt.m_LastTickMsec = 0; //初始化上次的嘀嗒钟。
                 m_ThrdPt.m_NowTickMsec = 0; //初始化本次的嘀嗒钟。
                 if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化线程的临时变量成功。" );
@@ -978,26 +978,26 @@ public class AdoInpt //音频输入。
         {
             m_ThrdPt.m_IsInitThrdTmpVar = 0; //设置未初始化线程的临时变量。
             m_ThrdPt.m_PcmSrcFrmPt = null; //销毁Pcm格式原始帧的指针。
-            m_ThrdPt.m_LnkLstElmTotal = 0; //销毁链表的元素总数。
+            m_ThrdPt.m_ElmTotal = 0; //销毁元素总数。
             m_ThrdPt.m_LastTickMsec = 0; //销毁上次的嘀嗒钟。
             m_ThrdPt.m_NowTickMsec = 0; //销毁本次的嘀嗒钟。
             if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁线程的临时变量成功。" );
         }
 
-        //销毁Pcm格式空闲帧链表。
-        if( m_PcmIdleFrmLnkLstPt != null )
+        //销毁Pcm格式空闲帧容器。
+        if( m_PcmIdleFrmCntnrPt != null )
         {
-            m_PcmIdleFrmLnkLstPt.clear();
-            m_PcmIdleFrmLnkLstPt = null;
-            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁Pcm格式空闲帧链表成功。" );
+            m_PcmIdleFrmCntnrPt.clear();
+            m_PcmIdleFrmCntnrPt = null;
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁Pcm格式空闲帧容器成功。" );
         }
 
-        //销毁Pcm格式原始帧链表。
-        if( m_PcmSrcFrmLnkLstPt != null )
+        //销毁Pcm格式原始帧容器。
+        if( m_PcmSrcFrmCntnrPt != null )
         {
-            m_PcmSrcFrmLnkLstPt.clear();
-            m_PcmSrcFrmLnkLstPt = null;
-            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁Pcm格式原始帧链表成功。" );
+            m_PcmSrcFrmCntnrPt.clear();
+            m_PcmSrcFrmCntnrPt = null;
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁Pcm格式原始帧容器成功。" );
         }
 
         //销毁设备。
@@ -1173,28 +1173,23 @@ public class AdoInpt //音频输入。
                 OutPocs:
                 {
                     //获取一个Pcm格式空闲帧。
-                    m_ThrdPt.m_LnkLstElmTotal = m_PcmIdleFrmLnkLstPt.size(); //获取Pcm格式空闲帧链表的元素总数。
-                    if( m_ThrdPt.m_LnkLstElmTotal > 0 ) //如果Pcm格式空闲帧链表中有帧。
+                    m_ThrdPt.m_ElmTotal = m_PcmIdleFrmCntnrPt.size(); //获取Pcm格式空闲帧容器的元素总数。
+                    if( m_ThrdPt.m_ElmTotal > 0 ) //如果Pcm格式空闲帧容器中有帧。
                     {
-                        //从Pcm格式空闲帧链表中取出并删除第一个帧。
-                        synchronized( m_PcmIdleFrmLnkLstPt )
-                        {
-                            m_ThrdPt.m_PcmSrcFrmPt = m_PcmIdleFrmLnkLstPt.getFirst();
-                            m_PcmIdleFrmLnkLstPt.removeFirst();
-                        }
-                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：从Pcm格式空闲帧链表中取出并删除第一个帧，Pcm格式空闲帧链表元素总数：" + m_ThrdPt.m_LnkLstElmTotal + "。" );
+                        m_ThrdPt.m_PcmSrcFrmPt = m_PcmIdleFrmCntnrPt.poll(); //从Pcm格式空闲帧容器中取出并删除第一个帧。
+                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：从Pcm格式空闲帧容器中取出并删除第一个帧，Pcm格式空闲帧容器元素总数：" + m_ThrdPt.m_ElmTotal + "。" );
                     }
-                    else //如果Pcm格式空闲帧链表中没有帧。
+                    else //如果Pcm格式空闲帧容器中没有帧。
                     {
-                        m_ThrdPt.m_LnkLstElmTotal = m_PcmSrcFrmLnkLstPt.size(); //获取Pcm格式原始帧链表的元素总数。
-                        if( m_ThrdPt.m_LnkLstElmTotal <= 50 )
+                        m_ThrdPt.m_ElmTotal = m_PcmSrcFrmCntnrPt.size(); //获取Pcm格式原始帧容器的元素总数。
+                        if( m_ThrdPt.m_ElmTotal <= 50 )
                         {
                             m_ThrdPt.m_PcmSrcFrmPt = new short[ ( int )m_FrmLenUnit ]; //创建一个Pcm格式空闲帧。
-                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：Pcm格式空闲帧链表中没有帧，创建一个Pcm格式空闲帧成功。" );
+                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：Pcm格式空闲帧容器中没有帧，创建一个Pcm格式空闲帧成功。" );
                         }
                         else
                         {
-                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：Pcm格式原始帧链表中帧总数为" + m_ThrdPt.m_LnkLstElmTotal + "已经超过上限50，不再创建Pcm格式空闲帧。" );
+                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：Pcm格式原始帧容器中帧总数为" + m_ThrdPt.m_ElmTotal + "已经超过上限50，不再创建Pcm格式空闲帧。" );
                             SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
                             break OutPocs;
                         }
@@ -1205,12 +1200,11 @@ public class AdoInpt //音频输入。
                     //读取本次Pcm格式原始帧。
                     m_DvcPt.m_Pt.read( m_ThrdPt.m_PcmSrcFrmPt, 0, m_ThrdPt.m_PcmSrcFrmPt.length );
 
-                    //追加本次Pcm格式原始帧到Pcm格式原始帧链表。注意：从取出到追加过程中不能跳出，否则会内存泄露。
-                    synchronized( m_PcmSrcFrmLnkLstPt )
+                    //放入本次Pcm格式原始帧到Pcm格式原始帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
                     {
-                        m_PcmSrcFrmLnkLstPt.addLast( m_ThrdPt.m_PcmSrcFrmPt );
+                        m_PcmSrcFrmCntnrPt.offer( m_ThrdPt.m_PcmSrcFrmPt );
+                        m_ThrdPt.m_PcmSrcFrmPt = null;
                     }
-                    m_ThrdPt.m_PcmSrcFrmPt = null;
 
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )
                     {

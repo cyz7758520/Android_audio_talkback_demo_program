@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import HeavenTao.Data.*;
 
@@ -114,24 +114,17 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
     public class MediaMsg
     {
         MediaMsgTyp m_MediaMsgTyp;
-        LinkedList< Object > m_MsgArgLnkLstPt;
+        Object[] m_MsgArgCntnrPt;
 
         MediaMsg( int AddFirstOrLast, MediaMsgTyp MediaMsgTyp, Object... MsgArgPt )
         {
             m_MediaMsgTyp = MediaMsgTyp;
-            if( MsgArgPt.length > 0 )
-            {
-                m_MsgArgLnkLstPt = new LinkedList< Object >();
-                for( Object OneMsgArg : MsgArgPt ) m_MsgArgLnkLstPt.addLast( OneMsgArg );
-            }
-            synchronized( m_MediaMsgLnkLstPt )
-            {
-                if( AddFirstOrLast == 0 ) m_MediaMsgLnkLstPt.addFirst( this );
-                else m_MediaMsgLnkLstPt.addLast( this );
-            }
+            m_MsgArgCntnrPt = MsgArgPt;
+            if( AddFirstOrLast == 0 ) m_MediaMsgCntnrPt.addFirst( this );
+            else m_MediaMsgCntnrPt.addLast( this );
         }
     }
-    public final LinkedList< MediaMsg > m_MediaMsgLnkLstPt; //存放媒体消息链表的指针。
+    public final ConcurrentLinkedDeque< MediaMsg > m_MediaMsgCntnrPt; //存放媒体消息容器的指针。
 
     public static Activity m_MainActivityPt; //存放主界面的指针。
 
@@ -233,7 +226,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         m_LastCallUserInitOrDstoy = 1; //设置上一次调用了用户定义的销毁函数。
         m_ReadyExitCnt = 1; //设置准备退出计数为1，当第一次处理调用用户定义的初始化函数消息时会递减。
 
-        m_MediaMsgLnkLstPt = new LinkedList< MediaMsg >(); //初始化媒体消息链表。
+        m_MediaMsgCntnrPt = new ConcurrentLinkedDeque< MediaMsg >(); //初始化媒体消息容器。
 
         m_MainActivityPt = MainActivityPt; //设置主界面的指针。
 
@@ -245,7 +238,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         //初始化音频输出。
         m_AdoOtptPt = new AdoOtpt();
         m_AdoOtptPt.m_MediaPocsThrdPt = this;
-        m_AdoOtptPt.m_StrmLnkLstPt = new LinkedList< AdoOtpt.Strm >();
+        m_AdoOtptPt.m_StrmCntnrPt = new ArrayList< AdoOtpt.Strm >();
         SetAdoOtpt( 8000, 20 );
 
         //初始化视频输入。
@@ -257,7 +250,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         //初始化视频输出。
         m_VdoOtptPt = new VdoOtpt();
         m_VdoOtptPt.m_MediaPocsThrdPt = this;
-        m_VdoOtptPt.m_StrmLnkLstPt = new LinkedList< VdoOtpt.Strm >();
+        m_VdoOtptPt.m_StrmCntnrPt = new ArrayList< VdoOtpt.Strm >();
 
         //初始化错误信息动态字符串。
         m_ErrInfoVstrPt = new Vstr();
@@ -1197,13 +1190,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
             OutMediaPocs:
             {
-                if( m_MediaMsgLnkLstPt.size() > 0 ) //如果有媒体消息需要处理。
+                if( !m_MediaMsgCntnrPt.isEmpty() ) //如果有媒体消息需要处理。
                 {
-                    synchronized( m_MediaMsgLnkLstPt )
-                    {
-                        p_MediaMsgPt = m_MediaMsgLnkLstPt.getFirst();
-                        m_MediaMsgLnkLstPt.removeFirst();
-                    }
+                    p_MediaMsgPt = m_MediaMsgCntnrPt.pollFirst(); //从媒体消息容器中取出并删除第一个媒体消息。
                     switch( p_MediaMsgPt.m_MediaMsgTyp )
                     {
                         case SetAdoInpt:
@@ -1214,8 +1203,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                 if( m_AdoOtptPt.m_IsInit != 0 ) m_AdoOtptPt.DvcAndThrdDstoy();
                             }
 
-                            m_AdoInptPt.m_SmplRate = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoInptPt.m_FrmLenMsec = ( Long ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
+                            m_AdoInptPt.m_SmplRate = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoInptPt.m_FrmLenMsec = ( Long ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
                             m_AdoInptPt.m_FrmLenUnit = m_AdoInptPt.m_FrmLenMsec * m_AdoInptPt.m_SmplRate / 1000;
                             m_AdoInptPt.m_FrmLenData = m_AdoInptPt.m_FrmLenUnit * 1;
                             m_AdoInptPt.m_FrmLenByt = m_AdoInptPt.m_FrmLenData * 2;
@@ -1237,7 +1226,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                 if( m_AdoOtptPt.m_IsInit != 0 ) m_AdoOtptPt.DvcAndThrdDstoy();
                             }
 
-                            m_AdoInptPt.m_IsUseSystemAecNsAgc = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
+                            m_AdoInptPt.m_IsUseSystemAecNsAgc = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
 
                             if( m_AdoInptPt.m_IsInit != 0 )
                             {
@@ -1264,14 +1253,14 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                             if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.AecDstoy();
 
                             m_AdoInptPt.m_UseWhatAec = 1;
-                            m_AdoInptPt.m_SpeexAecPt.m_FilterLenMsec = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoInptPt.m_SpeexAecPt.m_IsUseRec = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_AdoInptPt.m_SpeexAecPt.m_EchoMutp = ( Float ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
-                            m_AdoInptPt.m_SpeexAecPt.m_EchoCntu = ( Float ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 3 );
-                            m_AdoInptPt.m_SpeexAecPt.m_EchoSupes = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 4 );
-                            m_AdoInptPt.m_SpeexAecPt.m_EchoSupesAct = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 5 );
-                            m_AdoInptPt.m_SpeexAecPt.m_IsSaveMemFile = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 6 );
-                            m_AdoInptPt.m_SpeexAecPt.m_MemFileFullPathStrPt = ( String ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 7 );
+                            m_AdoInptPt.m_SpeexAecPt.m_FilterLenMsec = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoInptPt.m_SpeexAecPt.m_IsUseRec = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_AdoInptPt.m_SpeexAecPt.m_EchoMutp = ( Float ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
+                            m_AdoInptPt.m_SpeexAecPt.m_EchoCntu = ( Float ) p_MediaMsgPt.m_MsgArgCntnrPt[ 3 ];
+                            m_AdoInptPt.m_SpeexAecPt.m_EchoSupes = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 4 ];
+                            m_AdoInptPt.m_SpeexAecPt.m_EchoSupesAct = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 5 ];
+                            m_AdoInptPt.m_SpeexAecPt.m_IsSaveMemFile = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 6 ];
+                            m_AdoInptPt.m_SpeexAecPt.m_MemFileFullPathStrPt = ( String ) p_MediaMsgPt.m_MsgArgCntnrPt[ 7 ];
 
                             if( m_AdoInptPt.m_IsInit != 0 )
                             {
@@ -1285,9 +1274,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                             if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.AecDstoy();
 
                             m_AdoInptPt.m_UseWhatAec = 2;
-                            m_AdoInptPt.m_WebRtcAecmPt.m_IsUseCNGMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoInptPt.m_WebRtcAecmPt.m_EchoMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_AdoInptPt.m_WebRtcAecmPt.m_Delay = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
+                            m_AdoInptPt.m_WebRtcAecmPt.m_IsUseCNGMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoInptPt.m_WebRtcAecmPt.m_EchoMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_AdoInptPt.m_WebRtcAecmPt.m_Delay = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
 
                             if( m_AdoInptPt.m_IsInit != 0 )
                             {
@@ -1301,14 +1290,14 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                             if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.AecDstoy();
 
                             m_AdoInptPt.m_UseWhatAec = 3;
-                            m_AdoInptPt.m_WebRtcAecPt.m_EchoMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoInptPt.m_WebRtcAecPt.m_Delay = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_AdoInptPt.m_WebRtcAecPt.m_IsUseDelayAgstcMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
-                            m_AdoInptPt.m_WebRtcAecPt.m_IsUseExtdFilterMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 3 );
-                            m_AdoInptPt.m_WebRtcAecPt.m_IsUseRefinedFilterAdaptAecMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 4 );
-                            m_AdoInptPt.m_WebRtcAecPt.m_IsUseAdaptAdjDelay = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 5 );
-                            m_AdoInptPt.m_WebRtcAecPt.m_IsSaveMemFile = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 6 );
-                            m_AdoInptPt.m_WebRtcAecPt.m_MemFileFullPathStrPt = ( String ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 7 );
+                            m_AdoInptPt.m_WebRtcAecPt.m_EchoMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoInptPt.m_WebRtcAecPt.m_Delay = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_AdoInptPt.m_WebRtcAecPt.m_IsUseDelayAgstcMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
+                            m_AdoInptPt.m_WebRtcAecPt.m_IsUseExtdFilterMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 3 ];
+                            m_AdoInptPt.m_WebRtcAecPt.m_IsUseRefinedFilterAdaptAecMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 4 ];
+                            m_AdoInptPt.m_WebRtcAecPt.m_IsUseAdaptAdjDelay = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 5 ];
+                            m_AdoInptPt.m_WebRtcAecPt.m_IsSaveMemFile = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 6 ];
+                            m_AdoInptPt.m_WebRtcAecPt.m_MemFileFullPathStrPt = ( String ) p_MediaMsgPt.m_MsgArgCntnrPt[ 7 ];
 
                             if( m_AdoInptPt.m_IsInit != 0 )
                             {
@@ -1322,24 +1311,24 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                             if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.AecDstoy();
 
                             m_AdoInptPt.m_UseWhatAec = 4;
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WorkMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecFilterLenMsec = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecIsUseRec = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoMutp = ( Float ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 3 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoCntu = ( Float ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 4 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoSupes = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 5 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoSupesAct = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 6 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecmIsUseCNGMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 7 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecmEchoMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 8 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecmDelay = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 9 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecEchoMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 10 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecDelay = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 11 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseDelayAgstcMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 12 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseExtdFilterMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 13 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 14 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseAdaptAdjDelay = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 15 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_IsUseSameRoomAec = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 16 );
-                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SameRoomEchoMinDelay = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 17 );
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WorkMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecFilterLenMsec = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecIsUseRec = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoMutp = ( Float ) p_MediaMsgPt.m_MsgArgCntnrPt[ 3 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoCntu = ( Float ) p_MediaMsgPt.m_MsgArgCntnrPt[ 4 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoSupes = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 5 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoSupesAct = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 6 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecmIsUseCNGMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 7 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecmEchoMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 8 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecmDelay = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 9 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecEchoMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 10 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecDelay = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 11 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseDelayAgstcMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 12 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseExtdFilterMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 13 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 14 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseAdaptAdjDelay = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 15 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_IsUseSameRoomAec = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 16 ];
+                            m_AdoInptPt.m_SpeexWebRtcAecPt.m_SameRoomEchoMinDelay = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 17 ];
 
                             if( m_AdoInptPt.m_IsInit != 0 )
                             {
@@ -1374,9 +1363,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                             }
 
                             m_AdoInptPt.m_UseWhatNs = 1;
-                            m_AdoInptPt.m_SpeexPrpocsNsPt.m_IsUseNs = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoInptPt.m_SpeexPrpocsNsPt.m_NoiseSupes = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_AdoInptPt.m_SpeexPrpocsNsPt.m_IsUseDereverb = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
+                            m_AdoInptPt.m_SpeexPrpocsNsPt.m_IsUseNs = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoInptPt.m_SpeexPrpocsNsPt.m_NoiseSupes = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_AdoInptPt.m_SpeexPrpocsNsPt.m_IsUseDereverb = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
 
                             if( m_AdoInptPt.m_IsInit != 0 )
                             {
@@ -1394,7 +1383,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                             }
 
                             m_AdoInptPt.m_UseWhatNs = 2;
-                            m_AdoInptPt.m_WebRtcNsxPt.m_PolicyMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
+                            m_AdoInptPt.m_WebRtcNsxPt.m_PolicyMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
 
                             if( m_AdoInptPt.m_IsInit != 0 )
                             {
@@ -1412,7 +1401,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                             }
 
                             m_AdoInptPt.m_UseWhatNs = 3;
-                            m_AdoInptPt.m_WebRtcNsPt.m_PolicyMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
+                            m_AdoInptPt.m_WebRtcNsPt.m_PolicyMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
 
                             if( m_AdoInptPt.m_IsInit != 0 )
                             {
@@ -1442,15 +1431,15 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         {
                             if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.SpeexPrpocsDstoy();
 
-                            m_AdoInptPt.m_SpeexPrpocsPt.m_IsUseSpeexPrpocs = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoInptPt.m_SpeexPrpocsPt.m_IsUseVad = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_AdoInptPt.m_SpeexPrpocsPt.m_VadProbStart = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
-                            m_AdoInptPt.m_SpeexPrpocsPt.m_VadProbCntu = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 3 );
-                            m_AdoInptPt.m_SpeexPrpocsPt.m_IsUseAgc = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 4 );
-                            m_AdoInptPt.m_SpeexPrpocsPt.m_AgcLevel = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 5 );
-                            m_AdoInptPt.m_SpeexPrpocsPt.m_AgcIncrement = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 6 );
-                            m_AdoInptPt.m_SpeexPrpocsPt.m_AgcDecrement = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 7 );
-                            m_AdoInptPt.m_SpeexPrpocsPt.m_AgcMaxGain = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 8 );
+                            m_AdoInptPt.m_SpeexPrpocsPt.m_IsUseSpeexPrpocs = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoInptPt.m_SpeexPrpocsPt.m_IsUseVad = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_AdoInptPt.m_SpeexPrpocsPt.m_VadProbStart = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
+                            m_AdoInptPt.m_SpeexPrpocsPt.m_VadProbCntu = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 3 ];
+                            m_AdoInptPt.m_SpeexPrpocsPt.m_IsUseAgc = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 4 ];
+                            m_AdoInptPt.m_SpeexPrpocsPt.m_AgcLevel = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 5 ];
+                            m_AdoInptPt.m_SpeexPrpocsPt.m_AgcIncrement = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 6 ];
+                            m_AdoInptPt.m_SpeexPrpocsPt.m_AgcDecrement = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 7 ];
+                            m_AdoInptPt.m_SpeexPrpocsPt.m_AgcMaxGain = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 8 ];
 
                             if( m_AdoInptPt.m_IsInit != 0 )
                             {
@@ -1474,10 +1463,10 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                             if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.EncdDstoy();
 
                             m_AdoInptPt.m_UseWhatEncd = 1;
-                            m_AdoInptPt.m_SpeexEncdPt.m_UseCbrOrVbr = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoInptPt.m_SpeexEncdPt.m_Qualt = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_AdoInptPt.m_SpeexEncdPt.m_Cmplxt = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
-                            m_AdoInptPt.m_SpeexEncdPt.m_PlcExptLossRate = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 3 );
+                            m_AdoInptPt.m_SpeexEncdPt.m_UseCbrOrVbr = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoInptPt.m_SpeexEncdPt.m_Qualt = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_AdoInptPt.m_SpeexEncdPt.m_Cmplxt = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
+                            m_AdoInptPt.m_SpeexEncdPt.m_PlcExptLossRate = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 3 ];
 
                             if( m_AdoInptPt.m_IsInit != 0 ) if( m_AdoInptPt.EncdInit() != 0 ) break OutMediaPocs;
                             MediaPocsThrdTmpVarInit();
@@ -1497,10 +1486,10 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         {
                             if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.WaveFileWriterDstoy();
 
-                            m_AdoInptPt.m_WaveFilePt.m_IsSaveAdoToWaveFile = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoInptPt.m_WaveFilePt.m_SrcWaveFileFullPathStrPt = ( String ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_AdoInptPt.m_WaveFilePt.m_RsltWaveFileFullPathStrPt = ( String ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
-                            m_AdoInptPt.m_WaveFilePt.m_FileWrBufSzByt = ( long ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 3 );
+                            m_AdoInptPt.m_WaveFilePt.m_IsSaveAdoToWaveFile = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoInptPt.m_WaveFilePt.m_SrcWaveFileFullPathStrPt = ( String ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_AdoInptPt.m_WaveFilePt.m_RsltWaveFileFullPathStrPt = ( String ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
+                            m_AdoInptPt.m_WaveFilePt.m_FileWrBufSzByt = ( long ) p_MediaMsgPt.m_MsgArgCntnrPt[ 3 ];
 
                             if( m_AdoInptPt.m_IsInit != 0 ) if( m_AdoInptPt.WaveFileWriterInit() != 0 ) break OutMediaPocs;
                             break;
@@ -1509,16 +1498,16 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         {
                             if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.WavfmDstoy();
 
-                            m_AdoInptPt.m_WavfmPt.m_IsDrawAdoWavfmToSurface = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoInptPt.m_WavfmPt.m_SrcWavfmSurfacePt = ( SurfaceView ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_AdoInptPt.m_WavfmPt.m_RsltWavfmSurfacePt = ( SurfaceView ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
+                            m_AdoInptPt.m_WavfmPt.m_IsDrawAdoWavfmToSurface = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoInptPt.m_WavfmPt.m_SrcWavfmSurfacePt = ( SurfaceView ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_AdoInptPt.m_WavfmPt.m_RsltWavfmSurfacePt = ( SurfaceView ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
 
                             if( m_AdoInptPt.m_IsInit != 0 ) if( m_AdoInptPt.WavfmInit() != 0 ) break OutMediaPocs;
                             break;
                         }
                         case AdoInptSetIsMute:
                         {
-                            m_AdoInptPt.m_DvcPt.m_IsMute = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
+                            m_AdoInptPt.m_DvcPt.m_IsMute = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
                             break;
                         }
                         case SetAdoOtpt:
@@ -1529,8 +1518,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                 m_AdoOtptPt.Dstoy();
                             }
 
-                            m_AdoOtptPt.m_SmplRate = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoOtptPt.m_FrmLenMsec = ( Long ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
+                            m_AdoOtptPt.m_SmplRate = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoOtptPt.m_FrmLenMsec = ( Long ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
                             m_AdoOtptPt.m_FrmLenUnit = m_AdoOtptPt.m_FrmLenMsec * m_AdoOtptPt.m_SmplRate / 1000;
                             m_AdoOtptPt.m_FrmLenData = m_AdoOtptPt.m_FrmLenUnit * 1;
                             m_AdoOtptPt.m_FrmLenByt = m_AdoOtptPt.m_FrmLenData * 2;
@@ -1553,41 +1542,41 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         }
                         case AdoOtptAddStrm:
                         {
-                            m_AdoOtptPt.AddStrm( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ) );
+                            m_AdoOtptPt.AddStrm( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ] );
                             break;
                         }
                         case AdoOtptDelStrm:
                         {
-                            m_AdoOtptPt.DelStrm( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ) );
+                            m_AdoOtptPt.DelStrm( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ] );
                             break;
                         }
                         case AdoOtptSetStrmUsePcm:
                         {
-                            m_AdoOtptPt.SetStrmUsePcm( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ) );
+                            m_AdoOtptPt.SetStrmUsePcm( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ] );
                             break;
                         }
                         case AdoOtptSetStrmUseSpeexDecd:
                         {
-                            m_AdoOtptPt.SetStrmUseSpeexDecd( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ), ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 ) );
+                            m_AdoOtptPt.SetStrmUseSpeexDecd( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ], ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ] );
                             break;
                         }
                         case AdoOtptSetStrmUseOpusDecd:
                         {
-                            m_AdoOtptPt.SetStrmUseOpusDecd( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ) );
+                            m_AdoOtptPt.SetStrmUseOpusDecd( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ] );
                             break;
                         }
                         case AdoOtptSetStrmIsUse:
                         {
-                            m_AdoOtptPt.SetStrmIsUse( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ), ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 ) );
+                            m_AdoOtptPt.SetStrmIsUse( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ], ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ] );
                             break;
                         }
                         case AdoOtptSetIsSaveAdoToWaveFile:
                         {
                             if( m_AdoOtptPt.m_IsInit != 0 ) m_AdoOtptPt.WaveFileWriterDstoy();
 
-                            m_AdoOtptPt.m_WaveFilePt.m_IsSaveAdoToWaveFile = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoOtptPt.m_WaveFilePt.m_WaveFileFullPathStrPt = ( String ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_AdoOtptPt.m_WaveFilePt.m_WaveFileWrBufSzByt = ( long ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
+                            m_AdoOtptPt.m_WaveFilePt.m_IsSaveAdoToWaveFile = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoOtptPt.m_WaveFilePt.m_WaveFileFullPathStrPt = ( String ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_AdoOtptPt.m_WaveFilePt.m_WaveFileWrBufSzByt = ( long ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
 
                             if( m_AdoOtptPt.m_IsInit != 0 ) if( m_AdoOtptPt.WaveFileWriterInit() != 0 ) break OutMediaPocs;
                             break;
@@ -1596,8 +1585,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         {
                             if( m_AdoOtptPt.m_IsInit != 0 ) m_AdoOtptPt.WavfmDstoy();
 
-                            m_AdoOtptPt.m_WavfmPt.m_IsDrawAdoWavfmToSurface = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoOtptPt.m_WavfmPt.m_SrcWavfmSurfacePt = ( SurfaceView ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
+                            m_AdoOtptPt.m_WavfmPt.m_IsDrawAdoWavfmToSurface = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoOtptPt.m_WavfmPt.m_SrcWavfmSurfacePt = ( SurfaceView ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
 
                             if( m_AdoOtptPt.m_IsInit != 0 ) if( m_AdoOtptPt.WavfmInit() != 0 ) break OutMediaPocs;
                             break;
@@ -1610,8 +1599,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                 m_AdoOtptPt.DvcAndThrdDstoy();
                             }
 
-                            m_AdoOtptPt.m_DvcPt.m_UseWhatDvc = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoOtptPt.m_DvcPt.m_UseWhatStreamType = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
+                            m_AdoOtptPt.m_DvcPt.m_UseWhatDvc = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoOtptPt.m_DvcPt.m_UseWhatStreamType = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
                             WakeLockInitOrDstoy( m_IsUseWakeLock ); //重新初始化唤醒锁。
 
                             if( m_AdoOtptPt.m_IsInit != 0 )
@@ -1631,19 +1620,19 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         }
                         case AdoOtptSetIsMute:
                         {
-                            m_AdoOtptPt.m_DvcPt.m_IsMute = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
+                            m_AdoOtptPt.m_DvcPt.m_IsMute = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
                             break;
                         }
                         case SetVdoInpt:
                         {
                             if( m_VdoInptPt.m_IsInit != 0 ) m_VdoInptPt.Dstoy();
 
-                            m_VdoInptPt.m_MaxSmplRate = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_VdoInptPt.m_FrmWidth = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_VdoInptPt.m_FrmHeight = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
+                            m_VdoInptPt.m_MaxSmplRate = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_VdoInptPt.m_FrmWidth = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_VdoInptPt.m_FrmHeight = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
                             m_VdoInptPt.m_Yu12FrmLenByt = m_VdoInptPt.m_FrmWidth * m_VdoInptPt.m_FrmHeight * 3 / 2;
-                            m_VdoInptPt.m_ScreenRotate = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 3 );
-                            m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt = ( HTSurfaceView ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 4 );
+                            m_VdoInptPt.m_ScreenRotate = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 3 ];
+                            m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt = ( HTSurfaceView ) p_MediaMsgPt.m_MsgArgCntnrPt[ 4 ];
 
                             if( m_VdoInptPt.m_IsInit != 0 ) if( m_VdoInptPt.Init() != 0 ) break OutMediaPocs;
                             break;
@@ -1662,11 +1651,11 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                             if( m_VdoInptPt.m_IsInit != 0 ) m_VdoInptPt.Dstoy();
 
                             m_VdoInptPt.m_UseWhatEncd = 1;
-                            m_VdoInptPt.m_OpenH264EncdPt.m_VdoType = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_VdoInptPt.m_OpenH264EncdPt.m_EncdBitrate = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_VdoInptPt.m_OpenH264EncdPt.m_BitrateCtrlMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
-                            m_VdoInptPt.m_OpenH264EncdPt.m_IDRFrmIntvl = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 3 );
-                            m_VdoInptPt.m_OpenH264EncdPt.m_Cmplxt = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 4 );
+                            m_VdoInptPt.m_OpenH264EncdPt.m_VdoType = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_VdoInptPt.m_OpenH264EncdPt.m_EncdBitrate = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_VdoInptPt.m_OpenH264EncdPt.m_BitrateCtrlMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
+                            m_VdoInptPt.m_OpenH264EncdPt.m_IDRFrmIntvl = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 3 ];
+                            m_VdoInptPt.m_OpenH264EncdPt.m_Cmplxt = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 4 ];
 
                             if( m_VdoInptPt.m_IsInit != 0 ) if( m_VdoInptPt.Init() != 0 ) break OutMediaPocs;
                             break;
@@ -1676,10 +1665,10 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                             if( m_VdoInptPt.m_IsInit != 0 ) m_VdoInptPt.Dstoy();
 
                             m_VdoInptPt.m_UseWhatEncd = 2;
-                            m_VdoInptPt.m_SystemH264EncdPt.m_EncdBitrate = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_VdoInptPt.m_SystemH264EncdPt.m_BitrateCtrlMode = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_VdoInptPt.m_SystemH264EncdPt.m_IDRFrmIntvlTimeSec = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
-                            m_VdoInptPt.m_SystemH264EncdPt.m_Cmplxt = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 3 );
+                            m_VdoInptPt.m_SystemH264EncdPt.m_EncdBitrate = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_VdoInptPt.m_SystemH264EncdPt.m_BitrateCtrlMode = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_VdoInptPt.m_SystemH264EncdPt.m_IDRFrmIntvlTimeSec = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
+                            m_VdoInptPt.m_SystemH264EncdPt.m_Cmplxt = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 3 ];
 
                             if( m_VdoInptPt.m_IsInit != 0 ) if( m_VdoInptPt.Init() != 0 ) break OutMediaPocs;
                             break;
@@ -1688,64 +1677,64 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         {
                             if( m_VdoInptPt.m_IsInit != 0 ) m_VdoInptPt.Dstoy();
 
-                            m_VdoInptPt.m_DvcPt.m_UseWhatDvc = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_VdoInptPt.m_DvcPt.m_FrontCameraId = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_VdoInptPt.m_DvcPt.m_BackCameraId = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
+                            m_VdoInptPt.m_DvcPt.m_UseWhatDvc = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_VdoInptPt.m_DvcPt.m_FrontCameraId = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_VdoInptPt.m_DvcPt.m_BackCameraId = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
 
                             if( m_VdoInptPt.m_IsInit != 0 ) if( m_VdoInptPt.Init() != 0 ) break OutMediaPocs;
                             break;
                         }
                         case VdoInptSetIsBlack:
                         {
-                            m_VdoInptPt.m_DvcPt.m_IsBlack = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
+                            m_VdoInptPt.m_DvcPt.m_IsBlack = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
                             break;
                         }
                         case VdoOtptAddStrm:
                         {
-                            m_VdoOtptPt.AddStrm( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ) );
+                            m_VdoOtptPt.AddStrm( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ] );
                             break;
                         }
                         case VdoOtptDelStrm:
                         {
-                            m_VdoOtptPt.DelStrm( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ) );
+                            m_VdoOtptPt.DelStrm( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ] );
                             break;
                         }
                         case VdoOtptSetStrm:
                         {
-                            m_VdoOtptPt.SetStrm( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ), ( HTSurfaceView ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 ) );
+                            m_VdoOtptPt.SetStrm( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ], ( HTSurfaceView ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ] );
                             break;
                         }
                         case VdoOtptSetStrmUseYu12:
                         {
-                            m_VdoOtptPt.SetStrmUseYu12( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ) );
+                            m_VdoOtptPt.SetStrmUseYu12( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ] );
                             break;
                         }
                         case VdoOtptSetStrmUseOpenH264Decd:
                         {
-                            m_VdoOtptPt.SetStrmUseOpenH264Decd( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ), ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 ) );
+                            m_VdoOtptPt.SetStrmUseOpenH264Decd( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ], ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ] );
                             break;
                         }
                         case VdoOtptSetStrmUseSystemH264Decd:
                         {
-                            m_VdoOtptPt.SetStrmUseSystemH264Decd( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ) );
+                            m_VdoOtptPt.SetStrmUseSystemH264Decd( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ] );
                             break;
                         }
                         case VdoOtptSetStrmIsBlack:
                         {
-                            m_VdoOtptPt.SetStrmIsBlack( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ), ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 ) );
+                            m_VdoOtptPt.SetStrmIsBlack( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ], ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ] );
                             break;
                         }
                         case VdoOtptSetStrmIsUse:
                         {
-                            m_VdoOtptPt.SetStrmIsUse( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ), ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 ) );
+                            m_VdoOtptPt.SetStrmIsUse( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ], ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ] );
                             break;
                         }
                         case SetIsUseAdoVdoInptOtpt:
                         {
-                            int p_IsUseAdoInpt = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            int p_IsUseAdoOtpt = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            int p_IsUseVdoInpt = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
-                            int p_IsUseVdoOtpt = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 3 );
+                            int p_IsUseAdoInpt = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            int p_IsUseAdoOtpt = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            int p_IsUseVdoInpt = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
+                            int p_IsUseVdoOtpt = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 3 ];
 
                             if( p_IsUseAdoInpt >= 0 ) m_AdoInptPt.m_IsUse = p_IsUseAdoInpt;
                             if( p_IsUseAdoOtpt >= 0 ) m_AdoOtptPt.m_IsUse = p_IsUseAdoOtpt;
@@ -1758,7 +1747,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         }
                         case SetIsUseWakeLock:
                         {
-                            m_IsUseWakeLock = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
+                            m_IsUseWakeLock = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
                             WakeLockInitOrDstoy( m_IsUseWakeLock ); //重新初始化唤醒锁。
                             break;
                         }
@@ -1766,19 +1755,19 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         {
                             //AviFileWriterDstoy(); //这里不用销毁。
 
-                            m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt = ( String )p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
-                            m_AdoVdoInptOtptAviFilePt.m_WrBufSzByt = ( Long )p_MediaMsgPt.m_MsgArgLnkLstPt.get( 1 );
-                            m_AdoVdoInptOtptAviFilePt.m_IsSaveAdoInpt = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 2 );
-                            m_AdoVdoInptOtptAviFilePt.m_IsSaveAdoOtpt = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 3 );
-                            m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoInpt = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 4 );
-                            m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoOtpt = ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 5 );
+                            m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt = ( String )p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
+                            m_AdoVdoInptOtptAviFilePt.m_WrBufSzByt = ( Long )p_MediaMsgPt.m_MsgArgCntnrPt[ 1 ];
+                            m_AdoVdoInptOtptAviFilePt.m_IsSaveAdoInpt = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
+                            m_AdoVdoInptOtptAviFilePt.m_IsSaveAdoOtpt = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 3 ];
+                            m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoInpt = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 4 ];
+                            m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoOtpt = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 5 ];
 
                             if( AviFileWriterInit() != 0 ) break OutMediaPocs;
                             break;
                         }
                         case SaveStngToFile:
                         {
-                            String p_StngFileFullPathStrPt = ( String ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 );
+                            String p_StngFileFullPathStrPt = ( String ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ];
                             File p_StngFilePt = new File( p_StngFileFullPathStrPt );
 
                             try
@@ -1908,9 +1897,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                 p_StngFileWriterPt.write( "m_AdoOtptPt.m_FrmLenData：" + m_AdoOtptPt.m_FrmLenData + "\n" );
                                 p_StngFileWriterPt.write( "m_AdoOtptPt.m_FrmLenByt：" + m_AdoOtptPt.m_FrmLenByt + "\n" );
                                 p_StngFileWriterPt.write( "\n" );
-                                p_StngFileWriterPt.write( "m_AdoOtptPt.m_StrmLnkLstPt：" + m_AdoOtptPt.m_StrmLnkLstPt + "\n" );
+                                p_StngFileWriterPt.write( "m_AdoOtptPt.m_StrmCntnrPt：" + m_AdoOtptPt.m_StrmCntnrPt + "\n" );
                                 p_StngFileWriterPt.write( "\n" );
-                                for( AdoOtpt.Strm p_AdoOtptStrm : m_AdoOtptPt.m_StrmLnkLstPt )
+                                for( AdoOtpt.Strm p_AdoOtptStrm : m_AdoOtptPt.m_StrmCntnrPt )
                                 {
                                     p_StngFileWriterPt.write( "m_AdoOtptPt.m_Idx：" + p_AdoOtptStrm.m_Idx + "\n" );
                                     p_StngFileWriterPt.write( "\n" );
@@ -1964,18 +1953,18 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                 p_StngFileWriterPt.write( "m_VdoOtptPt.m_IsUse：" + m_VdoOtptPt.m_IsUse + "\n" );
                                 p_StngFileWriterPt.write( "m_VdoOtptPt.m_IsInit：" + m_VdoOtptPt.m_IsInit + "\n" );
                                 p_StngFileWriterPt.write( "\n" );
-                                p_StngFileWriterPt.write( "m_VdoOtptPt.m_StrmLnkLstPt：" + m_VdoOtptPt.m_StrmLnkLstPt + "\n" );
+                                p_StngFileWriterPt.write( "m_VdoOtptPt.m_StrmCntnrPt：" + m_VdoOtptPt.m_StrmCntnrPt + "\n" );
                                 p_StngFileWriterPt.write( "\n" );
-                                for( VdoOtpt.Strm p_VdoOtptStrm : m_VdoOtptPt.m_StrmLnkLstPt )
+                                for( VdoOtpt.Strm p_VdoOtptStrm : m_VdoOtptPt.m_StrmCntnrPt )
                                 {
-                                    p_StngFileWriterPt.write( "m_VdoOtptPt.m_StrmLnkLstPt.m_Idx：" + p_VdoOtptStrm.m_Idx + "\n" );
+                                    p_StngFileWriterPt.write( "m_VdoOtptPt.m_StrmCntnrPt.m_Idx：" + p_VdoOtptStrm.m_Idx + "\n" );
                                     p_StngFileWriterPt.write( "\n" );
-                                    p_StngFileWriterPt.write( "m_VdoOtptPt.m_StrmLnkLstPt.m_IsUse：" + p_VdoOtptStrm.m_UseWhatDecd + "\n" );
+                                    p_StngFileWriterPt.write( "m_VdoOtptPt.m_StrmCntnrPt.m_IsUse：" + p_VdoOtptStrm.m_UseWhatDecd + "\n" );
                                     p_StngFileWriterPt.write( "\n" );
-                                    p_StngFileWriterPt.write( "m_VdoOtptPt.m_StrmLnkLstPt.m_UseWhatDecd：" + p_VdoOtptStrm.m_OpenH264DecdPt.m_DecdThrdNum + "\n" );
+                                    p_StngFileWriterPt.write( "m_VdoOtptPt.m_StrmCntnrPt.m_UseWhatDecd：" + p_VdoOtptStrm.m_OpenH264DecdPt.m_DecdThrdNum + "\n" );
                                     p_StngFileWriterPt.write( "\n" );
-                                    p_StngFileWriterPt.write( "m_VdoOtptPt.m_StrmLnkLstPt.m_DvcPt.m_DspySurfaceViewPt：" + p_VdoOtptStrm.m_DvcPt.m_DspySurfaceViewPt + "\n" );
-                                    p_StngFileWriterPt.write( "m_VdoOtptPt.m_StrmLnkLstPt.m_DvcPt.m_IsBlack：" + p_VdoOtptStrm.m_DvcPt.m_IsBlack + "\n" );
+                                    p_StngFileWriterPt.write( "m_VdoOtptPt.m_StrmCntnrPt.m_DvcPt.m_DspySurfaceViewPt：" + p_VdoOtptStrm.m_DvcPt.m_DspySurfaceViewPt + "\n" );
+                                    p_StngFileWriterPt.write( "m_VdoOtptPt.m_StrmCntnrPt.m_DvcPt.m_IsBlack：" + p_VdoOtptStrm.m_DvcPt.m_IsBlack + "\n" );
                                     p_StngFileWriterPt.write( "\n" );
                                 }
 
@@ -1993,53 +1982,44 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         {
                             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：接收到退出请求，开始准备退出。" );
 
-                            switch( ( Integer ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ) )
+                            switch( ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ] )
                             {
                                 case 1: //为请求退出。
                                 {
                                     //执行顺序：媒体销毁，用户销毁并退出。
-                                    synchronized( m_MediaMsgLnkLstPt )
+                                    if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数。
                                     {
-                                        if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数。
-                                        {
-                                            new MediaMsg( 0, MediaMsgTyp.UserDstoy );
-                                            new MediaMsg( 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
-                                        }
-                                        else //如果上一次调用了用户定义的销毁函数，就不再进行媒体销毁，用户销毁。
-                                        {
-                                            m_ReadyExitCnt--; //设置准备退出计数递减。因为在请求退出时递增了。
-                                        }
+                                        new MediaMsg( 0, MediaMsgTyp.UserDstoy );
+                                        new MediaMsg( 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
+                                    }
+                                    else //如果上一次调用了用户定义的销毁函数，就不再进行媒体销毁，用户销毁。
+                                    {
+                                        m_ReadyExitCnt--; //设置准备退出计数递减。因为在请求退出时递增了。
                                     }
                                     break;
                                 }
                                 case 2: //请求重启。
                                 {
                                     //执行顺序：媒体销毁，用户销毁，用户初始化，媒体初始化。
-                                    synchronized( m_MediaMsgLnkLstPt )
+                                    new MediaMsg( 0, MediaMsgTyp.AdoVdoInptOtptInit );
+                                    new MediaMsg( 0, MediaMsgTyp.UserInit );
+                                    if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数。
                                     {
-                                        new MediaMsg( 0, MediaMsgTyp.AdoVdoInptOtptInit );
-                                        new MediaMsg( 0, MediaMsgTyp.UserInit );
-                                        if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数。
-                                        {
-                                            new MediaMsg( 0, MediaMsgTyp.UserDstoy );
-                                            new MediaMsg( 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
-                                        }
-                                        else //如果上一次调用了用户定义的销毁函数，就不再进行媒体销毁，用户销毁。
-                                        {
-                                            m_ReadyExitCnt--; //设置准备退出计数递减。因为在请求退出时递增了。
-                                        }
+                                        new MediaMsg( 0, MediaMsgTyp.UserDstoy );
+                                        new MediaMsg( 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
+                                    }
+                                    else //如果上一次调用了用户定义的销毁函数，就不再进行媒体销毁，用户销毁。
+                                    {
+                                        m_ReadyExitCnt--; //设置准备退出计数递减。因为在请求退出时递增了。
                                     }
                                     break;
                                 }
                                 case 3: //请求重启但不执行用户定义的UserInit初始化函数和UserDstoy销毁函数。
                                 {
                                     //执行顺序：媒体销毁，媒体初始化。
-                                    synchronized( m_MediaMsgLnkLstPt )
-                                    {
-                                        new MediaMsg( 0, MediaMsgTyp.AdoVdoInptOtptInit );
-                                        new MediaMsg( 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
-                                        m_ReadyExitCnt--; //设置准备退出计数递减。因为在请求退出时递增了。
-                                    }
+                                    new MediaMsg( 0, MediaMsgTyp.AdoVdoInptOtptInit );
+                                    new MediaMsg( 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
+                                    m_ReadyExitCnt--; //设置准备退出计数递减。因为在请求退出时递增了。
                                     break;
                                 }
                             }
@@ -2071,7 +2051,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         }
                         case UserMsg:
                         {
-                            p_TmpInt321 = UserMsg( ( Object[] ) p_MediaMsgPt.m_MsgArgLnkLstPt.get( 0 ) );
+                            p_TmpInt321 = UserMsg( ( Object[] ) p_MediaMsgPt.m_MsgArgCntnrPt[ 0 ] );
                             if( p_TmpInt321 == 0 )
                             {
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：调用用户定义的消息函数成功。返回值：" + p_TmpInt321 );
@@ -2127,29 +2107,19 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                     }
 
                     //取出音频输入Pcm格式原始帧和音频输出Pcm格式原始帧。
-                    if( m_AdoInptPt.m_PcmSrcFrmLnkLstPt != null ) p_TmpInt321 = m_AdoInptPt.m_PcmSrcFrmLnkLstPt.size(); //获取Pcm格式原始帧链表的元素总数。
+                    if( m_AdoInptPt.m_PcmSrcFrmCntnrPt != null ) p_TmpInt321 = m_AdoInptPt.m_PcmSrcFrmCntnrPt.size(); //获取Pcm格式原始帧容器的元素总数。
                     else p_TmpInt321 = 0;
-                    if( m_AdoOtptPt.m_PcmSrcFrmLnkLstPt != null ) p_TmpInt322 = m_AdoOtptPt.m_PcmSrcFrmLnkLstPt.size(); //获取Pcm格式原始帧链表的元素总数。
+                    if( m_AdoOtptPt.m_PcmSrcFrmCntnrPt != null ) p_TmpInt322 = m_AdoOtptPt.m_PcmSrcFrmCntnrPt.size(); //获取Pcm格式原始帧容器的元素总数。
                     else p_TmpInt322 = 0;
                     if( m_AdoInptPt.m_IsCanUseAec != 0 ) //如果可以使用声学回音消除器。
                     {
-                        if( ( p_TmpInt321 > 0 ) && ( p_TmpInt322 > 0 ) ) //如果Pcm格式原始帧链表和Pcm格式原始帧链表中都有帧了，就开始取出。
+                        if( ( p_TmpInt321 > 0 ) && ( p_TmpInt322 > 0 ) ) //如果Pcm格式原始帧容器和Pcm格式原始帧容器中都有帧了，就开始取出。
                         {
-                            //从音频输入Pcm格式原始帧链表中取出并删除第一个帧。
-                            synchronized( m_AdoInptPt.m_PcmSrcFrmLnkLstPt )
-                            {
-                                m_ThrdPt.m_AdoInptPcmSrcFrmPt = m_AdoInptPt.m_PcmSrcFrmLnkLstPt.getFirst();
-                                m_AdoInptPt.m_PcmSrcFrmLnkLstPt.removeFirst();
-                            }
-                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从音频输入Pcm格式原始帧链表中取出并删除第一个帧，音频输入Pcm格式原始帧链表元素总数：" + p_TmpInt321 + "。" );
+                            m_ThrdPt.m_AdoInptPcmSrcFrmPt = ( short[] ) m_AdoInptPt.m_PcmSrcFrmCntnrPt.poll(); //从音频输入Pcm格式原始帧容器中取出并删除第一个帧。
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从音频输入Pcm格式原始帧容器中取出并删除第一个帧，音频输入Pcm格式原始帧容器元素总数：" + p_TmpInt321 + "。" );
 
-                            //从音频输出Pcm格式原始帧链表中取出并删除第一个帧。
-                            synchronized( m_AdoOtptPt.m_PcmSrcFrmLnkLstPt )
-                            {
-                                m_ThrdPt.m_AdoOtptPcmSrcFrmPt = m_AdoOtptPt.m_PcmSrcFrmLnkLstPt.getFirst();
-                                m_AdoOtptPt.m_PcmSrcFrmLnkLstPt.removeFirst();
-                            }
-                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从音频输出Pcm格式原始帧链表中取出并删除第一个帧，音频输出Pcm格式原始帧链表元素总数：" + p_TmpInt322 + "。" );
+                            m_ThrdPt.m_AdoOtptPcmSrcFrmPt = ( short[] ) m_AdoOtptPt.m_PcmSrcFrmCntnrPt.poll(); //从音频输出Pcm格式原始帧容器中取出并删除第一个帧。
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从音频输出Pcm格式原始帧容器中取出并删除第一个帧，音频输出Pcm格式原始帧容器元素总数：" + p_TmpInt322 + "。" );
 
                             //将音频输入Pcm格式原始帧复制到音频输入Pcm格式结果帧，方便处理。
                             System.arraycopy( m_ThrdPt.m_AdoInptPcmSrcFrmPt, 0, m_ThrdPt.m_AdoInptPcmRsltFrmPt, 0, m_ThrdPt.m_AdoInptPcmSrcFrmPt.length );
@@ -2157,29 +2127,19 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                     }
                     else //如果不可以使用声学回音消除器。
                     {
-                        if( p_TmpInt321 > 0 ) //如果Pcm格式原始帧链表有帧了，就开始取出。
+                        if( p_TmpInt321 > 0 ) //如果Pcm格式原始帧容器有帧了，就开始取出。
                         {
-                            //从音频输入Pcm格式原始帧链表中取出并删除第一个帧。
-                            synchronized( m_AdoInptPt.m_PcmSrcFrmLnkLstPt )
-                            {
-                                m_ThrdPt.m_AdoInptPcmSrcFrmPt = m_AdoInptPt.m_PcmSrcFrmLnkLstPt.getFirst();
-                                m_AdoInptPt.m_PcmSrcFrmLnkLstPt.removeFirst();
-                            }
-                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从音频输入Pcm格式原始帧链表中取出并删除第一个帧，音频输入Pcm格式原始帧链表元素总数：" + p_TmpInt321 + "。" );
+                            m_ThrdPt.m_AdoInptPcmSrcFrmPt = ( short[] ) m_AdoInptPt.m_PcmSrcFrmCntnrPt.poll(); //从音频输入Pcm格式原始帧容器中取出并删除第一个帧。
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从音频输入Pcm格式原始帧容器中取出并删除第一个帧，音频输入Pcm格式原始帧容器元素总数：" + p_TmpInt321 + "。" );
 
                             //将音频输入Pcm格式原始帧复制到音频输入Pcm格式结果帧，方便处理。
                             System.arraycopy( m_ThrdPt.m_AdoInptPcmSrcFrmPt, 0, m_ThrdPt.m_AdoInptPcmRsltFrmPt, 0, m_ThrdPt.m_AdoInptPcmSrcFrmPt.length );
                         }
 
-                        if( p_TmpInt322 > 0 ) //如果Pcm格式原始帧链表有帧了，就开始取出。
+                        if( p_TmpInt322 > 0 ) //如果Pcm格式原始帧容器有帧了，就开始取出。
                         {
-                            //从音频输出Pcm格式原始帧链表中取出并删除第一个帧。
-                            synchronized( m_AdoOtptPt.m_PcmSrcFrmLnkLstPt )
-                            {
-                                m_ThrdPt.m_AdoOtptPcmSrcFrmPt = m_AdoOtptPt.m_PcmSrcFrmLnkLstPt.getFirst();
-                                m_AdoOtptPt.m_PcmSrcFrmLnkLstPt.removeFirst();
-                            }
-                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从音频输出Pcm格式原始帧链表中取出并删除第一个帧，音频输出Pcm格式原始帧链表元素总数：" + p_TmpInt322 + "。" );
+                            m_ThrdPt.m_AdoOtptPcmSrcFrmPt = ( short[] ) m_AdoOtptPt.m_PcmSrcFrmCntnrPt.poll(); //从音频输出Pcm格式原始帧容器中取出并删除第一个帧。
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从音频输出Pcm格式原始帧容器中取出并删除第一个帧，音频输出Pcm格式原始帧容器元素总数：" + p_TmpInt322 + "。" );
                         }
                     }
 
@@ -2480,18 +2440,13 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                     } //处理音频输出帧结束。
 
                     //处理视频输入帧开始。
-                    if( m_VdoInptPt.m_FrmLnkLstPt != null ) p_TmpInt321 = m_VdoInptPt.m_FrmLnkLstPt.size(); //获取视频输入帧链表的元素总数。
+                    if( m_VdoInptPt.m_FrmCntnrPt != null ) p_TmpInt321 = m_VdoInptPt.m_FrmCntnrPt.size(); //获取视频输入帧容器的元素总数。
                     else p_TmpInt321 = 0;
-                    if( ( p_TmpInt321 > 0 ) && //如果视频输入帧链表中有帧了。
-                        ( ( m_ThrdPt.m_AdoInptPcmSrcFrmPt != null ) || ( m_AdoInptPt.m_PcmSrcFrmLnkLstPt == null ) ) ) //且已经处理了音频输入帧或不使用Pcm格式原始帧链表。
+                    if( ( p_TmpInt321 > 0 ) && //如果视频输入帧容器中有帧了。
+                        ( ( m_ThrdPt.m_AdoInptPcmSrcFrmPt != null ) || ( m_AdoInptPt.m_PcmSrcFrmCntnrPt == null ) ) ) //且已经处理了音频输入帧或不使用Pcm格式原始帧容器。
                     {
-                        //从视频输入帧链表中取出并删除第一个帧。
-                        synchronized( m_VdoInptPt.m_FrmLnkLstPt )
-                        {
-                            m_ThrdPt.m_VdoInptFrmPt = m_VdoInptPt.m_FrmLnkLstPt.getFirst();
-                            m_VdoInptPt.m_FrmLnkLstPt.removeFirst();
-                        }
-                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从视频输入帧链表中取出并删除第一个帧，视频输入帧链表元素总数：" + p_TmpInt321 + "。" );
+                        m_ThrdPt.m_VdoInptFrmPt = ( VdoInpt.Frm ) m_VdoInptPt.m_FrmCntnrPt.poll(); //从视频输入帧容器中取出并删除第一个帧。
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从视频输入帧容器中取出并删除第一个帧，视频输入帧容器元素总数：" + p_TmpInt321 + "。" );
 
                         //使用音视频输入输出Avi文件写入器写入视频输入已编码格式结果帧。
                         if( ( m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoInpt != 0 ) && ( m_ThrdPt.m_VdoInptFrmPt.m_EncdRsltFrmLenBytPt.m_Val != 0 ) )
@@ -2516,17 +2471,12 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                     } //处理视频输入帧结束。
 
                     //处理视频输出帧开始。
-                    if( m_VdoOtptPt.m_FrmLnkLstPt != null ) p_TmpInt321 = m_VdoOtptPt.m_FrmLnkLstPt.size(); //获取视频输出帧链表的元素总数。
+                    if( m_VdoOtptPt.m_FrmCntnrPt != null ) p_TmpInt321 = m_VdoOtptPt.m_FrmCntnrPt.size(); //获取视频输出帧容器的元素总数。
                     else p_TmpInt321 = 0;
-                    if( p_TmpInt321 > 0 ) //如果视频输出帧链表中有帧了。
+                    if( p_TmpInt321 > 0 ) //如果视频输出帧容器中有帧了。
                     {
-                        //从视频输出帧链表中取出并删除第一个帧。
-                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从视频输出帧链表中取出并删除第一个帧，视频输出帧链表元素总数：" + m_VdoOtptPt.m_FrmLnkLstPt.size() + "。" );
-                        synchronized( m_VdoOtptPt.m_FrmLnkLstPt )
-                        {
-                            m_ThrdPt.m_VdoOtptFrmPt = m_VdoOtptPt.m_FrmLnkLstPt.getFirst();
-                            m_VdoOtptPt.m_FrmLnkLstPt.removeFirst();
-                        }
+                        m_ThrdPt.m_VdoOtptFrmPt = ( VdoOtpt.Frm ) m_VdoOtptPt.m_FrmCntnrPt.poll(); //从视频输出帧容器中取出并删除第一个帧。
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从视频输出帧容器中取出并删除第一个帧，视频输出帧容器元素总数：" + p_TmpInt321 + "。" );
 
                         //使用音视频输入输出Avi文件写入器写入视频输出已编码格式原始帧。
                         if( ( m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoOtpt != 0 ) && ( m_ThrdPt.m_VdoOtptFrmPt.m_EncdSrcFrmLenBytPt.m_Val != 0 ) )
@@ -2680,36 +2630,24 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         }
                     }
 
-                    if( m_ThrdPt.m_AdoInptPcmSrcFrmPt != null ) //如果取出了音频输入Pcm格式原始帧，就追加到Pcm格式空闲帧链表。注意：从取出到追加过程中不能跳出，否则会内存泄露。
+                    if( m_ThrdPt.m_AdoInptPcmSrcFrmPt != null ) //如果取出了音频输入Pcm格式原始帧，就放入到音频输入Pcm格式空闲帧队列。注意：从取出到放入过程中不能跳出，否则会内存泄露。
                     {
-                        synchronized( m_AdoInptPt.m_PcmIdleFrmLnkLstPt )
-                        {
-                            m_AdoInptPt.m_PcmIdleFrmLnkLstPt.addLast( m_ThrdPt.m_AdoInptPcmSrcFrmPt );
-                        }
+                        m_AdoInptPt.m_PcmIdleFrmCntnrPt.offer( m_ThrdPt.m_AdoInptPcmSrcFrmPt );
                         m_ThrdPt.m_AdoInptPcmSrcFrmPt = null;
                     }
-                    if( m_ThrdPt.m_AdoOtptPcmSrcFrmPt != null ) //如果取出了音频输出Pcm格式原始帧，就追加到Pcm格式空闲帧链表。注意：从取出到追加过程中不能跳出，否则会内存泄露。
+                    if( m_ThrdPt.m_AdoOtptPcmSrcFrmPt != null ) //如果取出了音频输出Pcm格式原始帧，就追加到Pcm格式空闲帧容器。注意：从取出到追加过程中不能跳出，否则会内存泄露。
                     {
-                        synchronized( m_AdoOtptPt.m_PcmIdleFrmLnkLstPt )
-                        {
-                            m_AdoOtptPt.m_PcmIdleFrmLnkLstPt.addLast( m_ThrdPt.m_AdoOtptPcmSrcFrmPt );
-                        }
+                        m_AdoOtptPt.m_PcmIdleFrmCntnrPt.offer( m_ThrdPt.m_AdoOtptPcmSrcFrmPt );
                         m_ThrdPt.m_AdoOtptPcmSrcFrmPt = null;
                     }
-                    if( m_ThrdPt.m_VdoInptFrmPt != null ) //如果取出了视频输入帧，就追加到视频输入空闲帧链表。注意：从取出到追加过程中不能跳出，否则会内存泄露。
+                    if( m_ThrdPt.m_VdoInptFrmPt != null ) //如果取出了视频输入帧，就追加到视频输入空闲帧容器。注意：从取出到追加过程中不能跳出，否则会内存泄露。
                     {
-                        synchronized( m_VdoInptPt.m_IdleFrmLnkLstPt )
-                        {
-                            m_VdoInptPt.m_IdleFrmLnkLstPt.addLast( m_ThrdPt.m_VdoInptFrmPt );
-                        }
+                        m_VdoInptPt.m_IdleFrmCntnrPt.offer( m_ThrdPt.m_VdoInptFrmPt );
                         m_ThrdPt.m_VdoInptFrmPt = null;
                     }
-                    if( m_ThrdPt.m_VdoOtptFrmPt != null ) //如果取出了视频输出帧，就追加到视频输出空闲帧链表。注意：从取出到追加过程中不能跳出，否则会内存泄露。
+                    if( m_ThrdPt.m_VdoOtptFrmPt != null ) //如果取出了视频输出帧，就追加到视频输出空闲帧容器。注意：从取出到追加过程中不能跳出，否则会内存泄露。
                     {
-                        synchronized( m_VdoOtptPt.m_IdleFrmLnkLstPt )
-                        {
-                            m_VdoOtptPt.m_IdleFrmLnkLstPt.addLast( m_ThrdPt.m_VdoOtptFrmPt );
-                        }
+                        m_VdoOtptPt.m_IdleFrmCntnrPt.offer( m_ThrdPt.m_VdoOtptFrmPt );
                         m_ThrdPt.m_VdoOtptFrmPt = null;
                     }
 
@@ -2740,7 +2678,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                 }
             }
 
-            if( ( m_MediaMsgLnkLstPt.size() == 0 ) && ( m_ReadyExitCnt > 0 ) ) break; //如果媒体消息处理完毕，且媒体处理线程准备退出。
+            if( ( m_MediaMsgCntnrPt.isEmpty() ) && ( m_ReadyExitCnt > 0 ) ) break; //如果媒体消息处理完毕，且媒体处理线程准备退出。
         } //媒体处理循环结束。
 
         MediaPocsThrdTmpVarDstoy();

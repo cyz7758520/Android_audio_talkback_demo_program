@@ -61,12 +61,12 @@
                 android:layout_height="match_parent">
 
                 <RadioButton
-                    android:id="@+id/UseLnkLstRecvOtptFrmRdBtnId"
+                    android:id="@+id/UseCntnrRecvOtptFrmRdBtnId"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:checked="false"
-                    android:text="链表" />
+                    android:text="容器" />
 
                 <RadioButton
                     android:id="@+id/UseAjbRecvOtptFrmRdBtnId"

@@ -120,14 +120,14 @@ public class AudpSokt
     }
 
     //用本端高级UDP协议套接字发送高级数据包到连接的远端高级UDP协议套接字。
-    public int SendApkt( long CnctIdx, byte PktPt[], long PktLenByt, int Times, Vstr ErrInfoVstrPt )
+    public int SendApkt( long CnctIdx, byte PktPt[], long PktLenByt, int Times, int IsRlab, Vstr ErrInfoVstrPt )
     {
-        return AudpSendApkt( m_AudpSoktPt, CnctIdx, PktPt, PktLenByt, Times, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return AudpSendApkt( m_AudpSoktPt, CnctIdx, PktPt, PktLenByt, Times, IsRlab, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
     //用本端高级UDP协议套接字接收连接的远端高级UDP协议套接字发送的高级数据包。
-    public int RecvApkt( long CnctIdx, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, short TmotMsec, Vstr ErrInfoVstrPt )
+    public int RecvApkt( long CnctIdx, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, HTInt IsRlabPt, short TmotMsec, Vstr ErrInfoVstrPt )
     {
-        return AudpRecvApkt( m_AudpSoktPt, CnctIdx, PktPt, PktSzByt, PktLenBytPt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+        return AudpRecvApkt( m_AudpSoktPt, CnctIdx, PktPt, PktSzByt, PktLenBytPt, IsRlabPt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
     //关闭并销毁本端高级UDP协议套接字。
@@ -182,9 +182,9 @@ public class AudpSokt
     private native int AudpGetRecvBufLen( long AudpSoktPt, HTLong RecvBufLenBytPt, long ErrInfoVstrPt );
 
     //用本端高级UDP协议套接字发送高级数据包到连接的远端高级UDP协议套接字。
-    private native int AudpSendApkt( long AudpSoktPt, long CnctIdx, byte PktPt[], long PktLenByt, int Times, long ErrInfoVstrPt );
+    private native int AudpSendApkt( long AudpSoktPt, long CnctIdx, byte PktPt[], long PktLenByt, int Times, int IsRlab, long ErrInfoVstrPt );
     //用本端高级UDP协议套接字接收连接的远端高级UDP协议套接字发送的高级数据包。
-    private native int AudpRecvApkt( long AudpSoktPt, long CnctIdx, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, short TmotMsec, long ErrInfoVstrPt );
+    private native int AudpRecvApkt( long AudpSoktPt, long CnctIdx, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, HTInt IsRlabPt, short TmotMsec, long ErrInfoVstrPt );
 
     //关闭并销毁本端高级UDP协议套接字。
     private native int AudpDstoy( long AudpSoktPt, long ErrInfoVstrPt );
