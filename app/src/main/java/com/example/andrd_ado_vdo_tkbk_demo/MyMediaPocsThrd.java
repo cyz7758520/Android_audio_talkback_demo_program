@@ -581,7 +581,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                 {
                     if( m_RqstCnctRslt == 2 ) //如果中断等待。
                     {
-                        m_TmpBytePt[ 0] = ( byte ) PktTyp.RefuseCnct.ordinal(); //设置拒绝连接包。
+                        m_TmpBytePt[ 0 ] = ( byte ) PktTyp.RefuseCnct.ordinal(); //设置拒绝连接包。
                         if( ( ( m_NtwkPt.m_UseWhatXfrPrtcl == 0 ) && ( m_NtwkPt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
                             ( ( m_NtwkPt.m_UseWhatXfrPrtcl == 1 ) && ( m_NtwkPt.m_AudpSoktPt.SendApkt( m_NtwkPt.m_AudpCnctIdxPt.m_Val, m_TmpBytePt, 1, 1, 1, m_ErrInfoVstrPt ) == 0 ) ) )
                         {
@@ -626,7 +626,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                                 break WaitAllowCnct;
                             } //如果是服务端，就重新接收。
                         }
-                        else if( ( m_TmpHTLongPt.m_Val == 1 ) && ( m_TmpBytePt[ 0] == ( byte ) PktTyp.RefuseCnct.ordinal() ) ) //如果是拒绝连接包。
+                        else if( ( m_TmpHTLongPt.m_Val == 1 ) && ( m_TmpBytePt[ 0 ] == ( byte ) PktTyp.RefuseCnct.ordinal() ) ) //如果是拒绝连接包。
                         {
                             m_RqstCnctRslt = 2;
 
@@ -1298,7 +1298,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                         m_TmpBytePt[ 0 ] = ( byte ) PktTyp.TkbkMode.ordinal(); //设置对讲模式包。
                         m_TmpBytePt[ 1 ] = ( byte ) m_LclTkbkMode.ordinal(); //设置对讲模式。
                         if( ( ( m_NtwkPt.m_UseWhatXfrPrtcl == 0 ) && ( m_NtwkPt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, 2, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) != 0 ) ) ||
-                                ( ( m_NtwkPt.m_UseWhatXfrPrtcl == 1 ) && ( m_NtwkPt.m_AudpSoktPt.SendApkt( m_NtwkPt.m_AudpCnctIdxPt.m_Val, m_TmpBytePt, 2, 1, 1, m_ErrInfoVstrPt ) != 0 ) ) )
+                            ( ( m_NtwkPt.m_UseWhatXfrPrtcl == 1 ) && ( m_NtwkPt.m_AudpSoktPt.SendApkt( m_NtwkPt.m_AudpCnctIdxPt.m_Val, m_TmpBytePt, 2, 1, 1, m_ErrInfoVstrPt ) != 0 ) ) )
                         {
                             String p_InfoStrPt = "发送一个对讲模式包失败。原因：" + m_ErrInfoVstrPt.GetStr();
                             if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
