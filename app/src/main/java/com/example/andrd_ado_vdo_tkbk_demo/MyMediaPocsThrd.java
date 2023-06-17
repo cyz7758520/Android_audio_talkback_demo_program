@@ -244,27 +244,54 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                             Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                         }
 
-                        if( m_NtwkPt.m_TcpClntSoktPt.Init( p_RmtNodeAddrFamly, m_NtwkPt.m_IPAddrStrPt, m_NtwkPt.m_PortStrPt, null, null, ( short ) 5000, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字成功。
+                        if( m_NtwkPt.m_TcpClntSoktPt.Init( p_RmtNodeAddrFamly, m_NtwkPt.m_IPAddrStrPt, m_NtwkPt.m_PortStrPt, null, null, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字成功。
                         {
-                            if( m_NtwkPt.m_TcpClntSoktPt.GetLclAddr( null, p_LclNodeAddrPt, p_LclNodePortPt, 0, m_ErrInfoVstrPt ) != 0 )
+                            HTInt p_TcpCnctSts = new HTInt();
+
+                            while( m_NtwkPt.m_TcpClntSoktPt.WaitCnct( ( short ) 1, p_TcpCnctSts, m_ErrInfoVstrPt ) == 0 ) //循环等待本端TCP协议客户端套接字连接远端TCP协议服务端套接字成功。
                             {
-                                String p_InfoStrPt = "获取本端TCP协议客户端套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVstrPt.GetStr();
-                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                                Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                                break Out;
-                            }
-                            if( m_NtwkPt.m_TcpClntSoktPt.GetRmtAddr( null, p_RmtNodeAddrPt, p_RmtNodePortPt, 0, m_ErrInfoVstrPt ) != 0 )
-                            {
-                                String p_InfoStrPt = "获取本端TCP协议客户端套接字连接的远端TCP协议客户端套接字绑定的远程节点地址和端口失败。原因：" + m_ErrInfoVstrPt.GetStr();
-                                if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                                Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                                break Out;
+                                if( p_TcpCnctSts.m_Val == TcpClntSokt.TcpCnctStsWait ) //如果等待远端接受连接。
+                                {
+                                    //重新循环，继续等待本端本端TCP协议客户端套接字连接远端TCP协议服务端套接字。
+                                }
+                                else if( p_TcpCnctSts.m_Val == TcpClntSokt.TcpCnctStsCnct ) //如果连接成功。
+                                {
+                                    if( m_NtwkPt.m_TcpClntSoktPt.GetLclAddr( null, p_LclNodeAddrPt, p_LclNodePortPt, 0, m_ErrInfoVstrPt ) != 0 )
+                                    {
+                                        String p_InfoStrPt = "获取本端TCP协议客户端套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVstrPt.GetStr();
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                        Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                        break Out;
+                                    }
+                                    if( m_NtwkPt.m_TcpClntSoktPt.GetRmtAddr( null, p_RmtNodeAddrPt, p_RmtNodePortPt, 0, m_ErrInfoVstrPt ) != 0 )
+                                    {
+                                        String p_InfoStrPt = "获取本端TCP协议客户端套接字连接的远端TCP协议客户端套接字绑定的远程节点地址和端口失败。原因：" + m_ErrInfoVstrPt.GetStr();
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                        Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                        break Out;
+                                    }
+
+                                    String p_InfoStrPt = "初始化本端TCP协议客户端套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]，并连接远端TCP协议服务端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]成功。";
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                                    Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                    break LoopTcpCnct; //跳出重连。
+                                }
+                                else //如果连接失败。
+                                {
+                                    String p_InfoStrPt = "初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字[" + m_NtwkPt.m_IPAddrStrPt + ":" + m_NtwkPt.m_PortStrPt + "]失败。原因：连接失败。原因：" + m_ErrInfoVstrPt.GetStr();
+                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                    Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                    break;
+                                }
+
+                                if( m_ReadyExitCnt != 0 ) //如果本线程接收到退出请求。
+                                {
+                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "本线程接收到退出请求，开始准备退出。" );
+                                    break Out;
+                                }
                             }
 
-                            String p_InfoStrPt = "初始化本端TCP协议客户端套接字[" + p_LclNodeAddrPt.m_Val + ":" + p_LclNodePortPt.m_Val + "]，并连接远端TCP协议服务端套接字[" + p_RmtNodeAddrPt.m_Val + ":" + p_RmtNodePortPt.m_Val + "]成功。";
-                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                            Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                            break LoopTcpCnct; //跳出重连。
+                            m_NtwkPt.m_TcpClntSoktPt.Dstoy( ( short ) -1, m_ErrInfoVstrPt ); //销毁本端TCP协议客户端套接字，等待重连。
                         }
                         else
                         {
@@ -431,7 +458,11 @@ public class MyMediaPocsThrd extends MediaPocsThrd
 
                                 while( m_NtwkPt.m_AudpSoktPt.WaitCnct( m_NtwkPt.m_AudpCnctIdxPt.m_Val, ( short )1, p_AudpCnctSts, m_ErrInfoVstrPt ) == 0 ) //循环等待本端高级UDP协议套接字连接远端成功。
                                 {
-                                    if( p_AudpCnctSts.m_Val == AudpSokt.AudpCnctStsCnct ) //如果连接成功。
+                                    if( p_AudpCnctSts.m_Val == AudpSokt.AudpCnctStsWait ) //如果等待远端接受连接。
+                                    {
+                                        //重新循环，继续等待本端高级UDP协议套接字连接远端。
+                                    }
+                                    else if( p_AudpCnctSts.m_Val == AudpSokt.AudpCnctStsCnct ) //如果连接成功。
                                     {
                                         if( m_NtwkPt.m_AudpSoktPt.GetRmtAddr( m_NtwkPt.m_AudpCnctIdxPt.m_Val, null, p_RmtNodeAddrPt, p_RmtNodePortPt, m_ErrInfoVstrPt ) != 0 )
                                         {
@@ -446,26 +477,19 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                                         Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                                         break LoopUdpCnct; //跳出重连。
                                     }
-                                    else //如果连接失败。
+                                    else if( p_AudpCnctSts.m_Val == AudpSokt.AudpCnctStsTmot ) //如果连接超时。
                                     {
-                                        if( p_AudpCnctSts.m_Val == AudpSokt.AudpCnctStsWait ) //如果等待远端接受连接。
-                                        {
-                                            //重新循环，继续等待本端高级UDP协议套接字连接远端。
-                                        }
-                                        else if( p_AudpCnctSts.m_Val == AudpSokt.AudpCnctStsTmot ) //如果连接超时。
-                                        {
-                                            String p_InfoStrPt = "用本端高级UDP协议套接字连接远端高级UDP协议套接字[" + m_NtwkPt.m_IPAddrStrPt + ":" + m_NtwkPt.m_PortStrPt + "]失败。原因：连接超时。";
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                                            Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                                            break;
-                                        }
-                                        else if( p_AudpCnctSts.m_Val == AudpSokt.AudpCnctStsDsct ) //如果连接断开。
-                                        {
-                                            String p_InfoStrPt = "用本端高级UDP协议套接字连接远端高级UDP协议套接字[" + m_NtwkPt.m_IPAddrStrPt + ":" + m_NtwkPt.m_PortStrPt + "]失败。原因：连接断开。";
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-                                            Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
-                                            break;
-                                        }
+                                        String p_InfoStrPt = "用本端高级UDP协议套接字连接远端高级UDP协议套接字[" + m_NtwkPt.m_IPAddrStrPt + ":" + m_NtwkPt.m_PortStrPt + "]失败。原因：连接超时。";
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                        Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                        break;
+                                    }
+                                    else if( p_AudpCnctSts.m_Val == AudpSokt.AudpCnctStsDsct ) //如果连接断开。
+                                    {
+                                        String p_InfoStrPt = "用本端高级UDP协议套接字连接远端高级UDP协议套接字[" + m_NtwkPt.m_IPAddrStrPt + ":" + m_NtwkPt.m_PortStrPt + "]失败。原因：连接断开。";
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                                        Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
+                                        break;
                                     }
 
                                     if( m_ReadyExitCnt != 0 ) //如果本线程接收到退出请求。

@@ -26,13 +26,17 @@ public class TcpClntSokt
         Dstoy( ( short )-1, null );
     }
 
+    public static final int TcpCnctStsWait = 0; //连接状态：等待远端接受连接。
+    public static final int TcpCnctStsCnct = 1; //连接状态：已连接。
+    public static final int TcpCnctStsFail = 2; //连接状态：连接失败。
+
     //创建并初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字。
-    public int Init( int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, short TmotMsec, Vstr ErrInfoVstrPt )
+    public int Init( int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, Vstr ErrInfoVstrPt )
     {
         if( m_TcpClntSoktPt == 0 )
         {
             HTLong p_WebRtcNsPt = new HTLong();
-            if( TcpClntInit( p_WebRtcNsPt, RmtLclNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, LclNodeNamePt, LclNodeSrvcPt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            if( TcpClntInit( p_WebRtcNsPt, RmtLclNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, LclNodeNamePt, LclNodeSrvcPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
                 m_TcpClntSoktPt = p_WebRtcNsPt.m_Val;
                 return 0;
@@ -46,6 +50,11 @@ public class TcpClntSokt
         {
             return 0;
         }
+    }
+
+    public int WaitCnct( short TmotMsec, HTInt CnctStsPt, Vstr ErrInfoVstrPt )
+    {
+        return TcpClntWaitCnct( m_TcpClntSoktPt, TmotMsec, CnctStsPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
     //本端TCP协议客户端套接字的互斥锁加锁。
@@ -163,7 +172,10 @@ public class TcpClntSokt
     }
 
     //创建并初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字。
-    private native int TcpClntInit( HTLong TcpClntSoktPt, int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, short TmotMsec, long ErrInfoVstrPt );
+    private native int TcpClntInit( HTLong TcpClntSoktPt, int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, long ErrInfoVstrPt );
+
+    //等待本端TCP协议客户端套接字连接远端TCP协议服务端套接字是否成功。
+    private native int TcpClntWaitCnct( long TcpClntSoktPt, short TmotMsec, HTInt CnctStsPt, long ErrInfoVstrPt );
 
     //本端TCP协议客户端套接字的互斥锁加锁。
     private native int TcpClntLocked( long TcpClntSoktPt, long ErrInfoVstrPt );
