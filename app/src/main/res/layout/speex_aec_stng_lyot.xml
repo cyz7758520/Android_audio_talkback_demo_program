@@ -34,14 +34,14 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3"
                 android:gravity="center_vertical"
-                android:text="滤波器的数据长度，单位毫秒：" />
+                android:text="滤波器长度，单位毫秒：" />
 
             <EditText
                 android:id="@+id/SpeexAecFilterLenMsecEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -57,7 +57,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="在残余回音消除时，残余回音的倍数，倍数越大消除越强，取值区间为[0.0,100.0]："
+                android:text="在残余回音消除时，残余回音倍数，倍数越大消除越强，取值区间为[0.0,100.0]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -68,7 +68,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberDecimal"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -78,7 +78,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="在残余回音消除时，残余回音的持续系数，系数越大消除越强，取值区间为[0.0,0.9]："
+                android:text="在残余回音消除时，残余回音持续系数，系数越大消除越强，取值区间为[0.0,0.9]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -89,7 +89,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberDecimal"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -99,7 +99,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="在残余回音消除时，残余回音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]："
+                android:text="在残余回音消除时，残余回音最大衰减分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -110,7 +110,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberSigned"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -120,7 +120,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="在残余回音消除时，有近端语音活动时残余回音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]："
+                android:text="在残余回音消除时，有近端语音活动时残余回音最大衰减分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -131,7 +131,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberSigned"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -146,12 +146,13 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3"
                 android:gravity="center_vertical"
-                android:text="将Speex声学回音消除器的内存块保存到扩展目录下的SpeexAecMem文件中，以便缩短下一次初始化时的收敛时间"/>
+                android:text="保存Speex声学回音消除器内存块到SpeexAecMem文件，以便缩短下一次初始化时收敛时间"/>
 
             <Button
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:padding="0dp"
                 android:text="删除内存块文件"
                 android:onClick="OnClickSpeexAecDelMemFileBtn" />
 

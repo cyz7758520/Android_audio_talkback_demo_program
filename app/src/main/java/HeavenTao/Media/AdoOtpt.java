@@ -135,20 +135,20 @@ public class AdoOtpt //音频输出。
 
     class Wavfm //存放波形器。
     {
-        public int m_IsDrawAdoWavfmToSurface; //存放是否绘制音频波形到Surface，为非0表示要绘制，为0表示不绘制。
-        AdoWavfm m_SrcWavfmPt; //存放原始波形器的指针。
-        SurfaceView m_SrcWavfmSurfacePt; //存放原始波形Surface的指针。
+        public int m_IsDraw; //存放是否绘制，为非0表示要绘制，为0表示不绘制。
+        AdoWavfm m_SrcPt; //存放原始的指针。
+        SurfaceView m_SrcSurfacePt; //存放原始Surface的指针。
     }
     Wavfm m_WavfmPt = new Wavfm();
 
-    class WaveFile //存放Wave文件。
+    class WaveFileWriter //存放Wave文件写入器。
     {
-        public int m_IsSaveAdoToWaveFile; //存放是否保存音频到Wave文件，为非0表示要保存，为0表示不保存。
-        WaveFileWriter m_SrcWaveFileWriterPt; //存放原始Wave文件写入器的指针。
-        String m_WaveFileFullPathStrPt; //存放原始Wave文件完整路径字符串的指针。
-        long m_WaveFileWrBufSzByt; //存放Wave文件写入缓冲区的大小，单位为字节。
+        public int m_IsSave; //存放是否保存，为非0表示要保存，为0表示不保存。
+        HeavenTao.Media.WaveFileWriter m_SrcPt; //存放原始的指针。
+        String m_SrcFullPathStrPt; //存放原始完整路径字符串的指针。
+        long m_WrBufSzByt; //存放写入缓冲区的大小，单位为字节。
     }
-    WaveFile m_WaveFilePt = new WaveFile();
+    WaveFileWriter m_WaveFileWriterPt = new WaveFileWriter();
 
     class Dvc //存放设备。
     {
@@ -168,7 +168,7 @@ public class AdoOtpt //音频输出。
         int m_IsInitThrdTmpVar; //存放是否初始化线程的临时变量。
         short m_PcmSrcFrmPt[]; //存放Pcm格式原始帧的指针。
         byte m_EncdSrcFrmPt[]; //存放已编码格式原始帧的指针。
-        HTLong m_EncdSrcFrmLenBytPt; //存放已编码格式原始帧长度的指针，单位为字节。
+        HTLong m_EncdSrcFrmLenBytPt; //存放已编码格式原始帧的长度的指针，单位为字节。
         int m_PcmMixFrmPt[]; //存放Pcm格式混音帧的指针。
         int m_ElmTotal; //存放元素总数。
         long m_LastTickMsec; //存放上次的嘀嗒钟，单位为毫秒。
@@ -382,16 +382,16 @@ public class AdoOtpt //音频输出。
 
         Out:
         {
-            if( m_WavfmPt.m_IsDrawAdoWavfmToSurface != 0 )
+            if( m_WavfmPt.m_IsDraw != 0 )
             {
-                m_WavfmPt.m_SrcWavfmPt = new AdoWavfm();
-                if( m_WavfmPt.m_SrcWavfmPt.Init( m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+                m_WavfmPt.m_SrcPt = new AdoWavfm();
+                if( m_WavfmPt.m_SrcPt.Init( m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
                 {
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：初始化原始波形器成功。" );
                 }
                 else
                 {
-                    m_WavfmPt.m_SrcWavfmPt = null;
+                    m_WavfmPt.m_SrcPt = null;
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：初始化原始波形器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
                     break Out;
                 }
@@ -409,11 +409,11 @@ public class AdoOtpt //音频输出。
     //销毁音频输出的波形器。
     public void WavfmDstoy()
     {
-        if( m_WavfmPt.m_IsDrawAdoWavfmToSurface != 0 )
+        if( m_WavfmPt.m_IsDraw != 0 )
         {
-            if( m_WavfmPt.m_SrcWavfmPt != null )
+            if( m_WavfmPt.m_SrcPt != null )
             {
-                if( m_WavfmPt.m_SrcWavfmPt.Dstoy( m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+                if( m_WavfmPt.m_SrcPt.Dstoy( m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
                 {
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：销毁原始波形器成功。" );
                 }
@@ -421,7 +421,7 @@ public class AdoOtpt //音频输出。
                 {
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：销毁原始波形器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
                 }
-                m_WavfmPt.m_SrcWavfmPt = null;
+                m_WavfmPt.m_SrcPt = null;
             }
         }
     }
@@ -433,17 +433,17 @@ public class AdoOtpt //音频输出。
 
         Out:
         {
-            if( m_WaveFilePt.m_IsSaveAdoToWaveFile != 0 )
+            if( m_WaveFileWriterPt.m_IsSave != 0 )
             {
-                m_WaveFilePt.m_SrcWaveFileWriterPt = new WaveFileWriter();
-                if( m_WaveFilePt.m_SrcWaveFileWriterPt.Init( m_WaveFilePt.m_WaveFileFullPathStrPt, m_WaveFilePt.m_WaveFileWrBufSzByt, ( short ) 1, m_SmplRate, 16 ) == 0 )
+                m_WaveFileWriterPt.m_SrcPt = new HeavenTao.Media.WaveFileWriter();
+                if( m_WaveFileWriterPt.m_SrcPt.Init( m_WaveFileWriterPt.m_SrcFullPathStrPt, m_WaveFileWriterPt.m_WrBufSzByt, ( short ) 1, m_SmplRate, 16 ) == 0 )
                 {
-                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：初始化原始Wave文件 " + m_WaveFilePt.m_WaveFileFullPathStrPt + " 的Wave文件写入器成功。" );
+                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：初始化原始Wave文件 " + m_WaveFileWriterPt.m_SrcFullPathStrPt + " 写入器成功。" );
                 }
                 else
                 {
-                    m_WaveFilePt.m_SrcWaveFileWriterPt = null;
-                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：初始化原始Wave文件 " + m_WaveFilePt.m_WaveFileFullPathStrPt + " 的Wave文件写入器失败。" );
+                    m_WaveFileWriterPt.m_SrcPt = null;
+                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：初始化原始Wave文件 " + m_WaveFileWriterPt.m_SrcFullPathStrPt + " 写入器失败。" );
                     break Out;
                 }
             }
@@ -460,11 +460,11 @@ public class AdoOtpt //音频输出。
     //销毁音频输出的Wave文件写入器。
     public void WaveFileWriterDstoy()
     {
-        if( m_WaveFilePt.m_IsSaveAdoToWaveFile != 0 )
+        if( m_WaveFileWriterPt.m_IsSave != 0 )
         {
-            if( m_WaveFilePt.m_SrcWaveFileWriterPt != null )
+            if( m_WaveFileWriterPt.m_SrcPt != null )
             {
-                if( m_WaveFilePt.m_SrcWaveFileWriterPt.Dstoy() == 0 )
+                if( m_WaveFileWriterPt.m_SrcPt.Dstoy() == 0 )
                 {
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：销毁原始Wave文件写入器成功。" );
                 }
@@ -472,7 +472,7 @@ public class AdoOtpt //音频输出。
                 {
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：销毁原始Wave文件写入器失败。" );
                 }
-                m_WaveFilePt.m_SrcWaveFileWriterPt = null;
+                m_WaveFileWriterPt.m_SrcPt = null;
             }
         }
     }
@@ -564,7 +564,7 @@ public class AdoOtpt //音频输出。
                 m_ThrdPt.m_PcmSrcFrmPt = null; //初始化Pcm格式原始帧的指针。
                 m_ThrdPt.m_PcmMixFrmPt = new int[ ( int )m_FrmLenUnit ]; //初始化Pcm格式混音帧的指针。
                 m_ThrdPt.m_EncdSrcFrmPt = new byte[ ( int )m_FrmLenByt ]; //初始化已编码格式原始帧的指针。
-                m_ThrdPt.m_EncdSrcFrmLenBytPt = new HTLong(); //初始化已编码格式原始帧长度的指针。
+                m_ThrdPt.m_EncdSrcFrmLenBytPt = new HTLong(); //初始化已编码格式原始帧的长度的指针。
                 m_ThrdPt.m_ElmTotal = 0; //初始化元素总数。
                 m_ThrdPt.m_LastTickMsec = 0; //初始化上次的嘀嗒钟。
                 m_ThrdPt.m_NowTickMsec = 0; //初始化本次的嘀嗒钟。
@@ -616,7 +616,7 @@ public class AdoOtpt //音频输出。
             m_ThrdPt.m_PcmSrcFrmPt = null; //销毁Pcm格式原始帧的指针。
             m_ThrdPt.m_PcmMixFrmPt = null; //销毁Pcm格式混音帧的指针。
             m_ThrdPt.m_EncdSrcFrmPt = null; //销毁已编码格式原始帧的指针。
-            m_ThrdPt.m_EncdSrcFrmLenBytPt = null; //销毁已编码格式原始帧长度的指针。
+            m_ThrdPt.m_EncdSrcFrmLenBytPt = null; //销毁已编码格式原始帧的长度的指针。
             m_ThrdPt.m_ElmTotal = 0; //销毁元素总数。
             m_ThrdPt.m_LastTickMsec = 0; //销毁上次的嘀嗒钟。
             m_ThrdPt.m_NowTickMsec = 0; //销毁本次的嘀嗒钟。

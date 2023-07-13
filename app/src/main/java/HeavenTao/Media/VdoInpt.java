@@ -36,7 +36,7 @@ public class VdoInpt //视频输入。
         int m_VdoType; //存放视频类型，为0表示实时摄像头视频，为1表示实时屏幕内容视频，为2表示非实时摄像头视频，为3表示非实时屏幕内容视频，为4表示其他视频。
         int m_EncdBitrate; //存放编码后比特率，单位为bps。
         int m_BitrateCtrlMode; //存放比特率控制模式，为0表示质量优先模式，为1表示比特率优先模式，为2表示缓冲区优先模式，为3表示时间戳优先模式。
-        int m_IDRFrmIntvl; //存放IDR帧间隔帧数，单位为个，为0表示仅第一帧为IDR帧，为大于0表示每隔这么帧就至少有一个IDR帧。
+        int m_IDRFrmIntvl; //存放IDR帧间隔帧数，单位为个帧，为0表示仅第一帧为IDR帧，为大于0表示每隔这么帧就至少有一个IDR帧。
         int m_Cmplxt; //存放复杂度，复杂度越高压缩率不变、CPU使用率越高、画质越好，取值区间为[0,2]。
     }
     OpenH264Encd m_OpenH264EncdPt = new OpenH264Encd();
@@ -108,7 +108,7 @@ public class VdoInpt //视频输入。
         long m_NowTickMsec; //存放本次的嘀嗒钟，单位为毫秒。
 
         VdoInptThrd m_ThrdPt; //存放线程的指针。
-        int m_ExitFlag; //存放退出标记，0表示保持运行，1表示请求退出。
+        int m_ExitFlag; //存放退出标记，为0表示保持运行，为1表示请求退出。
     }
     Thrd m_ThrdPt = new Thrd();
 
@@ -204,7 +204,7 @@ public class VdoInpt //视频输入。
                 int p_TgtNv21SrcFrmWidth = m_FrmHeight; //存放目标Nv21格式原始帧的宽度，单位为像素。因为帧要旋转，所以设置为帧的高度。
                 int p_TgtNv21SrcFrmHeight = m_FrmWidth; //存放目标Nv21格式原始帧的高度，单位为像素。因为帧要旋转，所以设置为帧的宽度。
                 double p_TgtNv21SrcFrmAspectRatio = ( double )p_TgtNv21SrcFrmWidth / ( double )p_TgtNv21SrcFrmHeight; //存放目标Nv21格式原始帧的宽高比。
-                List< Camera.Size > p_SupportedPrvwSizesListPt = p_CameraParaPt.getSupportedPreviewSizes(); //获取设备支持预览的Nv21格式原始帧大小的列表。
+                List< Camera.Size > p_SupportedPrvwSizesListPt = p_CameraParaPt.getSupportedPreviewSizes(); //获取设备支持预览的Nv21格式原始帧的大小的列表。
                 double p_CurNv21SrcFrmAspectRatio; //存放本次Nv21格式原始帧的宽高比。
                 int p_CurNv21SrcFrmCropX; //存放本次Nv21格式原始帧裁剪区域左上角的横坐标，单位像素。
                 int p_CurNv21SrcFrmCropY; //存放本次Nv21格式原始帧裁剪区域左上角的纵坐标，单位像素。
@@ -276,7 +276,7 @@ public class VdoInpt //视频输入。
                         m_DvcPt.m_Nv21SrcFrmCropHeight = p_CurNv21SrcFrmCropHeight;
                     }
                 }
-                p_CameraParaPt.setPreviewSize( m_DvcPt.m_Nv21SrcFrmWidth, m_DvcPt.m_Nv21SrcFrmHeight ); //设置预览的帧大小为选择的帧大小。
+                p_CameraParaPt.setPreviewSize( m_DvcPt.m_Nv21SrcFrmWidth, m_DvcPt.m_Nv21SrcFrmHeight ); //设置预览的帧的大小为选择的帧的大小。
                 if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：选择设备的Nv21格式原始帧的大小：宽度：" + m_DvcPt.m_Nv21SrcFrmWidth + "，高度：" + m_DvcPt.m_Nv21SrcFrmHeight + "。" );
 
                 //判断Nv21格式原始帧是否裁剪。

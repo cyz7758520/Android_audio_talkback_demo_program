@@ -88,6 +88,11 @@ public class AviFileWriter
     {
         return AviFileWriterAddVdoStrm( m_AviFileWriterPt, Fmt, MaxSampleRate, VdoStrmIdxPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
+    //获取Avi文件指定视频流的当前时间戳。
+    public int VdoStrmGetCurTimeStamp( int VdoStrmIdx, HTLong CurTimeStampMsecPt, Vstr ErrInfoVstrPt )
+    {
+        return AviFileWriterVdoStrmGetCurTimeStamp( m_AviFileWriterPt, VdoStrmIdx, CurTimeStampMsecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
     //Avi文件指定视频流的写入视频帧。
     public int VdoStrmWriteByte( int VdoStrmIdx, long FrmTimeStampMsec, byte FrmPt[], long FrmLenByt, Vstr ErrInfoVstrPt )
     {
@@ -140,6 +145,8 @@ public class AviFileWriter
 
     //Avi文件添加视频流。
     private native int AviFileWriterAddVdoStrm( long AviFileWriterPt, int Fmt, int MaxSampleRate, HTInt VdoStrmIdxPt, long ErrInfoVstrPt );
+    //获取Avi文件指定视频流的当前时间戳。
+    private native int AviFileWriterVdoStrmGetCurTimeStamp( long AviFileWriterPt, int VdoStrmIdx, HTLong CurTimeStampMsecPt, long ErrInfoVstrPt );
     //Avi文件指定视频流的写入字节型视频帧。
     private native int AviFileWriterVdoStrmWriteByte( long AviFileWriterPt, int VdoStrmIdx, long FrmTimeStampMsec, byte FrmPt[], long FrmLenByt, long ErrInfoVstrPt );
     //Avi文件指定视频流的写入短整型视频帧。

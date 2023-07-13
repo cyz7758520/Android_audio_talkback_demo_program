@@ -37,7 +37,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="在语音活动检测时，从无语音活动到有语音活动的判断百分比概率，概率越大越难判断为有语音活，取值区间为[0,100]："
+                android:text="在语音活动检测时，从无语音活动到有语音活动判断百分比概率，概率越大越难判断为有语音活动，取值区间为[0,100]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -48,7 +48,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -58,7 +58,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="在语音活动检测时，从有语音活动到无语音活动的判断百分比概率，概率越大越容易判断为无语音活动，取值区间为[0,100]："
+                android:text="在语音活动检测时，从有语音活动到无语音活动判断百分比概率，概率越大越容易判断为无语音活动，取值区间为[0,100]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -69,7 +69,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -89,14 +89,14 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3"
                 android:gravity="center_vertical"
-                android:text="自动增益控制时，增益的目标等级，目标等级越大增益越大，取值区间为[1,2147483647]：" />
+                android:text="自动增益控制时，增益目标等级，目标等级越大增益越大，取值区间为[1,2147483647]：" />
 
             <EditText
                 android:id="@+id/SpeexPrpocsAgcLevelEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -110,14 +110,14 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3"
                 android:gravity="center_vertical"
-                android:text="在自动增益控制时，每秒最大增益的分贝值，分贝值越大增益越大，取值区间为[0,2147483647]：" />
+                android:text="在自动增益控制时，每秒最大增益分贝值，分贝值越大增益越大，取值区间为[0,2147483647]：" />
 
             <EditText
                 android:id="@+id/SpeexPrpocsAgcIncrementEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -131,14 +131,14 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3"
                 android:gravity="center_vertical"
-                android:text="在自动增益控制时，每秒最大减益的分贝值，分贝值越小减益越大，取值区间为[-2147483648,0]：" />
+                android:text="在自动增益控制时，每秒最大减益分贝值，分贝值越小减益越大，取值区间为[-2147483648,0]：" />
 
             <EditText
                 android:id="@+id/SpeexPrpocsAgcDecrementEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -152,14 +152,14 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3"
                 android:gravity="center_vertical"
-                android:text="在自动增益控制时，最大增益的分贝值，分贝值越大增益越大，取值区间为[0,2147483647]：" />
+                android:text="在自动增益控制时，最大增益分贝值，分贝值越大增益越大，取值区间为[0,2147483647]：" />
 
             <EditText
                 android:id="@+id/SpeexPrpocsAgcMaxGainEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -167,7 +167,8 @@
             android:text="确定"
             android:onClick="OnClickSpeexPrpocsStngOkBtn"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:padding="0dp"/>
 
     </LinearLayout>
 

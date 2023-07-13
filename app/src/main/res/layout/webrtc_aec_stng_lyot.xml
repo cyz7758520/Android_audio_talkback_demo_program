@@ -16,7 +16,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:text="WebRtc声学回音消除器\n设置\n"
+            android:text="WebRtc浮点版声学回音消除器\n设置\n"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
@@ -41,7 +41,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -51,7 +51,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="回音的延迟，单位毫秒，取值区间为[-2147483648,2147483647]，为0表示自适应设置："
+                android:text="回音延迟，单位毫秒，取值区间为[-2147483648,2147483647]，为0表示自适应设置："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -62,7 +62,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number|numberSigned" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -92,7 +92,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
-            android:text="使用自适应调节回音的延迟" />
+            android:text="使用自适应调节回音延迟" />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -103,13 +103,14 @@
                 android:id="@+id/WebRtcAecIsSaveMemFileCkBoxId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:text="将WebRtc浮点版声学回音消除器的内存块保存到扩展目录下的WebRtcAecMem文件中，以便缩短下一次初始化时的收敛时间"/>
+                android:layout_weight="3"
+                android:text="保存WebRtc浮点版声学回音消除器内存块到WebRtcAecMem文件，以便缩短下一次初始化时收敛时间"/>
 
             <Button
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:padding="0dp"
                 android:text="删除内存块文件"
                 android:onClick="OnClickWebRtcAecDelMemFileBtn" />
 

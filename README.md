@@ -28,7 +28,7 @@
 |WebRtc定点版声学回音消除器<br>+WebRtc浮点版声学回音消除器|0秒|0秒自适应调节|回音延迟稳定时没有<br>回音延迟不稳定时偶尔有一丝丝|近端语音被消除50%|会产生较小回音|较大|
 |Speex声学回音消除器<br>+WebRtc定点版声学回音消除器<br>+WebRtc浮点版声学回音消除器|0秒|0秒自适应调节|回音延迟稳定时没有<br>回音延迟不稳定时极低概率会有一丝丝|近端语音被消除50%|会产生很小回音|很大|
 
-&emsp;&emsp;特别注意：以上是在不使用系统自带的声学回音消除器的效果，且不同设备或不同环境或不同时间效果都会不同，所以需要自己亲自测试。  
+&emsp;&emsp;特别注意：以上是在不使用系统自带声学回音消除器的效果，且不同设备或不同环境或不同时间效果都会不同，所以需要自己亲自测试。  
 
 # 准备
 &emsp;&emsp;准备两台安装了Android 2.3及以上系统的设备（已适配到Android 13.0），其中一台设备作为客户端可以连接到另一台作为服务端的设备（可以用Ping工具测试，建议两台设备在同一局域网内），且两台设备都安装相同版本的本软件。  
@@ -36,7 +36,11 @@
 # 开始
 &emsp;&emsp;在一台设备上直接点击创建服务端，再在另一台设备上将IP地址改为服务端设备的IP地址，并点击连接服务端，即可开始对讲，在任意一端点击中断，即可中断对讲。  
 
-&emsp;&emsp;设置按钮提供了各项功能的参数设置，绝大部分情况下都不需要修改，当然你也可以根据需要自行修改。  
+&emsp;&emsp;设置按钮：提供了各项功能的参数设置，大部分情况下都不需要修改，如果发现不适合某些设备，则需要根据设备情况修改。  
+&emsp;&emsp;保存设置按钮：将各项功能的参数保存到Stng.xml中，每次运行本软件时会自动读取设置。  
+&emsp;&emsp;读取设置按钮：将Stng.xml中各项功能的参数读取到本软件中。  
+&emsp;&emsp;删除设置按钮：将Stng.xml文件删除。  
+&emsp;&emsp;重置设置按钮：将本软件的设置重置为默认。  
 
 &emsp;&emsp;**特别注意：如果把两台设备放在同一房间里测试，有可能会出现啸叫、声音不完整、等问题，这是因为现在的麦克风都很灵敏了，一点小小的声音都会被录进去，两台设备会相互录音，导致软件无法正确识别回音，所以建议放在不同的房间里测试。如果实在要测试这种情况，就在设置里，Speex预处理器的设置里，关闭“使用自动增益控制”后再测试。**  
 
@@ -78,9 +82,9 @@
 &emsp;&emsp;不要对HeavenTao.XXXX包进行代码混淆，否则会导致意想不到的问题。  
 &emsp;&emsp;从老版本更新到新版本时，类文件和库文件全部都要更新，不能只更新类文件或库文件，否则会导致意想不到的问题。  
 &emsp;&emsp;如果要使用8000Hz采样频率时，最好不要使用RNNoise噪音抑制器，因为它对8000Hz的声音抑制非常强烈。  
-&emsp;&emsp;本软件不支持音乐，尤其是系统自带的噪音抑制器和RNNoise噪音抑制器可能对音乐的抑制非常强烈。  
+&emsp;&emsp;本软件不支持音乐，尤其是系统自带噪音抑制器和RNNoise噪音抑制器可能对音乐的抑制非常强烈。  
 &emsp;&emsp;某些Android设备的软硬件环境可能存在问题，从而可能会导致声学回音消除失败，这种情况必须要先解决这些问题。  
-&emsp;&emsp;某些Android设备的系统自带的声学回音消除器、噪音抑制器和自动增益控制器在使用后可能会导致音频输入出现问题，这种情况可以先关闭后再试试。  
+&emsp;&emsp;某些Android设备的系统自带声学回音消除器、噪音抑制器和自动增益控制器在使用后可能会导致音频输入出现问题，这种情况可以先关闭后再试试。  
 &emsp;&emsp;音频波形器占用CPU比较高，建议只在需要调试时临时打开。  
 &emsp;&emsp;系统自带H264编解码器需要Android 5.0（API 21）及以上系统，且在某些Android设备上使用可能会花屏，这种情况只能使用OpenH264编解码器。  
 &emsp;&emsp;保存音视频输入输出的AdoVdoInptOtpt.avi文件不能直接播放，需要使用FFmpeg命令转码后才能播放，建议用VLC播放器，转码命令为：ffmpeg -i AdoVdoInptOtpt.avi -filter_complex "[0:<zero-width space>a:1][0:<zero-width space>a:2]amix=inputs=2:duration=max[aout]" -map [aout] -map 0:v -acodec pcm_s16le -vcodec copy AdoVdoInptOtpt_Mix.avi -y。
@@ -103,6 +107,7 @@
 &emsp;&emsp;RNNoise：https://gitlab.xiph.org/xiph/rnnoise/-/blob/master/COPYING  
 &emsp;&emsp;OpenH264：https://github.com/cisco/openh264/blob/master/LICENSE  
 &emsp;&emsp;LibYUV：https://github.com/lemenkov/libyuv/blob/master/LICENSE  
+&emsp;&emsp;TinyXml2：https://github.com/leethomason/tinyxml2/blob/master/LICENSE.txt  
 
 # 感谢
 &emsp;&emsp;感谢 WELEN、善书、陈国福 对 Speex、WebRTC 的指点！  
@@ -161,7 +166,7 @@ ___
 &emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptPcmFrmLenUnit：\[输入\]，存放音频输出Pcm格式帧的长度，单位为采样单元。如果音频输出解码器不使用PCM原始数据，则本参数无意义。  
 &emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmPt：\[输出\]，存放音频输出已编码格式原始帧的指针。如果音频输出解码器要使用PCM原始数据，则本参数为null。  
 &emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmSzByt：\[输入\]，存放音频输出已编码格式原始帧的大小，单位为字节。如果音频输出解码器要使用PCM原始数据，则本参数无意义。  
-&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmLenBytPt：\[输出\]，存放音频输出已编码格式原始帧长度的指针，单位为字节。如果音频输出解码器要使用PCM原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmLenBytPt：\[输出\]，存放音频输出已编码格式原始帧的长度的指针，单位为字节。如果音频输出解码器要使用PCM原始数据，则本参数为null。  
 返回说明：无。  
 ___
 函数名称：UserGetAdoOtptFrm  
@@ -181,7 +186,7 @@ ___
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptYu12SrcFrmHeightPt：\[输出\]，存放视频输出Yu12格式原始帧高度的指针，单位为像素。如果视频输出解码器不使用Yu12原始数据，则本参数为null。  
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptEncdSrcFrmPt：\[输出\]，存放视频输出已编码格式原始帧的指针。如果视频输出解码器要使用Yu12原始数据，则本参数为null。  
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptEncdSrcFrmSzByt：\[输入\]，存放视频输出已编码格式原始帧的大小，单位为字节。如果视频输出解码器要使用Yu12原始数据，则本参数无意义。  
-&emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptEncdSrcFrmLenBytPt：\[输出\]，输入时，存放视频输出已编码格式原始帧长度的指针，单位为字节。如果视频输出解码器要使用Yu12原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptEncdSrcFrmLenBytPt：\[输出\]，输入时，存放视频输出已编码格式原始帧的长度的指针，单位为字节。如果视频输出解码器要使用Yu12原始数据，则本参数为null。  
 返回说明：无。  
 ___
 函数名称：UserGetVdoOtptFrm  

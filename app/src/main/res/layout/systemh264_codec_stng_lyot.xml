@@ -30,7 +30,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="编码后比特率，单位为KBps："
+                android:text="系统自带H264编码器编码后比特率，单位为KBps："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -41,7 +41,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -51,7 +51,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="比特率控制模式，为0表示质量模式，为1表示动态比特率模式，为2表示固定比特率模式："
+                android:text="系统自带H264编码器比特率控制模式，为0表示质量模式，为1表示动态比特率模式，为2表示固定比特率模式："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -62,7 +62,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -72,7 +72,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="IDR帧间隔时间，单位为秒，为负数表示仅第一帧为IDR帧，为0表示每一帧都为IDR帧，为大于0表示每这么多秒就有一个IDR帧："
+                android:text="系统自带H264编码器IDR帧间隔时间，单位为秒，为负数表示仅第一帧为IDR帧，为0表示每一帧都为IDR帧，为大于0表示每这么多秒就有一个IDR帧："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -83,7 +83,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -93,7 +93,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="复杂度，复杂度越高压缩率不变、CPU使用率越高、画质越好，取值区间为[0,2]："
+                android:text="系统自带H264编码器复杂度，复杂度越高压缩率不变、CPU使用率越高、画质越好，取值区间为[0,2]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -104,13 +104,14 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:padding="0dp"
             android:text="确定"
             android:onClick="OnClickSystemH264CodecStngOkBtn" />
 

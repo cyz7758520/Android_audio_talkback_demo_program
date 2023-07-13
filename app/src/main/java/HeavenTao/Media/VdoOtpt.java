@@ -74,7 +74,7 @@ public class VdoOtpt //视频输出。
             long m_NowTickMsec; //存放本次的嘀嗒钟，单位为毫秒。
 
             VdoOtptThrd m_ThrdPt; //存放线程的指针。
-            int m_ExitFlag; //存放退出标记，0表示保持运行，1表示请求退出。
+            int m_ExitFlag; //存放退出标记，为0表示保持运行，为1表示请求退出。
         }
         Thrd m_ThrdPt = new Thrd();
         

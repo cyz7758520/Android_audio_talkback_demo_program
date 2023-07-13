@@ -77,14 +77,14 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3"
                 android:gravity="center_vertical"
-                android:text="Speex声学回音消除器的滤波器数据长度，单位毫秒：" />
+                android:text="Speex声学回音消除器滤波器长度，单位为毫秒：" />
 
             <EditText
                 android:id="@+id/SpeexWebRtcAecSpeexAecFilterLenMsecEdTxtId"
                 android:layout_width="0dip"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -100,7 +100,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="Speex声学回音消除器在残余回音消除时，残余回音的倍数，倍数越大消除越强，取值区间为[0.0,100.0]："
+                android:text="Speex声学回音消除器在残余回音消除时，残余回音倍数，倍数越大消除越强，取值区间为[0.0,100.0]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -111,7 +111,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberDecimal" />
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -121,7 +121,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="Speex声学回音消除器在残余回音消除时，残余回音的持续系数，系数越大消除越强，取值区间为[0.0,0.9]："
+                android:text="Speex声学回音消除器在残余回音消除时，残余回音持续系数，系数越大消除越强，取值区间为[0.0,0.9]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -132,7 +132,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberDecimal"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -142,7 +142,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="Speex声学回音消除器在残余回音消除时，残余回音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]："
+                android:text="Speex声学回音消除器在残余回音消除时，残余回音最大衰减分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -153,7 +153,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberSigned"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -163,7 +163,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="Speex声学回音消除器在残余回音消除时，有近端语音活动时残余回音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]："
+                android:text="Speex声学回音消除器在残余回音消除时，有近端语音活动时残余回音最大衰减分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -174,7 +174,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberSigned"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -191,7 +191,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="WebRtc定点版声学回音消除器的消除模式，消除模式越高消除越强，取值区间为[0,4]："
+                android:text="WebRtc定点版声学回音消除器消除模式，消除模式越高消除越强，取值区间为[0,4]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -202,7 +202,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -212,7 +212,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="WebRtc定点版声学回音消除器的回音延迟，单位毫秒，取值区间为[-2147483648,2147483647]，为0表示自适应设置："
+                android:text="WebRtc定点版声学回音消除器的回音延迟，单位为毫秒，取值区间为[-2147483648,2147483647]，为0表示自适应设置："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -223,7 +223,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberSigned"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -233,7 +233,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="WebRtc浮点版声学回音消除器的消除模式，消除模式越高消除越强，取值区间为[0,2]："
+                android:text="WebRtc浮点版声学回音消除器消除模式，消除模式越高消除越强，取值区间为[0,2]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -244,7 +244,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -258,14 +258,14 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3"
                 android:gravity="center_vertical"
-                android:text="WebRtc浮点版声学回音消除器的回音延迟，单位毫秒，取值区间为[-2147483648,2147483647]，为0表示自适应设置：" />
+                android:text="WebRtc浮点版声学回音消除器的回音延迟，单位为毫秒，取值区间为[-2147483648,2147483647]，为0表示自适应设置：" />
 
             <EditText
                 android:id="@+id/SpeexWebRtcAecWebRtcAecDelayEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="numberSigned"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -295,7 +295,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:text="WebRtc浮点版声学回音消除器使用自适应调节回音的延迟" />
+            android:text="WebRtc浮点版声学回音消除器使用自适应调节回音延迟" />
 
         <CheckBox
             android:id="@+id/SpeexWebRtcAecIsUseSameRoomAecCkBoxId"
@@ -314,20 +314,21 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3"
                 android:gravity="center_vertical"
-                android:text="同一房间回音最小延迟，单位毫秒，取值区间为[1,2147483647]：" />
+                android:text="同一房间回音最小延迟，单位为毫秒，取值区间为[1,2147483647]：" />
 
             <EditText
                 android:id="@+id/SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="0dp"
             android:text="确定"
             android:onClick="OnClickSpeexWebRtcAecStngOkBtn" />
 

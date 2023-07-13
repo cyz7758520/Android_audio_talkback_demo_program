@@ -37,7 +37,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="在噪音抑制时，噪音最大衰减的分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]："
+                android:text="在噪音抑制时，噪音最大衰减分贝值，分贝值越小衰减越大，取值区间为[-2147483648,0]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -48,7 +48,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="number|numberSigned"/>
+                android:singleLine="true" />
 
         </LinearLayout>
 
@@ -63,7 +63,8 @@
             android:text="确定"
             android:onClick="OnClickSpeexPrpocsNsStngOkBtn"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:padding="0dp" />
 
     </LinearLayout>
 

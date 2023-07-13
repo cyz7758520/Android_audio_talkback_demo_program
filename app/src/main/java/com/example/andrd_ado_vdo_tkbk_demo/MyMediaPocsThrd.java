@@ -85,8 +85,8 @@ public class MyMediaPocsThrd extends MediaPocsThrd
     class VAjb //存放视频自适应抖动缓冲器。
     {
         HeavenTao.Vdo.VAjb m_Pt; //存放指针。
-        int m_MinNeedBufFrmCnt; //存放最小需缓冲帧数量，单位个，必须大于0。
-        int m_MaxNeedBufFrmCnt; //存放最大需缓冲帧数量，单位个，必须大于最小需缓冲数据帧的数量。
+        int m_MinNeedBufFrmCnt; //存放最小需缓冲帧数量，单位为个帧，必须大于0。
+        int m_MaxNeedBufFrmCnt; //存放最大需缓冲帧数量，单位为个帧，必须大于最小需缓冲数据帧的数量。
         float m_AdaptSensitivity; //存放自适应灵敏度，灵敏度越大自适应计算当前需缓冲帧的数量越多，取值区间为[0.0,127.0]。
     }
     VAjb m_VAjbPt = new VAjb();
@@ -1517,7 +1517,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                 }
                 else
                 {
-                    String p_InfoStrPt = "发送一个有图像活动的视频输入帧包失败。视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "，类型：" + ( m_TmpBytePt[ 9 ] & 0xff ) + "。原因：" + m_ErrInfoVstrPt.GetStr() + "。";
+                    String p_InfoStrPt = "发送一个有图像活动的视频输入帧包失败。视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "，类型：" + ( m_TmpBytePt[ 9 ] & 0xff ) + "。原因：" + m_ErrInfoVstrPt.GetStr();
                     if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                     Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                 }
