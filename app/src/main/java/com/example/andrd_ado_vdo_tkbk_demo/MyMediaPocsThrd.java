@@ -1378,7 +1378,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
         {
             if( AdoInptEncdRsltFrmPt == null ) //如果没有音频输入已编码格式结果帧。
             {
-                if( AdoInptPcmRsltFrmVoiceActSts != 0 ) //如果本次音频输入帧为有语音活动。
+                if( AdoInptPcmRsltFrmVoiceActSts != 0 ) //如果音频输入Pcm格式结果帧为有语音活动。
                 {
                     for( p_TmpInt32 = 0; p_TmpInt32 < AdoInptPcmRsltFrmPt.length; p_TmpInt32++ ) //设置音频输入帧。
                     {
@@ -1387,25 +1387,25 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                     }
                     p_FrmPktLen = 1 + 4 + AdoInptPcmRsltFrmPt.length * 2; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 音频输入Pcm格式结果帧。
                 }
-                else //如果本次音频输入帧为无语音活动，或不需要传输。
+                else //如果音频输入Pcm格式结果帧为无语音活动。
                 {
                     p_FrmPktLen = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
                 }
             }
             else //如果有音频输入已编码格式结果帧。
             {
-                if( AdoInptPcmRsltFrmVoiceActSts != 0 && AdoInptEncdRsltFrmIsNeedTrans != 0 ) //如果本次音频输入帧为有语音活动，且需要传输。
+                if( AdoInptPcmRsltFrmVoiceActSts != 0 && AdoInptEncdRsltFrmIsNeedTrans != 0 ) //如果音频输入Pcm格式结果帧为有语音活动，且音频输入已编码格式结果帧需要传输。
                 {
                     System.arraycopy( AdoInptEncdRsltFrmPt, 0, m_TmpBytePt, 1 + 4, ( int ) AdoInptEncdRsltFrmLenByt ); //设置音频输入帧。
                     p_FrmPktLen = 1 + 4 + ( int ) AdoInptEncdRsltFrmLenByt; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 音频输入已编码格式结果帧。
                 }
-                else //如果本次音频输入帧为无语音活动，或不需要传输。
+                else //如果音频输入Pcm格式结果帧为无语音活动，或不需要传输。
                 {
                     p_FrmPktLen = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
                 }
             }
 
-            if( p_FrmPktLen != 1 + 4 ) //如果本音频输入帧为有语音活动，就发送。
+            if( p_FrmPktLen != 1 + 4 ) //如果本次音频输入帧为有语音活动，就发送。
             {
                 m_LastSendAdoInptFrmTimeStamp += 1; //音频输入帧的时间戳递增一个步进。
 
@@ -1431,7 +1431,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
 
                 m_LastSendAdoInptFrmIsAct = 1; //设置最后一个发送的音频输入帧有语音活动。
             }
-            else //如果本音频输入帧为无语音活动。
+            else //如果本次音频输入帧为无语音活动。
             {
                 if( m_LastSendAdoInptFrmIsAct != 0 ) //如果最后一个发送的音频输入帧为有语音活动，就发送。
                 {
@@ -1461,7 +1461,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                 }
                 else //如果最后一个发送的音频输入帧为无语音活动，无需发送。
                 {
-                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "本音频输入帧为无语音活动，且最后一个发送的音频输入帧为无语音活动，无需发送。" );
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "本次音频输入帧为无语音活动，且最后一个发送的音频输入帧为无语音活动，无需发送。" );
                 }
             }
         }
@@ -1517,7 +1517,7 @@ public class MyMediaPocsThrd extends MediaPocsThrd
                 }
                 else
                 {
-                    String p_InfoStrPt = "发送一个有图像活动的视频输入帧包失败。视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "，类型：" + ( m_TmpBytePt[ 9 ] & 0xff ) + "。原因：" + m_ErrInfoVstrPt.GetStr();
+                    String p_InfoStrPt = "发送一个有图像活动的视频输入帧包失败。视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "，类型：" + ( m_TmpBytePt[ 9 ] & 0xff ) + "。原因：" + m_ErrInfoVstrPt.GetStr() + "。";
                     if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                     Message p_MessagePt = new Message();p_MessagePt.what = MainActivityHandler.Msg.ShowLog.ordinal();p_MessagePt.obj = p_InfoStrPt;m_MainActivityHandlerPt.sendMessage( p_MessagePt );
                 }

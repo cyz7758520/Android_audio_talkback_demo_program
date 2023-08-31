@@ -3,7 +3,7 @@
 
 # 简介
 &emsp;&emsp;本软件根据《道德经》为核心思想而设计，实现了两个设备之间进行音视频对讲，一般可用于楼宇对讲、智能门铃对讲、企业员工对讲、智能对讲机、以及类似于微信QQ音视频对讲的其他场景。本软件支持以下增强处理：  
-&emsp;&emsp;* 支持IPv4和IPv6的TCP和UDP协议传输，UDP协议支持可靠传输。  
+&emsp;&emsp;* 支持IPv4和IPv6的TCP和UDP协议传输，UDP协议支持可靠传输、支持连接中途更换IP不中断。  
 &emsp;&emsp;* 支持实时半双工（一键通）和实时全双工的音频或视频或音视频对讲。  
 &emsp;&emsp;* 支持8000Hz、16000Hz、32000Hz、48000Hz的音频。  
 &emsp;&emsp;* 支持声学回音消除，通过本人自己设计的音频输入输出帧同步方法、自适应设置回音延迟方法、三重声学回音消除器，声学回音可以消除到99%以上，还可以消除同一房间回音，且收敛时间很短，无论网络如何抖动都可以消除。  
@@ -93,6 +93,7 @@
 &emsp;&emsp;本软件采用了Speex的1.2.1版本、SpeexDsp的1.2.1版本、WebRtc的2019年7月份版本、OpenH264的2.3.1版本为基础，并进行了大量优化。  
 &emsp;&emsp;讨论QQ群：511046632    欢迎大家参与测试和讨论！  
 &emsp;&emsp;本人QQ号：280604597    赤勇玄心行天道  
+&emsp;&emsp;本人微信：qq280604597    赤勇玄心行天道  
 &emsp;&emsp;本人博客：http://www.cnblogs.com/gaoyaguo  
 &emsp;&emsp;Windows版源代码：https://github.com/cyz7758520/Windows_audio_talkback_demo_program  
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitee.com/chen_yi_ze/Windows_audio_talkback_demo_program  

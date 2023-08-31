@@ -85,6 +85,10 @@ class MainActivityHandler extends Handler
                     ( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setText( "中断" ); //设置创建服务端按钮的内容为“中断”。
                     ( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setEnabled( false ); //设置连接服务端按钮为不可用。
                     ( ( Button ) m_MainActivityPt.findViewById( R.id.StngBtnId ) ).setEnabled( false ); //设置设置按钮为不可用。
+                    ( ( Button ) m_MainActivityPt.findViewById( R.id.SaveStngBtnId ) ).setEnabled( false ); //设置保存设置按钮为不可用。
+                    ( ( Button ) m_MainActivityPt.findViewById( R.id.ReadStngBtnId ) ).setEnabled( false ); //设置读取设置按钮为不可用。
+                    ( ( Button ) m_MainActivityPt.findViewById( R.id.DelStngBtnId ) ).setEnabled( false ); //设置删除设置按钮为不可用。
+                    ( ( Button ) m_MainActivityPt.findViewById( R.id.ResetStngBtnId ) ).setEnabled( false ); //设置重置设置按钮为不可用。
                 }
                 else //如果是创建客户端。
                 {
@@ -96,6 +100,10 @@ class MainActivityHandler extends Handler
                     ( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setEnabled( false ); //设置创建服务端按钮为不可用。
                     ( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setText( "中断" ); //设置连接服务端按钮的内容为“中断”。
                     ( ( Button ) m_MainActivityPt.findViewById( R.id.StngBtnId ) ).setEnabled( false ); //设置设置按钮为不可用。
+                    ( ( Button ) m_MainActivityPt.findViewById( R.id.SaveStngBtnId ) ).setEnabled( false ); //设置保存设置按钮为不可用。
+                    ( ( Button ) m_MainActivityPt.findViewById( R.id.ReadStngBtnId ) ).setEnabled( false ); //设置读取设置按钮为不可用。
+                    ( ( Button ) m_MainActivityPt.findViewById( R.id.DelStngBtnId ) ).setEnabled( false ); //设置删除设置按钮为不可用。
+                    ( ( Button ) m_MainActivityPt.findViewById( R.id.ResetStngBtnId ) ).setEnabled( false ); //设置重置设置按钮为不可用。
                 }
 
                 //创建并绑定前台服务，从而确保本进程在转入后台或系统锁屏时不会被系统限制运行，且只能放在主线程中执行，因为要使用界面。
@@ -137,6 +145,10 @@ class MainActivityHandler extends Handler
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.CnctSrvrBtnId ) ).setText( "连接服务端" ); //设置连接服务端按钮的内容为“连接服务端”。
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.CreateSrvrBtnId ) ).setEnabled( true ); //设置创建服务端按钮为可用。
                 ( ( Button ) m_MainActivityPt.findViewById( R.id.StngBtnId ) ).setEnabled( true ); //设置设置按钮为可用。
+                ( ( Button ) m_MainActivityPt.findViewById( R.id.SaveStngBtnId ) ).setEnabled( true ); //设置保存设置按钮为可用。
+                ( ( Button ) m_MainActivityPt.findViewById( R.id.ReadStngBtnId ) ).setEnabled( true ); //设置读取设置按钮为可用。
+                ( ( Button ) m_MainActivityPt.findViewById( R.id.DelStngBtnId ) ).setEnabled( true ); //设置删除设置按钮为可用。
+                ( ( Button ) m_MainActivityPt.findViewById( R.id.ResetStngBtnId ) ).setEnabled( true ); //设置重置设置按钮为可用。
                 break;
             }
             case PttBtnInit:

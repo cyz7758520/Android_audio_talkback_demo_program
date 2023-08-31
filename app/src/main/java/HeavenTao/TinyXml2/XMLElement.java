@@ -7,7 +7,7 @@ public class XMLElement
     static
     {
         System.loadLibrary( "Func" ); //加载libFunc.so。
-        System.loadLibrary( "TinyXml2" ); //加载libTinyXml2.so。
+        System.loadLibrary( "MediaFile" ); //加载libMediaFile.so。
     }
 
     public long m_XMLElementPt; //存放XMLElement指针。
