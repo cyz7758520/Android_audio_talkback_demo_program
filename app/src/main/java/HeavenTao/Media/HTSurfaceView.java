@@ -26,18 +26,22 @@ public class HTSurfaceView extends SurfaceView
         super( context, attrs, defStyleAttr );
     }
 
-    @RequiresApi( api = Build.VERSION_CODES.LOLLIPOP )
-    public HTSurfaceView( Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes )
+    @RequiresApi( api = Build.VERSION_CODES.LOLLIPOP ) public HTSurfaceView( Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes )
     {
         super( context, attrs, defStyleAttr, defStyleRes );
     }
 
-    @Override
-    protected void onMeasure( int widthMeasureSpec, int heightMeasureSpec )
+    //MeasureSpec值的高2位为测量模式，低30位为测量大小。widthMeasureSpec表示View宽度的测量模式和测量大小，heightMeasureSpec表示View高度的测量模式和测量大小。
+    //测量模式包括：
+    //View.MeasureSpec.AT_MOST: 这个子view你最大不能超过这个值。
+    //View.MeasureSpec.UNSPECIFIED：这个子view你大小不确定，还得你自己用尺子给自己量一下，父view尽量给你所需的长度。
+    //View.MeasureSpec.EXACTLY：这个子view你就是这么大了。*/
+
+    @Override protected void onMeasure( int widthMeasureSpec, int heightMeasureSpec )
     {
         int width = MeasureSpec.getSize( widthMeasureSpec );
         float height = width / m_WidthToHeightRatio;
-        heightMeasureSpec = MeasureSpec.makeMeasureSpec( ( int ) height, MeasureSpec.EXACTLY );
+        heightMeasureSpec = MeasureSpec.makeMeasureSpec( ( int ) height, heightMeasureSpec );
         super.onMeasure( widthMeasureSpec, heightMeasureSpec );
     }
 
@@ -47,14 +51,7 @@ public class HTSurfaceView extends SurfaceView
         {
             m_WidthToHeightRatio = WidthToHeightRatio; //设置视频预览SurfaceView的宽高比。
 
-            post( new Runnable() //刷新SurfaceView的尺寸显示。
-            {
-                @Override
-                public void run()
-                {
-                    setLayoutParams( getLayoutParams() );
-                }
-            } );
+            post( new Runnable() { @Override public void run() { setLayoutParams( getLayoutParams() ); } } ); //刷新SurfaceView的尺寸显示。
         }
     }
 }

@@ -9,7 +9,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.andrd_ado_vdo_tkbk_demo.MainActivity" >
+    tools:context="com.example.andrd_ado_vdo_tkbk_demo.MainAct" >
 
     <ScrollView
         android:layout_width="match_parent"
@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="版本：2023年07月31日"
+                android:text="版本：2023年12月28日"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="normal|bold" />
@@ -66,78 +66,51 @@
                 android:layout_height="wrap_content" >
 
                 <TextView
-                    android:text="传输协议："
+                    android:text="服务端:"
                     android:layout_width="0dp"
                     android:layout_weight="3"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical" />
-
-                <RadioGroup
-                    android:orientation="horizontal"
-                    android:layout_weight="7"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent" >
-
-                    <RadioButton
-                        android:text="TCP"
-                        android:id="@+id/UseTcpPrtclRdBtnId"
-                        android:layout_weight="1"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
-
-                    <RadioButton
-                        android:text="UDP"
-                        android:id="@+id/UseUdpPrtclRdBtnId"
-                        android:layout_weight="1"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
-
-                    <Button
-                        android:id="@+id/XfrPrtclStngBtnId"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_width="match_parent"
-                        android:padding="0dp"
-                        android:text="设置"
-                        android:onClick="OnClickXfrPrtclStngBtn" />
-
-                </RadioGroup>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="3"
-                    android:gravity="center_vertical"
-                    android:text="IP地址或域名：" />
 
                 <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="7" >
+                    android:layout_weight="13" >
 
                     <EditText
-                        android:id="@+id/IPAddrEdTxtId"
+                        android:id="@+id/SrvrUrlEdTxtId"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:hint="请输入IP地址或者域名"
+                        android:hint="请输入服务端URL"
                         android:singleLine="true" />
 
                     <Spinner
-                        android:id="@+id/IPAddrSpinnerId"
+                        android:id="@+id/SrvrUrlSpinnerId"
                         android:layout_height="match_parent"
                         android:layout_width="47dp" />
 
                 </LinearLayout>
 
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
+                    android:padding="0dp"
+                    android:text="创建"
+                    android:id="@+id/SrvrCreateOrDstoyBtnId"
+                    android:onClick="OnClickSrvrCreateOrDstoyBtn" />
+
+                <Button
+                    android:id="@+id/SrvrStngBtnId"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:padding="0dp"
+                    android:text="设置"
+                    android:onClick="OnClickSrvrStngBtn" />
+
             </LinearLayout>
 
             <LinearLayout
@@ -148,17 +121,87 @@
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="3"
+                    android:layout_weight="16"
                     android:gravity="center_vertical"
-                    android:text="端口：" />
+                    android:text="连接列表:" />
 
-                <EditText
-                    android:id="@+id/PortEdTxtId"
+                <Button
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:padding="0dp"
+                    android:id="@+id/CnctResumeBtnId"
+                    android:text="激活"
+                    android:onClick="OnClickCnctActBtn" />
+
+                <Button
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:padding="0dp"
+                    android:id="@+id/CnctDstoyBtnId"
+                    android:text="销毁"
+                    android:onClick="OnClickCnctDstoyBtn" />
+
+            </LinearLayout>
+
+            <HeavenTao.Media.HTListView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/CnctLstId"
+                android:choiceMode="singleChoice"
+                android:listSelector="#777"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:text="客户端:"
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical" />
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="13" >
+
+                    <EditText
+                        android:id="@+id/ClntSrvrUrlEdTxtId"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:hint="请输入服务端URL"
+                        android:singleLine="true" />
+
+                    <Spinner
+                        android:id="@+id/ClntSrvrUrlSpinnerId"
+                        android:layout_height="match_parent"
+                        android:layout_width="47dp" />
+
+                </LinearLayout>
+
+                <Button
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="7"
-                    android:hint="请输入端口号"
-                    android:singleLine="true" />
+                    android:layout_weight="2"
+                    android:padding="0dp"
+                    android:text="添加"
+                    android:id="@+id/ClntAddBtnId"
+                    android:onClick="OnClickClntAddBtn" />
+
+                <Button
+                    android:id="@+id/ClntStngBtnId"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:padding="0dp"
+                    android:text="设置"
+                    android:onClick="OnClickClntStngBtn" />
 
             </LinearLayout>
 
@@ -168,7 +211,46 @@
                 android:layout_height="wrap_content" >
 
                 <TextView
-                    android:text="对讲模式："
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="16"
+                    android:gravity="center_vertical"
+                    android:text="客户端列表:" />
+
+                <Button
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:padding="0dp"
+                    android:id="@+id/ClntCnctBtnId"
+                    android:text="连接"
+                    android:onClick="OnClickClntCnctBtn" />
+
+                <Button
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:padding="0dp"
+                    android:id="@+id/ClntDelBtnId"
+                    android:text="删除"
+                    android:onClick="OnClickClntDelBtn" />
+
+            </LinearLayout>
+
+            <HeavenTao.Media.HTListView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/ClntLstId"
+                android:choiceMode="singleChoice"
+                android:listSelector="#777"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:text="对讲模式:"
                     android:layout_width="0dp"
                     android:layout_weight="3"
                     android:layout_height="match_parent"
@@ -176,32 +258,44 @@
 
                 <RadioGroup
                     android:orientation="horizontal"
-                    android:layout_weight="7"
+                    android:layout_weight="8"
                     android:layout_width="0dp"
                     android:layout_height="match_parent" >
 
                     <RadioButton
+                        android:text="挂起"
+                        android:id="@+id/UseNoneTkbkModeRdBtnId"
+                        android:layout_weight="9"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:padding="0dp"
+                        android:onClick="OnClickUseNoneTkbkModeRdBtn" />
+
+                    <RadioButton
                         android:text="音频"
                         android:id="@+id/UseAdoTkbkModeRdBtnId"
-                        android:layout_weight="10"
-                        android:layout_width="match_parent"
+                        android:layout_weight="9"
+                        android:layout_width="0dp"
                         android:layout_height="match_parent"
+                        android:padding="0dp"
                         android:onClick="OnClickUseAdoTkbkModeRdBtn" />
 
                     <RadioButton
                         android:text="视频"
                         android:id="@+id/UseVdoTkbkModeRdBtnId"
-                        android:layout_weight="10"
-                        android:layout_width="match_parent"
+                        android:layout_weight="9"
+                        android:layout_width="0dp"
                         android:layout_height="match_parent"
+                        android:padding="0dp"
                         android:onClick="OnClickUseVdoTkbkModeRdBtn" />
 
                     <RadioButton
                         android:text="音视频"
                         android:id="@+id/UseAdoVdoTkbkModeRdBtnId"
-                        android:layout_weight="9"
-                        android:layout_width="match_parent"
+                        android:layout_weight="11"
+                        android:layout_width="0dp"
                         android:layout_height="match_parent"
+                        android:padding="0dp"
                         android:onClick="OnClickUseAdoVdoTkbkModeRdBtn" />
 
                 </RadioGroup>
@@ -214,7 +308,7 @@
                 android:layout_height="wrap_content" >
 
                 <TextView
-                    android:text="音频输出设备："
+                    android:text="音频输出设备:"
                     android:layout_width="0dp"
                     android:layout_weight="3"
                     android:layout_height="match_parent"
@@ -222,7 +316,7 @@
 
                 <RadioGroup
                     android:orientation="horizontal"
-                    android:layout_weight="7"
+                    android:layout_weight="8"
                     android:layout_width="0dp"
                     android:layout_height="match_parent" >
 
@@ -252,7 +346,7 @@
                 android:layout_height="wrap_content" >
 
                 <TextView
-                    android:text="视频输入设备："
+                    android:text="视频输入设备:"
                     android:layout_width="0dp"
                     android:layout_weight="3"
                     android:layout_height="match_parent"
@@ -260,7 +354,7 @@
 
                 <RadioGroup
                     android:orientation="horizontal"
-                    android:layout_weight="7"
+                    android:layout_weight="8"
                     android:layout_width="0dp"
                     android:layout_height="match_parent" >
 
@@ -333,7 +427,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="4"
                     android:gravity="center_vertical"
-                    android:text="系统音频输出音量：" />
+                    android:text="系统音频输出音量:" />
 
                 <SeekBar
                     android:id="@+id/SystemAdoOtptVolmSkBarId"
@@ -356,43 +450,12 @@
                     android:text="" />
 
                 <Button
+                    android:id="@+id/PtbBtnId"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="11"
+                    android:layout_weight="4"
                     android:padding="0dp"
-                    android:text="创建服务端"
-                    android:id="@+id/CreateSrvrBtnId"
-                    android:onClick="OnClickCreateSrvrAndCnctSrvrBtn" />
-
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:text="" />
-
-                <Button
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="11"
-                    android:padding="0dp"
-                    android:text="连接服务端"
-                    android:id="@+id/CnctSrvrBtnId"
-                    android:onClick="OnClickCreateSrvrAndCnctSrvrBtn" />
-
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:text="" />
-
-                <Button
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="6"
-                    android:padding="0dp"
-                    android:text="设置"
-                    android:id="@+id/StngBtnId"
-                    android:onClick="OnClickStngBtn" />
+                    android:text="一键即按即广播" />
 
                 <TextView
                     android:layout_weight="1"
@@ -407,11 +470,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" >
 
-                <TextView
-                    android:layout_weight="1"
+                <Button
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:text="" />
+                    android:layout_weight="6"
+                    android:padding="0dp"
+                    android:text="设置"
+                    android:id="@+id/StngBtnId"
+                    android:onClick="OnClickStngBtn" />
 
                 <Button
                     android:layout_width="0dp"
@@ -422,12 +488,6 @@
                     android:id="@+id/SaveStngBtnId"
                     android:onClick="OnClickSaveStngBtn" />
 
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:text="" />
-
                 <Button
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -436,12 +496,6 @@
                     android:text="读取设置"
                     android:id="@+id/ReadStngBtnId"
                     android:onClick="OnClickReadStngBtn" />
-
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:text="" />
 
                 <Button
                     android:layout_width="0dp"
@@ -452,12 +506,6 @@
                     android:id="@+id/DelStngBtnId"
                     android:onClick="OnClickDelStngBtn" />
 
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:text="" />
-
                 <Button
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -466,12 +514,6 @@
                     android:text="重置设置"
                     android:id="@+id/ResetStngBtnId"
                     android:onClick="OnClickResetStngBtn" />
-
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:text="" />
 
             </LinearLayout>
 
@@ -530,12 +572,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:gravity="center_vertical"
-                        android:text="音频输入\n原始波形：" />
+                        android:text="音频输入\n原始波形:" />
 
                     <SurfaceView
                         android:id="@+id/AdoInptWavfmSurfaceId"
                         android:layout_width="match_parent"
-                        android:layout_height="65dp" />
+                        android:layout_height="match_parent" />
 
                 </LinearLayout>
 
@@ -548,12 +590,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:gravity="center_vertical"
-                        android:text="音频输入\n结果波形：" />
+                        android:text="音频输入\n结果波形:" />
 
                     <SurfaceView
                         android:id="@+id/AdoRsltWavfmSurfaceId"
                         android:layout_width="match_parent"
-                        android:layout_height="65dp" />
+                        android:layout_height="match_parent" />
 
                 </LinearLayout>
 
@@ -566,12 +608,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:gravity="center_vertical"
-                        android:text="音频输出\n原始波形：" />
+                        android:text="音频输出\n原始波形:" />
 
                     <SurfaceView
                         android:id="@+id/AdoOtptWavfmSurfaceId"
                         android:layout_width="match_parent"
-                        android:layout_height="65dp" />
+                        android:layout_height="match_parent" />
 
                 </LinearLayout>
 

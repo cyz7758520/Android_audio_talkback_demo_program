@@ -84,6 +84,12 @@ public class VAjb
         return VAjbClear( m_VAjbPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
+    //清空并重置视频自适应抖动缓冲器。
+    public int Reset( int IsAutoLock, Vstr ErrInfoVstrPt)
+    {
+        return VAjbReset( m_VAjbPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+
     //销毁视频自适应抖动缓冲器。
     public int Dstoy( Vstr ErrInfoVstrPt)
     {
@@ -124,8 +130,11 @@ public class VAjb
     private native int VAjbGetBufFrmCnt( long VAjbPt, HTInt CurHaveBufFrmCntPt, HTInt MinNeedBufFrmCntPt, HTInt MaxNeedBufFrmCntPt, HTInt CurNeedBufFrmCntPt, int IsAutoLock, long ErrInfoVstrPt );
 
     //清空视频自适应抖动缓冲器。
-    private native int VAjbClear( long VAjbPt, int IsAutoLock, long ErrInfoVstrPt);
+    private native int VAjbClear( long VAjbPt, int IsAutoLock, long ErrInfoVstrPt );
+
+    //清空并重置视频自适应抖动缓冲器。
+    private native int VAjbReset( long VAjbPt, int IsAutoLock, long ErrInfoVstrPt );
 
     //销毁视频自适应抖动缓冲器。
-    private native int VAjbDstoy( long VAjbPt, long ErrInfoVstrPt);
+    private native int VAjbDstoy( long VAjbPt, long ErrInfoVstrPt );
 }

@@ -81,7 +81,7 @@ public class VdoOtpt //视频输出。
         //初始化视频输出流的解码器。
         public int DecdInit()
         {
-            int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+            int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
             Out:
             {
@@ -181,7 +181,7 @@ public class VdoOtpt //视频输出。
         //初始化视频输出流的线程。
         public int ThrdInit()
         {
-            int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+            int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
             Out:
             {
@@ -262,13 +262,13 @@ public class VdoOtpt //视频输出。
 
             m_DvcPt.m_DspySurfaceViewPt.getHolder().removeCallback( m_DvcPt.m_DspySurfaceClbkPt );
             m_DvcPt.m_DspySurfaceClbkPt = null;
-            MediaPocsThrd.m_MainActivityPt.runOnUiThread( new Runnable() { public void run() { m_DvcPt.m_DspySurfaceViewPt.setVisibility( View.GONE ); m_DvcPt.m_DspySurfaceViewPt.setVisibility( View.VISIBLE ); } } ); //重建显示Surface视图。
+            MediaPocsThrd.m_MainActPt.runOnUiThread( new Runnable() { public void run() { m_DvcPt.m_DspySurfaceViewPt.setVisibility( View.GONE ); m_DvcPt.m_DspySurfaceViewPt.setVisibility( View.VISIBLE ); } } ); //重建显示Surface视图。
         }
 
         //初始化视频输出的流。
         public int Init()
         {
-            int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+            int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
             Out:
             {
@@ -486,7 +486,7 @@ public class VdoOtpt //视频输出。
 
                     if( m_ThrdPt.m_ExitFlag == 1 ) //如果退出标记为请求退出。
                     {
-                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：接收到退出请求，开始准备退出。" );
+                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引 " + m_Idx + "：接收到退出请求。" );
                         break;
                     }
 
@@ -497,7 +497,7 @@ public class VdoOtpt //视频输出。
             }
         }
     }
-    public ArrayList< Strm > m_StrmCntnrPt; //存放流容器的指针。
+    public ArrayList< Strm > m_StrmCntnrPt = new ArrayList<>(); //存放流容器的指针。
 
     //添加视频输出的流。
     public void AddStrm( int StrmIdx )
@@ -672,7 +672,7 @@ public class VdoOtpt //视频输出。
     //初始化视频输出。
     public int Init()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
         long p_LastMsec = 0;
         long p_NowMsec = 0;
 

@@ -15,13 +15,13 @@ import android.support.v4.app.NotificationCompat;
 //前台服务。
 public class FrgndSrvc extends Service
 {
-    MainActivity m_MainActivityPt; //存放主界面的指针。
+    MainAct m_MainActPt; //存放主界面的指针。
 
     public class FrgndSrvcBinder extends Binder
     {
-        public void SetForeground( MainActivity MainActivityPt )
+        public void SetForeground( MainAct MainActPt )
         {
-            m_MainActivityPt = MainActivityPt;
+            m_MainActPt = MainActPt;
 
             NotificationManager p_NotificationManagerPt = (NotificationManager) getSystemService( NOTIFICATION_SERVICE ); //存放通知管理器对象的指针。
 
@@ -34,13 +34,13 @@ public class FrgndSrvc extends Service
             }
 
             //创建通知。
-            PendingIntent pendingIntent = PendingIntent.getActivity( m_MainActivityPt, 0, new Intent( m_MainActivityPt, MainActivity.class ), PendingIntent.FLAG_IMMUTABLE );
+            PendingIntent pendingIntent = PendingIntent.getActivity( m_MainActPt, 0, new Intent( m_MainActPt, MainAct.class ), PendingIntent.FLAG_IMMUTABLE );
             Notification notification =
                     new NotificationCompat
-                            .Builder( m_MainActivityPt, "前台服务通知" ) //Android API 14及以上版本使用。
-                            //new NotificationCompat.Builder( m_MainActivityPt ) //Android API 9~25版本使用。
+                            .Builder( m_MainActPt, "前台服务通知" ) //Android API 14及以上版本使用。
+                            //new NotificationCompat.Builder( m_MainActPt ) //Android API 9~25版本使用。
                             .setSmallIcon( R.mipmap.tkbk_icon )
-                            .setContentTitle( m_MainActivityPt.getString( R.string.app_name ) )
+                            .setContentTitle( m_MainActPt.getString( R.string.app_name ) )
                             .setContentText( "前台服务" )
                             .setSound( null )
                             .setContentIntent( pendingIntent )

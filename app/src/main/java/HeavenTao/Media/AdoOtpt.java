@@ -47,7 +47,7 @@ public class AdoOtpt //音频输出。
         //初始化音频输出的流。
         public int Init()
         {
-            int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+            int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
             Out:
             {
@@ -340,7 +340,7 @@ public class AdoOtpt //音频输出。
     //初始化音频输出的流容器。
     public int StrmCntnrInit()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
@@ -378,7 +378,7 @@ public class AdoOtpt //音频输出。
     //初始化音频输出的波形器。
     public int WavfmInit()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
@@ -429,7 +429,7 @@ public class AdoOtpt //音频输出。
     //初始化音频输出的Wave文件写入器。
     public int WaveFileWriterInit()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
@@ -480,18 +480,18 @@ public class AdoOtpt //音频输出。
     //初始化音频输出的设备和线程。
     public int DvcAndThrdInit()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
             //设置使用什么设备。
             if( m_DvcPt.m_UseWhatDvc == 0 ) //如果要使用扬声器。
             {
-                ( ( AudioManager )MediaPocsThrd.m_MainActivityPt.getSystemService( Context.AUDIO_SERVICE ) ).setSpeakerphoneOn( true ); //打开扬声器。
+                ( ( AudioManager )MediaPocsThrd.m_MainActPt.getSystemService( Context.AUDIO_SERVICE ) ).setSpeakerphoneOn( true ); //打开扬声器。
             }
             else //如果要使用听筒。
             {
-                ( ( AudioManager )MediaPocsThrd.m_MainActivityPt.getSystemService( Context.AUDIO_SERVICE ) ).setSpeakerphoneOn( false ); //关闭扬声器。
+                ( ( AudioManager )MediaPocsThrd.m_MainActPt.getSystemService( Context.AUDIO_SERVICE ) ).setSpeakerphoneOn( false ); //关闭扬声器。
             }
 
             //用第一种方法创建并初始化设备。
@@ -653,7 +653,7 @@ public class AdoOtpt //音频输出。
     //初始化音频输出。
     public int Init()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
         long p_LastMsec = 0;
         long p_NowMsec = 0;
 
@@ -909,7 +909,7 @@ public class AdoOtpt //音频输出。
 
                 if( m_ThrdPt.m_ExitFlag == 1 ) //如果退出标记为请求退出。
                 {
-                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：接收到退出请求，开始准备退出。" );
+                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：接收到退出请求。" );
                     break;
                 }
             } //音频输出循环结束。

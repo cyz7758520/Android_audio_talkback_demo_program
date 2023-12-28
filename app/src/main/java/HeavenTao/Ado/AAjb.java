@@ -79,13 +79,19 @@ public class AAjb
     }
 
     //清空音频自适应抖动缓冲器。
-    public int Clear( int IsAutoLock, Vstr ErrInfoVstrPt)
+    public int Clear( int IsAutoLock, Vstr ErrInfoVstrPt )
     {
         return AAjbClear( m_AAjbPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
     }
 
+    //清空并重置音频自适应抖动缓冲器。
+    public int Reset( int IsAutoLock, Vstr ErrInfoVstrPt )
+    {
+        return AAjbReset( m_AAjbPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+
     //销毁音频自适应抖动缓冲器。
-    public int Dstoy( Vstr ErrInfoVstrPt)
+    public int Dstoy( Vstr ErrInfoVstrPt )
     {
         if( m_AAjbPt != 0 )
         {
@@ -124,8 +130,11 @@ public class AAjb
     private native int AAjbGetBufFrmCnt( long AAjbPt, HTInt CurHaveBufActFrmCntPt, HTInt CurHaveBufInactFrmCntPt, HTInt CurHaveBufFrmCntPt, HTInt MinNeedBufFrmCntPt, HTInt MaxNeedBufFrmCntPt, HTInt MaxCntuLostFrmCntPt, HTInt CurNeedBufFrmCntPt, int IsAutoLock, long ErrInfoVstrPt );
 
     //清空音频自适应抖动缓冲器。
-    private native int AAjbClear( long AAjbPt, int IsAutoLock, long ErrInfoVstrPt);
+    private native int AAjbClear( long AAjbPt, int IsAutoLock, long ErrInfoVstrPt );
+
+    //清空并重置音频自适应抖动缓冲器。
+    private native int AAjbReset( long AAjbPt, int IsAutoLock, long ErrInfoVstrPt );
 
     //销毁音频自适应抖动缓冲器。
-    private native int AAjbDstoy( long AAjbPt, long ErrInfoVstrPt);
+    private native int AAjbDstoy( long AAjbPt, long ErrInfoVstrPt );
 }

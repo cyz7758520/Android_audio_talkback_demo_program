@@ -80,6 +80,12 @@ public class Vstr
         return VstrGetSz( m_VstrPt, StrSzPt );
     }
 
+    //获取动态字符串的大小。
+    public int UrlParse( HTString PrtclVstrPt, HTString UsernameVstrPt, HTString PasswordVstrPt, HTString HostnameVstrPt, HTString PortVstrPt, HTString PathVstrPt, HTString ParametersVstrPt, HTString QueryVstrPt, HTString FragmentVstrPt, Vstr ErrInfoVstrPt )
+    {
+        return VstrUrlParse( m_VstrPt, PrtclVstrPt, UsernameVstrPt, PasswordVstrPt, HostnameVstrPt, PortVstrPt, PathVstrPt, ParametersVstrPt, QueryVstrPt, FragmentVstrPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+    }
+
     //获取动态字符串。
     public String GetStr()
     {
@@ -127,6 +133,9 @@ public class Vstr
 
     //获取动态字符串的大小。
     private native int VstrGetSz( long VstrPt, HTLong VstrSzChrPt );
+
+    //动态字符串解析为Url。
+    private native int VstrUrlParse( long VstrPt, HTString PrtclVstrPt, HTString UsernameVstrPt, HTString PasswordVstrPt, HTString HostnameVstrPt, HTString PortVstrPt, HTString PathVstrPt, HTString ParametersVstrPt, HTString QueryVstrPt, HTString FragmentVstrPt, long ErrInfoVstrPt );
 
     //获取动态字符串。
     private native String VstrGetStr( long VstrPt );

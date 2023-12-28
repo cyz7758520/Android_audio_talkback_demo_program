@@ -11,7 +11,7 @@ android {
         minSdkVersion 14
         targetSdk 33
         versionCode 1
-        versionName "2023.07.31"
+        versionName "2023.12.28"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

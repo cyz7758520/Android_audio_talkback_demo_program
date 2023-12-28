@@ -115,7 +115,7 @@ public class VdoInpt //视频输入。
     //初始化视频输入。
     int Init()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
         long p_LastMsec = 0;
         long p_NowMsec = 0;
 
@@ -151,7 +151,7 @@ public class VdoInpt //视频输入。
                             {
                                 String p_InfoStrPt = "媒体处理线程：视频输入：获取设备 " + p_CameraId + " 的信息失败。原因：" + e.getMessage();
                                 if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
-                                if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+                                if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
                                 break Out;
                             }
                             if( p_CameraInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_FRONT )
@@ -175,7 +175,7 @@ public class VdoInpt //视频输入。
                         {
                             String p_InfoStrPt = "媒体处理线程：视频输入：查找设备对应的标识符失败。原因：没有" + ( ( m_DvcPt.m_UseWhatDvc == 0 ) ? "前置摄像头。" : "后置摄像头。" );
                             if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
-                            if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+                            if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
                             break Out;
                         }
                     }
@@ -189,7 +189,7 @@ public class VdoInpt //视频输入。
                     {
                         String p_InfoStrPt = "媒体处理线程：视频输入：初始化设备失败。原因：打开设备失败。原因：" + e.getMessage();
                         if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
-                        if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+                        if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
                         break Out;
                     }
                 }
@@ -389,7 +389,7 @@ public class VdoInpt //视频输入。
                 {
                     String p_InfoStrPt = "媒体处理线程：视频输入：初始化设备失败。原因：设置参数到设备失败。原因：" + e.getMessage();
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
-                    if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+                    if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
                     break Out;
                 }
 
@@ -399,7 +399,7 @@ public class VdoInpt //视频输入。
                     @Override public void surfaceCreated( SurfaceHolder holder )
                     {
                         Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：VdoInptPrvwSurface Created" );
-                        m_MediaPocsThrdPt.VdoInptSetUseDvc( m_DvcPt.m_UseWhatDvc, m_DvcPt.m_FrontCameraId, m_DvcPt.m_BackCameraId ); //重启视频输入。
+                        m_MediaPocsThrdPt.VdoInptSetUseDvc( 0, m_DvcPt.m_UseWhatDvc, m_DvcPt.m_FrontCameraId, m_DvcPt.m_BackCameraId ); //重启视频输入。
                     }
 
                     @Override public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
@@ -609,7 +609,7 @@ public class VdoInpt //视频输入。
             m_DvcPt.m_PrvwClbkPt = null;
             m_DvcPt.m_PrvwSurfaceViewPt.getHolder().removeCallback( m_DvcPt.m_PrvwSurfaceClbkPt );
             m_DvcPt.m_PrvwSurfaceClbkPt = null;
-            MediaPocsThrd.m_MainActivityPt.runOnUiThread( new Runnable() { public void run() { m_DvcPt.m_PrvwSurfaceViewPt.setVisibility( View.GONE ); m_DvcPt.m_PrvwSurfaceViewPt.setVisibility( View.VISIBLE ); } } ); //重建预览Surface视图。
+            MediaPocsThrd.m_MainActPt.runOnUiThread( new Runnable() { public void run() { m_DvcPt.m_PrvwSurfaceViewPt.setVisibility( View.GONE ); m_DvcPt.m_PrvwSurfaceViewPt.setVisibility( View.VISIBLE ); } } ); //重建预览Surface视图。
             m_DvcPt.m_PrvwClbkBufPtPt = null;
             m_DvcPt.m_Yu12SrcFrmRotate = 0;
             m_DvcPt.m_Nv21SrcFrmWidth = 0;
@@ -914,7 +914,7 @@ public class VdoInpt //视频输入。
 
                 if( m_ThrdPt.m_ExitFlag == 1 ) //如果退出标记为请求退出。
                 {
-                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：接收到退出请求，开始准备退出。" );
+                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：接收到退出请求。" );
                     break;
                 }
 

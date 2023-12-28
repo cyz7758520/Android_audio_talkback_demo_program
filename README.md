@@ -3,6 +3,7 @@
 
 # 简介
 &emsp;&emsp;本软件根据《道德经》为核心思想而设计，实现了两个设备之间进行音视频对讲，一般可用于楼宇对讲、智能门铃对讲、企业员工对讲、智能对讲机、以及类似于微信QQ音视频对讲的其他场景。本软件支持以下增强处理：  
+&emsp;&emsp;* 支持同时与多个设备建立连接，并选择激活任一连接。  
 &emsp;&emsp;* 支持IPv4和IPv6的TCP和UDP协议传输，UDP协议支持可靠传输、支持连接中途更换IP不中断。  
 &emsp;&emsp;* 支持实时半双工（一键通）和实时全双工的音频或视频或音视频对讲。  
 &emsp;&emsp;* 支持8000Hz、16000Hz、32000Hz、48000Hz的音频。  
@@ -31,10 +32,12 @@
 &emsp;&emsp;特别注意：以上是在不使用系统自带声学回音消除器的效果，且不同设备或不同环境或不同时间效果都会不同，所以需要自己亲自测试。  
 
 # 准备
-&emsp;&emsp;准备两台安装了Android 2.3及以上系统的设备（已适配到Android 13.0），其中一台设备作为客户端可以连接到另一台作为服务端的设备（可以用Ping工具测试，建议两台设备在同一局域网内），且两台设备都安装相同版本的本软件。  
+&emsp;&emsp;准备两至多台安装了Android 2.3及以上系统的设备（已适配到Android 13.0），设备之间可以相互通信（可以用Ping工具测试，建议设备在同一局域网内），所有设备都安装相同版本的本软件。  
 
 # 开始
-&emsp;&emsp;在一台设备上直接点击创建服务端，再在另一台设备上将IP地址改为服务端设备的IP地址，并点击连接服务端，即可开始对讲，在任意一端点击中断，即可中断对讲。  
+&emsp;&emsp;1、在一台设备上直接点击服务端的创建按钮。  
+&emsp;&emsp;2、在另一台设备上将客户端的IP地址改为服务端设备的IP地址，并点击添加按钮。  
+&emsp;&emsp;3、在客户端列表里点击刚刚添加的IP地址，再点击连接按钮，即可开始对讲。  
 
 &emsp;&emsp;设置按钮：提供了各项功能的参数设置，大部分情况下都不需要修改，如果发现不适合某些设备，则需要根据设备情况修改。  
 &emsp;&emsp;保存设置按钮：将各项功能的参数保存到Stng.xml中，每次运行本软件时会自动读取设置。  
@@ -48,7 +51,9 @@
 &emsp;&emsp;如果需要在自己的软件中使用本软件的音视频功能，需要以下几个步骤：  
 &emsp;&emsp;1、在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限。  
 &emsp;&emsp;2、将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中。  
-&emsp;&emsp;3、继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserPocs、UserDstoy、UserMsg、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetAdoOtptFrm、UserWriteVdoOtptFrm、UserGetVdoOtptFrm这九个回调成员函数。如果要在JNI层处理音视频帧，则可以将这些回调成员函数继承为native函数，然后在JNI层实现即可。  
+&emsp;&emsp;3、如果自己的软件已有传输协议：继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserPocs、UserDstoy、UserMsg、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetAdoOtptFrm、UserWriteVdoOtptFrm、UserGetVdoOtptFrm这九个回调成员函数。  
+&emsp;&emsp;&emsp;&emsp;如果自己的软件没有传输协议：继承HeavenTao.Media.NtwkMediaPocsThrd网络媒体处理线程类，实现UserNtwkMediaPocsThrdInit、UserNtwkMediaPocsThrdDstoy、UserSrvrInit、UserSrvrDstoy、UserShowLog、UserShowToast、UserVibrate、UserCnctInit、UserCnctModify、UserCnctDstoy这十个回调成员函数。  
+&emsp;&emsp;&emsp;&emsp;如果要在JNI层处理音视频帧，则可以将这些回调成员函数继承为native函数，然后在JNI层实现即可。  
 &emsp;&emsp;4、new这个继承的类，然后调用类的相关设置成员函数，最后调用start()成员函数启动媒体处理线程即可。  
 &emsp;&emsp;5、当需要媒体处理线程退出时，调用类的RqirExit()成员函数即可。  
 
@@ -95,6 +100,7 @@
 &emsp;&emsp;本人QQ号：280604597    赤勇玄心行天道  
 &emsp;&emsp;本人微信：qq280604597    赤勇玄心行天道  
 &emsp;&emsp;本人博客：http://www.cnblogs.com/gaoyaguo  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://blog.csdn.net/cyz7758520?type=blog  
 &emsp;&emsp;Windows版源代码：https://github.com/cyz7758520/Windows_audio_talkback_demo_program  
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitee.com/chen_yi_ze/Windows_audio_talkback_demo_program  
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitcode.net/cyz7758520/Windows_audio_talkback_demo_program  
@@ -114,7 +120,7 @@
 &emsp;&emsp;感谢 WELEN、善书、陈国福 对 Speex、WebRTC 的指点！  
 
 # 函数
-### 九个回调函数
+### MediaPocsThrd媒体处理线程类的九个回调函数
 ___
 函数名称：UserInit  
 功能说明：用户定义的初始化函数，在本线程刚启动时回调一次。  
@@ -199,4 +205,26 @@ ___
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptEncdSrcFrmPt：\[输入\]，存放视频输出已编码格式原始帧的指针。如果视频输出解码器要使用Yu12原始数据，则本参数为null。  
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptEncdSrcFrmLenByt：\[输入\]，存放视频输出已编码格式原始帧的长度，单位为字节。如果视频输出解码器要使用Yu12原始数据，则本参数无意义。  
 返回说明：无。  
+___
+### NtwkMediaPocsThrd网络媒体处理线程类的十个回调函数
+___
+UserNtwkMediaPocsThrdInit  
+___
+UserNtwkMediaPocsThrdDstoy  
+___
+UserSrvrInit  
+___
+UserSrvrDstoy  
+___
+UserShowLog  
+___
+UserShowToast  
+___
+UserVibrate  
+___
+UserCnctInit  
+___
+UserCnctModify  
+___
+UserCnctDstoy  
 ___

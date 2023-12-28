@@ -201,7 +201,7 @@ public class AdoInpt //存放音频输入。
     //初始化音频输入的声学回音消除器。
     public int AecInit()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
@@ -454,7 +454,7 @@ public class AdoInpt //存放音频输入。
     //初始化音频输入的噪音抑制器。
     public int NsInit()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
@@ -594,7 +594,7 @@ public class AdoInpt //存放音频输入。
     //初始化音频输入的Speex预处理器。
     public int SpeexPrpocsInit()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
@@ -656,7 +656,7 @@ public class AdoInpt //存放音频输入。
     //初始化音频输入的编码器。
     public int EncdInit()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
@@ -739,7 +739,7 @@ public class AdoInpt //存放音频输入。
     //初始化音频输入的波形器。
     public int WavfmInit()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
@@ -813,7 +813,7 @@ public class AdoInpt //存放音频输入。
     //初始化音频输入的Wave文件写入器。
     public int WaveFileWriterInit()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
@@ -887,7 +887,7 @@ public class AdoInpt //存放音频输入。
     //初始化音频输入的设备和线程。
     public int DvcAndThrdInit()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
@@ -896,11 +896,11 @@ public class AdoInpt //存放音频输入。
             {
                 m_DvcPt.m_BufSzByt = AudioRecord.getMinBufferSize( m_SmplRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT );
                 m_DvcPt.m_BufSzByt = ( m_DvcPt.m_BufSzByt > ( int )m_FrmLenByt ) ? m_DvcPt.m_BufSzByt : ( int )m_FrmLenByt;
-                if( ActivityCompat.checkSelfPermission( MediaPocsThrd.m_MainActivityPt, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED )
+                if( ActivityCompat.checkSelfPermission( MediaPocsThrd.m_MainActPt, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED )
                 {
                     String p_InfoStrPt = "媒体处理线程：音频输入：初始化设备失败。原因：没有RECORD_AUDIO权限。";
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
-                    if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+                    if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
                     break Out;
                 }
                 m_DvcPt.m_Pt = new AudioRecord(
@@ -917,7 +917,7 @@ public class AdoInpt //存放音频输入。
                 {
                     String p_InfoStrPt = "媒体处理线程：音频输入：初始化设备失败。";
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
-                    if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+                    if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
                     break Out;
                 }
             }
@@ -925,7 +925,7 @@ public class AdoInpt //存放音频输入。
             {
                 String p_InfoStrPt = "媒体处理线程：音频输入：初始化设备失败。原因：" + e.getMessage();
                 if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
-                if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActivityPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActivityPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+                if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
                 break Out;
             }
 
@@ -1026,7 +1026,7 @@ public class AdoInpt //存放音频输入。
     //初始化音频输入。
     public int Init()
     {
-        int p_Rslt = -1; //存放本函数执行结果的值，为0表示成功，为非0表示失败。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
         long p_LastTickMsec = 0;
         long p_NowTickMsec = 0;
 
@@ -1227,7 +1227,7 @@ public class AdoInpt //存放音频输入。
 
                 if( m_ThrdPt.m_ExitFlag == 1 ) //如果退出标记为请求退出。
                 {
-                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：接收到退出请求，开始准备退出。" );
+                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：接收到退出请求。" );
                     break;
                 }
             } //音频输入循环结束。
