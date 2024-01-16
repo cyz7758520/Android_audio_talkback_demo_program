@@ -57,7 +57,7 @@ public class VdoInpt //视频输入。
         int m_UseWhatDvc; //存放使用什么设备，为0表示前置摄像头，为1表示后置摄像头。
         int m_FrontCameraId; //存放前置摄像头的标识符，为-1表示自动查找。
         int m_BackCameraId; //存放后置摄像头的标识符，为-1表示自动查找。
-        HTSurfaceView m_PrvwSurfaceViewPt; //存放预览SurfaceView的指针。
+        HTSurfaceView m_PrvwSurfaceViewPt; //存放预览Surface视图的指针。
         SurfaceHolder.Callback m_PrvwSurfaceClbkPt; //存放预览Surface回调函数的指针。
         byte m_PrvwClbkBufPtPt[][]; //存放预览回调函数缓冲区的指针。
         VodInptPrvwClbk m_PrvwClbkPt; //存放预览回调函数的指针。
@@ -393,7 +393,7 @@ public class VdoInpt //视频输入。
                     break Out;
                 }
 
-                m_DvcPt.m_PrvwSurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置预览Surface的类型。老机型上必须要用。
+                m_DvcPt.m_PrvwSurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置预览Surface视图的类型。老机型上必须要用。
                 m_DvcPt.m_PrvwSurfaceClbkPt = new SurfaceHolder.Callback() //创建预览Surface的回调函数。
                 {
                     @Override public void surfaceCreated( SurfaceHolder holder )
@@ -412,21 +412,21 @@ public class VdoInpt //视频输入。
                         Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：VdoInptPrvwSurface Destroyed" );
                     }
                 };
-                m_DvcPt.m_PrvwSurfaceViewPt.getHolder().addCallback( m_DvcPt.m_PrvwSurfaceClbkPt ); //设置预览Surface的回调函数。
+                m_DvcPt.m_PrvwSurfaceViewPt.getHolder().addCallback( m_DvcPt.m_PrvwSurfaceClbkPt ); //设置预览Surface视图的回调函数添加。
                 try
                 {
-                    m_DvcPt.m_Pt.setPreviewDisplay( m_DvcPt.m_PrvwSurfaceViewPt.getHolder() ); //设置预览SurfaceView。
+                    m_DvcPt.m_Pt.setPreviewDisplay( m_DvcPt.m_PrvwSurfaceViewPt.getHolder() ); //设置预览Surface视图。
                 }
                 catch( Exception ignored )
                 {
                 }
                 if( m_ScreenRotate == 0 || m_ScreenRotate == 180 ) //如果屏幕为竖屏。
                 {
-                    m_DvcPt.m_PrvwSurfaceViewPt.setWidthToHeightRatio( ( float )m_DvcPt.m_Nv21SrcFrmHeight / m_DvcPt.m_Nv21SrcFrmWidth ); //设置预览SurfaceView的宽高比。
+                    m_DvcPt.m_PrvwSurfaceViewPt.SetWidthToHeightRatio( ( float )m_DvcPt.m_Nv21SrcFrmHeight / m_DvcPt.m_Nv21SrcFrmWidth ); //设置预览SurfaceView视图的宽高比。
                 }
                 else //如果屏幕为横屏。
                 {
-                    m_DvcPt.m_PrvwSurfaceViewPt.setWidthToHeightRatio( ( float )m_DvcPt.m_Nv21SrcFrmWidth / m_DvcPt.m_Nv21SrcFrmHeight ); //设置预览SurfaceView的宽高比。
+                    m_DvcPt.m_PrvwSurfaceViewPt.SetWidthToHeightRatio( ( float )m_DvcPt.m_Nv21SrcFrmWidth / m_DvcPt.m_Nv21SrcFrmHeight ); //设置预览SurfaceView视图的宽高比。
                 }
                 m_DvcPt.m_Pt.setDisplayOrientation( ( 450 - m_ScreenRotate ) % 360 ); //设置预览显示的旋转角度。
 
@@ -607,9 +607,9 @@ public class VdoInpt //视频输入。
                 m_DvcPt.m_Nv21SrcFrmCntnrPt = null;
             }
             m_DvcPt.m_PrvwClbkPt = null;
-            m_DvcPt.m_PrvwSurfaceViewPt.getHolder().removeCallback( m_DvcPt.m_PrvwSurfaceClbkPt );
+            m_DvcPt.m_PrvwSurfaceViewPt.getHolder().removeCallback( m_DvcPt.m_PrvwSurfaceClbkPt ); //设置预览Surface视图的回调函数移除。
             m_DvcPt.m_PrvwSurfaceClbkPt = null;
-            MediaPocsThrd.m_MainActPt.runOnUiThread( new Runnable() { public void run() { m_DvcPt.m_PrvwSurfaceViewPt.setVisibility( View.GONE ); m_DvcPt.m_PrvwSurfaceViewPt.setVisibility( View.VISIBLE ); } } ); //重建预览Surface视图。
+            m_DvcPt.m_PrvwSurfaceViewPt.SetBlack(); //设置预览Surface视图为黑屏。
             m_DvcPt.m_PrvwClbkBufPtPt = null;
             m_DvcPt.m_Yu12SrcFrmRotate = 0;
             m_DvcPt.m_Nv21SrcFrmWidth = 0;

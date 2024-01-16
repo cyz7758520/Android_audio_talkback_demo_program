@@ -1,6 +1,7 @@
 package com.example.andrd_ado_vdo_tkbk_demo;
 
 import HeavenTao.Media.NtwkMediaPocsThrd;
+import HeavenTao.Media.TkbkNtwk;
 
 public class MyNtwkMediaPocsThrd extends NtwkMediaPocsThrd
 {
@@ -8,7 +9,7 @@ public class MyNtwkMediaPocsThrd extends NtwkMediaPocsThrd
 
     MyNtwkMediaPocsThrd( MainAct MainActPt )
     {
-        super( MainActPt );
+        super( MainActPt.getApplicationContext() );
 
         m_MainActPt = MainActPt;
     }
@@ -56,20 +57,57 @@ public class MyNtwkMediaPocsThrd extends NtwkMediaPocsThrd
     }
 
     //用户定义的连接添加函数。
-    @Override public void UserCnctInit( int Idx, String PrtclStrPt, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt, String LclTkbkModeStrPt, String RmtTkbkModeStrPt )
+    @Override public void UserCnctInit( TkbkNtwk.CnctInfo CnctInfoPt, String PrtclStrPt, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
     {
-        m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewAddItem, Idx, PrtclStrPt, RmtNodeNameStrPt, RmtNodeSrvcStrPt, LclTkbkModeStrPt, RmtTkbkModeStrPt );
+        m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewAddItem, CnctInfoPt.m_Num, PrtclStrPt, RmtNodeNameStrPt, RmtNodeSrvcStrPt );
     }
 
-    //用户定义的连接修改函数。
-    @Override public void UserCnctModify( int Idx, String SignStrPt, String LclTkbkModeStrPt, String RmtTkbkModeStrPt )
+    //用户定义的连接状态函数。
+    @Override public void UserCnctSts( TkbkNtwk.CnctInfo CnctInfoPt, int CurCnctSts )
     {
-        m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewModifyItem, Idx, SignStrPt, LclTkbkModeStrPt, RmtTkbkModeStrPt );
+        if( CurCnctSts == CnctSts.Wait )
+        {
+            m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewModifyItem, CnctInfoPt.m_Num, null, "等待远端接受连接", "" );
+        }
+        else if( CurCnctSts < CnctSts.Wait )
+        {
+            m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewModifyItem, CnctInfoPt.m_Num, null, "第" + -CurCnctSts + "次连接", "" );
+        }
+        else if( CurCnctSts == CnctSts.Cnct )
+        {
+            m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewModifyItem, CnctInfoPt.m_Num, null, "已连接", "" );
+        }
+        else if( CurCnctSts == CnctSts.Tmot )
+        {
+            m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewModifyItem, CnctInfoPt.m_Num, null, "异常断开", "" );
+        }
+        else if( CurCnctSts == CnctSts.Dsct )
+        {
+            m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewModifyItem, CnctInfoPt.m_Num, null, "已断开", "" );
+        }
+    }
+
+    //用户定义的连接激活函数。
+    @Override public void UserCnctAct( TkbkNtwk.CnctInfo CnctInfoPt, int IsAct )
+    {
+        m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewModifyItem, CnctInfoPt.m_Num, ( IsAct != 0 ) ? "⇶" : "", null, null );
+    }
+
+    //用户定义的连接本端对讲模式函数。
+    @Override public void UserCnctLclTkbkMode( TkbkNtwk.CnctInfo CnctInfoPt, int IsRqirAct, int LclTkbkMode )
+    {
+        m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewModifyItem, CnctInfoPt.m_Num, null, ( ( IsRqirAct != 0 ) ? "请求激活" : "" ) + m_TkbkModeStrArrPt[ LclTkbkMode ], null );
+    }
+
+    //用户定义的连接远端对讲模式函数。
+    @Override public void UserCnctRmtTkbkMode( TkbkNtwk.CnctInfo CnctInfoPt, int IsRqirAct, int RmtTkbkMode )
+    {
+        m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewModifyItem, CnctInfoPt.m_Num, null, null, ( ( IsRqirAct != 0 ) ? "请求激活" : "" ) + m_TkbkModeStrArrPt[ RmtTkbkMode ] );
     }
 
     //用户定义的连接销毁函数。
-    @Override public void UserCnctDstoy( int Idx, int CnctSts )
+    @Override public void UserCnctDstoy( TkbkNtwk.CnctInfo CnctInfoPt )
     {
-        m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewDelItem, Idx );
+        m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstViewDelItem, CnctInfoPt.m_Num );
     }
 }

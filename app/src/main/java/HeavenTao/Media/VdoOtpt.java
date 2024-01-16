@@ -3,7 +3,6 @@ package HeavenTao.Media;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.SurfaceHolder;
-import android.view.View;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,7 +58,7 @@ public class VdoOtpt //视频输出。
 
         class Dvc //存放设备。
         {
-            HTSurfaceView m_DspySurfaceViewPt; //存放显示SurfaceView的指针。
+            HTSurfaceView m_DspySurfaceViewPt; //存放显示Surface视图的指针。
             SurfaceHolder.Callback m_DspySurfaceClbkPt; //存放显示Surface回调函数的指针。
             int m_IsBlack; //存放是否黑屏，为0表示有图像，为非0表示黑屏。
         }
@@ -203,7 +202,7 @@ public class VdoOtpt //视频输出。
                         Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_Idx + "：VdoOtptDspySurface Destroyed" );
                     }
                 };
-                m_DvcPt.m_DspySurfaceViewPt.getHolder().addCallback( m_DvcPt.m_DspySurfaceClbkPt ); //设置显示Surface的回调函数。
+                m_DvcPt.m_DspySurfaceViewPt.getHolder().addCallback( m_DvcPt.m_DspySurfaceClbkPt ); //设置显示Surface视图的回调函数添加。
 
                 //初始化线程的临时变量。
                 {
@@ -260,9 +259,9 @@ public class VdoOtpt //视频输出。
                 if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引 " + m_Idx + "：销毁线程的临时变量成功。" );
             }
 
-            m_DvcPt.m_DspySurfaceViewPt.getHolder().removeCallback( m_DvcPt.m_DspySurfaceClbkPt );
+            m_DvcPt.m_DspySurfaceViewPt.getHolder().removeCallback( m_DvcPt.m_DspySurfaceClbkPt ); //设置显示Surface视图的回调函数移除。
             m_DvcPt.m_DspySurfaceClbkPt = null;
-            MediaPocsThrd.m_MainActPt.runOnUiThread( new Runnable() { public void run() { m_DvcPt.m_DspySurfaceViewPt.setVisibility( View.GONE ); m_DvcPt.m_DspySurfaceViewPt.setVisibility( View.VISIBLE ); } } ); //重建显示Surface视图。
+            m_DvcPt.m_DspySurfaceViewPt.SetBlack(); //设置显示SurfaceView为黑屏。
         }
 
         //初始化视频输出的流。
@@ -458,7 +457,7 @@ public class VdoOtpt //视频输出。
                         }
 
                         //设置显示SurfaceView的宽高比。
-                        m_DvcPt.m_DspySurfaceViewPt.setWidthToHeightRatio( ( float )m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val / m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val );
+                        m_DvcPt.m_DspySurfaceViewPt.SetWidthToHeightRatio( ( float )m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val / m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val );
 
                         //显示帧。
                         if( LibYUV.PictrDrawToSurface(

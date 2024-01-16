@@ -1,6 +1,6 @@
 package HeavenTao.Media;
 
-import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 
 import HeavenTao.Media.*;
@@ -108,17 +108,27 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
     public abstract void UserVibrate();
 
     //用户定义的连接添加函数。
-    public abstract void UserCnctInit( int Idx, String PrtclStrPt, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt, String LclTkbkModeStrPt, String RmtTkbkModeStrPt );
+    public abstract void UserCnctInit( TkbkNtwk.CnctInfo CnctInfoPt, String PrtclStrPt, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt );
 
-    //用户定义的连接修改函数。
-    public abstract void UserCnctModify( int Idx, String SignStrPt, String LclTkbkModeStrPt, String RmtTkbkModeStrPt );
+    //用户定义的连接状态函数。
+    public abstract void UserCnctSts( TkbkNtwk.CnctInfo CnctInfoPt, int CurCnctSts );
+
+    //用户定义的连接激活函数。
+    public abstract void UserCnctAct( TkbkNtwk.CnctInfo CnctInfoPt, int IsAct );
+
+    //用户定义的连接本端对讲模式函数。
+    public abstract void UserCnctLclTkbkMode( TkbkNtwk.CnctInfo CnctInfoPt, int IsRqirAct, int LclTkbkMode );
+
+    //用户定义的连接远端对讲模式函数。
+    public abstract void UserCnctRmtTkbkMode( TkbkNtwk.CnctInfo CnctInfoPt, int IsRqirAct, int RmtTkbkMode );
 
     //用户定义的连接销毁函数。
-    public abstract void UserCnctDstoy( int Idx, int CnctSts );
+    public abstract void UserCnctDstoy( TkbkNtwk.CnctInfo CnctInfoPt );
 
-    public NtwkMediaPocsThrd( Activity MainActPt )
+    //构造函数。
+    public NtwkMediaPocsThrd( Context CtxPt )
     {
-        super( MainActPt );
+        super( CtxPt );
 
         m_IsInterrupt = 0; //设置未中断。
 
@@ -195,7 +205,7 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
         }
         else if( m_IsAutoRqirExit == 1 )
         {
-            if( ( m_TkbkNtwkPt.m_CnctInfoLstPt.isEmpty() ) && ( m_BdctNtwkPt.m_CnctInfoLstPt.isEmpty() ) )
+            if( ( m_TkbkNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) && ( m_BdctNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) )
             {
                 RqirExit( 1, 0 );
 
@@ -206,7 +216,7 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
         }
         else if( m_IsAutoRqirExit == 2 )
         {
-            if( ( m_TkbkNtwkPt.m_CnctInfoLstPt.isEmpty() ) && ( m_BdctNtwkPt.m_CnctInfoLstPt.isEmpty() ) && ( m_TkbkNtwkPt.m_SrvrIsInit == 0 ) )
+            if( ( m_TkbkNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) && ( m_BdctNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) && ( m_TkbkNtwkPt.m_SrvrIsInit == 0 ) )
             {
                 RqirExit( 1, 0 );
 
@@ -273,7 +283,7 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
             }
         }
 
-        if( !m_BdctNtwkPt.m_CnctInfoLstPt.isEmpty() ) //如果有广播连接。
+        if( !m_BdctNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) //如果有广播连接。
         {
             p_IsUseAdoInpt = 1;
         }
@@ -338,7 +348,7 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
                     m_TkbkNtwkPt.m_PttBtnIsDown = 1; //设置一键即按即通按钮为按下。
                     if( m_TkbkNtwkPt.m_CurActCnctInfoPt != null ) //如果当前激活的连接信息的指针不为空。
                     {
-                        m_TkbkNtwkPt.CnctSendTkbkModePkt( m_TkbkNtwkPt.m_CurActCnctInfoPt, m_LclTkbkMode ); //发送对讲模式包。
+                        m_TkbkNtwkPt.CnctInfoSendTkbkModePkt( m_TkbkNtwkPt.m_CurActCnctInfoPt, m_LclTkbkMode ); //发送对讲模式包。
                         SetTkbkMode( 1 ); //设置对讲模式。
                         UserVibrate(); //调用用户定义的振动函数。
                     }
@@ -349,7 +359,7 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
                     m_TkbkNtwkPt.m_PttBtnIsDown = 0; //设置一键即按即通按钮为弹起。
                     if( m_TkbkNtwkPt.m_CurActCnctInfoPt != null ) //如果当前激活的连接信息的指针不为空。
                     {
-                        m_TkbkNtwkPt.CnctSendTkbkModePkt( m_TkbkNtwkPt.m_CurActCnctInfoPt, TkbkMode.None ); //发送对讲模式包。
+                        m_TkbkNtwkPt.CnctInfoSendTkbkModePkt( m_TkbkNtwkPt.m_CurActCnctInfoPt, TkbkMode.None ); //发送对讲模式包。
                         SetTkbkMode( 1 ); //设置对讲模式。
                     }
                     break;
@@ -389,7 +399,7 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
                                                 VdoInptEncdRsltFrmPt, VdoInptEncdRsltFrmLenByt );
         }
 
-        if( ( AdoInptPcmSrcFrmPt != null ) && ( !m_BdctNtwkPt.m_CnctInfoLstPt.isEmpty() ) )
+        if( ( AdoInptPcmSrcFrmPt != null ) && ( !m_BdctNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) )
         {
             m_BdctNtwkPt.UserReadAdoVdoInptFrm( AdoInptPcmSrcFrmPt, AdoInptPcmRsltFrmPt, AdoInptPcmFrmLenUnit, AdoInptPcmRsltFrmVoiceActSts,
                                                 AdoInptEncdRsltFrmPt, AdoInptEncdRsltFrmLenByt, AdoInptEncdRsltFrmIsNeedTrans,

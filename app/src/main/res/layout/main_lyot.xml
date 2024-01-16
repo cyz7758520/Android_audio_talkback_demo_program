@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="版本：2023年12月28日"
+                android:text="版本：2024年01月16日"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="normal|bold" />
@@ -130,7 +130,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:padding="0dp"
-                    android:id="@+id/CnctResumeBtnId"
+                    android:id="@+id/CnctActBtnId"
                     android:text="激活"
                     android:onClick="OnClickCnctActBtn" />
 

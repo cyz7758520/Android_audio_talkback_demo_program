@@ -487,11 +487,11 @@ public class AdoOtpt //音频输出。
             //设置使用什么设备。
             if( m_DvcPt.m_UseWhatDvc == 0 ) //如果要使用扬声器。
             {
-                ( ( AudioManager )MediaPocsThrd.m_MainActPt.getSystemService( Context.AUDIO_SERVICE ) ).setSpeakerphoneOn( true ); //打开扬声器。
+                ( ( AudioManager )MediaPocsThrd.m_CtxPt.getSystemService( Context.AUDIO_SERVICE ) ).setSpeakerphoneOn( true ); //打开扬声器。
             }
             else //如果要使用听筒。
             {
-                ( ( AudioManager )MediaPocsThrd.m_MainActPt.getSystemService( Context.AUDIO_SERVICE ) ).setSpeakerphoneOn( false ); //关闭扬声器。
+                ( ( AudioManager )MediaPocsThrd.m_CtxPt.getSystemService( Context.AUDIO_SERVICE ) ).setSpeakerphoneOn( false ); //关闭扬声器。
             }
 
             //用第一种方法创建并初始化设备。

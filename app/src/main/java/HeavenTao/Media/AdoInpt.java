@@ -28,6 +28,7 @@ public class AdoInpt //存放音频输入。
     public long m_FrmLenUnit; //存放帧的长度，单位为采样单元，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960，48000Hz的10毫秒为480、20毫秒为960、30毫秒为1440。
     public long m_FrmLenData; //存放帧的长度，单位为采样数据，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80、20毫秒为160、30毫秒为240，16000Hz的10毫秒为160、20毫秒为320、30毫秒为480，32000Hz的10毫秒为320、20毫秒为640、30毫秒为960，48000Hz的10毫秒为480、20毫秒为960、30毫秒为1440。
     public long m_FrmLenByt; //存放帧的长度，单位为字节，取值只能为10毫秒的倍数。例如：8000Hz的10毫秒为80*2、20毫秒为160*2、30毫秒为240*2，16000Hz的10毫秒为160*2、20毫秒为320*2、30毫秒为480*2，32000Hz的10毫秒为320*2、20毫秒为640*2、30毫秒为960*2，48000Hz的10毫秒为480*2、20毫秒为960*2、30毫秒为1440*2。
+    public int m_IsStartRecordingAfterRead; //存放是否在调用read函数后才开始音频输入，为0表示不在，为1表示要在。因为有些设备调用StartRecording函数后还没有开始音频输入，而是在第一次调用read函数时才开始音频输入，从而进一步保证音频输入线程走在输出线程的前面，但这样会在调用StartRecording函数后就开始音频输入的设备上增加大量延迟。
 
     public int m_IsUseSystemAecNsAgc; //存放是否使用系统自带声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带），为0表示不使用，为非0表示要使用。
 
@@ -896,7 +897,7 @@ public class AdoInpt //存放音频输入。
             {
                 m_DvcPt.m_BufSzByt = AudioRecord.getMinBufferSize( m_SmplRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT );
                 m_DvcPt.m_BufSzByt = ( m_DvcPt.m_BufSzByt > ( int )m_FrmLenByt ) ? m_DvcPt.m_BufSzByt : ( int )m_FrmLenByt;
-                if( ActivityCompat.checkSelfPermission( MediaPocsThrd.m_MainActPt, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED )
+                if( ActivityCompat.checkSelfPermission( MediaPocsThrd.m_CtxPt, Manifest.permission.RECORD_AUDIO ) != PackageManager.PERMISSION_GRANTED )
                 {
                     String p_InfoStrPt = "媒体处理线程：音频输入：初始化设备失败。原因：没有RECORD_AUDIO权限。";
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
@@ -1111,17 +1112,18 @@ public class AdoInpt //存放音频输入。
                     }
                     m_ThrdPt.m_LastTickMsec = m_ThrdPt.m_NowTickMsec;
                 }
-                m_ThrdPt.m_PcmSrcFrmPt = null;
                 if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：" + "音频输出延迟 " + p_AdoOtptDelay + " 毫秒。" );
 
                 //计算音频输入的延迟。
                 m_DvcPt.m_Pt.startRecording(); //让音频输入设备开始录音。
+                if( m_IsStartRecordingAfterRead != 0 ) m_DvcPt.m_Pt.read( m_ThrdPt.m_PcmSrcFrmPt, 0, m_ThrdPt.m_PcmSrcFrmPt.length ); //如果要在调用read函数后才开始音频输入。
+                m_ThrdPt.m_PcmSrcFrmPt = null;
                 p_AdoInptDelay = 0; //音频输入延迟不方便计算，调用耗时在不同的设备都不一样，可能为0也可能很高，也数据不一定为全0，所以直接认定音频输入延迟为0ms。
                 if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：" + "音频输入延迟 " + p_AdoInptDelay + " 毫秒。" );
 
                 //计算回音延迟。
                 p_Delay = p_AdoOtptDelay + p_AdoInptDelay;
-                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：" + "回音延迟 " + p_Delay + " 毫秒，现在启动音频输出线程，并开始音频输入循环，为了保证音频输入线程走在输出数据线程的前面。" );
+                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：" + "回音延迟 " + p_Delay + " 毫秒，现在启动音频输出线程，并开始音频输入循环，为了保证音频输入线程走在输出线程的前面。" );
 
                 m_ThrdPt.m_IsStartAdoOtptThrd = 1; //设置已开始音频输出线程。在开始音频输出线程前设置，这样可以保证不会误判断。
                 m_MediaPocsThrdPt.m_AdoOtptPt.m_ThrdPt.m_ThrdIsStart = 1; //设置音频输出线程已开始。

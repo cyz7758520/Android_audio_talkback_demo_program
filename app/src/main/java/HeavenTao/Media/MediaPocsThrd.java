@@ -2,6 +2,7 @@ package HeavenTao.Media;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -118,41 +119,10 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         int m_MediaMsgRslt;
         MediaMsgTyp m_MediaMsgTyp;
         Object[] m_MsgArgCntnrPt;
-
-        MediaMsg( int IsBlockWait, int AddFirstOrLast, MediaMsgTyp MediaMsgTyp, Object... MsgArgPt )
-        {
-            m_MediaMsgRslt = 999;
-            m_MediaMsgTyp = MediaMsgTyp;
-            m_MsgArgCntnrPt = MsgArgPt;
-            if( AddFirstOrLast == 0 ) m_MediaMsgCntnrPt.addFirst( this );
-            else m_MediaMsgCntnrPt.addLast( this );
-
-            if( IsBlockWait != 0 ) //如果要阻塞等待。
-            {
-                if( Thread.currentThread().getId() != m_MediaPocsThrdPt.getId() ) //如果发送媒体消息线程不是媒体处理线程。
-                {
-                    do
-                    {
-                        SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
-                    } while( ( m_MediaPocsThrdPt.isAlive() ) && ( m_MediaMsgRslt == 999 ) );
-                }
-                else //如果发送媒体消息线程是媒体处理线程。
-                {
-                    do
-                    {
-                        OneMediaMsgPocs();
-                    } while( m_MediaMsgRslt == 999 );
-                }
-            }
-            else //如果不阻塞等待。
-            {
-                m_MediaMsgRslt = 0;
-            }
-        }
     }
     public final ConcurrentLinkedDeque< MediaMsg > m_MediaMsgCntnrPt = new ConcurrentLinkedDeque<>(); //存放媒体消息容器的指针。这里忽略报错“Call requires API level 21 (current min is 14): new java.util.concurrent.ConcurrentLinkedDeque”。
 
-    public static Activity m_MainActPt; //存放主界面的指针。
+    public static Context m_CtxPt; //存放上下文的指针。
 
     public int m_IsPrintLogcat; //存放是否打印Logcat日志，为非0表示要打印，为0表示不打印。
     public int m_IsShowToast; //存放是否显示Toast，为非0表示要显示，为0表示不显示。
@@ -246,18 +216,18 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                             byte VdoOtptEncdSrcFrmPt[], long VdoOtptEncdSrcFrmLenByt );
 
     //构造函数。
-    public MediaPocsThrd( Activity MainActPt )
+    public MediaPocsThrd( Context CtxPt )
     {
         m_MediaPocsThrdPt = this; //设置媒体处理线程的指针。
 
         m_LastCallUserInitOrDstoy = 1; //设置上一次调用了用户定义的销毁函数。
         m_ReadyExitCnt = 1; //设置准备退出计数为1，当第一次处理调用用户定义的初始化函数消息时会递减。
 
-        m_MainActPt = MainActPt; //设置主界面的指针。
+        m_CtxPt = CtxPt; //设置上下文的指针。
 
         //初始化音频输入。
         m_AdoInptPt.m_MediaPocsThrdPt = this;
-        SetAdoInpt( 0, 8000, 20 );
+        SetAdoInpt( 0, 8000, 20, 0 );
 
         //初始化音频输出。
         m_AdoOtptPt.m_MediaPocsThrdPt = this;
@@ -287,342 +257,386 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         }
     }
 
+    //发送媒体消息。
+    private int SendMediaMsg( int IsBlockWait, int AddFirstOrLast, MediaMsgTyp MediaMsgTyp, Object... MsgArgPt )
+    {
+        int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
+
+        Out:
+        {
+            MediaMsg p_MediaMsgPt = new MediaMsg();
+
+            p_MediaMsgPt.m_MediaMsgRslt = 999;
+            p_MediaMsgPt.m_MediaMsgTyp = MediaMsgTyp;
+            p_MediaMsgPt.m_MsgArgCntnrPt = MsgArgPt;
+            if( AddFirstOrLast == 0 ) m_MediaMsgCntnrPt.addFirst( p_MediaMsgPt );
+            else m_MediaMsgCntnrPt.addLast( p_MediaMsgPt );
+
+            if( IsBlockWait != 0 ) //如果要阻塞等待。
+            {
+                if( Thread.currentThread().getId() != m_MediaPocsThrdPt.getId() ) //如果发送媒体消息线程不是媒体处理线程。
+                {
+                    do
+                    {
+                        SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
+                    } while( ( m_MediaPocsThrdPt.isAlive() ) && ( p_MediaMsgPt.m_MediaMsgRslt == 999 ) );
+                }
+                else //如果发送媒体消息线程是媒体处理线程。
+                {
+                    do
+                    {
+                        OneMediaMsgPocs();
+                    } while( p_MediaMsgPt.m_MediaMsgRslt == 999 );
+                }
+                p_Rslt = p_MediaMsgPt.m_MediaMsgRslt; //返回媒体消息处理结果。
+            }
+            else //如果不阻塞等待。
+            {
+                p_Rslt = 0; //返回媒体消息处理结果为成功。因为要让设置函数返回成功。
+            }
+        }
+
+        return p_Rslt;
+    }
+
     //媒体处理线程的设置音频输入。
-    public void SetAdoInpt( int IsBlockWait, int SmplRate, long FrmLenMsec )
+    public int SetAdoInpt( int IsBlockWait, int SmplRate, long FrmLenMsec, int m_IsStartRecordingAfterRead )
     {
         if( ( ( SmplRate != 8000 ) && ( SmplRate != 16000 ) && ( SmplRate != 32000 ) && ( SmplRate != 48000 ) ) || //如果采样频率不正确。
             ( ( FrmLenMsec <= 0 ) || ( FrmLenMsec % 10 != 0 ) ) ) //如果帧的毫秒长度不正确。
         {
-            return;
+            return -1;
         }
 
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.SetAdoInpt, SmplRate, FrmLenMsec );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.SetAdoInpt, SmplRate, FrmLenMsec, m_IsStartRecordingAfterRead );
     }
 
     //媒体处理线程的音频输入设置设置是否使用系统自带声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带）。
-    public void AdoInptSetIsUseSystemAecNsAgc( int IsBlockWait, int IsUseSystemAecNsAgc )
+    public int AdoInptSetIsUseSystemAecNsAgc( int IsBlockWait, int IsUseSystemAecNsAgc )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetIsUseSystemAecNsAgc, IsUseSystemAecNsAgc );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetIsUseSystemAecNsAgc, IsUseSystemAecNsAgc );
     }
 
     //媒体处理线程的音频输入设置不使用声学回音消除器。
-    public void AdoInptSetUseNoAec( int IsBlockWait )
+    public int AdoInptSetUseNoAec( int IsBlockWait )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseNoAec );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseNoAec );
     }
 
     //媒体处理线程的音频输入设置要使用Speex声学回音消除器。
-    public void AdoInptSetUseSpeexAec( int IsBlockWait, int FilterLenMsec, int IsUseRec, float EchoMutp, float EchoCntu, int EchoSupes, int EchoSupesAct, int IsSaveMemFile, String MemFileFullPathStrPt )
+    public int AdoInptSetUseSpeexAec( int IsBlockWait, int FilterLenMsec, int IsUseRec, float EchoMutp, float EchoCntu, int EchoSupes, int EchoSupesAct, int IsSaveMemFile, String MemFileFullPathStrPt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseSpeexAec, FilterLenMsec, IsUseRec, EchoMutp, EchoCntu, EchoSupes, EchoSupesAct, IsSaveMemFile, MemFileFullPathStrPt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseSpeexAec, FilterLenMsec, IsUseRec, EchoMutp, EchoCntu, EchoSupes, EchoSupesAct, IsSaveMemFile, MemFileFullPathStrPt );
     }
 
     //媒体处理线程的音频输入设置要使用WebRtc定点版声学回音消除器。
-    public void AdoInptSetUseWebRtcAecm( int IsBlockWait, int IsUseCNGMode, int EchoMode, int Delay )
+    public int AdoInptSetUseWebRtcAecm( int IsBlockWait, int IsUseCNGMode, int EchoMode, int Delay )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseWebRtcAecm, IsUseCNGMode, EchoMode, Delay );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseWebRtcAecm, IsUseCNGMode, EchoMode, Delay );
     }
 
     //媒体处理线程的音频输入设置要使用WebRtc浮点版声学回音消除器。
-    public void AdoInptSetUseWebRtcAec( int IsBlockWait, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, int IsSaveMemFile, String MemFileFullPathStrPt )
+    public int AdoInptSetUseWebRtcAec( int IsBlockWait, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, int IsSaveMemFile, String MemFileFullPathStrPt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseWebRtcAec, EchoMode, Delay, IsUseDelayAgstcMode, IsUseExtdFilterMode, IsUseRefinedFilterAdaptAecMode, IsUseAdaptAdjDelay, IsSaveMemFile, MemFileFullPathStrPt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseWebRtcAec, EchoMode, Delay, IsUseDelayAgstcMode, IsUseExtdFilterMode, IsUseRefinedFilterAdaptAecMode, IsUseAdaptAdjDelay, IsSaveMemFile, MemFileFullPathStrPt );
     }
 
     //媒体处理线程的音频输入设置要使用SpeexWebRtc三重声学回音消除器。
-    public void AdoInptSetUseSpeexWebRtcAec( int IsBlockWait, int WorkMode, int SpeexAecFilterLenMsec, int SpeexAecIsUseRec, float SpeexAecEchoMutp, float SpeexAecEchoCntu, int SpeexAecEchoSupes, int SpeexAecEchoSupesAct, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgstcMode, int WebRtcAecIsUseExtdFilterMode, int WebRtcAecIsUseRefinedFilterAdaptAecMode, int WebRtcAecIsUseAdaptAdjDelay, int IsUseSameRoomAec, int SameRoomEchoMinDelay )
+    public int AdoInptSetUseSpeexWebRtcAec( int IsBlockWait, int WorkMode, int SpeexAecFilterLenMsec, int SpeexAecIsUseRec, float SpeexAecEchoMutp, float SpeexAecEchoCntu, int SpeexAecEchoSupes, int SpeexAecEchoSupesAct, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgstcMode, int WebRtcAecIsUseExtdFilterMode, int WebRtcAecIsUseRefinedFilterAdaptAecMode, int WebRtcAecIsUseAdaptAdjDelay, int IsUseSameRoomAec, int SameRoomEchoMinDelay )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseSpeexWebRtcAec, WorkMode, SpeexAecFilterLenMsec, SpeexAecIsUseRec, SpeexAecEchoMutp, SpeexAecEchoCntu, SpeexAecEchoSupes, SpeexAecEchoSupesAct, WebRtcAecmIsUseCNGMode, WebRtcAecmEchoMode, WebRtcAecmDelay, WebRtcAecEchoMode, WebRtcAecDelay, WebRtcAecIsUseDelayAgstcMode, WebRtcAecIsUseExtdFilterMode, WebRtcAecIsUseRefinedFilterAdaptAecMode, WebRtcAecIsUseAdaptAdjDelay, IsUseSameRoomAec, SameRoomEchoMinDelay );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseSpeexWebRtcAec, WorkMode, SpeexAecFilterLenMsec, SpeexAecIsUseRec, SpeexAecEchoMutp, SpeexAecEchoCntu, SpeexAecEchoSupes, SpeexAecEchoSupesAct, WebRtcAecmIsUseCNGMode, WebRtcAecmEchoMode, WebRtcAecmDelay, WebRtcAecEchoMode, WebRtcAecDelay, WebRtcAecIsUseDelayAgstcMode, WebRtcAecIsUseExtdFilterMode, WebRtcAecIsUseRefinedFilterAdaptAecMode, WebRtcAecIsUseAdaptAdjDelay, IsUseSameRoomAec, SameRoomEchoMinDelay );
     }
 
     //媒体处理线程的音频输入设置不使用噪音抑制器。
-    public void AdoInptSetUseNoNs( int IsBlockWait )
+    public int AdoInptSetUseNoNs( int IsBlockWait )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseNoNs );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseNoNs );
     }
 
     //媒体处理线程的音频输入设置要使用Speex预处理器的噪音抑制。
-    public void AdoInptSetUseSpeexPrpocsNs( int IsBlockWait, int IsUseNs, int NoiseSupes, int IsUseDereverb )
+    public int AdoInptSetUseSpeexPrpocsNs( int IsBlockWait, int IsUseNs, int NoiseSupes, int IsUseDereverb )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseSpeexPrpocsNs, IsUseNs, NoiseSupes, IsUseDereverb );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseSpeexPrpocsNs, IsUseNs, NoiseSupes, IsUseDereverb );
     }
 
     //媒体处理线程的音频输入设置要使用WebRtc定点版噪音抑制器。
-    public void AdoInptSetUseWebRtcNsx( int IsBlockWait, int PolicyMode )
+    public int AdoInptSetUseWebRtcNsx( int IsBlockWait, int PolicyMode )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseWebRtcNsx, PolicyMode );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseWebRtcNsx, PolicyMode );
     }
 
     //媒体处理线程的音频输入设置要使用WebRtc浮点版噪音抑制器。
-    public void AdoInptSetUseWebRtcNs( int IsBlockWait, int PolicyMode )
+    public int AdoInptSetUseWebRtcNs( int IsBlockWait, int PolicyMode )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseWebRtcNs, PolicyMode );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseWebRtcNs, PolicyMode );
     }
 
     //媒体处理线程的音频输入设置要使用RNNoise噪音抑制器。
-    public void AdoInptSetUseRNNoise( int IsBlockWait )
+    public int AdoInptSetUseRNNoise( int IsBlockWait )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseRNNoise );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseRNNoise );
     }
 
     //媒体处理线程的音频输入设置是否使用Speex预处理器。
-    public void AdoInptSetIsUseSpeexPrpocs( int IsBlockWait, int IsUseSpeexPrpocs, int IsUseVad, int VadProbStart, int VadProbCntu, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain )
+    public int AdoInptSetIsUseSpeexPrpocs( int IsBlockWait, int IsUseSpeexPrpocs, int IsUseVad, int VadProbStart, int VadProbCntu, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetIsUseSpeexPrpocs, IsUseSpeexPrpocs, IsUseVad, VadProbStart, VadProbCntu, IsUseAgc, AgcLevel, AgcIncrement, AgcDecrement, AgcMaxGain );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetIsUseSpeexPrpocs, IsUseSpeexPrpocs, IsUseVad, VadProbStart, VadProbCntu, IsUseAgc, AgcLevel, AgcIncrement, AgcDecrement, AgcMaxGain );
     }
 
     //媒体处理线程的音频输入设置要使用PCM原始数据。
-    public void AdoInptSetUsePcm( int IsBlockWait )
+    public int AdoInptSetUsePcm( int IsBlockWait )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUsePcm );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUsePcm );
     }
 
     //媒体处理线程的音频输入设置要使用Speex编码器。
-    public void AdoInptSetUseSpeexEncd( int IsBlockWait, int UseCbrOrVbr, int Qualt, int Cmplxt, int PlcExptLossRate )
+    public int AdoInptSetUseSpeexEncd( int IsBlockWait, int UseCbrOrVbr, int Qualt, int Cmplxt, int PlcExptLossRate )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseSpeexEncd, UseCbrOrVbr, Qualt, Cmplxt, PlcExptLossRate );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseSpeexEncd, UseCbrOrVbr, Qualt, Cmplxt, PlcExptLossRate );
     }
 
     //媒体处理线程的音频输入设置要使用Opus编码器。
-    public void AdoInptSetUseOpusEncd( int IsBlockWait )
+    public int AdoInptSetUseOpusEncd( int IsBlockWait )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseOpusEncd );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetUseOpusEncd );
     }
 
     //媒体处理线程的音频输入设置是否绘制音频波形到Surface。
-    public void AdoInptSetIsDrawAdoWavfmToSurface( int IsBlockWait, int IsDraw, SurfaceView SrcSurfacePt, SurfaceView RsltSurfacePt )
+    public int AdoInptSetIsDrawAdoWavfmToSurface( int IsBlockWait, int IsDraw, SurfaceView SrcSurfacePt, SurfaceView RsltSurfacePt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetIsDrawAdoWavfmToSurface, IsDraw, SrcSurfacePt, RsltSurfacePt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetIsDrawAdoWavfmToSurface, IsDraw, SrcSurfacePt, RsltSurfacePt );
     }
 
     //媒体处理线程的音频输入设置是否保存音频到Wave文件。
-    public void AdoInptSetIsSaveAdoToWaveFile( int IsBlockWait, int IsSave, String SrcFullPathStrPt, String RsltFullPathStrPt, long WrBufSzByt )
+    public int AdoInptSetIsSaveAdoToWaveFile( int IsBlockWait, int IsSave, String SrcFullPathStrPt, String RsltFullPathStrPt, long WrBufSzByt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetIsSaveAdoToWaveFile, IsSave, SrcFullPathStrPt, RsltFullPathStrPt, WrBufSzByt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetIsSaveAdoToWaveFile, IsSave, SrcFullPathStrPt, RsltFullPathStrPt, WrBufSzByt );
     }
 
     //媒体处理线程的音频输入设置是否静音。
-    public void AdoInptSetIsMute( int IsBlockWait, int IsMute )
+    public int AdoInptSetIsMute( int IsBlockWait, int IsMute )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetIsMute, IsMute );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoInptSetIsMute, IsMute );
     }
 
     //媒体处理线程的设置音频输出。
-    public void SetAdoOtpt( int IsBlockWait, int SmplRate, long FrmLenMsec )
+    public int SetAdoOtpt( int IsBlockWait, int SmplRate, long FrmLenMsec )
     {
         if( ( ( SmplRate != 8000 ) && ( SmplRate != 16000 ) && ( SmplRate != 32000 ) && ( SmplRate != 48000 ) ) || //如果采样频率不正确。
             ( ( FrmLenMsec <= 0 ) || ( FrmLenMsec % 10 != 0 ) ) ) //如果帧的毫秒长度不正确。
         {
-            return;
+            return -1;
         }
 
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.SetAdoOtpt, SmplRate, FrmLenMsec );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.SetAdoOtpt, SmplRate, FrmLenMsec );
     }
 
     //媒体处理线程的音频输出添加流。
-    public void AddAdoOtptStrm( int IsBlockWait, int StrmIdx )
+    public int AddAdoOtptStrm( int IsBlockWait, int StrmIdx )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptAddStrm, StrmIdx );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptAddStrm, StrmIdx );
     }
 
     //媒体处理线程的音频输出删除流。
-    public void DelAdoOtptStrm( int IsBlockWait, int StrmIdx )
+    public int DelAdoOtptStrm( int IsBlockWait, int StrmIdx )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptDelStrm, StrmIdx );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptDelStrm, StrmIdx );
     }
 
     //媒体处理线程的音频输出设置流要使用PCM原始数据。
-    public void AdoOtptSetStrmUsePcm( int IsBlockWait, int StrmIdx )
+    public int AdoOtptSetStrmUsePcm( int IsBlockWait, int StrmIdx )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetStrmUsePcm, StrmIdx );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetStrmUsePcm, StrmIdx );
     }
 
     //媒体处理线程的音频输出设置流要使用Speex解码器。
-    public void AdoOtptSetStrmUseSpeexDecd( int IsBlockWait, int StrmIdx, int IsUsePrcplEnhsmt )
+    public int AdoOtptSetStrmUseSpeexDecd( int IsBlockWait, int StrmIdx, int IsUsePrcplEnhsmt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetStrmUseSpeexDecd, StrmIdx, IsUsePrcplEnhsmt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetStrmUseSpeexDecd, StrmIdx, IsUsePrcplEnhsmt );
     }
 
     //媒体处理线程的音频输出设置流要使用Opus解码器。
-    public void AdoOtptSetStrmUseOpusDecd( int IsBlockWait, int StrmIdx )
+    public int AdoOtptSetStrmUseOpusDecd( int IsBlockWait, int StrmIdx )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetStrmUseOpusDecd, StrmIdx );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetStrmUseOpusDecd, StrmIdx );
     }
 
     //媒体处理线程的音频输出设置流是否要使用。
-    public void AdoOtptSetStrmIsUse( int IsBlockWait, int StrmIdx, int IsUseAdoOtptStrm )
+    public int AdoOtptSetStrmIsUse( int IsBlockWait, int StrmIdx, int IsUseAdoOtptStrm )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetStrmIsUse, StrmIdx, IsUseAdoOtptStrm );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetStrmIsUse, StrmIdx, IsUseAdoOtptStrm );
     }
 
     //媒体处理线程的音频输出设置是否绘制音频波形到Surface。
-    public void AdoOtptSetIsDrawAdoWavfmToSurface( int IsBlockWait, int IsDraw, SurfaceView SrcSurfacePt )
+    public int AdoOtptSetIsDrawAdoWavfmToSurface( int IsBlockWait, int IsDraw, SurfaceView SrcSurfacePt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetIsDrawAdoWavfmToSurface, IsDraw, SrcSurfacePt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetIsDrawAdoWavfmToSurface, IsDraw, SrcSurfacePt );
     }
 
     //媒体处理线程的音频输出设置是否保存音频到Wave文件。
-    public void AdoOtptSetIsSaveAdoToWaveFile( int IsBlockWait, int IsSave, String SrcFullPathStrPt, long WrBufSzByt )
+    public int AdoOtptSetIsSaveAdoToWaveFile( int IsBlockWait, int IsSave, String SrcFullPathStrPt, long WrBufSzByt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetIsSaveAdoToWaveFile, IsSave, SrcFullPathStrPt, WrBufSzByt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetIsSaveAdoToWaveFile, IsSave, SrcFullPathStrPt, WrBufSzByt );
     }
 
     //媒体处理线程的音频输出设置使用的设备。
-    public void AdoOtptSetUseDvc( int IsBlockWait, int UseSpeakerOrEarpiece, int UseVoiceCallOrMusic )
+    public int AdoOtptSetUseDvc( int IsBlockWait, int UseSpeakerOrEarpiece, int UseVoiceCallOrMusic )
     {
         if( ( UseSpeakerOrEarpiece != 0 ) && ( UseVoiceCallOrMusic != 0 ) ) //如果要使用听筒，则不能使用媒体类型音频输出流。
         {
-            return;
+            return -1;
         }
 
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetUseDvc, UseSpeakerOrEarpiece, UseVoiceCallOrMusic );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetUseDvc, UseSpeakerOrEarpiece, UseVoiceCallOrMusic );
     }
 
     //媒体处理线程的音频输出设置是否静音。
-    public void AdoOtptSetIsMute( int IsBlockWait, int IsMute )
+    public int AdoOtptSetIsMute( int IsBlockWait, int IsMute )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetIsMute, IsMute );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.AdoOtptSetIsMute, IsMute );
     }
 
     //媒体处理线程的设置视频输入。
-    public void SetVdoInpt( int IsBlockWait, int MaxSmplRate, int FrmWidth, int FrmHeight, int ScreenRotate, HTSurfaceView VdoInptPrvwSurfaceViewPt )
+    public int SetVdoInpt( int IsBlockWait, int MaxSmplRate, int FrmWidth, int FrmHeight, int ScreenRotate, HTSurfaceView VdoInptPrvwSurfaceViewPt )
     {
         if( ( ( MaxSmplRate < 1 ) || ( MaxSmplRate > 60 ) ) || //如果采样频率不正确。
             ( ( FrmWidth <= 0 ) || ( ( FrmWidth & 1 ) != 0 ) ) || //如果帧的宽度不正确。
             ( ( FrmHeight <= 0 ) || ( ( FrmHeight & 1 ) != 0 ) ) || //如果帧的高度不正确。
             ( ( ScreenRotate != 0 ) && ( ScreenRotate != 90 ) && ( ScreenRotate != 180 ) && ( ScreenRotate != 270 ) ) ) //如果屏幕旋转的角度不正确。
         {
-            return;
+            return -1;
         }
 
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.SetVdoInpt, MaxSmplRate, FrmWidth, FrmHeight, ScreenRotate, VdoInptPrvwSurfaceViewPt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.SetVdoInpt, MaxSmplRate, FrmWidth, FrmHeight, ScreenRotate, VdoInptPrvwSurfaceViewPt );
     }
 
     //媒体处理线程的视频输入设置要使用Yu12原始数据。
-    public void VdoInptSetUseYu12( int IsBlockWait )
+    public int VdoInptSetUseYu12( int IsBlockWait )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoInptSetUseYu12 );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoInptSetUseYu12 );
     }
 
     //媒体处理线程的视频输入设置要使用OpenH264编码器。
-    public void VdoInptSetUseOpenH264Encd( int IsBlockWait, int VdoType, int EncdBitrate, int BitrateCtrlMode, int IDRFrmIntvl, int Cmplxt )
+    public int VdoInptSetUseOpenH264Encd( int IsBlockWait, int VdoType, int EncdBitrate, int BitrateCtrlMode, int IDRFrmIntvl, int Cmplxt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoInptSetUseOpenH264Encd, VdoType, EncdBitrate, BitrateCtrlMode, IDRFrmIntvl, Cmplxt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoInptSetUseOpenH264Encd, VdoType, EncdBitrate, BitrateCtrlMode, IDRFrmIntvl, Cmplxt );
     }
 
     //媒体处理线程的视频输入设置要使用系统自带H264编码器。
-    public void VdoInptSetUseSystemH264Encd( int IsBlockWait, int EncdBitrate, int BitrateCtrlMode, int IDRFrmIntvlTimeSec, int Cmplxt )
+    public int VdoInptSetUseSystemH264Encd( int IsBlockWait, int EncdBitrate, int BitrateCtrlMode, int IDRFrmIntvlTimeSec, int Cmplxt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoInptSetUseSystemH264Encd, EncdBitrate, BitrateCtrlMode, IDRFrmIntvlTimeSec, Cmplxt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoInptSetUseSystemH264Encd, EncdBitrate, BitrateCtrlMode, IDRFrmIntvlTimeSec, Cmplxt );
     }
 
     //媒体处理线程的视频输入设置使用的设备。
-    public void VdoInptSetUseDvc( int IsBlockWait, int UseFrontOrBack, int FrontCameraDvcId, int BackCameraDvcId )
+    public int VdoInptSetUseDvc( int IsBlockWait, int UseFrontOrBack, int FrontCameraDvcId, int BackCameraDvcId )
     {
         if( ( ( UseFrontOrBack != 0 ) && ( UseFrontOrBack != 1 ) ) ||
             ( FrontCameraDvcId < -1 ) ||
             ( BackCameraDvcId < -1 ) )
         {
-            return;
+            return -1;
         }
 
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoInptSetUseDvc, UseFrontOrBack, FrontCameraDvcId, BackCameraDvcId );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoInptSetUseDvc, UseFrontOrBack, FrontCameraDvcId, BackCameraDvcId );
     }
 
     //媒体处理线程的视频输入设置是否黑屏。
-    public void VdoInptSetIsBlack( int IsBlockWait, int IsBlack )
+    public int VdoInptSetIsBlack( int IsBlockWait, int IsBlack )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoInptSetIsBlack, IsBlack );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoInptSetIsBlack, IsBlack );
     }
 
     //媒体处理线程的视频输出添加流。
-    public void VdoOtptAddStrm( int IsBlockWait, int VdoOtptStrmIdx )
+    public int VdoOtptAddStrm( int IsBlockWait, int VdoOtptStrmIdx )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptAddStrm, VdoOtptStrmIdx );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptAddStrm, VdoOtptStrmIdx );
     }
 
     //媒体处理线程的视频输出删除流。
-    public void VdoOtptDelStrm( int IsBlockWait, int VdoOtptStrmIdx )
+    public int VdoOtptDelStrm( int IsBlockWait, int VdoOtptStrmIdx )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptDelStrm, VdoOtptStrmIdx );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptDelStrm, VdoOtptStrmIdx );
     }
 
     //媒体处理线程的视频输出设置流。
-    public void VdoOtptSetStrm( int IsBlockWait, int VdoOtptStrmIdx, HTSurfaceView VdoOtptDspySurfaceViewPt )
+    public int VdoOtptSetStrm( int IsBlockWait, int VdoOtptStrmIdx, HTSurfaceView VdoOtptDspySurfaceViewPt )
     {
         if( VdoOtptDspySurfaceViewPt == null ) //如果视频显示SurfaceView的指针不正确。
         {
-            return;
+            return -1;
         }
 
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptSetStrm, VdoOtptStrmIdx, VdoOtptDspySurfaceViewPt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptSetStrm, VdoOtptStrmIdx, VdoOtptDspySurfaceViewPt );
     }
 
     //媒体处理线程的视频输出设置流要使用Yu12原始数据。
-    public void VdoOtptSetStrmUseYu12( int IsBlockWait, int VdoOtptStrmIdx )
+    public int VdoOtptSetStrmUseYu12( int IsBlockWait, int VdoOtptStrmIdx )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptSetStrmUseYu12, VdoOtptStrmIdx );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptSetStrmUseYu12, VdoOtptStrmIdx );
     }
 
     //媒体处理线程的视频输出设置流要使用OpenH264解码器。
-    public void VdoOtptSetStrmUseOpenH264Decd( int IsBlockWait, int VdoOtptStrmIdx, int DecdThrdNum )
+    public int VdoOtptSetStrmUseOpenH264Decd( int IsBlockWait, int VdoOtptStrmIdx, int DecdThrdNum )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptSetStrmUseOpenH264Decd, VdoOtptStrmIdx, DecdThrdNum );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptSetStrmUseOpenH264Decd, VdoOtptStrmIdx, DecdThrdNum );
     }
 
     //媒体处理线程的视频输出设置流要使用系统自带H264解码器。
-    public void VdoOtptSetStrmUseSystemH264Decd( int IsBlockWait, int VdoOtptStrmIdx )
+    public int VdoOtptSetStrmUseSystemH264Decd( int IsBlockWait, int VdoOtptStrmIdx )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptSetStrmUseSystemH264Decd, VdoOtptStrmIdx );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptSetStrmUseSystemH264Decd, VdoOtptStrmIdx );
     }
 
     //媒体处理线程的视频输出设置流是否黑屏。
-    public void VdoOtptSetStrmIsBlack( int IsBlockWait, int VdoOtptStrmIdx, int IsBlack )
+    public int VdoOtptSetStrmIsBlack( int IsBlockWait, int VdoOtptStrmIdx, int IsBlack )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptSetStrmIsBlack, VdoOtptStrmIdx, IsBlack );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptSetStrmIsBlack, VdoOtptStrmIdx, IsBlack );
     }
 
     //媒体处理线程的视频输出设置流是否使用。
-    public void VdoOtptSetStrmIsUse( int IsBlockWait, int VdoOtptStrmIdx, int IsUseVdoOtptStrm )
+    public int VdoOtptSetStrmIsUse( int IsBlockWait, int VdoOtptStrmIdx, int IsUseVdoOtptStrm )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptSetStrmIsUse, VdoOtptStrmIdx, IsUseVdoOtptStrm );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.VdoOtptSetStrmIsUse, VdoOtptStrmIdx, IsUseVdoOtptStrm );
     }
 
     //媒体处理线程的设置音视频输入输出是否使用。
-    public void SetIsUseAdoVdoInptOtpt( int IsBlockWait, int IsUseAdoInpt, int IsUseAdoOtpt, int IsUseVdoInpt, int IsUseVdoOtpt )
+    public int SetIsUseAdoVdoInptOtpt( int IsBlockWait, int IsUseAdoInpt, int IsUseAdoOtpt, int IsUseVdoInpt, int IsUseVdoOtpt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.SetIsUseAdoVdoInptOtpt, IsUseAdoInpt, IsUseAdoOtpt, IsUseVdoInpt, IsUseVdoOtpt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.SetIsUseAdoVdoInptOtpt, IsUseAdoInpt, IsUseAdoOtpt, IsUseVdoInpt, IsUseVdoOtpt );
     }
 
     //媒体处理线程的设置是否打印Logcat日志、显示Toast。
-    public void SetIsPrintLogcatShowToast( int IsPrintLogcat, int IsShowToast, Activity ShowToastActPt )
+    public int SetIsPrintLogcatShowToast( int IsPrintLogcat, int IsShowToast, Activity ShowToastActPt )
     {
         if( ( IsShowToast != 0 ) && ( ShowToastActPt == null ) ) //如果显示Toast界面的指针不正确。
         {
-            return;
+            return -1;
         }
 
         m_IsPrintLogcat = IsPrintLogcat;
         m_IsShowToast = IsShowToast;
         m_ShowToastActPt = ShowToastActPt;
+
+        return 0;
     }
 
     //设媒体处理线程的设置是否使用唤醒锁。
-    public void SetIsUseWakeLock( int IsBlockWait, int IsUseWakeLock )
+    public int SetIsUseWakeLock( int IsBlockWait, int IsUseWakeLock )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.SetIsUseWakeLock, IsUseWakeLock );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.SetIsUseWakeLock, IsUseWakeLock );
     }
 
     //媒体处理线程的设置是否保存音视频输入输出到Avi文件。
-    public void SetIsSaveAdoVdoInptOtptToAviFile( int IsBlockWait, String AdoVdoInptOtptAviFileFullPathStrPt, long AdoVdoInptOtptAviFileWrBufSzByt, int IsSaveAdoInpt, int IsSaveAdoOtpt, int IsSaveVdoInpt, int IsSaveVdoOtpt )
+    public int SetIsSaveAdoVdoInptOtptToAviFile( int IsBlockWait, String AdoVdoInptOtptAviFileFullPathStrPt, long AdoVdoInptOtptAviFileWrBufSzByt, int IsSaveAdoInpt, int IsSaveAdoOtpt, int IsSaveVdoInpt, int IsSaveVdoOtpt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.SetIsSaveAdoVdoInptOtptToAviFile, AdoVdoInptOtptAviFileFullPathStrPt, AdoVdoInptOtptAviFileWrBufSzByt, IsSaveAdoInpt, IsSaveAdoOtpt, IsSaveVdoInpt, IsSaveVdoOtpt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.SetIsSaveAdoVdoInptOtptToAviFile, AdoVdoInptOtptAviFileFullPathStrPt, AdoVdoInptOtptAviFileWrBufSzByt, IsSaveAdoInpt, IsSaveAdoOtpt, IsSaveVdoInpt, IsSaveVdoOtpt );
     }
 
     //媒体处理线程的保存状态到文件。
-    public void SaveStsToTxtFile( int IsBlockWait, String StngFileFullPathStrPt )
+    public int SaveStsToTxtFile( int IsBlockWait, String StngFileFullPathStrPt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.SaveStsToTxtFile, StngFileFullPathStrPt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.SaveStsToTxtFile, StngFileFullPathStrPt );
     }
 
     //初始化或销毁媒体处理线程的唤醒锁。
@@ -634,7 +648,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
             {
                 if( m_ProximityScreenOffWakeLockPt == null ) //如果接近息屏唤醒锁还没有初始化。
                 {
-                    m_ProximityScreenOffWakeLockPt = ( ( PowerManager ) m_MainActPt.getSystemService( Activity.POWER_SERVICE ) ).newWakeLock( PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_CurClsNameStrPt );
+                    m_ProximityScreenOffWakeLockPt = ( ( PowerManager ) m_CtxPt.getSystemService( Activity.POWER_SERVICE ) ).newWakeLock( PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_CurClsNameStrPt );
                     if( m_ProximityScreenOffWakeLockPt != null )
                     {
                         m_ProximityScreenOffWakeLockPt.acquire();
@@ -664,7 +678,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
             if( m_FullWakeLockPt == null ) //如果屏幕键盘全亮唤醒锁还没有初始化。
             {
-                m_FullWakeLockPt = ( ( PowerManager ) m_MainActPt.getSystemService( Activity.POWER_SERVICE ) ).newWakeLock( PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_CurClsNameStrPt );
+                m_FullWakeLockPt = ( ( PowerManager ) m_CtxPt.getSystemService( Activity.POWER_SERVICE ) ).newWakeLock( PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_CurClsNameStrPt );
                 if( m_FullWakeLockPt != null )
                 {
                     m_FullWakeLockPt.acquire();
@@ -792,32 +806,47 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
     }
 
     //请求媒体处理线程退出。
-    public void RqirExit( int ExitFlag, int IsBlockWait )
+    public int RqirExit( int ExitFlag, int IsBlockWait )
     {
-        if( ( ExitFlag < 0 ) || ( ExitFlag > 3 ) ) //如果退出标记不正确。
-        {
-            return;
-        }
+        int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
 
-        new MediaMsg( 0, 1, MediaMsgTyp.RqirExit, ExitFlag );
-        m_ReadyExitCnt++; //设置准备退出计数递增。
-
-        if( IsBlockWait != 0 ) //如果需要阻塞等待。
+        Out:
         {
-            if( ExitFlag == 1 ) //如果是请求退出。
+            if( ( ExitFlag < 0 ) || ( ExitFlag > 3 ) ) //如果退出标记不正确。
             {
-                while( this.isAlive() == true ) //如果媒体处理线程还在运行。
+                break Out;
+            }
+
+            if( SendMediaMsg( 0, 1, MediaMsgTyp.RqirExit, ExitFlag ) != 0 ) //如果发送请求媒体处理线程退出消息失败。
+            {
+                break Out;
+            }
+            m_ReadyExitCnt++; //设置准备退出计数递增。
+
+            if( IsBlockWait != 0 ) //如果需要阻塞等待。
+            {
+                if( ExitFlag == 1 ) //如果是请求退出。
                 {
-                    SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
+                    while( this.isAlive() == true ) //如果媒体处理线程还在运行。
+                    {
+                        SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
+                    }
                 }
             }
+            p_Rslt = 0; //设置本函数执行成功。
         }
+
+        if( p_Rslt != 0 ) //如果本函数执行失败。
+        {
+
+        }
+        return p_Rslt;
     }
 
     //发送用户消息到媒体处理线程。
-    public void SendUserMsg( int IsBlockWait, Object... MsgArgPt )
+    public int SendUserMsg( int IsBlockWait, Object... MsgArgPt )
     {
-        new MediaMsg( IsBlockWait, 1, MediaMsgTyp.UserMsg, MsgArgPt );
+        return SendMediaMsg( IsBlockWait, 1, MediaMsgTyp.UserMsg, MsgArgPt );
     }
 
     //初始化媒体处理线程的Avi文件写入器。
@@ -1197,6 +1226,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         m_AdoInptPt.m_FrmLenUnit = m_AdoInptPt.m_FrmLenMsec * m_AdoInptPt.m_SmplRate / 1000;
                         m_AdoInptPt.m_FrmLenData = m_AdoInptPt.m_FrmLenUnit * 1;
                         m_AdoInptPt.m_FrmLenByt = m_AdoInptPt.m_FrmLenData * 2;
+                        m_AdoInptPt.m_IsStartRecordingAfterRead = ( Integer ) p_MediaMsgPt.m_MsgArgCntnrPt[ 2 ];
 
                         if( m_AdoInptPt.m_IsInit != 0 )
                         {
@@ -1744,7 +1774,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         if( p_IsUseVdoInpt >= 0 ) m_VdoInptPt.m_IsUse = p_IsUseVdoInpt;
                         if( p_IsUseVdoOtpt >= 0 ) m_VdoOtptPt.m_IsUse = p_IsUseVdoOtpt;
 
-                        new MediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptInit );
+                        if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptInit ) != 0 ) break Out;
                         WakeLockInitOrDstoy( m_IsUseWakeLock ); //重新初始化唤醒锁。
                         break;
                     }
@@ -1781,7 +1811,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                             }
                             FileWriter p_StngFileWriterPt = new FileWriter( p_StngFilePt );
 
-                            p_StngFileWriterPt.write( "m_MainActPt：" + m_MainActPt + "\n" );
+                            p_StngFileWriterPt.write( "m_CtxPt：" + m_CtxPt + "\n" );
                             p_StngFileWriterPt.write( "\n" );
                             p_StngFileWriterPt.write( "m_IsPrintLogcat：" + m_IsPrintLogcat + "\n" );
                             p_StngFileWriterPt.write( "m_IsShowToast：" + m_IsShowToast + "\n" );
@@ -1992,8 +2022,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                 //执行顺序：媒体销毁，用户销毁并退出。
                                 if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数。
                                 {
-                                    new MediaMsg( 1, 0, MediaMsgTyp.UserDstoy );
-                                    new MediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
+                                    if( SendMediaMsg( 1, 0, MediaMsgTyp.UserDstoy ) != 0 ) break Out;
+                                    if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy ) != 0 ) break Out;
                                 }
                                 else //如果上一次调用了用户定义的销毁函数，就不再进行媒体销毁，用户销毁。
                                 {
@@ -2006,12 +2036,12 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：接收到退出请求：重启。" );
 
                                 //执行顺序：媒体销毁，用户销毁，用户初始化，媒体初始化。
-                                new MediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptInit );
-                                new MediaMsg( 1, 0, MediaMsgTyp.UserInit );
+                                if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptInit ) != 0 ) break Out;
+                                if( SendMediaMsg( 1, 0, MediaMsgTyp.UserInit ) != 0 ) break Out;
                                 if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数。
                                 {
-                                    new MediaMsg( 1, 0, MediaMsgTyp.UserDstoy );
-                                    new MediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
+                                    if( SendMediaMsg( 1, 0, MediaMsgTyp.UserDstoy ) != 0 ) break Out;
+                                    if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy ) != 0 ) break Out;
                                 }
                                 else //如果上一次调用了用户定义的销毁函数，就不再进行媒体销毁，用户销毁。
                                 {
@@ -2024,8 +2054,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：接收到退出请求：重启但不执行用户定义的UserInit初始化函数和UserDstoy销毁函数。" );
 
                                 //执行顺序：媒体销毁，媒体初始化。
-                                new MediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptInit );
-                                new MediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
+                                if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptInit ) != 0 ) break Out;
+                                if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy ) != 0 ) break Out;
                                 m_ReadyExitCnt--; //设置准备退出计数递减。因为在请求退出时递增了。
                                 break;
                             }
@@ -2109,8 +2139,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
             {
                 //执行顺序：媒体销毁，用户销毁并退出。
                 m_ReadyExitCnt++;
-                new MediaMsg( 1, 0, MediaMsgTyp.UserDstoy );
-                new MediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
+                SendMediaMsg( 1, 0, MediaMsgTyp.UserDstoy );
+                SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
             }
 
             p_MediaMsgPt.m_MediaMsgRslt = -1; //设置媒体消息处理结果为失败。
@@ -2127,7 +2157,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         long p_LastTickMsec = 0;
         long p_NowTickMsec = 0;
 
-        OutMediaPocs:
+        Out:
         {
             if( m_IsPrintLogcat != 0 ) p_LastTickMsec = SystemClock.uptimeMillis();
 
@@ -2151,7 +2181,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         Log.e( m_CurClsNameStrPt, "媒体处理线程：调用用户定义的处理函数失败。返回值：" + p_TmpInt321 + "。耗时 " + ( p_NowTickMsec - p_LastTickMsec ) + " 毫秒。" );
                         p_LastTickMsec = SystemClock.uptimeMillis();
                     }
-                    break OutMediaPocs;
+                    break Out;
                 }
             }
 
@@ -2721,10 +2751,10 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                 m_ThrdPt.m_VdoOtptFrmPt = null;
             }
 
-            p_Rslt = 0; //设置本媒体消息处理成功。
+            p_Rslt = 0; //设置本函数执行成功。
         }
 
-        if( p_Rslt != 0 ) //如果本次媒体处理失败。
+        if( p_Rslt != 0 ) //如果本函数执行失败。
         {
             m_ExitCode = ExitCode.AdoVdoInptOtptPocs; //设置退出码为音视频输入输出处理失败。
 
@@ -2732,8 +2762,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
             {
                 //执行顺序：媒体销毁，用户销毁并退出。
                 m_ReadyExitCnt++;
-                new MediaMsg( 0, 0, MediaMsgTyp.UserDstoy );
-                new MediaMsg( 0, 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
+                SendMediaMsg( 0, 0, MediaMsgTyp.UserDstoy );
+                SendMediaMsg( 0, 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
             }
         }
         return p_Rslt;
@@ -2744,19 +2774,19 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
     {
         long p_LastTickMsec = 0;
 
-        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：本地代码的指令集名称（CPU类型+ ABI约定）：" + android.os.Build.CPU_ABI + "，设备型号：" + android.os.Build.MODEL + "，主界面：" + m_MainActPt + "。" );
+        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：本地代码的指令集名称（CPU类型+ ABI约定）：" + android.os.Build.CPU_ABI + "，设备型号：" + android.os.Build.MODEL + "，上下文：" + m_CtxPt + "。" );
 
         m_RunFlag = RunFlag.Run; //设置本线程运行标记为正在运行。
         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：开始准备音视频输入输出帧处理。" );
 
-        new MediaMsg( 0, 1, MediaMsgTyp.UserInit );
-        new MediaMsg( 0, 1, MediaMsgTyp.AdoVdoInptOtptInit );
+        SendMediaMsg( 0, 1, MediaMsgTyp.UserInit );
+        SendMediaMsg( 0, 1, MediaMsgTyp.AdoVdoInptOtptInit );
 
         //媒体处理循环开始。
         while( true )
         {
             while( OneMediaMsgPocs() != 1 ); //进行一条媒体消息处理，直到媒体消息容器为空。
-            if( ( m_MediaMsgCntnrPt.isEmpty() ) && ( m_ReadyExitCnt > 0 ) ) break; //如果媒体消息处理完毕，且媒体处理线程准备退出。
+            if( m_ReadyExitCnt > 0 ) break; //如果媒体消息容器为空，且媒体处理线程准备退出。
 
             if( m_IsPrintLogcat != 0 ) p_LastTickMsec = SystemClock.uptimeMillis();
 

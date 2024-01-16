@@ -79,8 +79,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 
     class MainActMsgTyp //主界面消息类型。
     {
-        public static final int MyNtwkMediaPocsThrdInit    = 0; //我的媒体处理线程初始化。
-        public static final int MyNtwkMediaPocsThrdDstoy   = 1; //我的媒体处理线程销毁。
+        public static final int MyNtwkMediaPocsThrdInit    = 0; //我的网络媒体处理线程初始化。
+        public static final int MyNtwkMediaPocsThrdDstoy   = 1; //我的网络媒体处理线程销毁。
         public static final int SrvrInit                   = 4; //服务端初始化。
         public static final int SrvrDstoy                  = 5; //服务端销毁。
         public static final int ShowLog                    = 6; //显示日志。
@@ -190,8 +190,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                     p_CnctLstItemPt.put( "CnctAndClntLstItemPrtclTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
                     p_CnctLstItemPt.put( "CnctAndClntLstItemRmtNodeNameTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 2 ] );
                     p_CnctLstItemPt.put( "CnctAndClntLstItemRmtNodeSrvcTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 3 ] );
-                    p_CnctLstItemPt.put( "CnctAndClntLstItemLclTkbkModeTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 4 ] );
-                    p_CnctLstItemPt.put( "CnctAndClntLstItemRmtTkbkModeTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 5 ] );
                     p_CnctLstItemPt.put( "Rand", Long.toString( new Random().nextLong() ) ); //必须添加一个随机数，防止有些设备在大量连接时出现连接列表视图项目的指针出现重复，从而导致删除重复项目错误。
 
                     m_CnctLstItemArrayLstPt.add( p_CnctLstItemPt );
@@ -1354,7 +1352,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                                                 ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate48000RdBtnId ) ).isChecked() ) ? 48000 : 0,
                         ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen10msRdBtnId ) ).isChecked() ) ? 10 :
                                 ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen20msRdBtnId ) ).isChecked() ) ? 20 :
-                                        ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen30msRdBtnId ) ).isChecked() ) ? 30 : 0 );
+                                        ( ( ( RadioButton ) m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen30msRdBtnId ) ).isChecked() ) ? 30 : 0,
+                        0 );
 
                 //设置音频输入是否使用系统自带声学回音消除器、噪音抑制器和自动增益控制器。
                 m_MyNtwkMediaPocsThrdPt.AdoInptSetIsUseSystemAecNsAgc(

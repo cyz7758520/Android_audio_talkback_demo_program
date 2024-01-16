@@ -30,7 +30,7 @@ public class BdctNtwk //广播网络。
 
         int m_IsRecvExitPkt; //存放是否接收到退出包，为0表示否，为1表示是。
     }
-    ArrayList< CnctInfo > m_CnctInfoLstPt = new ArrayList<>(); //存放连接信息列表的指针。
+    ArrayList< CnctInfo > m_CnctInfoCntnrPt = new ArrayList<>(); //存放连接信息容器的指针。
 
     int m_LastSendAdoInptFrmIsAct; //存放最后一个发送的音频输入帧有无语音活动，为1表示有语音活动，为0表示无语音活动。
     int m_LastSendAdoInptFrmTimeStamp; //存放最后一个发送音频输入帧的时间戳。
@@ -49,7 +49,7 @@ public class BdctNtwk //广播网络。
     public CnctInfo CnctInfoInit( int IsTcpOrAudpPrtcl, String RmtNodeNamePt, String RmtNodeSrvcPt, TcpClntSokt TcpClntSoktPt, long AudpClntCnctIdx, int CurCnctSts )
     {
         int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
-        CnctInfo p_CnctInfoTmpPt = null;
+        CnctInfo p_CnctInfoTmpPt;
 
         Out:
         {
@@ -64,7 +64,7 @@ public class BdctNtwk //广播网络。
             p_CnctInfoTmpPt.m_CurCnctSts = CurCnctSts; //设置当前连接状态。
             p_CnctInfoTmpPt.m_RmtTkbkMode = NtwkMediaPocsThrd.TkbkMode.None; //设置远端对讲模式。
 
-            m_CnctInfoLstPt.add( p_CnctInfoTmpPt ); //添加到连接信息列表。
+            m_CnctInfoCntnrPt.add( p_CnctInfoTmpPt ); //添加到连接信息容器。
 
             p_Rslt = 0; //设置本函数执行成功。
         }
@@ -136,8 +136,8 @@ public class BdctNtwk //广播网络。
                 {
                     CnctInfoPt.m_CurCnctSts = NtwkMediaPocsThrd.CnctSts.Dsct; //设置当前连接状态。
 
-                    //从连接信息列表删除。
-                    m_CnctInfoLstPt.remove( CnctInfoPt );
+                    //从连接信息容器删除。
+                    m_CnctInfoCntnrPt.remove( CnctInfoPt );
 
                     {
                         String p_InfoStrPt = "网络媒体处理线程：广播网络：连接" + CnctInfoPt.hashCode() + "：已销毁。";
@@ -163,7 +163,7 @@ public class BdctNtwk //广播网络。
 
         Out:
         {
-            while( !m_CnctInfoLstPt.isEmpty() ) CnctInfoDstoy( m_CnctInfoLstPt.get( 0 ) );
+            while( !m_CnctInfoCntnrPt.isEmpty() ) CnctInfoDstoy( m_CnctInfoCntnrPt.get( 0 ) );
 
             m_NtwkMediaPocsThrdPt.IsAutoRqirExit(); //判断是否自动请求退出。
 
@@ -179,10 +179,13 @@ public class BdctNtwk //广播网络。
     //连接初始化。
     public void CnctInit( int IsTcpOrAudpPrtcl, String RmtNodeNamePt, String RmtNodeSrvcPt )
     {
+        CnctInfo p_CnctInfoTmpPt;
+
         Out:
         {
-            for( CnctInfo p_CnctInfoTmpPt : m_CnctInfoLstPt )
+            for( int p_CnctInfoLstNum = 0; p_CnctInfoLstNum < m_CnctInfoCntnrPt.size(); p_CnctInfoLstNum++ )
             {
+                p_CnctInfoTmpPt = m_CnctInfoCntnrPt.get( p_CnctInfoLstNum );
                 if( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == IsTcpOrAudpPrtcl ) &&
                     ( p_CnctInfoTmpPt.m_RmtNodeNamePt.equals( RmtNodeNamePt ) ) &&
                     ( p_CnctInfoTmpPt.m_RmtNodeSrvcPt.equals( RmtNodeSrvcPt ) ) )
@@ -194,7 +197,6 @@ public class BdctNtwk //广播网络。
                 }
             }
 
-            CnctInfo p_CnctInfoTmpPt;
             if( ( p_CnctInfoTmpPt = CnctInfoInit( IsTcpOrAudpPrtcl, RmtNodeNamePt, RmtNodeSrvcPt, null, -1, NtwkMediaPocsThrd.CnctSts.Wait ) ) == null ) break Out; //如果连接信息初始化失败。
 
             //Ping一下远程节点名称，这样可以快速获取ARP条目。
@@ -279,10 +281,13 @@ public class BdctNtwk //广播网络。
     //所有连接发送音频数据包。
     public void AllCnctSendAdoPkt( byte PktPt[], long PktLenByt, int Times, int IsRlab )
     {
+        CnctInfo p_CnctInfoTmpPt;
+
         Out:
         {
-            for( CnctInfo p_CnctInfoTmpPt : m_CnctInfoLstPt )
+            for( int p_CnctInfoLstNum = 0; p_CnctInfoLstNum < m_CnctInfoCntnrPt.size(); p_CnctInfoLstNum++ )
             {
+                p_CnctInfoTmpPt = m_CnctInfoCntnrPt.get( p_CnctInfoLstNum );
                 if( ( p_CnctInfoTmpPt.m_CurCnctSts == NtwkMediaPocsThrd.CnctSts.Cnct ) &&
                     ( ( p_CnctInfoTmpPt.m_RmtTkbkMode == NtwkMediaPocsThrd.TkbkMode.Ado ) || ( p_CnctInfoTmpPt.m_RmtTkbkMode == NtwkMediaPocsThrd.TkbkMode.AdoVdo ) ) )
                 {
@@ -297,9 +302,11 @@ public class BdctNtwk //广播网络。
     //连接销毁。
     public void CnctDstoy( int CnctIdx )
     {
+        CnctInfo p_CnctInfoTmpPt;
+
         Out:
         {
-            if( ( CnctIdx >= m_CnctInfoLstPt.size() ) || ( CnctIdx < 0 ) )
+            if( ( CnctIdx >= m_CnctInfoCntnrPt.size() ) || ( CnctIdx < 0 ) )
             {
                 String p_InfoStrPt = "网络媒体处理线程：广播网络：没有索引为" + CnctIdx + "]的连接，无法删除。";
                 if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
@@ -307,7 +314,7 @@ public class BdctNtwk //广播网络。
                 break Out;
             }
 
-            CnctInfo p_CnctInfoTmpPt = m_CnctInfoLstPt.get( CnctIdx );
+            p_CnctInfoTmpPt = m_CnctInfoCntnrPt.get( CnctIdx );
             p_CnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。
 
             String p_InfoStrPt = "网络媒体处理线程：广播网络：连接" + p_CnctInfoTmpPt.hashCode() + "：请求销毁远端节点" + ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) ? "Tcp协议" : "高级Udp协议" ) + "[" + p_CnctInfoTmpPt.m_RmtNodeNamePt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcPt + "]的连接。";
@@ -319,12 +326,13 @@ public class BdctNtwk //广播网络。
     //连接处理，包括接受连接、连接服务端、接收数据包、删除连接。
     public void CnctPocs()
     {
+        CnctInfo p_CnctInfoTmpPt;
         int p_TmpInt;
 
-        //遍历连接列表。
-        for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_CnctInfoLstPt.size(); p_CnctInfoLstIdx++ )
+        //遍历连接信息容器。
+        for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
         {
-            CnctInfo p_CnctInfoTmpPt = m_CnctInfoLstPt.get( p_CnctInfoLstIdx );
+            p_CnctInfoTmpPt = m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx );
 
             //用本端客户端套接字连接远端服务端套接字。
             if( ( p_CnctInfoTmpPt.m_IsRqstDstoy == 0 ) && ( p_CnctInfoTmpPt.m_CurCnctSts <= NtwkMediaPocsThrd.CnctSts.Wait ) ) //如果该连接未请求销毁，且当前连接状态为等待远端接受连接。

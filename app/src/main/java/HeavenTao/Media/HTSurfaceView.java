@@ -1,10 +1,12 @@
 package HeavenTao.Media;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.view.SurfaceView;
+import android.view.View;
 
 //自定义SurfaceView，为了保持宽高比。
 public class HTSurfaceView extends SurfaceView
@@ -45,13 +47,32 @@ public class HTSurfaceView extends SurfaceView
         super.onMeasure( widthMeasureSpec, heightMeasureSpec );
     }
 
-    public void setWidthToHeightRatio( float WidthToHeightRatio )
+    //设置宽高比。
+    public void SetWidthToHeightRatio( float WidthToHeightRatio )
     {
         if( WidthToHeightRatio != m_WidthToHeightRatio ) //如果指定的宽高比与当前的宽高比不一致。
         {
             m_WidthToHeightRatio = WidthToHeightRatio; //设置视频预览SurfaceView的宽高比。
 
             post( new Runnable() { @Override public void run() { setLayoutParams( getLayoutParams() ); } } ); //刷新SurfaceView的尺寸显示。
+        }
+    }
+
+    //设置黑屏。
+    public void SetBlack()
+    {
+        Context p_CtxPt = getContext();
+
+        if( p_CtxPt instanceof Activity )
+        {
+            ( ( Activity )p_CtxPt ).runOnUiThread( new Runnable()
+            {
+                public void run()
+                {
+                    setVisibility( View.GONE );
+                    setVisibility( View.VISIBLE );
+                }
+            } );
         }
     }
 }
