@@ -33,8 +33,8 @@ public class TkbkNtwk //对讲网络。
 
         public int m_IsSrvrOrClntCnct; //存放是否是服务端或客户端的连接，为0表示服务端，为1表示客户端。
         public int m_IsTcpOrAudpPrtcl; //存放是否是Tcp或Udp协议，为0表示Tcp协议，为1表示高级Udp协议。
-        public String m_RmtNodeNamePt; //存放远端套接字绑定的远端节点名称字符串的指针，
-        public String m_RmtNodeSrvcPt; //存放远端套接字绑定的远端节点服务字符串的指针，
+        public String m_RmtNodeNameStrPt; //存放远端套接字绑定的远端节点名称字符串的指针，
+        public String m_RmtNodeSrvcStrPt; //存放远端套接字绑定的远端节点服务字符串的指针，
         public TcpClntSokt m_TcpClntSoktPt; //存放本端Tcp协议客户端套接字的指针。
         public long m_AudpClntCnctIdx; //存放本端高级Udp协议客户端连接索引。
         public int m_IsRqstDstoy; //存放是否请求销毁，为0表示未请求，为1表示已请求。
@@ -77,7 +77,7 @@ public class TkbkNtwk //对讲网络。
     public VAjb m_VAjbPt = new VAjb();
 
     //连接信息初始化。
-    public CnctInfo CnctInfoInit( int IsSrvrOrClntCnct, int IsTcpOrAudpPrtcl, String RmtNodeNamePt, String RmtNodeSrvcPt, TcpClntSokt TcpClntSoktPt, long AudpClntCnctIdx, int CurCnctSts )
+    public CnctInfo CnctInfoInit( int IsSrvrOrClntCnct, int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt, TcpClntSokt TcpClntSoktPt, long AudpClntCnctIdx, int CurCnctSts )
     {
         int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
         CnctInfo p_CnctInfoTmpPt = null;
@@ -90,12 +90,13 @@ public class TkbkNtwk //对讲网络。
 
                 p_CnctInfoTmpPt.m_Num = m_CnctInfoCntnrPt.size(); //设置序号。
 
-                p_CnctInfoTmpPt.m_IsSrvrOrClntCnct = IsSrvrOrClntCnct; //设置为服务端的连接。
+                p_CnctInfoTmpPt.m_IsSrvrOrClntCnct = IsSrvrOrClntCnct; //设置是否是服务端或客户端的连接。
                 p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl = IsTcpOrAudpPrtcl; //设置协议为Tcp协议或高级Udp协议。
-                p_CnctInfoTmpPt.m_RmtNodeNamePt = RmtNodeNamePt; //设置远端套接字绑定的远端节点名称字符串的指针。
-                p_CnctInfoTmpPt.m_RmtNodeSrvcPt = RmtNodeSrvcPt; //设置远端套接字绑定的远端节点服务字符串的指针。
+                p_CnctInfoTmpPt.m_RmtNodeNameStrPt = RmtNodeNameStrPt; //设置远端套接字绑定的远端节点名称字符串的指针。
+                p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt = RmtNodeSrvcStrPt; //设置远端套接字绑定的远端节点服务字符串的指针。
                 p_CnctInfoTmpPt.m_TcpClntSoktPt = TcpClntSoktPt; //设置本端Tcp协议客户端套接字的指针。
                 p_CnctInfoTmpPt.m_AudpClntCnctIdx = AudpClntCnctIdx; //设置本端高级Udp协议客户端连接索引。
+                p_CnctInfoTmpPt.m_IsRqstDstoy = 0; //设置是否请求销毁。
 
                 p_CnctInfoTmpPt.m_CurCnctSts = CurCnctSts; //设置当前连接状态。
                 p_CnctInfoTmpPt.m_LclTkbkMode = NtwkMediaPocsThrd.TkbkMode.None; //设置本端对讲模式。
@@ -104,8 +105,9 @@ public class TkbkNtwk //对讲网络。
                 p_CnctInfoTmpPt.m_LastSendAdoInptFrmIsAct = 0; //设置最后发送的一个音频输入帧为无语音活动。
                 p_CnctInfoTmpPt.m_LastSendAdoInptFrmTimeStamp = 0 - 1; //设置最后一个发送音频输入帧的时间戳为0的前一个，因为第一次发送音频输入帧时会递增一个步进。
                 p_CnctInfoTmpPt.m_LastSendVdoInptFrmTimeStamp = 0 - 1; //设置最后一个发送视频输入帧的时间戳为0的前一个，因为第一次发送视频输入帧时会递增一个步进。
+                p_CnctInfoTmpPt.m_IsRecvExitPkt = 0; //存放是否接收到退出包。
 
-                m_NtwkMediaPocsThrdPt.UserCnctInit( p_CnctInfoTmpPt, ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) ? "Tcp" : "Audp", p_CnctInfoTmpPt.m_RmtNodeNamePt, p_CnctInfoTmpPt.m_RmtNodeSrvcPt ); //调用用户定义的连接添加函数。
+                m_NtwkMediaPocsThrdPt.UserCnctInit( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl, p_CnctInfoTmpPt.m_RmtNodeNameStrPt, p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt ); //调用用户定义的连接添加函数。
                 m_CnctInfoCntnrPt.add( p_CnctInfoTmpPt ); //添加到连接信息容器。
             }
             else //如果已达到最大连接数。
@@ -742,7 +744,7 @@ public class TkbkNtwk //对讲网络。
     }
 
     //连接初始化。
-    public void CnctInit( int IsTcpOrAudpPrtcl, String RmtNodeNamePt, String RmtNodeSrvcPt )
+    public void CnctInit( int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
     {
         int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
         CnctInfo p_CnctInfoTmpPt;
@@ -753,29 +755,29 @@ public class TkbkNtwk //对讲网络。
             {
                 p_CnctInfoTmpPt = m_CnctInfoCntnrPt.get( p_CnctInfoLstNum );
                 if( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == IsTcpOrAudpPrtcl ) &&
-                    ( p_CnctInfoTmpPt.m_RmtNodeNamePt.equals( RmtNodeNamePt ) ) &&
-                    ( p_CnctInfoTmpPt.m_RmtNodeSrvcPt.equals( RmtNodeSrvcPt ) ) )
+                    ( p_CnctInfoTmpPt.m_RmtNodeNameStrPt.equals( RmtNodeNameStrPt ) ) &&
+                    ( p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt.equals( RmtNodeSrvcStrPt ) ) )
                 {
-                    String p_InfoStrPt = "网络媒体处理线程：对讲网络：已存在与远端节点" + ( ( IsTcpOrAudpPrtcl == 0 ) ? "Tcp协议" : "高级Udp协议" ) + "[" + RmtNodeNamePt + ":" + RmtNodeSrvcPt + "]的连接，无需重复连接。";
+                    String p_InfoStrPt = "网络媒体处理线程：对讲网络：已存在与远端节点" + ( ( IsTcpOrAudpPrtcl == 0 ) ? "Tcp协议" : "高级Udp协议" ) + "[" + RmtNodeNameStrPt + ":" + RmtNodeSrvcStrPt + "]的连接，无需重复连接。";
                     if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                     m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                     break Out;
                 }
             }
 
-            if( ( p_CnctInfoTmpPt = CnctInfoInit( 1, IsTcpOrAudpPrtcl, RmtNodeNamePt, RmtNodeSrvcPt, null, -1, NtwkMediaPocsThrd.CnctSts.Wait ) ) == null ) break Out; //如果连接信息初始化失败。
+            if( ( p_CnctInfoTmpPt = CnctInfoInit( 1, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt, null, -1, NtwkMediaPocsThrd.CnctSts.Wait ) ) == null ) break Out; //如果连接信息初始化失败。
             m_NtwkMediaPocsThrdPt.UserCnctSts( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_CurCnctSts ); //调用用户定义的连接状态函数。
 
             //Ping一下远程节点名称，这样可以快速获取ARP条目。
             try
             {
-                Runtime.getRuntime().exec( "ping -c 1 -w 1 " + RmtNodeNamePt );
+                Runtime.getRuntime().exec( "ping -c 1 -w 1 " + RmtNodeNameStrPt );
             }
             catch( Exception ignored )
             {
             }
 
-            String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：初始化与远端节点" + ( ( IsTcpOrAudpPrtcl == 0 ) ? "Tcp协议" : "高级Udp协议" ) + "[" + RmtNodeNamePt + ":" + RmtNodeSrvcPt + "]的连接成功。";
+            String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：初始化与远端节点" + ( ( IsTcpOrAudpPrtcl == 0 ) ? "Tcp协议" : "高级Udp协议" ) + "[" + RmtNodeNameStrPt + ":" + RmtNodeSrvcStrPt + "]的连接成功。";
             if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
             m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
 
@@ -837,7 +839,7 @@ public class TkbkNtwk //对讲网络。
             p_CnctInfoTmpPt = m_CnctInfoCntnrPt.get( CnctNum );
             p_CnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。
 
-            String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：请求销毁远端节点" + ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) ? "Tcp协议" : "高级Udp协议" ) + "[" + p_CnctInfoTmpPt.m_RmtNodeNamePt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcPt + "]的连接。";
+            String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：请求销毁远端节点" + ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) ? "Tcp协议" : "高级Udp协议" ) + "[" + p_CnctInfoTmpPt.m_RmtNodeNameStrPt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt + "]的连接。";
             if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
             m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
 
@@ -860,6 +862,8 @@ public class TkbkNtwk //对讲网络。
         {
             if( m_RecvOtptFrmIsInit == 0 )
             {
+                m_RecvOtptFrmIsInit = 1; //设置接收输出帧已初始化。
+
                 switch( m_UseWhatRecvOtptFrm ) //使用什么接收输出帧。
                 {
                     case 0: //如果要使用容器。
@@ -912,7 +916,7 @@ public class TkbkNtwk //对讲网络。
 
         if( p_Rslt != 0 ) //如果本函数执行失败。
         {
-
+            RecvOtptFrmDstoy();
         }
         return p_Rslt;
     }
@@ -972,7 +976,10 @@ public class TkbkNtwk //对讲网络。
             }
             else
             {
-                RecvOtptFrmInit();
+                if( RecvOtptFrmInit() != 0 )
+                {
+                    break Out;
+                }
             }
 
             p_Rslt = 0; //设置本函数执行成功。
@@ -1201,7 +1208,7 @@ public class TkbkNtwk //对讲网络。
                     { //设置远端节点的地址族。
                         try
                         {
-                            InetAddress inetAddress = InetAddress.getByName( p_CnctInfoTmpPt.m_RmtNodeNamePt );
+                            InetAddress inetAddress = InetAddress.getByName( p_CnctInfoTmpPt.m_RmtNodeNameStrPt );
                             if( inetAddress.getAddress().length == 4 ) p_RmtNodeAddrFamly = 4;
                             else p_RmtNodeAddrFamly = 6;
                         }
@@ -1221,9 +1228,7 @@ public class TkbkNtwk //对讲网络。
                             {
                                 if( -p_CnctInfoTmpPt.m_CurCnctSts >= m_NtwkMediaPocsThrdPt.m_MaxCnctTimes ) //如果已达到最大连接次数。
                                 {
-                                    p_CnctInfoTmpPt.m_CurCnctSts = NtwkMediaPocsThrd.CnctSts.Tmot; //设置当前连接状态为异常断开。
-                                    m_NtwkMediaPocsThrdPt.UserCnctSts( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_CurCnctSts ); //调用用户定义的连接状态函数。
-                                    p_CnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。
+                                    p_CnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。这里只设置请求销毁，不设置当前连接状态，因为在连接信息销毁函数里要根据当前连接状态判断是否重连。
 
                                     String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：已达到最大连接次数，中断连接。";
                                     if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
@@ -1241,9 +1246,9 @@ public class TkbkNtwk //对讲网络。
                                 }
 
                                 p_CnctInfoTmpPt.m_TcpClntSoktPt = new TcpClntSokt();
-                                if( p_CnctInfoTmpPt.m_TcpClntSoktPt.Init( p_RmtNodeAddrFamly, p_CnctInfoTmpPt.m_RmtNodeNamePt, p_CnctInfoTmpPt.m_RmtNodeSrvcPt, null, null, m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 ) //如果初始化本端Tcp协议客户端套接字，并连接远端Tcp协议服务端套接字失败。
+                                if( p_CnctInfoTmpPt.m_TcpClntSoktPt.Init( p_RmtNodeAddrFamly, p_CnctInfoTmpPt.m_RmtNodeNameStrPt, p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt, null, null, m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 ) //如果初始化本端Tcp协议客户端套接字，并连接远端Tcp协议服务端套接字失败。
                                 {
-                                    String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：初始化本端Tcp协议客户端套接字，并连接远端Tcp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNamePt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcPt + "]失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+                                    String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：初始化本端Tcp协议客户端套接字，并连接远端Tcp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNameStrPt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt + "]失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
                                     if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                                     m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                                     break TcpClntSoktCnctOut;
@@ -1318,7 +1323,7 @@ public class TkbkNtwk //对讲网络。
                                 }
                                 else //如果连接失败。
                                 {
-                                    String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：初始化本端Tcp协议客户端套接字，并连接远端Tcp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNamePt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcPt + "]失败。原因：连接失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+                                    String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：初始化本端Tcp协议客户端套接字，并连接远端Tcp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNameStrPt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt + "]失败。原因：连接失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
                                     if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                                     m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                                     break TcpClntSoktCnctOut;
@@ -1326,7 +1331,7 @@ public class TkbkNtwk //对讲网络。
                             }
                             else //如果等待本端Tcp协议客户端套接字连接远端Tcp协议服务端套接字失败。
                             {
-                                String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：初始化本端Tcp协议客户端套接字，并连接远端Tcp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNamePt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcPt + "]失败。原因：等待本端Tcp协议客户端套接字连接远端Tcp协议服务端套接字失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+                                String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：初始化本端Tcp协议客户端套接字，并连接远端Tcp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNameStrPt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt + "]失败。原因：等待本端Tcp协议客户端套接字连接远端Tcp协议服务端套接字失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
                                 if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                                 m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                                 break TcpClntSoktCnctOut;
@@ -1380,9 +1385,7 @@ public class TkbkNtwk //对讲网络。
                             {
                                 if( -p_CnctInfoTmpPt.m_CurCnctSts >= m_NtwkMediaPocsThrdPt.m_MaxCnctTimes ) //如果已达到最大连接次数。
                                 {
-                                    p_CnctInfoTmpPt.m_CurCnctSts = NtwkMediaPocsThrd.CnctSts.Tmot; //设置当前连接状态为异常断开。
-                                    m_NtwkMediaPocsThrdPt.UserCnctSts( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_CurCnctSts ); //调用用户定义的连接状态函数。
-                                    p_CnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。
+                                    p_CnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。这里只设置请求销毁，不设置当前连接状态，因为在连接信息销毁函数里要根据当前连接状态判断是否重连。
 
                                     String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：已达到最大连接次数，中断连接。";
                                     if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
@@ -1399,9 +1402,9 @@ public class TkbkNtwk //对讲网络。
                                     m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                                 }
 
-                                if( m_NtwkMediaPocsThrdPt.m_AudpClntSoktPt.Cnct( p_RmtNodeAddrFamly, p_CnctInfoTmpPt.m_RmtNodeNamePt, p_CnctInfoTmpPt.m_RmtNodeSrvcPt, m_NtwkMediaPocsThrdPt.m_TmpHTLongPt, m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 ) //如果用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字失败。
+                                if( m_NtwkMediaPocsThrdPt.m_AudpClntSoktPt.Cnct( p_RmtNodeAddrFamly, p_CnctInfoTmpPt.m_RmtNodeNameStrPt, p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt, m_NtwkMediaPocsThrdPt.m_TmpHTLongPt, m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 ) //如果用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字失败。
                                 {
-                                    String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNamePt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcPt + "]失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+                                    String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNameStrPt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt + "]失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
                                     if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                                     m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                                     break AudpClntSoktCnctOut;
@@ -1437,14 +1440,14 @@ public class TkbkNtwk //对讲网络。
                                 }
                                 else if( m_NtwkMediaPocsThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.AudpCnctStsTmot ) //如果连接超时。
                                 {
-                                    String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNamePt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcPt + "]失败。原因：连接超时。";
+                                    String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNameStrPt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt + "]失败。原因：连接超时。";
                                     if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                                     m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                                     break AudpClntSoktCnctOut;
                                 }
                                 else if( m_NtwkMediaPocsThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.AudpCnctStsDsct ) //如果连接断开。
                                 {
-                                    String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNamePt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcPt + "]失败。原因：连接断开。";
+                                    String p_InfoStrPt = "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNameStrPt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt + "]失败。原因：连接断开。";
                                     if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                                     m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                                     break AudpClntSoktCnctOut;
@@ -1554,7 +1557,7 @@ public class TkbkNtwk //对讲网络。
                                                 }
 
                                                 m_AAjbPt.m_Pt.GetBufFrmCnt( m_NtwkMediaPocsThrdPt.m_CurHaveBufActFrmCntPt, m_NtwkMediaPocsThrdPt.m_CurHaveBufInactFrmCntPt, m_NtwkMediaPocsThrdPt.m_CurHaveBufFrmCntPt, m_NtwkMediaPocsThrdPt.m_MinNeedBufFrmCntPt, m_NtwkMediaPocsThrdPt.m_MaxNeedBufFrmCntPt, m_NtwkMediaPocsThrdPt.m_MaxCntuLostFrmCntPt, m_NtwkMediaPocsThrdPt.m_CurNeedBufFrmCntPt, 1, null );
-                                                if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, "网络媒体处理线程：对讲网络：音频自适应抖动缓冲器：有活动帧：" + m_NtwkMediaPocsThrdPt.m_CurHaveBufActFrmCntPt.m_Val + "，无活动帧：" + m_NtwkMediaPocsThrdPt.m_CurHaveBufInactFrmCntPt.m_Val + "，帧：" + m_NtwkMediaPocsThrdPt.m_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + m_NtwkMediaPocsThrdPt.m_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + m_NtwkMediaPocsThrdPt.m_MaxNeedBufFrmCntPt.m_Val + "，最大丢帧：" + m_NtwkMediaPocsThrdPt.m_MaxCntuLostFrmCntPt.m_Val + "，当前需帧：" + m_NtwkMediaPocsThrdPt.m_CurNeedBufFrmCntPt.m_Val + "。" );
+                                                if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：音频自适应抖动缓冲器：有活动帧：" + m_NtwkMediaPocsThrdPt.m_CurHaveBufActFrmCntPt.m_Val + "，无活动帧：" + m_NtwkMediaPocsThrdPt.m_CurHaveBufInactFrmCntPt.m_Val + "，帧：" + m_NtwkMediaPocsThrdPt.m_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + m_NtwkMediaPocsThrdPt.m_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + m_NtwkMediaPocsThrdPt.m_MaxNeedBufFrmCntPt.m_Val + "，最大丢帧：" + m_NtwkMediaPocsThrdPt.m_MaxCntuLostFrmCntPt.m_Val + "，当前需帧：" + m_NtwkMediaPocsThrdPt.m_CurNeedBufFrmCntPt.m_Val + "。" );
                                                 break;
                                             }
                                         }
@@ -1597,11 +1600,11 @@ public class TkbkNtwk //对讲网络。
                                                     if( p_TmpElmTotal <= 20 )
                                                     {
                                                         m_RecvVdoOtptFrmCntnrPt.offer( Arrays.copyOfRange( m_NtwkMediaPocsThrdPt.m_TmpBytePt, 1 + 4, ( int ) ( m_NtwkMediaPocsThrdPt.m_TmpHTLongPt.m_Val ) ) );
-                                                        if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：接收到一个有图像活动的视频输出帧包，并放入接收视频输出帧容器成功。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_NtwkMediaPocsThrdPt.m_TmpHTLongPt.m_Val + "。" );
+                                                        if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：接收到一个有图像活动的视频输出帧包，并放入接收视频输出帧容器成功。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_NtwkMediaPocsThrdPt.m_TmpHTLongPt.m_Val + "，类型：" + ( m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 9 ] & 0xff ) + "。" );
                                                     }
                                                     else
                                                     {
-                                                        if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：接收到一个有图像活动的视频输出帧包，但接收视频输出帧容器中帧总数为" + p_TmpElmTotal + "已经超过上限20，不再放入接收视频输出帧容器。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_NtwkMediaPocsThrdPt.m_TmpHTLongPt.m_Val + "。" );
+                                                        if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：接收到一个有图像活动的视频输出帧包，但接收视频输出帧容器中帧总数为" + p_TmpElmTotal + "已经超过上限20，不再放入接收视频输出帧容器。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_NtwkMediaPocsThrdPt.m_TmpHTLongPt.m_Val + "，类型：" + ( m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 9 ] & 0xff ) + "。" );
                                                     }
                                                 }
                                                 else //如果该视频输出帧为无图像活动。
@@ -1619,11 +1622,11 @@ public class TkbkNtwk //对讲网络。
                                                 }
                                                 else //如果该视频输出帧为无图像活动。
                                                 {
-                                                    if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：接收到一个无图像活动的视频输出帧包，无需放入视频自适应抖动缓冲器。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_NtwkMediaPocsThrdPt.m_TmpHTLongPt.m_Val + "。" );
+                                                    if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：接收到一个无图像活动的视频输出帧包，无需放入视频自适应抖动缓冲器。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_NtwkMediaPocsThrdPt.m_TmpHTLongPt.m_Val + "，类型：" + ( m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 9 ] & 0xff ) + "。" );
                                                 }
 
                                                 m_VAjbPt.m_Pt.GetBufFrmCnt( m_NtwkMediaPocsThrdPt.m_CurHaveBufFrmCntPt, m_NtwkMediaPocsThrdPt.m_MinNeedBufFrmCntPt, m_NtwkMediaPocsThrdPt.m_MaxNeedBufFrmCntPt, m_NtwkMediaPocsThrdPt.m_CurNeedBufFrmCntPt, 1, null );
-                                                if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, "网络媒体处理线程：对讲网络：视频自适应抖动缓冲器：帧：" + m_NtwkMediaPocsThrdPt.m_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + m_NtwkMediaPocsThrdPt.m_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + m_NtwkMediaPocsThrdPt.m_MaxNeedBufFrmCntPt.m_Val + "，当前需帧：" + m_NtwkMediaPocsThrdPt.m_CurNeedBufFrmCntPt.m_Val + "。" );
+                                                if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：视频自适应抖动缓冲器：帧：" + m_NtwkMediaPocsThrdPt.m_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + m_NtwkMediaPocsThrdPt.m_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + m_NtwkMediaPocsThrdPt.m_MaxNeedBufFrmCntPt.m_Val + "，当前需帧：" + m_NtwkMediaPocsThrdPt.m_CurNeedBufFrmCntPt.m_Val + "。" );
                                                 break;
                                             }
                                         }
@@ -1632,7 +1635,7 @@ public class TkbkNtwk //对讲网络。
                                     {
                                         if( m_NtwkMediaPocsThrdPt.m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
                                         {
-                                            if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：接收到一个有图像活动的视频输出帧包成功，但不是当前激活连接或未初始化视频输出。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_NtwkMediaPocsThrdPt.m_TmpHTLongPt.m_Val + "。" );
+                                            if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_NtwkMediaPocsThrdPt.m_CurClsNameStrPt, "网络媒体处理线程：对讲网络：连接" + p_CnctInfoTmpPt.hashCode() + "：接收到一个有图像活动的视频输出帧包成功，但不是当前激活连接或未初始化视频输出。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_NtwkMediaPocsThrdPt.m_TmpHTLongPt.m_Val + "，类型：" + ( m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 9 ] & 0xff ) + "。" );
                                         }
                                         else //如果该视频输出帧为无图像活动。
                                         {
@@ -1697,7 +1700,7 @@ public class TkbkNtwk //对讲网络。
                                        byte VdoInptYu12RsltFrmPt[], int VdoInptYu12RsltFrmWidth, int VdoInptYu12RsltFrmHeight, long VdoInptYu12RsltFrmLenByt,
                                        byte VdoInptEncdRsltFrmPt[], long VdoInptEncdRsltFrmLenByt )
     {
-        int p_FrmPktLen = 0; //存放输入输出帧数据包的数据长度，单位字节。
+        int p_PktLenByt = 0; //存放数据包的长度，单位字节。
         int p_TmpInt32 = 0;
 
         //发送音频输入帧。
@@ -1712,11 +1715,11 @@ public class TkbkNtwk //对讲网络。
                         m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 1 + 4 + p_TmpInt32 * 2 ] = ( byte ) ( AdoInptPcmRsltFrmPt[ p_TmpInt32 ] & 0xFF );
                         m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 1 + 4 + p_TmpInt32 * 2 + 1 ] = ( byte ) ( ( AdoInptPcmRsltFrmPt[ p_TmpInt32 ] & 0xFF00 ) >> 8 );
                     }
-                    p_FrmPktLen = 1 + 4 + AdoInptPcmRsltFrmPt.length * 2; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 音频输入Pcm格式结果帧。
+                    p_PktLenByt = 1 + 4 + AdoInptPcmRsltFrmPt.length * 2; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 音频输入Pcm格式结果帧。
                 }
                 else //如果音频输入Pcm格式结果帧为无语音活动。
                 {
-                    p_FrmPktLen = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
+                    p_PktLenByt = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
                 }
             }
             else //如果有音频输入已编码格式结果帧。
@@ -1724,15 +1727,15 @@ public class TkbkNtwk //对讲网络。
                 if( AdoInptPcmRsltFrmVoiceActSts != 0 && AdoInptEncdRsltFrmIsNeedTrans != 0 ) //如果音频输入Pcm格式结果帧为有语音活动，且音频输入已编码格式结果帧需要传输。
                 {
                     System.arraycopy( AdoInptEncdRsltFrmPt, 0, m_NtwkMediaPocsThrdPt.m_TmpBytePt, 1 + 4, ( int ) AdoInptEncdRsltFrmLenByt ); //设置音频输入帧。
-                    p_FrmPktLen = 1 + 4 + ( int ) AdoInptEncdRsltFrmLenByt; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 音频输入已编码格式结果帧。
+                    p_PktLenByt = 1 + 4 + ( int ) AdoInptEncdRsltFrmLenByt; //数据包长度 = 数据包类型 + 音频输入帧时间戳 + 音频输入已编码格式结果帧。
                 }
                 else //如果音频输入Pcm格式结果帧为无语音活动，或不需要传输。
                 {
-                    p_FrmPktLen = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
+                    p_PktLenByt = 1 + 4; //数据包长度 = 数据包类型 + 音频输入帧时间戳。
                 }
             }
 
-            if( p_FrmPktLen != 1 + 4 ) //如果本次音频输入帧为有语音活动，就发送。
+            if( p_PktLenByt != 1 + 4 ) //如果本次音频输入帧为有语音活动，就发送。
             {
                 m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp += 1; //音频输入帧的时间戳递增一个步进。
 
@@ -1744,13 +1747,13 @@ public class TkbkNtwk //对讲网络。
                 m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 3 ] = ( byte ) ( ( m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
                 m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 4 ] = ( byte ) ( ( m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
 
-                if( CnctInfoSendPkt( m_CurActCnctInfoPt, m_NtwkMediaPocsThrdPt.m_TmpBytePt, p_FrmPktLen, 1, 0, m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+                if( CnctInfoSendPkt( m_CurActCnctInfoPt, m_NtwkMediaPocsThrdPt.m_TmpBytePt, p_PktLenByt, 1, 0, m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
                 {
-                    if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "发送一个有语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。" );
+                    if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "发送一个有语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_PktLenByt + "。" );
                 }
                 else
                 {
-                    String p_InfoStrPt = "发送一个有语音活动的音频输入帧包失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() + "。音频输入帧时间戳：" + m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。";
+                    String p_InfoStrPt = "发送一个有语音活动的音频输入帧包失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() + "。音频输入帧时间戳：" + m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_PktLenByt + "。";
                     if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                     m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                 }
@@ -1771,13 +1774,13 @@ public class TkbkNtwk //对讲网络。
                     m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 3 ] = ( byte ) ( ( m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
                     m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 4 ] = ( byte ) ( ( m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
 
-                    if( CnctInfoSendPkt( m_CurActCnctInfoPt, m_NtwkMediaPocsThrdPt.m_TmpBytePt, p_FrmPktLen, 1, 0, m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+                    if( CnctInfoSendPkt( m_CurActCnctInfoPt, m_NtwkMediaPocsThrdPt.m_TmpBytePt, p_PktLenByt, 1, 0, m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
                     {
-                        if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "发送一个无语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。" );
+                        if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "发送一个无语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_PktLenByt + "。" );
                     }
                     else
                     {
-                        String p_InfoStrPt = "发送一个无语音活动的音频输入帧包失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() + "。音频输入帧时间戳：" + m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "。";
+                        String p_InfoStrPt = "发送一个无语音活动的音频输入帧包失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() + "。音频输入帧时间戳：" + m_CurActCnctInfoPt.m_LastSendAdoInptFrmTimeStamp + "，总长度：" + p_PktLenByt + "。";
                         if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                         m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                     }
@@ -1808,22 +1811,22 @@ public class TkbkNtwk //对讲网络。
                 m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 12 ] = ( byte ) ( ( VdoInptYu12RsltFrmHeight & 0xFF000000 ) >> 24 );
 
                 System.arraycopy( VdoInptYu12RsltFrmPt, 0, m_NtwkMediaPocsThrdPt.m_TmpBytePt, 1 + 4 + 4 + 4, VdoInptYu12RsltFrmPt.length ); //设置视频输入帧。
-                p_FrmPktLen = 1 + 4 + 4 + 4 + VdoInptYu12RsltFrmPt.length; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 视频输入帧宽度 + 视频输入帧高度 + 视频输入Yu12格式结果帧。
+                p_PktLenByt = 1 + 4 + 4 + 4 + VdoInptYu12RsltFrmPt.length; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 视频输入帧宽度 + 视频输入帧高度 + 视频输入Yu12格式结果帧。
             }
             else //如果有视频输入已编码格式结果帧。
             {
                 if( VdoInptEncdRsltFrmLenByt != 0 ) //如果本次视频输入帧为有图像活动。
                 {
                     System.arraycopy( VdoInptEncdRsltFrmPt, 0, m_NtwkMediaPocsThrdPt.m_TmpBytePt, 1 + 4, ( int ) VdoInptEncdRsltFrmLenByt ); //设置视频输入帧。
-                    p_FrmPktLen = 1 + 4 + ( int ) VdoInptEncdRsltFrmLenByt; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 视频输入已编码格式结果帧。
+                    p_PktLenByt = 1 + 4 + ( int ) VdoInptEncdRsltFrmLenByt; //数据包长度 = 数据包类型 + 视频输入帧时间戳 + 视频输入已编码格式结果帧。
                 }
                 else
                 {
-                    p_FrmPktLen = 1 + 4; //数据包长度 = 数据包类型 + 视频输入帧时间戳。
+                    p_PktLenByt = 1 + 4; //数据包长度 = 数据包类型 + 视频输入帧时间戳。
                 }
             }
 
-            if( p_FrmPktLen != 1 + 4 ) //如果本次视频输入帧为有图像活动，就发送。
+            if( p_PktLenByt != 1 + 4 ) //如果本次视频输入帧为有图像活动，就发送。
             {
                 m_CurActCnctInfoPt.m_LastSendVdoInptFrmTimeStamp += 1; //视频输入帧的时间戳递增一个步进。
 
@@ -1835,13 +1838,13 @@ public class TkbkNtwk //对讲网络。
                 m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 3 ] = ( byte ) ( ( m_CurActCnctInfoPt.m_LastSendVdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
                 m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 4 ] = ( byte ) ( ( m_CurActCnctInfoPt.m_LastSendVdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
 
-                if( CnctInfoSendPkt( m_CurActCnctInfoPt, m_NtwkMediaPocsThrdPt.m_TmpBytePt, p_FrmPktLen, 1, 1, m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+                if( CnctInfoSendPkt( m_CurActCnctInfoPt, m_NtwkMediaPocsThrdPt.m_TmpBytePt, p_PktLenByt, 1, 1, m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
                 {
-                    if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "发送一个有图像活动的视频输入帧包成功。视频输入帧时间戳：" + m_CurActCnctInfoPt.m_LastSendVdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "，类型：" + ( m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 9 ] & 0xff ) + "。" );
+                    if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "发送一个有图像活动的视频输入帧包成功。视频输入帧时间戳：" + m_CurActCnctInfoPt.m_LastSendVdoInptFrmTimeStamp + "，总长度：" + p_PktLenByt + "，类型：" + ( m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 9 ] & 0xff ) + "。" );
                 }
                 else
                 {
-                    String p_InfoStrPt = "发送一个有图像活动的视频输入帧包失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() + "。视频输入帧时间戳：" + m_CurActCnctInfoPt.m_LastSendVdoInptFrmTimeStamp + "，总长度：" + p_FrmPktLen + "，类型：" + ( m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 9 ] & 0xff ) + "。";
+                    String p_InfoStrPt = "发送一个有图像活动的视频输入帧包失败。原因：" + m_NtwkMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() + "。视频输入帧时间戳：" + m_CurActCnctInfoPt.m_LastSendVdoInptFrmTimeStamp + "，总长度：" + p_PktLenByt + "，类型：" + ( m_NtwkMediaPocsThrdPt.m_TmpBytePt[ 9 ] & 0xff ) + "。";
                     if( m_NtwkMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                     m_NtwkMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                 }

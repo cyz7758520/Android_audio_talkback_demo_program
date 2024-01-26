@@ -170,7 +170,7 @@
             android:layout_height="wrap_content"
             android:textStyle="normal|bold"
             android:textSize="20sp"
-            android:text="\n音视频预设设置\n" />
+            android:text="\n—————    预设设置    —————\n" />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -241,7 +241,7 @@
             android:layout_height="wrap_content"
             android:textStyle="normal|bold"
             android:textSize="20sp"
-            android:text="\n音频设置\n" />
+            android:text="\n—————    音频设置    —————\n" />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -671,7 +671,7 @@
             android:layout_height="wrap_content"
             android:textStyle="normal|bold"
             android:textSize="20sp"
-            android:text="\n视频设置\n" />
+            android:text="\n—————    视频设置    —————\n" />
 
         <LinearLayout
             android:orientation="horizontal"

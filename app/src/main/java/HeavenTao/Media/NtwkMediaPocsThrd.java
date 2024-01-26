@@ -11,8 +11,6 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
 {
     public static String m_CurClsNameStrPt = "NtwkMediaPocsThrd"; //存放当前类名称字符串。
 
-    public int m_IsInterrupt; //存放是否中断，为0表示未中断，为1表示已中断。
-
     public class PktTyp //数据包类型。
     {
         public static final int TkbkMode = 0; //对讲模式包。
@@ -73,15 +71,16 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
 
     public class UserMsgTyp //用户消息。
     {
-        public static final int SrvrInitOrDstoy = 0; //服务端初始化或销毁。
-        public static final int CnctInit = 1; //连接初始化。
-        public static final int CnctAct = 2; //连接激活。
-        public static final int CnctDstoy = 3; //连接销毁。
-        public static final int LclTkbkMode = 4; //本端对讲模式。
-        public static final int PttBtnDown = 5; //一键即按即通按钮按下。
-        public static final int PttBtnUp = 6; //一键即按即通按钮弹起。
-        public static final int BdctCnctInit = 7; //广播连接初始化。
-        public static final int BdctCnctAllDstoy = 8; //广播连接全部销毁。
+        public static final int SrvrInit = 0; //服务端初始化。
+        public static final int SrvrDstoy = 1; //服务端销毁。
+        public static final int CnctInit = 2; //连接初始化。
+        public static final int CnctAct = 3; //连接激活。
+        public static final int CnctDstoy = 4; //连接销毁。
+        public static final int LclTkbkMode = 5; //本端对讲模式。
+        public static final int PttBtnDown = 6; //一键即按即通按钮按下。
+        public static final int PttBtnUp = 7; //一键即按即通按钮弹起。
+        public static final int BdctCnctInit = 8; //广播连接初始化。
+        public static final int BdctCnctAllDstoy = 9; //广播连接全部销毁。
     }
 
     //用户定义的相关回调函数。
@@ -107,8 +106,8 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
     //用户定义的振动函数。
     public abstract void UserVibrate();
 
-    //用户定义的连接添加函数。
-    public abstract void UserCnctInit( TkbkNtwk.CnctInfo CnctInfoPt, String PrtclStrPt, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt );
+    //用户定义的连接初始化函数。
+    public abstract void UserCnctInit( TkbkNtwk.CnctInfo CnctInfoPt, int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt );
 
     //用户定义的连接状态函数。
     public abstract void UserCnctSts( TkbkNtwk.CnctInfo CnctInfoPt, int CurCnctSts );
@@ -130,12 +129,200 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
     {
         super( CtxPt );
 
-        m_IsInterrupt = 0; //设置未中断。
-
+        //初始化对讲网络。
         m_TkbkNtwkPt.m_NtwkMediaPocsThrdPt = this; //设置网络媒体处理线程的指针。
-        m_BdctNtwkPt.m_NtwkMediaPocsThrdPt = this; //设置网络媒体处理线程的指针。
 
-        m_LclTkbkMode = TkbkMode.None;
+        //初始化广播网络。
+        m_BdctNtwkPt.m_NtwkMediaPocsThrdPt = this; //设置网络媒体处理线程的指针。
+        m_BdctNtwkPt.m_LastSendAdoInptFrmIsAct = 0; //设置最后发送的一个音频输入帧为无语音活动。
+        m_BdctNtwkPt.m_LastSendAdoInptFrmTimeStamp = 0 - 1; //设置最后一个发送音频输入帧的时间戳为0的前一个，因为第一次发送音频输入帧时会递增一个步进。
+        m_BdctNtwkPt.m_LastSendVdoInptFrmTimeStamp = 0 - 1; //设置最后一个发送视频输入帧的时间戳为0的前一个，因为第一次发送视频输入帧时会递增一个步进。
+
+        //初始化网络媒体处理线程。
+        m_LclTkbkMode = TkbkMode.None; //设置本端对讲模式为挂起。
+    }
+
+    //服务端初始化。
+    public int SrvrInit( int IsBlockWait, String SrvrUrlStrPt )
+    {
+        return SendUserMsg( IsBlockWait, UserMsgTyp.SrvrInit, SrvrUrlStrPt );
+    }
+
+    //服务端销毁。
+    public int SrvrDstoy( int IsBlockWait )
+    {
+        return SendUserMsg( IsBlockWait, UserMsgTyp.SrvrDstoy );
+    }
+
+    //连接初始化。
+    public int CnctInit( int IsBlockWait, int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
+    {
+        return SendUserMsg( IsBlockWait, UserMsgTyp.CnctInit, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt );
+    }
+
+    //连接激活。
+    public int CnctAct( int IsBlockWait, int CnctNum )
+    {
+        return SendUserMsg( IsBlockWait, UserMsgTyp.CnctAct, CnctNum );
+    }
+
+    //连接销毁。
+    public int CnctDstoy( int IsBlockWait, int CnctNum )
+    {
+        return SendUserMsg( IsBlockWait, UserMsgTyp.CnctDstoy, CnctNum );
+    }
+
+    //本端对讲模式。
+    public int LclTkbkMode( int IsBlockWait, int LclTkbkMode )
+    {
+        return SendUserMsg( IsBlockWait, UserMsgTyp.LclTkbkMode, LclTkbkMode );
+    }
+
+    //一键即按即通按钮按下。
+    public int PttBtnDown( int IsBlockWait )
+    {
+        return SendUserMsg( IsBlockWait, UserMsgTyp.PttBtnDown );
+    }
+
+    //一键即按即通按钮弹起。
+    public int PttBtnUp( int IsBlockWait )
+    {
+        return SendUserMsg( IsBlockWait, UserMsgTyp.PttBtnUp );
+    }
+
+    //广播连接初始化。
+    public int BdctCnctInit( int IsBlockWait, int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
+    {
+        return SendUserMsg( IsBlockWait, UserMsgTyp.BdctCnctInit, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt );
+    }
+
+    //广播连接全部销毁。
+    public int BdctCnctAllDstoy( int IsBlockWait )
+    {
+        return SendUserMsg( IsBlockWait, UserMsgTyp.BdctCnctAllDstoy );
+    }
+
+    //判断是否自动请求退出。
+    public void IsAutoRqirExit()
+    {
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+
+        Out:
+        {
+            if( m_IsAutoRqirExit == 0 )
+            {
+
+            }
+            else if( m_IsAutoRqirExit == 1 )
+            {
+                if( ( m_TkbkNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) && ( m_BdctNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) )
+                {
+                    RqirExit( 1, 0 );
+
+                    String p_InfoStrPt = "网络媒体处理线程：所有连接已销毁，自动请求退出。";
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                    UserShowLog( p_InfoStrPt );
+                }
+            }
+            else if( m_IsAutoRqirExit == 2 )
+            {
+                if( ( m_TkbkNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) && ( m_BdctNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) && ( m_TkbkNtwkPt.m_SrvrIsInit == 0 ) )
+                {
+                    RqirExit( 1, 0 );
+
+                    String p_InfoStrPt = "网络媒体处理线程：所有连接和服务端已销毁，自动请求退出。";
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                    UserShowLog( p_InfoStrPt );
+                }
+            }
+
+            p_Rslt = 0; //设置本函数执行成功。
+        }
+
+        if( p_Rslt != 0 ) //如果本函数执行失败。
+        {
+
+        }
+        return;
+    }
+
+    //设置对讲模式。
+    public void SetTkbkMode( int IsBlockWait )
+    {
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+
+        int p_RmtTkbkMode; //存放远端对讲模式。
+        int p_RealTkbkMode; //存放实际对讲模式。
+        int p_IsUseAdoInpt = 0;
+        int p_IsUseAdoOtpt = 0;
+        int p_IsUseVdoInpt = 0;
+        int p_IsUseVdoOtpt = 0;
+
+        Out:
+        {
+            //设置远端对讲模式。
+            if( m_TkbkNtwkPt.m_CurActCnctInfoPt != null ) p_RmtTkbkMode = m_TkbkNtwkPt.m_CurActCnctInfoPt.m_RmtTkbkMode;
+            else p_RmtTkbkMode = TkbkMode.None;
+
+            //设置实际对讲模式。
+            p_RealTkbkMode = m_LclTkbkMode & p_RmtTkbkMode;
+
+            if( m_TkbkNtwkPt.m_XfrMode == 0 ) //如果传输模式为实时半双工（一键通）。
+            {
+                if( m_TkbkNtwkPt.m_PttBtnIsDown != 0 ) //如果一键即按即通按钮为按下。
+                {
+                    if( ( m_LclTkbkMode & TkbkMode.Ado ) != 0 )
+                    {
+                        p_IsUseAdoInpt = 1;
+                    }
+                    if( ( m_LclTkbkMode & TkbkMode.Vdo ) != 0 )
+                    {
+                        p_IsUseVdoInpt = 1;
+                    }
+                }
+                else //如果一键即按即通按钮为弹起。
+                {
+                    if( ( p_RealTkbkMode & TkbkMode.Ado ) != 0 )
+                    {
+                        p_IsUseAdoOtpt = 1;
+                    }
+                    if( ( p_RealTkbkMode & TkbkMode.Vdo ) != 0 )
+                    {
+                        p_IsUseVdoOtpt = 1;
+                    }
+                }
+            }
+            else //如果传输模式为实时全双工。
+            {
+                if( ( p_RealTkbkMode & TkbkMode.Ado ) != 0 )
+                {
+                    p_IsUseAdoInpt = 1;
+                    p_IsUseAdoOtpt = 1;
+                }
+                if( ( p_RealTkbkMode & TkbkMode.Vdo ) != 0 )
+                {
+                    p_IsUseVdoInpt = 1;
+                    p_IsUseVdoOtpt = 1;
+                }
+            }
+
+            if( !m_BdctNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) //如果有广播连接。
+            {
+                p_IsUseAdoInpt = 1;
+            }
+
+            SetIsUseAdoVdoInptOtpt( IsBlockWait, p_IsUseAdoInpt, p_IsUseAdoOtpt, p_IsUseVdoInpt, p_IsUseVdoOtpt ); //设置是否使用音视频输入输出。
+
+            if( m_TkbkNtwkPt.m_XfrMode == 0 ) m_TkbkNtwkPt.RecvOtptFrmReset(); //接收输出帧重置。防止在实时半双工（一键通）模式下每次按下PTT时还有点点播放上次按下的声音。
+
+            p_Rslt = 0; //设置本函数执行成功。
+        }
+
+        if( p_Rslt != 0 ) //如果本函数执行失败。
+        {
+
+        }
+        return;
     }
 
     //用户定义的初始化函数。
@@ -152,6 +339,10 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
             p_Rslt = 0; //设置本函数执行成功。
         }
 
+        if( p_Rslt != 0 ) //如果本函数执行失败。
+        {
+
+        }
         return p_Rslt;
     }
 
@@ -169,128 +360,48 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
             p_Rslt = 0; //设置本函数执行成功。
         }
 
+        if( p_Rslt != 0 ) //如果本函数执行失败。
+        {
+
+        }
         return p_Rslt;
     }
 
     //用户定义的销毁函数。
     @Override public void UserDstoy()
     {
-        m_BdctNtwkPt.CnctInfoAllDstoy(); //连接信息全部销毁。
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
-        m_TkbkNtwkPt.CnctInfoAllDstoy(); //连接信息全部销毁。
-        m_TkbkNtwkPt.SrvrDstoy(); //服务端销毁。
-        m_TkbkNtwkPt.RecvOtptFrmDstoy(); //接收输出帧销毁。
-
-        //销毁本端高级Udp协议客户端套接字。
-        if( m_AudpClntSoktPt != null )
+        Out:
         {
-            m_AudpClntSoktPt.Dstoy( null ); //关闭并销毁本端高级Udp协议客户端套接字。
-            m_AudpClntSoktPt = null;
+            m_BdctNtwkPt.CnctInfoAllDstoy(); //连接信息全部销毁。
 
-            String p_InfoStrPt = "网络媒体处理线程：关闭并销毁本端高级Udp协议客户端套接字成功。";
-            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-            UserShowLog( p_InfoStrPt );
-        }
+            m_TkbkNtwkPt.CnctInfoAllDstoy(); //连接信息全部销毁。
+            m_TkbkNtwkPt.SrvrDstoy(); //服务端销毁。
+            m_TkbkNtwkPt.RecvOtptFrmDstoy(); //接收输出帧销毁。
 
-        UserNtwkMediaPocsThrdDstoy(); //调用用户定义的网络媒体处理线程销毁函数。
-        UserVibrate(); //调用用户定义的振动函数。
-    }
-
-    //判断是否自动请求退出。
-    public void IsAutoRqirExit()
-    {
-        if( m_IsAutoRqirExit == 0 )
-        {
-
-        }
-        else if( m_IsAutoRqirExit == 1 )
-        {
-            if( ( m_TkbkNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) && ( m_BdctNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) )
+            //销毁本端高级Udp协议客户端套接字。
+            if( m_AudpClntSoktPt != null )
             {
-                RqirExit( 1, 0 );
+                m_AudpClntSoktPt.Dstoy( null ); //关闭并销毁本端高级Udp协议客户端套接字。
+                m_AudpClntSoktPt = null;
 
-                String p_InfoStrPt = "网络媒体处理线程：对讲网络：所有连接已销毁，自动请求退出。";
+                String p_InfoStrPt = "网络媒体处理线程：关闭并销毁本端高级Udp协议客户端套接字成功。";
                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                 UserShowLog( p_InfoStrPt );
             }
+
+            UserNtwkMediaPocsThrdDstoy(); //调用用户定义的网络媒体处理线程销毁函数。
+            UserVibrate(); //调用用户定义的振动函数。
+
+            p_Rslt = 0; //设置本函数执行成功。
         }
-        else if( m_IsAutoRqirExit == 2 )
+
+        if( p_Rslt != 0 ) //如果本函数执行失败。
         {
-            if( ( m_TkbkNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) && ( m_BdctNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) && ( m_TkbkNtwkPt.m_SrvrIsInit == 0 ) )
-            {
-                RqirExit( 1, 0 );
 
-                String p_InfoStrPt = "网络媒体处理线程：对讲网络：所有连接和服务端已销毁，自动请求退出。";
-                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
-                UserShowLog( p_InfoStrPt );
-            }
         }
-    }
-
-    //设置对讲模式。
-    public void SetTkbkMode( int IsBlockWait )
-    {
-        int p_RmtTkbkMode; //存放远端对讲模式。
-        int p_RealTkbkMode; //存放实际对讲模式。
-        int p_IsUseAdoInpt = 0;
-        int p_IsUseAdoOtpt = 0;
-        int p_IsUseVdoInpt = 0;
-        int p_IsUseVdoOtpt = 0;
-
-        //设置远端对讲模式。
-        if( m_TkbkNtwkPt.m_CurActCnctInfoPt != null ) p_RmtTkbkMode = m_TkbkNtwkPt.m_CurActCnctInfoPt.m_RmtTkbkMode;
-        else p_RmtTkbkMode = TkbkMode.None;
-
-        //设置实际对讲模式。
-        p_RealTkbkMode = m_LclTkbkMode & p_RmtTkbkMode;
-
-        if( m_TkbkNtwkPt.m_XfrMode == 0 ) //如果传输模式为实时半双工（一键通）。
-        {
-            if( m_TkbkNtwkPt.m_PttBtnIsDown != 0 ) //如果一键即按即通按钮为按下。
-            {
-                if( ( m_LclTkbkMode & TkbkMode.Ado ) != 0 )
-                {
-                    p_IsUseAdoInpt = 1;
-                }
-                if( ( m_LclTkbkMode & TkbkMode.Vdo ) != 0 )
-                {
-                    p_IsUseVdoInpt = 1;
-                }
-            }
-            else //如果一键即按即通按钮为弹起。
-            {
-                if( ( p_RealTkbkMode & TkbkMode.Ado ) != 0 )
-                {
-                    p_IsUseAdoOtpt = 1;
-                }
-                if( ( p_RealTkbkMode & TkbkMode.Vdo ) != 0 )
-                {
-                    p_IsUseVdoOtpt = 1;
-                }
-            }
-        }
-        else //如果传输模式为实时全双工。
-        {
-            if( ( p_RealTkbkMode & TkbkMode.Ado ) != 0 )
-            {
-                p_IsUseAdoInpt = 1;
-                p_IsUseAdoOtpt = 1;
-            }
-            if( ( p_RealTkbkMode & TkbkMode.Vdo ) != 0 )
-            {
-                p_IsUseVdoInpt = 1;
-                p_IsUseVdoOtpt = 1;
-            }
-        }
-
-        if( !m_BdctNtwkPt.m_CnctInfoCntnrPt.isEmpty() ) //如果有广播连接。
-        {
-            p_IsUseAdoInpt = 1;
-        }
-
-        SetIsUseAdoVdoInptOtpt( IsBlockWait, p_IsUseAdoInpt, p_IsUseAdoOtpt, p_IsUseVdoInpt, p_IsUseVdoOtpt ); //设置是否使用音视频输入输出。
-
-        if( m_TkbkNtwkPt.m_XfrMode == 0 ) m_TkbkNtwkPt.RecvOtptFrmReset(); //接收输出帧重置。防止在实时半双工（一键通）模式下每次按下PTT时还有点点播放上次按下的声音。
+        return;
     }
 
     //用户定义的消息函数。
@@ -302,16 +413,14 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
         {
             switch( ( Integer ) MsgArgPt[ 0 ] )
             {
-                case UserMsgTyp.SrvrInitOrDstoy:
+                case UserMsgTyp.SrvrInit:
                 {
-                    if( m_TkbkNtwkPt.m_SrvrIsInit == 0 ) //如果服务端未初始化。
-                    {
-                        m_TkbkNtwkPt.SrvrInit( ( String ) MsgArgPt[ 1 ] );
-                    }
-                    else //如果服务端已初始化。
-                    {
-                        m_TkbkNtwkPt.SrvrDstoy();
-                    }
+                    p_Rslt = m_TkbkNtwkPt.SrvrInit( ( String ) MsgArgPt[ 1 ] );
+                    break Out;
+                }
+                case UserMsgTyp.SrvrDstoy:
+                {
+                    m_TkbkNtwkPt.SrvrDstoy();
                     break;
                 }
                 case UserMsgTyp.CnctInit:
@@ -380,6 +489,10 @@ public abstract class NtwkMediaPocsThrd extends MediaPocsThrd //网络媒体处�
             p_Rslt = 0; //设置本函数执行成功。
         }
 
+        if( p_Rslt != 0 ) //如果本函数执行失败。
+        {
+
+        }
         return p_Rslt;
     }
 

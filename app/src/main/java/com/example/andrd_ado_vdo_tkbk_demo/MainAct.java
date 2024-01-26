@@ -70,7 +70,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     View m_SystemH264CodecStngLyotViewPt; //存放系统自带H264编解码器设置布局视图的指针。
 
     View m_CurActivityLyotViewPt; //存放当前界面布局视图的指针。
-    MyNtwkMediaPocsThrd m_MyNtwkMediaPocsThrdPt; //存放我的媒体处理线程的指针。
+    MyNtwkMediaPocsThrd m_MyNtwkMediaPocsThrdPt; //存放我的网络媒体处理线程的指针。
     MainAct m_MainActPt; //存放主界面的指针。
 
     String m_ExternalDirFullAbsPathStrPt; //存放扩展目录完整绝对路径字符串的指针。
@@ -86,11 +86,11 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         public static final int ShowLog                    = 6; //显示日志。
         public static final int ShowToast                  = 7; //显示Toast。
         public static final int Vibrate                    = 8; //振动。
-        public static final int CnctLstViewAddItem         = 9; //连接列表视图添加项目。
-        public static final int CnctLstViewModifyItem      = 10; //连接列表视图修改项目。
-        public static final int CnctLstViewDelItem         = 11; //连接列表视图删除项目。
-        public static final int ClntLstViewAddItem         = 12; //客户端列表视图添加项目。
-        public static final int ClntLstViewDelItem         = 13; //客户端列表视图删除项目。
+        public static final int CnctLstAddItem             = 9; //连接列表添加项目。
+        public static final int CnctLstModifyItem          = 10; //连接列表修改项目。
+        public static final int CnctLstDelItem             = 11; //连接列表删除项目。
+        public static final int ClntLstAddItem             = 12; //客户端列表添加项目。
+        public static final int ClntLstDelItem             = 13; //客户端列表删除项目。
     }
 
     //主界面消息处理。
@@ -181,13 +181,13 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                     ( ( Vibrator ) m_MainActPt.getSystemService( Context.VIBRATOR_SERVICE ) ).vibrate( 100 );
                     break;
                 }
-                case MainActMsgTyp.CnctLstViewAddItem:
+                case MainActMsgTyp.CnctLstAddItem:
                 {
                     Map< String, String > p_CnctLstItemPt;
 
                     p_CnctLstItemPt = new HashMap< String, String >();
                     p_CnctLstItemPt.put( "CnctAndClntLstItemSignTxtId", "" );
-                    p_CnctLstItemPt.put( "CnctAndClntLstItemPrtclTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
+                    p_CnctLstItemPt.put( "CnctAndClntLstItemPrtclTxtId", ( ( Integer ) ( ( Object[] ) MessagePt.obj )[ 1 ] == 0 ) ? "Tcp" : "Audp" );
                     p_CnctLstItemPt.put( "CnctAndClntLstItemRmtNodeNameTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 2 ] );
                     p_CnctLstItemPt.put( "CnctAndClntLstItemRmtNodeSrvcTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 3 ] );
                     p_CnctLstItemPt.put( "Rand", Long.toString( new Random().nextLong() ) ); //必须添加一个随机数，防止有些设备在大量连接时出现连接列表视图项目的指针出现重复，从而导致删除重复项目错误。
@@ -196,7 +196,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                     ( ( SimpleAdapter ) m_CnctLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知连接列表视图数据集被改变。
                     break;
                 }
-                case MainActMsgTyp.CnctLstViewModifyItem:
+                case MainActMsgTyp.CnctLstModifyItem:
                 {
                     Map< String, String > p_CnctLstItemPt;
 
@@ -208,23 +208,56 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                     ( ( SimpleAdapter ) m_MainActPt.m_CnctLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知连接列表视图数据集被改变。
                     break;
                 }
-                case MainActMsgTyp.CnctLstViewDelItem:
+                case MainActMsgTyp.CnctLstDelItem:
                 {
                     m_MainActPt.m_CnctLstItemArrayLstPt.remove( ( ( Integer ) ( ( Object[] ) MessagePt.obj )[ 0 ] ).intValue() );
                     ( ( SimpleAdapter ) m_MainActPt.m_CnctLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知连接列表视图数据集被改变。
                     break;
                 }
-                case MainActMsgTyp.ClntLstViewAddItem:
+                case MainActMsgTyp.ClntLstAddItem:
                 {
-                    m_ClntLstItemArrayLstPt.add( ( Map< String, String > ) ( ( Object[] ) MessagePt.obj )[ 0 ] );
-                    ( ( SimpleAdapter ) m_ClntLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知客户端列表视图数据集被改变。
+                    ClntLstAddItemOut:
+                    {
+                        String p_PrtclStrPt = ( String ) ( ( Object[] ) MessagePt.obj )[ 0 ];
+                        String p_RmtNodeNameStrPt = ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ];
+                        String p_RmtNodeSrvcStrPt = ( String ) ( ( Object[] ) MessagePt.obj )[ 2 ];
+
+                        for( Map< String, String > p_ClntLstItemPt : m_ClntLstItemArrayLstPt )
+                        {
+                            if( ( p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( p_PrtclStrPt ) ) &&
+                                ( p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ).equals( p_RmtNodeNameStrPt ) ) &&
+                                ( p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ).equals( p_RmtNodeSrvcStrPt ) ) )
+                            {
+                                Toast.makeText( m_MainActPt, "已存在相同的客户端的服务端，无需重复添加。", Toast.LENGTH_SHORT ).show();
+                                break ClntLstAddItemOut;
+                            }
+                        }
+
+                        Map< String, String > p_ClntLstItemPt = new HashMap< String, String >();
+                        p_ClntLstItemPt.put( "CnctAndClntLstItemPrtclTxtId", p_PrtclStrPt );
+                        p_ClntLstItemPt.put( "CnctAndClntLstItemRmtNodeNameTxtId", p_RmtNodeNameStrPt );
+                        p_ClntLstItemPt.put( "CnctAndClntLstItemRmtNodeSrvcTxtId", p_RmtNodeSrvcStrPt );
+                        m_ClntLstItemArrayLstPt.add( p_ClntLstItemPt );
+                        ( ( SimpleAdapter ) m_ClntLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知客户端列表视图数据集被改变。
+                    }
                     break;
                 }
-                case MainActMsgTyp.ClntLstViewDelItem:
+                case MainActMsgTyp.ClntLstDelItem:
                 {
-                    m_ClntLstItemArrayLstPt.remove( ( ( Integer ) ( ( Object[] ) MessagePt.obj )[ 0 ] ).intValue() );
-                    ( ( SimpleAdapter ) m_ClntLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知客户端列表视图数据集被改变。
-                    m_ClntLstViewPt.setItemChecked( ( ( Integer ) ( ( Object[] ) MessagePt.obj )[ 0 ] ).intValue(), false ); //设置该项目为未Checked。
+                    ClntLstDelItemOut:
+                    {
+                        int p_Num = ( Integer ) ( ( Object[] ) MessagePt.obj )[ 0 ];
+
+                        if( ( p_Num < 0 ) || ( p_Num >= m_ClntLstItemArrayLstPt.size() ) )
+                        {
+                            Toast.makeText( m_MainActPt, "客户端列表不存在索引为" + p_Num + "的项目，无法删除。", Toast.LENGTH_SHORT ).show();
+                            break ClntLstDelItemOut;
+                        }
+
+                        m_ClntLstItemArrayLstPt.remove( p_Num );
+                        ( ( SimpleAdapter ) m_ClntLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知客户端列表视图数据集被改变。
+                        m_ClntLstViewPt.setItemChecked( p_Num, false ); //设置该项目为未Checked。
+                    }
                     break;
                 }
             }
@@ -263,7 +296,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
             m_ClntLstViewPt.setAdapter( new SimpleAdapter( this, m_ClntLstItemArrayLstPt, R.layout.cnct_and_clnt_lst_item, new String[]{ "CnctAndClntLstItemPrtclTxtId", "CnctAndClntLstItemRmtNodeNameTxtId", "CnctAndClntLstItemRmtNodeSrvcTxtId" }, new int[]{ R.id.CnctAndClntLstItemPrtclTxtId, R.id.CnctAndClntLstItemRmtNodeNameTxtId, R.id.CnctAndClntLstItemRmtNodeSrvcTxtId } ) );
 
             m_StngLyotViewPt = p_LyotInflater.inflate( R.layout.stng_lyot, null );
-
             m_AjbStngLyotViewPt = p_LyotInflater.inflate( R.layout.ajb_stng_lyot, null );
             m_SaveStsToTxtFileStngLyotViewPt = p_LyotInflater.inflate( R.layout.save_sts_to_txt_file_stng_lyot, null );
             m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt = p_LyotInflater.inflate( R.layout.save_ado_vdo_inpt_otpt_to_avi_file_stng_lyot, null );
@@ -452,7 +484,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     {
         super.onConfigurationChanged( newConfig );
 
-        if( m_MyNtwkMediaPocsThrdPt != null && m_MyNtwkMediaPocsThrdPt.m_VdoInptPt.m_IsInit != 0 ) //如果我的媒体处理线程已经启动，且已初始化视频输入。
+        if( m_MyNtwkMediaPocsThrdPt != null && m_MyNtwkMediaPocsThrdPt.m_VdoInptPt.m_IsInit != 0 ) //如果我的网络媒体处理线程已经启动，且已初始化视频输入。
         {
             m_MyNtwkMediaPocsThrdPt.SetVdoInpt(
                     1,
@@ -464,11 +496,206 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         }
     }
 
+    //服务端初始化或销毁按钮。
+    public void OnClickSrvrCreateOrDstoyBtn( View ViewPt )
+    {
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+
+        Out:
+        {
+            if( m_MyNtwkMediaPocsThrdPt == null ) //如果我的网络媒体处理线程还没有初始化。
+            {
+                if( MyNtwkMediaPocsThrdInit() != 0 ) //如果我的网络媒体处理线程初始化失败。
+                {
+                    break Out;
+                }
+            }
+
+            if( m_MyNtwkMediaPocsThrdPt.m_TkbkNtwkPt.m_SrvrIsInit == 0 ) //如果服务端未初始化。
+            {
+                m_MyNtwkMediaPocsThrdPt.SrvrInit( 1, ( ( EditText ) m_MainLyotViewPt.findViewById( R.id.SrvrUrlEdTxtId ) ).getText().toString() );
+            }
+            else //如果服务端已初始化。
+            {
+                m_MyNtwkMediaPocsThrdPt.SrvrDstoy( 1 );
+            }
+
+            p_Rslt = 0;
+        }
+
+        if( p_Rslt != 0 ) //如果本函数执行失败。
+        {
+
+        }
+        return;
+    }
+
     //服务端设置按钮。
     public void OnClickSrvrStngBtn( View ViewPt )
     {
         setContentView( m_SrvrStngLyotViewPt );
         m_CurActivityLyotViewPt = m_SrvrStngLyotViewPt;
+    }
+
+    //连接激活按钮。
+    public void OnClickCnctActBtn( View ViewPt )
+    {
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+
+        Out:
+        {
+            int p_Num;
+
+            if( m_MyNtwkMediaPocsThrdPt == null ) //如果我的网络媒体处理线程还没有初始化。
+            {
+                break Out;
+            }
+
+            p_Num = m_CnctLstViewPt.getCheckedItemPosition();
+            if( p_Num != -1 )
+            {
+                m_MyNtwkMediaPocsThrdPt.CnctAct( 1, p_Num );
+            }
+
+            p_Rslt = 0;
+        }
+
+        if( p_Rslt != 0 ) //如果本函数执行失败。
+        {
+
+        }
+        return;
+    }
+
+    //连接销毁按钮。
+    public void OnClickCnctDstoyBtn( View ViewPt )
+    {
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+
+        Out:
+        {
+            int p_Num;
+
+            if( m_MyNtwkMediaPocsThrdPt == null ) //如果我的网络媒体处理线程还没有初始化。
+            {
+                break Out;
+            }
+
+            p_Num = m_CnctLstViewPt.getCheckedItemPosition();
+            if( p_Num != -1 )
+            {
+                m_MyNtwkMediaPocsThrdPt.CnctDstoy( 1, p_Num );
+            }
+
+            p_Rslt = 0;
+        }
+
+        if( p_Rslt != 0 ) //如果本函数执行失败。
+        {
+
+        }
+        return;
+    }
+
+    //客户端添加按钮。
+    public void OnClickClntAddBtn( View ViewPt )
+    {
+        Vstr p_SrvrUrlVstrPt = null;
+        Vstr p_ErrInfoVstrPt = null;
+        HTString p_SrvrPrtclStrPt = new HTString();
+        HTString p_SrvrNodeNameStrPt = new HTString();
+        HTString p_SrvrNodeSrvcStrPt = new HTString();
+
+        Out:
+        {
+            p_SrvrUrlVstrPt = new Vstr();
+            if( p_SrvrUrlVstrPt.Init( ( ( TextView )m_MainLyotViewPt.findViewById( R.id.ClntSrvrUrlEdTxtId ) ).getText().toString() ) != 0 )
+            {
+                String p_InfoStrPt = "初始化客户端的服务端Url动态字符串失败。";
+                Log.e( m_MyNtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
+                SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
+                Toast.makeText( this, p_InfoStrPt, Toast.LENGTH_LONG ).show();
+                break Out;
+            }
+            p_ErrInfoVstrPt = new Vstr();
+            if( p_ErrInfoVstrPt.Init( "" ) != 0 )
+            {
+                String p_InfoStrPt = "初始化错误信息动态字符串失败。";
+                Log.e( m_MyNtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
+                SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
+                break Out;
+            }
+
+            //解析服务端Url字符串。
+            if( p_SrvrUrlVstrPt.UrlParse( p_SrvrPrtclStrPt, null, null, p_SrvrNodeNameStrPt, p_SrvrNodeSrvcStrPt, null, null, null, null, p_ErrInfoVstrPt ) != 0 )
+            {
+                String p_InfoStrPt = "解析客户端的服务端Url字符串失败。原因：" + p_ErrInfoVstrPt.GetStr();
+                Log.e( m_MyNtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
+                SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
+                Toast.makeText( this, p_InfoStrPt, Toast.LENGTH_LONG ).show();
+                break Out;
+            }
+            if( ( p_SrvrPrtclStrPt.m_Val.equals( "Tcp" ) == false ) && ( p_SrvrPrtclStrPt.m_Val.equals( "Audp" ) == false ) )
+            {
+                String p_InfoStrPt = "客户端的服务端Url字符串的协议不正确。";
+                Log.e( m_MyNtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
+                SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
+                Toast.makeText( this, p_InfoStrPt, Toast.LENGTH_LONG ).show();
+                break Out;
+            }
+            if( p_SrvrNodeSrvcStrPt.m_Val.equals( "" ) )
+            {
+                p_SrvrNodeSrvcStrPt.m_Val = "12345";
+            }
+
+            SendMainActMsg( MainActMsgTyp.ClntLstAddItem, p_SrvrPrtclStrPt.m_Val, p_SrvrNodeNameStrPt.m_Val, p_SrvrNodeSrvcStrPt.m_Val );
+        }
+
+        if( p_SrvrUrlVstrPt != null ) p_SrvrUrlVstrPt.Dstoy();
+        if( p_ErrInfoVstrPt != null ) p_ErrInfoVstrPt.Dstoy();
+    }
+
+    //客户端连接按钮。
+    public void OnClickClntCnctBtn( View ViewPt )
+    {
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+
+        Out:
+        {
+            int p_Num = m_ClntLstViewPt.getCheckedItemPosition();
+            if( ( p_Num != -1 ) && ( p_Num < m_ClntLstItemArrayLstPt.size() ) )
+            {
+                if( m_MyNtwkMediaPocsThrdPt == null ) //如果我的网络媒体处理线程还没有初始化。
+                {
+                    if( MyNtwkMediaPocsThrdInit() != 0 ) //如果我的网络媒体处理线程初始化失败。
+                    {
+                        break Out;
+                    }
+                }
+
+                Map< String, String > p_ClntLstItemPt = m_ClntLstItemArrayLstPt.get( p_Num );
+
+                m_MyNtwkMediaPocsThrdPt.CnctInit( 1, p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1, p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ), p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) );
+            }
+
+            p_Rslt = 0;
+        }
+
+        if( p_Rslt != 0 ) //如果本函数执行失败。
+        {
+
+        }
+        return;
+    }
+
+    //客户端删除按钮。
+    public void OnClickClntDelBtn( View ViewPt )
+    {
+        int p_Num = m_ClntLstViewPt.getCheckedItemPosition();
+        if( p_Num != -1 )
+        {
+            SendMainActMsg( MainActMsgTyp.ClntLstDelItem, p_Num );
+        }
     }
 
     //客户端设置按钮。
@@ -483,7 +710,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     {
         if( m_MyNtwkMediaPocsThrdPt != null )
         {
-            m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.LclTkbkMode, MyNtwkMediaPocsThrd.TkbkMode.None );
+            m_MyNtwkMediaPocsThrdPt.LclTkbkMode( 1, MyNtwkMediaPocsThrd.TkbkMode.None );
         }
     }
 
@@ -492,7 +719,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     {
         if( m_MyNtwkMediaPocsThrdPt != null )
         {
-            m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.LclTkbkMode, MyNtwkMediaPocsThrd.TkbkMode.Ado );
+            m_MyNtwkMediaPocsThrdPt.LclTkbkMode( 1, MyNtwkMediaPocsThrd.TkbkMode.Ado );
         }
     }
 
@@ -501,7 +728,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     {
         if( m_MyNtwkMediaPocsThrdPt != null )
         {
-            m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.LclTkbkMode, MyNtwkMediaPocsThrd.TkbkMode.Vdo );
+            m_MyNtwkMediaPocsThrdPt.LclTkbkMode( 1, MyNtwkMediaPocsThrd.TkbkMode.Vdo );
         }
     }
 
@@ -510,7 +737,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     {
         if( m_MyNtwkMediaPocsThrdPt != null )
         {
-            m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.LclTkbkMode, MyNtwkMediaPocsThrd.TkbkMode.AdoVdo );
+            m_MyNtwkMediaPocsThrdPt.LclTkbkMode( 1, MyNtwkMediaPocsThrd.TkbkMode.AdoVdo );
         }
     }
 
@@ -606,172 +833,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         }
     }
 
-    //服务端初始化或销毁按钮。
-    public void OnClickSrvrCreateOrDstoyBtn( View ViewPt )
-    {
-        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
-
-        Out:
-        {
-            if( m_MyNtwkMediaPocsThrdPt == null ) //如果我的媒体处理线程还没有初始化。
-            {
-                if( TkbkInit() != 0 ) //如果我的媒体处理线程初始化失败。
-                {
-                    break Out;
-                }
-            }
-
-            m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.SrvrInitOrDstoy, ( ( EditText ) m_MainLyotViewPt.findViewById( R.id.SrvrUrlEdTxtId ) ).getText().toString() ); //向我的媒体处理线程发送服务端初始化或销毁消息。
-
-            p_Rslt = 0;
-        }
-
-        if( p_Rslt != 0 )
-        {
-        }
-    }
-
-    //连接激活按钮。
-    public void OnClickCnctActBtn( View ViewPt )
-    {
-        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
-
-        Out:
-        {
-            int p_Idx = m_CnctLstViewPt.getCheckedItemPosition();
-            if( p_Idx != -1 )
-            {
-                m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.CnctAct, p_Idx ); //向我的媒体处理线程发送连接销毁消息。
-            }
-
-            p_Rslt = 0;
-        }
-
-        if( p_Rslt != 0 )
-        {
-        }
-    }
-
-    //连接销毁按钮。
-    public void OnClickCnctDstoyBtn( View ViewPt )
-    {
-        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
-
-        Out:
-        {
-            int p_Idx = m_CnctLstViewPt.getCheckedItemPosition();
-            if( p_Idx != -1 )
-            {
-                m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.CnctDstoy, p_Idx ); //向我的媒体处理线程发送连接销毁消息。
-            }
-
-            p_Rslt = 0;
-        }
-
-        if( p_Rslt != 0 )
-        {
-        }
-    }
-
-    //客户端添加按钮。
-    public void OnClickClntAddBtn( View ViewPt )
-    {
-        Vstr p_SrvrUrlVstrPt = null;
-        Vstr p_ErrInfoVstrPt = null;
-        HTString p_SrvrPrtclStrPt = new HTString();
-        HTString p_SrvrNodeNameStrPt = new HTString();
-        HTString p_SrvrNodeSrvcStrPt = new HTString();
-
-        Out:
-        {
-            p_SrvrUrlVstrPt = new Vstr();
-            if( p_SrvrUrlVstrPt.Init( ( ( TextView )m_MainLyotViewPt.findViewById( R.id.ClntSrvrUrlEdTxtId ) ).getText().toString() ) != 0 )
-            {
-                String p_InfoStrPt = "初始化客户端的服务端Url动态字符串失败。";
-                Log.e( m_MyNtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
-                SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
-                Toast.makeText( this, p_InfoStrPt, Toast.LENGTH_LONG ).show();
-                break Out;
-            }
-            p_ErrInfoVstrPt = new Vstr();
-            if( p_ErrInfoVstrPt.Init( "" ) != 0 )
-            {
-                String p_InfoStrPt = "初始化错误信息动态字符串失败。";
-                Log.e( m_MyNtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
-                SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
-                break Out;
-            }
-
-            //解析服务端Url字符串。
-            if( p_SrvrUrlVstrPt.UrlParse( p_SrvrPrtclStrPt, null, null, p_SrvrNodeNameStrPt, p_SrvrNodeSrvcStrPt, null, null, null, null, p_ErrInfoVstrPt ) != 0 )
-            {
-                String p_InfoStrPt = "解析客户端的服务端Url字符串失败。原因：" + p_ErrInfoVstrPt.GetStr();
-                Log.e( m_MyNtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
-                SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
-                Toast.makeText( this, p_InfoStrPt, Toast.LENGTH_LONG ).show();
-                break Out;
-            }
-            if( ( p_SrvrPrtclStrPt.m_Val.equals( "Tcp" ) == false ) && ( p_SrvrPrtclStrPt.m_Val.equals( "Audp" ) == false ) )
-            {
-                String p_InfoStrPt = "客户端的服务端Url字符串的协议不正确。";
-                Log.e( m_MyNtwkMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
-                SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
-                Toast.makeText( this, p_InfoStrPt, Toast.LENGTH_LONG ).show();
-                break Out;
-            }
-            if( p_SrvrNodeSrvcStrPt.m_Val.equals( "" ) )
-            {
-                p_SrvrNodeSrvcStrPt.m_Val = "12345";
-            }
-
-            ClntLstViewAddItem( p_SrvrPrtclStrPt.m_Val, p_SrvrNodeNameStrPt.m_Val, p_SrvrNodeSrvcStrPt.m_Val );
-        }
-
-        if( p_SrvrUrlVstrPt != null ) p_SrvrUrlVstrPt.Dstoy();
-        if( p_ErrInfoVstrPt != null ) p_ErrInfoVstrPt.Dstoy();
-    }
-
-    //客户端连接按钮。
-    public void OnClickClntCnctBtn( View ViewPt )
-    {
-        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
-
-        Out:
-        {
-            int p_Idx = m_ClntLstViewPt.getCheckedItemPosition();
-            if( ( p_Idx != -1 ) && ( p_Idx < m_ClntLstItemArrayLstPt.size() ) )
-            {
-                if( m_MyNtwkMediaPocsThrdPt == null ) //如果我的媒体处理线程还没有初始化。
-                {
-                    if( TkbkInit() != 0 ) //如果对讲初始化失败。
-                    {
-                        break Out;
-                    }
-                }
-
-                Map< String, String > p_ClntLstItemPt = m_ClntLstItemArrayLstPt.get( p_Idx );
-
-                m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.CnctInit, p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1, p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ), p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) ); //向我的媒体处理线程发送连接初始化消息。
-            }
-
-            p_Rslt = 0;
-        }
-
-        if( p_Rslt != 0 )
-        {
-        }
-    }
-
-    //客户端删除按钮。
-    public void OnClickClntDelBtn( View ViewPt )
-    {
-        int p_Idx = m_ClntLstViewPt.getCheckedItemPosition();
-        if( p_Idx != -1 )
-        {
-            ClntLstViewDelItem( p_Idx );
-        }
-    }
-
     //设置按钮。
     public void OnClickStngBtn( View ViewPt )
     {
@@ -837,12 +898,12 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
             {
                 case MotionEvent.ACTION_DOWN: //如果是按下消息。
                 {
-                    if( m_MyNtwkMediaPocsThrdPt != null ) m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.PttBtnDown );
+                    if( m_MyNtwkMediaPocsThrdPt != null ) m_MyNtwkMediaPocsThrdPt.PttBtnDown( 1 );
                     break;
                 }
                 case MotionEvent.ACTION_UP: //如果是弹起消息。
                 {
-                    if( m_MyNtwkMediaPocsThrdPt != null ) m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.PttBtnUp );
+                    if( m_MyNtwkMediaPocsThrdPt != null ) m_MyNtwkMediaPocsThrdPt.PttBtnUp( 1 );
                     break;
                 }
             }
@@ -1191,58 +1252,18 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         m_CurActivityLyotViewPt = m_StngLyotViewPt;
     }
 
-    //客户端列表视图添加项目。
-    public void ClntLstViewAddItem( String PrtclStrPt, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
-    {
-        Out:
-        {
-            for( Map< String, String > p_ClntLstItemPt : m_ClntLstItemArrayLstPt )
-            {
-                if( ( p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( PrtclStrPt ) ) &&
-                    ( p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ).equals( RmtNodeNameStrPt ) ) &&
-                    ( p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ).equals( RmtNodeSrvcStrPt ) ) )
-                {
-                    Toast.makeText( this, "已存在相同的客户端的服务端，无需重复添加。", Toast.LENGTH_SHORT ).show();
-                    break Out;
-                }
-            }
-
-            Map< String, String > p_ClntLstItemPt = new HashMap< String, String >();
-            p_ClntLstItemPt.put( "CnctAndClntLstItemPrtclTxtId", PrtclStrPt );
-            p_ClntLstItemPt.put( "CnctAndClntLstItemRmtNodeNameTxtId", RmtNodeNameStrPt );
-            p_ClntLstItemPt.put( "CnctAndClntLstItemRmtNodeSrvcTxtId", RmtNodeSrvcStrPt );
-
-            SendMainActMsg( MainActMsgTyp.ClntLstViewAddItem, p_ClntLstItemPt );
-        }
-    }
-
-    //客户端列表视图删除项目。
-    public void ClntLstViewDelItem( int Idx )
-    {
-        Out:
-        {
-            if( ( Idx < 0 ) || ( Idx >= m_ClntLstItemArrayLstPt.size() ) )
-            {
-                Toast.makeText( this, "客户端列表不存在索引为" + Idx + "的项目，无法删除。", Toast.LENGTH_SHORT ).show();
-                break Out;
-            }
-
-            SendMainActMsg( MainActMsgTyp.ClntLstViewDelItem, Idx );
-        }
-    }
-
-    //我的媒体处理线程初始化。
+    //我的网络媒体处理线程初始化。
     public int MyNtwkMediaPocsThrdInit()
     {
         int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
-            if( m_MyNtwkMediaPocsThrdPt == null ) //如果我的媒体处理线程还没有启动。
+            if( m_MyNtwkMediaPocsThrdPt == null ) //如果我的网络媒体处理线程还没有启动。
             {
-                Log.i( m_CurClsNameStrPt, "我的媒体处理线程初始化开始。" );
+                Log.i( m_CurClsNameStrPt, "我的网络媒体处理线程初始化开始。" );
 
-                //创建我的媒体处理线程。
+                //创建我的网络媒体处理线程。
                 m_MyNtwkMediaPocsThrdPt = new MyNtwkMediaPocsThrd( this );
 
                 //设置网络。
@@ -1847,16 +1868,24 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                     m_MyNtwkMediaPocsThrdPt.SaveStsToTxtFile( 0, p_FullPathStrPt );
                 }
 
-                //启动我的媒体处理线程。
+                //设置本端对讲模式。
+                m_MyNtwkMediaPocsThrdPt.LclTkbkMode(
+                        0,
+                        ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoTkbkModeRdBtnId ) ).isChecked() ) ? MyNtwkMediaPocsThrd.TkbkMode.Ado :
+                                ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseVdoTkbkModeRdBtnId ) ).isChecked() ) ? MyNtwkMediaPocsThrd.TkbkMode.Vdo :
+                                        ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? MyNtwkMediaPocsThrd.TkbkMode.AdoVdo :
+                                                MyNtwkMediaPocsThrd.TkbkMode.NoChg );
+
+                //启动我的网络媒体处理线程。
                 m_MyNtwkMediaPocsThrdPt.start();
 
-                Log.i( m_CurClsNameStrPt, "我的媒体处理线程初始化结束。" );
+                Log.i( m_CurClsNameStrPt, "我的网络媒体处理线程初始化结束。" );
             }
 
             p_Rslt = 0; //设置本函数执行成功。
         }
 
-        if( p_Rslt != 0 ) //如果启动我的媒体处理线程失败。
+        if( p_Rslt != 0 ) //如果本函数执行失败。
         {
             MyNtwkMediaPocsThrdDstoy();
             m_MyNtwkMediaPocsThrdPt = null;
@@ -1864,50 +1893,15 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         return p_Rslt;
     }
 
-    //我的媒体处理线程销毁。
+    //我的网络媒体处理线程销毁。
     public void MyNtwkMediaPocsThrdDstoy()
     {
         if( m_MyNtwkMediaPocsThrdPt != null )
         {
-            Log.i( m_CurClsNameStrPt, "请求并等待我的媒体处理线程退出开始。" );
-            m_MyNtwkMediaPocsThrdPt.m_IsInterrupt = 1;
+            Log.i( m_CurClsNameStrPt, "请求并等待我的网络媒体处理线程退出开始。" );
             m_MyNtwkMediaPocsThrdPt.RqirExit( 1, 1 );
-            Log.i( m_CurClsNameStrPt, "请求并等待我的媒体处理线程退出结束。" );
+            Log.i( m_CurClsNameStrPt, "请求并等待我的网络媒体处理线程退出结束。" );
         }
-    }
-
-    //对讲初始化。
-    public int TkbkInit()
-    {
-        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
-
-        Out:
-        {
-            Log.i( m_CurClsNameStrPt, "对讲初始化开始。" );
-
-            if( m_MyNtwkMediaPocsThrdPt == null ) //如果广播媒体处理线程还没有启动。
-            {
-                if( MyNtwkMediaPocsThrdInit() != 0 ) break Out;
-            }
-
-            //设置本端对讲模式。
-            m_MyNtwkMediaPocsThrdPt.SendUserMsg(
-                    0,
-                    MyNtwkMediaPocsThrd.UserMsgTyp.LclTkbkMode,
-                    ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoTkbkModeRdBtnId ) ).isChecked() ) ? MyNtwkMediaPocsThrd.TkbkMode.Ado :
-                            ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseVdoTkbkModeRdBtnId ) ).isChecked() ) ? MyNtwkMediaPocsThrd.TkbkMode.Vdo :
-                                    ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? MyNtwkMediaPocsThrd.TkbkMode.AdoVdo : MyNtwkMediaPocsThrd.TkbkMode.NoChg );
-
-            Log.i( m_CurClsNameStrPt, "对讲初始化结束。" );
-
-            p_Rslt = 0; //设置本函数执行成功。
-        }
-
-        if( p_Rslt != 0 ) //如果启动广播媒体处理线程失败。
-        {
-            m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.BdctCnctAllDstoy );
-        }
-        return p_Rslt;
     }
 
     //广播初始化。
@@ -1919,21 +1913,23 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         {
             Log.i( m_CurClsNameStrPt, "广播初始化开始。" );
 
-            if( m_MyNtwkMediaPocsThrdPt == null ) //如果广播媒体处理线程还没有启动。
+            if( m_MyNtwkMediaPocsThrdPt == null ) //如果我的网络媒体处理线程还没有启动。
             {
-                if( MyNtwkMediaPocsThrdInit() != 0 ) break Out;
+                if( MyNtwkMediaPocsThrdInit() != 0 ) //如果我的网络媒体处理线程初始化失败。
+                {
+                    break Out;
+                }
             }
 
             //添加客户端列表。
             for( Map< String, String > p_ClntLstItemPt : m_ClntLstItemArrayLstPt )
             {
-                m_MyNtwkMediaPocsThrdPt.SendUserMsg( 0, MyNtwkMediaPocsThrd.UserMsgTyp.BdctCnctInit, p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1, p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ), p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) ); //向广播媒体处理线程发送连接初始化消息。
+                m_MyNtwkMediaPocsThrdPt.BdctCnctInit( 0, p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1, p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ), p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) ); //向广播媒体处理线程发送连接初始化消息。
             }
 
             //设置本端对讲模式。
-            m_MyNtwkMediaPocsThrdPt.SendUserMsg(
+            m_MyNtwkMediaPocsThrdPt.LclTkbkMode(
                     1,
-                    MyNtwkMediaPocsThrd.UserMsgTyp.LclTkbkMode,
                     MyNtwkMediaPocsThrd.TkbkMode.NoChg );
 
             Log.i( m_CurClsNameStrPt, "广播初始化结束。" );
@@ -1941,9 +1937,9 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
             p_Rslt = 0; //设置本函数执行成功。
         }
 
-        if( p_Rslt != 0 ) //如果启动广播媒体处理线程失败。
+        if( p_Rslt != 0 ) //如果本函数执行失败。
         {
-            m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.BdctCnctAllDstoy );
+            BdctDstoy();
         }
         return p_Rslt;
     }
@@ -1953,9 +1949,9 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     {
         if( m_MyNtwkMediaPocsThrdPt != null )
         {
-            Log.i( m_CurClsNameStrPt, "开始请求并等待广播媒体处理线程退出。" );
-            m_MyNtwkMediaPocsThrdPt.SendUserMsg( 1, MyNtwkMediaPocsThrd.UserMsgTyp.BdctCnctAllDstoy );
-            Log.i( m_CurClsNameStrPt, "结束请求并等待广播媒体处理线程退出。" );
+            Log.i( m_CurClsNameStrPt, "开始请求并等待广播销毁。" );
+            m_MyNtwkMediaPocsThrdPt.BdctCnctAllDstoy( 1 );
+            Log.i( m_CurClsNameStrPt, "结束请求并等待广播销毁。" );
         }
     }
 }

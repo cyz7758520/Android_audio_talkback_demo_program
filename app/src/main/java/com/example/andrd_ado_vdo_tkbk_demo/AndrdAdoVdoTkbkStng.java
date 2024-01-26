@@ -53,6 +53,10 @@ public class AndrdAdoVdoTkbkStng
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement1Pt, "Main" );
                 p_StngXMLElementPt.InsertEndChild( p_TmpXMLElement1Pt );
 
+                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "SrvrUrl" );
+                p_TmpXMLElement2Pt.SetText( ( ( EditText ) MainActPt.m_MainLyotViewPt.findViewById( R.id.SrvrUrlEdTxtId ) ).getText().toString() );
+                p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
+
                 for( Map< String, String > p_ClntLstItemPt : MainActPt.m_ClntLstItemArrayLstPt )
                 {
                     p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "ClntLstItem" );
@@ -733,7 +737,12 @@ public class AndrdAdoVdoTkbkStng
                             for( p_TmpXMLElement1Pt.FirstChildElement( p_TmpXMLElement2Pt ); p_TmpXMLElement2Pt.m_XMLElementPt != 0; p_TmpXMLElement2Pt.NextSiblingElement( p_TmpXMLElement2Pt ) )
                             {
                                 p_TmpXMLElement2Pt.Name( p_HTString1Pt );
-                                if( p_HTString1Pt.m_Val.equals( "ClntLstItem" ) )
+                                if( p_HTString1Pt.m_Val.equals( "SrvrUrl" ) )
+                                {
+                                    p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
+                                    ( ( EditText ) MainActPt.m_MainLyotViewPt.findViewById( R.id.SrvrUrlEdTxtId ) ).setText( p_HTString1Pt.m_Val );
+                                }
+                                else if( p_HTString1Pt.m_Val.equals( "ClntLstItem" ) )
                                 {
                                     for( p_TmpXMLElement2Pt.FirstChildElement( p_TmpXMLElement3Pt ); p_TmpXMLElement3Pt.m_XMLElementPt != 0; p_TmpXMLElement3Pt.NextSiblingElement( p_TmpXMLElement3Pt ) )
                                     {
@@ -751,7 +760,7 @@ public class AndrdAdoVdoTkbkStng
                                             p_TmpXMLElement3Pt.GetText( p_HTString4Pt );
                                         }
                                     }
-                                    MainActPt.ClntLstViewAddItem( p_HTString2Pt.m_Val, p_HTString3Pt.m_Val, p_HTString4Pt.m_Val );
+                                    MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.ClntLstAddItem, p_HTString2Pt.m_Val, p_HTString3Pt.m_Val, p_HTString4Pt.m_Val );
                                 }
                                 else if( p_HTString1Pt.m_Val.equals( "TkbkMode" ) )
                                 {
@@ -1963,11 +1972,12 @@ public class AndrdAdoVdoTkbkStng
         ( ( RadioButton ) MainActPt.m_ClntStngLyotViewPt.findViewById( R.id.UseRtFdRdBtnId ) ).performClick();
         ( ( EditText ) MainActPt.m_ClntStngLyotViewPt.findViewById( R.id.MaxCnctTimesEdTxtId ) ).setText( "5" );
 
-        //设置服务端和客户端的Url。
+        //设置服务端Url组合框和客户端Url组合框的内容。
         try
         {
             ArrayList< String > p_UrlList = new ArrayList< String >();
 
+            //设置Url列表。
             p_UrlList.add( "" );
             for( Enumeration<NetworkInterface> p_EnumNtwkIntfc = NetworkInterface.getNetworkInterfaces(); p_EnumNtwkIntfc.hasMoreElements(); ) //遍历所有的网络接口设备。
             {
@@ -2005,9 +2015,7 @@ public class AndrdAdoVdoTkbkStng
             p_UrlList.add( "Audp://[::1]:12345" );
             p_UrlList.add( "" );
 
-            ( ( EditText ) MainActPt.m_MainLyotViewPt.findViewById( R.id.SrvrUrlEdTxtId ) ).setText( p_UrlList.get( 2 ) ); //默认选择第一个地址。
-            ( ( EditText ) MainActPt.m_MainLyotViewPt.findViewById( R.id.ClntSrvrUrlEdTxtId ) ).setText( p_UrlList.get( 2 ) ); //默认选择第一个地址。
-
+            //设置下拉框的内容。
             ArrayAdapter< String > p_UrlAdapter = new ArrayAdapter< String >( MainActPt, android.R.layout.simple_spinner_dropdown_item, p_UrlList );
             ( ( Spinner ) MainActPt.m_MainLyotViewPt.findViewById( R.id.SrvrUrlSpinnerId ) ).setAdapter( p_UrlAdapter );
             ( ( Spinner ) MainActPt.m_MainLyotViewPt.findViewById( R.id.SrvrUrlSpinnerId ) ).setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() //设置服务端Url的Spinner控件的选择监听器。
@@ -2047,6 +2055,10 @@ public class AndrdAdoVdoTkbkStng
 
                 }
             } );
+
+            //设置默认选择项。
+            ( ( EditText ) MainActPt.m_MainLyotViewPt.findViewById( R.id.SrvrUrlEdTxtId ) ).setText( p_UrlList.get( 2 ) ); //设置服务端Url编辑框默认选择第第二个Audp协议的Url。
+            ( ( EditText ) MainActPt.m_MainLyotViewPt.findViewById( R.id.ClntSrvrUrlEdTxtId ) ).setText( p_UrlList.get( 2 ) ); //默认客户端Url编辑框默认选择第第二个Audp协议的Url。
         }
         catch( SocketException ignored )
         {

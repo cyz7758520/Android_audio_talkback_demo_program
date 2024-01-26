@@ -2022,8 +2022,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                 //执行顺序：媒体销毁，用户销毁并退出。
                                 if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数。
                                 {
-                                    if( SendMediaMsg( 1, 0, MediaMsgTyp.UserDstoy ) != 0 ) break Out;
                                     if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy ) != 0 ) break Out;
+                                    if( SendMediaMsg( 1, 0, MediaMsgTyp.UserDstoy ) != 0 ) break Out;
                                 }
                                 else //如果上一次调用了用户定义的销毁函数，就不再进行媒体销毁，用户销毁。
                                 {
@@ -2036,17 +2036,17 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：接收到退出请求：重启。" );
 
                                 //执行顺序：媒体销毁，用户销毁，用户初始化，媒体初始化。
-                                if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptInit ) != 0 ) break Out;
-                                if( SendMediaMsg( 1, 0, MediaMsgTyp.UserInit ) != 0 ) break Out;
                                 if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数。
                                 {
-                                    if( SendMediaMsg( 1, 0, MediaMsgTyp.UserDstoy ) != 0 ) break Out;
                                     if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy ) != 0 ) break Out;
+                                    if( SendMediaMsg( 1, 0, MediaMsgTyp.UserDstoy ) != 0 ) break Out;
                                 }
                                 else //如果上一次调用了用户定义的销毁函数，就不再进行媒体销毁，用户销毁。
                                 {
                                     m_ReadyExitCnt--; //设置准备退出计数递减。因为在请求退出时递增了。
                                 }
+                                if( SendMediaMsg( 1, 0, MediaMsgTyp.UserInit ) != 0 ) break Out;
+                                if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptInit ) != 0 ) break Out;
                                 break;
                             }
                             case 3: //请求重启但不执行用户定义的UserInit初始化函数和UserDstoy销毁函数。
@@ -2054,8 +2054,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：接收到退出请求：重启但不执行用户定义的UserInit初始化函数和UserDstoy销毁函数。" );
 
                                 //执行顺序：媒体销毁，媒体初始化。
-                                if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptInit ) != 0 ) break Out;
                                 if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy ) != 0 ) break Out;
+                                if( SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptInit ) != 0 ) break Out;
                                 m_ReadyExitCnt--; //设置准备退出计数递减。因为在请求退出时递增了。
                                 break;
                             }
@@ -2139,8 +2139,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
             {
                 //执行顺序：媒体销毁，用户销毁并退出。
                 m_ReadyExitCnt++;
-                SendMediaMsg( 1, 0, MediaMsgTyp.UserDstoy );
                 SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
+                SendMediaMsg( 1, 0, MediaMsgTyp.UserDstoy );
             }
 
             p_MediaMsgPt.m_MediaMsgRslt = -1; //设置媒体消息处理结果为失败。
@@ -2762,8 +2762,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
             {
                 //执行顺序：媒体销毁，用户销毁并退出。
                 m_ReadyExitCnt++;
-                SendMediaMsg( 0, 0, MediaMsgTyp.UserDstoy );
-                SendMediaMsg( 0, 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
+                SendMediaMsg( 1, 0, MediaMsgTyp.AdoVdoInptOtptDstoy );
+                SendMediaMsg( 1, 0, MediaMsgTyp.UserDstoy );
             }
         }
         return p_Rslt;

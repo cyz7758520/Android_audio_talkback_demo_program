@@ -2,7 +2,7 @@
 # 必读说明
 
 # 简介
-&emsp;&emsp;本软件根据《道德经》为核心思想而设计，实现了两个设备之间进行音视频对讲，一般可用于楼宇对讲、智能门铃对讲、企业员工对讲、智能对讲机、以及类似于微信QQ音视频对讲的其他场景。本软件支持以下增强处理：  
+&emsp;&emsp;本软件根据《道德经》为核心思想而设计，实现了两个设备之间进行音视频对讲，实现了一个设备对多个设备进行广播对讲，一般可用于楼宇对讲、智能门铃对讲、企业员工对讲、智能对讲机、以及类似于微信QQ音视频对讲的其他场景。本软件支持以下增强处理：  
 &emsp;&emsp;* 支持同时与多个设备建立连接，并选择激活任一连接。  
 &emsp;&emsp;* 支持IPv4和IPv6的TCP和UDP协议传输，UDP协议支持可靠传输、支持连接中途更换IP不中断。  
 &emsp;&emsp;* 支持实时半双工（一键通）和实时全双工的音频或视频或音视频对讲。  
@@ -52,7 +52,7 @@
 &emsp;&emsp;1、在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限。  
 &emsp;&emsp;2、将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中。  
 &emsp;&emsp;3、如果自己的软件已有传输协议：继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserPocs、UserDstoy、UserMsg、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetAdoOtptFrm、UserWriteVdoOtptFrm、UserGetVdoOtptFrm这九个回调成员函数。  
-&emsp;&emsp;&emsp;&emsp;如果自己的软件没有传输协议：继承HeavenTao.Media.NtwkMediaPocsThrd网络媒体处理线程类，实现UserNtwkMediaPocsThrdInit、UserNtwkMediaPocsThrdDstoy、UserSrvrInit、UserSrvrDstoy、UserShowLog、UserShowToast、UserVibrate、UserCnctInit、UserCnctModify、UserCnctDstoy这十个回调成员函数。  
+&emsp;&emsp;&emsp;&emsp;如果自己的软件没有传输协议：继承HeavenTao.Media.NtwkMediaPocsThrd网络媒体处理线程类，实现UserNtwkMediaPocsThrdInit、UserNtwkMediaPocsThrdDstoy、UserSrvrInit、UserSrvrDstoy、UserShowLog、UserShowToast、UserVibrate、UserCnctInit、UserCnctSts、UserCnctAct、UserCnctLclTkbkMode、UserCnctRmtTkbkMode、UserCnctDstoy这十三个回调成员函数。  
 &emsp;&emsp;&emsp;&emsp;如果要在JNI层处理音视频帧，则可以将这些回调成员函数继承为native函数，然后在JNI层实现即可。  
 &emsp;&emsp;4、new这个继承的类，然后调用类的相关设置成员函数，最后调用start()成员函数启动媒体处理线程即可。  
 &emsp;&emsp;5、当需要媒体处理线程退出时，调用类的RqirExit()成员函数即可。  
@@ -103,10 +103,8 @@
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://blog.csdn.net/cyz7758520?type=blog  
 &emsp;&emsp;Windows版源代码：https://github.com/cyz7758520/Windows_audio_talkback_demo_program  
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitee.com/chen_yi_ze/Windows_audio_talkback_demo_program  
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitcode.net/cyz7758520/Windows_audio_talkback_demo_program  
 &emsp;&emsp;Android版源代码：https://github.com/cyz7758520/Android_audio_talkback_demo_program  
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitee.com/chen_yi_ze/Android_audio_talkback_demo_program  
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitcode.net/cyz7758520/Android_audio_talkback_demo_program  
 
 # 版权
 &emsp;&emsp;Speex：https://gitlab.xiph.org/xiph/speex/-/blob/master/COPYING  
@@ -206,25 +204,44 @@ ___
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptEncdSrcFrmLenByt：\[输入\]，存放视频输出已编码格式原始帧的长度，单位为字节。如果视频输出解码器要使用Yu12原始数据，则本参数无意义。  
 返回说明：无。  
 ___
-### NtwkMediaPocsThrd网络媒体处理线程类的十个回调函数
+### NtwkMediaPocsThrd网络媒体处理线程类的十三个回调函数
 ___
-UserNtwkMediaPocsThrdInit  
+函数名称：UserNtwkMediaPocsThrdInit  
+功能说明：用户定义的网络媒体处理线程初始化函数。  
 ___
-UserNtwkMediaPocsThrdDstoy  
+函数名称：UserNtwkMediaPocsThrdDstoy  
+功能说明：用户定义的网络媒体处理线程销毁函数。  
 ___
-UserSrvrInit  
+函数名称：UserSrvrInit  
+功能说明：用户定义的服务端初始化函数。  
 ___
-UserSrvrDstoy  
+函数名称：UserSrvrDstoy  
+功能说明：用户定义的服务端销毁函数。  
 ___
-UserShowLog  
+函数名称：UserShowLog  
+功能说明：用户定义的显示日志函数。  
 ___
-UserShowToast  
+函数名称：UserShowToast  
+功能说明：用户定义的显示Toast函数。  
 ___
-UserVibrate  
+函数名称：UserVibrate  
+功能说明：用户定义的振动函数。  
 ___
-UserCnctInit  
+函数名称：UserCnctInit  
+功能说明：用户定义的连接初始化函数。  
 ___
-UserCnctModify  
+函数名称：UserCnctSts  
+功能说明：用户定义的连接状态函数。  
 ___
-UserCnctDstoy  
+函数名称：UserCnctAct  
+功能说明：用户定义的连接激活函数。  
+___
+函数名称：UserCnctLclTkbkMode  
+功能说明：用户定义的连接本端对讲模式函数。  
+___
+函数名称：UserCnctRmtTkbkMode  
+功能说明：用户定义的连接远端对讲模式函数。  
+___
+函数名称：UserCnctDstoy  
+功能说明：用户定义的连接销毁函数。  
 ___
