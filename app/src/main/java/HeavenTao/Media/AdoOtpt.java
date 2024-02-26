@@ -56,32 +56,32 @@ public class AdoOtpt //音频输出。
                 {
                     case 0: //如果要使用PCM原始数据。
                     {
-                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引 " + m_Idx + "：初始化PCM原始数据成功。" );
+                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：初始化PCM原始数据成功。" );
                         break;
                     }
                     case 1: //如果要使用Speex解码器。
                     {
                         if( m_FrmLenMsec != 20 )
                         {
-                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引 " + m_Idx + "：帧的长度不为20毫秒不能使用Speex解码器。" );
+                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：帧的长度不为20毫秒不能使用Speex解码器。" );
                             break Out;
                         }
                         m_SpeexDecdPt.m_Pt = new HeavenTao.Ado.SpeexDecd();
                         if( m_SpeexDecdPt.m_Pt.Init( m_SmplRate, m_SpeexDecdPt.m_IsUsePrcplEnhsmt ) == 0 )
                         {
-                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引 " + m_Idx + "：初始化Speex解码器成功。" );
+                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：初始化Speex解码器成功。" );
                         }
                         else
                         {
                             m_SpeexDecdPt.m_Pt = null;
-                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引 " + m_Idx + "：初始化Speex解码器失败。" );
+                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：初始化Speex解码器失败。" );
                             break Out;
                         }
                         break;
                     }
                     case 2: //如果要使用Opus解码器。
                     {
-                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引 " + m_Idx + "：暂不支持使用Opus解码器。" );
+                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：暂不支持使用Opus解码器。" );
                         break Out;
                     }
                 }
@@ -103,7 +103,7 @@ public class AdoOtpt //音频输出。
             {
                 case 0: //如果要使用PCM原始数据。
                 {
-                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引 " + m_Idx + "：销毁PCM原始数据成功。" );
+                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：销毁PCM原始数据成功。" );
                     break;
                 }
                 case 1: //如果要使用Speex解码器。
@@ -112,11 +112,11 @@ public class AdoOtpt //音频输出。
                     {
                         if( m_SpeexDecdPt.m_Pt.Dstoy() == 0 )
                         {
-                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引 " + m_Idx + "：销毁Speex解码器成功。" );
+                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：销毁Speex解码器成功。" );
                         }
                         else
                         {
-                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引 " + m_Idx + "：销毁Speex解码器失败。" );
+                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：销毁Speex解码器失败。" );
                         }
                         m_SpeexDecdPt.m_Pt = null;
                     }
@@ -124,10 +124,12 @@ public class AdoOtpt //音频输出。
                 }
                 case 2: //如果要使用Opus解码器。
                 {
-                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引 " + m_Idx + "：销毁Opus解码器成功。" );
+                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：销毁Opus解码器成功。" );
                     break;
                 }
             }
+
+            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：音频输出流销毁成功。" );
         }
     }
     public ArrayList< Strm > m_StrmCntnrPt; //存放流容器的指针。
@@ -213,7 +215,14 @@ public class AdoOtpt //音频输出。
                 if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
                 {
                     //从流容器删除。
-                    p_StrmPt.Dstoy();
+                    if( m_IsInit != 0 ) //如果已初始化音频输出。
+                    {
+                        p_StrmPt.Dstoy();
+                    }
+                    if( m_IsUse != 0 )
+                    {
+                        m_StrmUseTotal--;
+                    }
                     p_StrmItrtr.remove();
                     return;
                 }
@@ -301,17 +310,13 @@ public class AdoOtpt //音频输出。
                         {
                             if( m_IsInit != 0 ) //如果已初始化音频输出。
                             {
-                                if( p_StrmPt.Init() == 0 ) //如果初始化音频输出的流成功。
+                                if( p_StrmPt.Init() != 0 ) //如果初始化音频输出的流失败。
                                 {
-                                    p_StrmPt.m_IsUse = 1;
-                                    m_StrmUseTotal++;
+                                    return;
                                 }
                             }
-                            else //如果未初始化音频输出。
-                            {
-                                p_StrmPt.m_IsUse = 1;
-                                m_StrmUseTotal++;
-                            }
+                            p_StrmPt.m_IsUse = 1;
+                            m_StrmUseTotal++;
                         }
                     }
                     else //如果不使用流。
@@ -321,18 +326,13 @@ public class AdoOtpt //音频输出。
                             if( m_IsInit != 0 ) //如果已初始化音频输出。
                             {
                                 p_StrmPt.Dstoy();
-                                p_StrmPt.m_IsUse = 0;
-                                m_StrmUseTotal--;
                             }
-                            else //如果未初始化音频输出。
-                            {
-                                p_StrmPt.m_IsUse = 0;
-                                m_StrmUseTotal--;
-                            }
+                            p_StrmPt.m_IsUse = 0;
+                            m_StrmUseTotal--;
                         }
                     }
+                    return;
                 }
-                return;
             }
         }
     }
@@ -344,13 +344,11 @@ public class AdoOtpt //音频输出。
 
         Out:
         {
-            m_StrmUseTotal = 0;
             for( Strm p_StrmPt : m_StrmCntnrPt )
             {
                 if( p_StrmPt.m_IsUse != 0 )
                 {
                     if( p_StrmPt.Init() != 0 ) break Out;
-                    m_StrmUseTotal++;
                 }
             }
             if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：初始化流容器成功。" );
@@ -371,7 +369,6 @@ public class AdoOtpt //音频输出。
         {
             p_StrmPt.Dstoy();
         }
-        m_StrmUseTotal = 0;
         if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：销毁流容器成功。" );
     }
 
@@ -783,11 +780,11 @@ public class AdoOtpt //音频输出。
                                             //使用Speex解码器。
                                             if( p_StrmPt.m_SpeexDecdPt.m_Pt.Pocs( m_ThrdPt.m_EncdSrcFrmPt, m_ThrdPt.m_EncdSrcFrmLenBytPt.m_Val, m_ThrdPt.m_PcmSrcFrmPt ) == 0 )
                                             {
-                                                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出流索引 " + p_StrmPt.m_Idx + "：使用Speex解码器成功。" );
+                                                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出流索引" + p_StrmPt.m_Idx + "：使用Speex解码器成功。" );
                                             }
                                             else
                                             {
-                                                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出流索引 " + p_StrmPt.m_Idx + "：使用Speex解码器失败。" );
+                                                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出流索引" + p_StrmPt.m_Idx + "：使用Speex解码器失败。" );
                                             }
 
                                             //调用用户定义的获取音频输出帧函数。
@@ -799,7 +796,7 @@ public class AdoOtpt //音频输出。
                                         }
                                         case 2: //如果要使用Opus解码器。
                                         {
-                                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出流索引 " + p_StrmPt.m_Idx + "：暂不支持使用Opus解码器。" );
+                                            if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出流索引" + p_StrmPt.m_Idx + "：暂不支持使用Opus解码器。" );
                                         }
                                     }
 
@@ -848,11 +845,11 @@ public class AdoOtpt //音频输出。
                                                 //使用Speex解码器。
                                                 if( p_StrmPt.m_SpeexDecdPt.m_Pt.Pocs( m_ThrdPt.m_EncdSrcFrmPt, m_ThrdPt.m_EncdSrcFrmLenBytPt.m_Val, m_ThrdPt.m_PcmSrcFrmPt ) == 0 )
                                                 {
-                                                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出流索引 " + p_StrmPt.m_Idx + "：使用Speex解码器成功。" );
+                                                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出流索引" + p_StrmPt.m_Idx + "：使用Speex解码器成功。" );
                                                 }
                                                 else
                                                 {
-                                                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出流索引 " + p_StrmPt.m_Idx + "：使用Speex解码器失败。" );
+                                                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出流索引" + p_StrmPt.m_Idx + "：使用Speex解码器失败。" );
                                                 }
 
                                                 //调用用户定义的获取音频输出帧函数。
@@ -864,7 +861,7 @@ public class AdoOtpt //音频输出。
                                             }
                                             case 2: //如果要使用Opus解码器。
                                             {
-                                                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出流索引 " + p_StrmPt.m_Idx + "：暂不支持使用Opus解码器。" );
+                                                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出流索引" + p_StrmPt.m_Idx + "：暂不支持使用Opus解码器。" );
                                             }
                                         }
 
@@ -882,6 +879,10 @@ public class AdoOtpt //音频输出。
                                     else m_ThrdPt.m_PcmSrcFrmPt[ p_TmpInt ] = ( short ) m_ThrdPt.m_PcmMixFrmPt[ p_TmpInt ];
                                 }
                             }
+                        }
+                        else //如果没有流要使用。
+                        {
+                            Arrays.fill( m_ThrdPt.m_PcmSrcFrmPt, ( short ) 0 );
                         }
                     }
 

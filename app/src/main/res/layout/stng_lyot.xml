@@ -42,6 +42,93 @@
             android:textSize="20sp"
             android:textStyle="normal|bold" />
 
+        <TextView
+            android:gravity="center_horizontal"
+            android:textAlignment="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="normal|bold"
+            android:textSize="20sp"
+            android:text="\n————    预设设置    ————\n" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:gravity="center_vertical"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="match_parent"
+                android:text="效果等级：" />
+
+            <RadioGroup
+                android:orientation="horizontal"
+                android:layout_weight="9"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <RadioButton
+                    android:text="低"
+                    android:id="@+id/UseEffectLowRdBtnId"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseEffectLowRdBtn"/>
+
+                <RadioButton
+                    android:text="中"
+                    android:id="@+id/UseEffectMidRdBtnId"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseEffectMidRdBtn"/>
+
+                <RadioButton
+                    android:text="高"
+                    android:id="@+id/UseEffectHighRdBtnId"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseEffectHighRdBtn"/>
+
+                <RadioButton
+                    android:text="超"
+                    android:id="@+id/UseEffectSuperRdBtnId"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseEffectSuperRdBtn"/>
+
+                <RadioButton
+                    android:text="特"
+                    android:id="@+id/UseEffectPremiumRdBtnId"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:onClick="OnClickUseEffectPremiumRdBtn"/>
+
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/IsUseDebugInfoCkBoxId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="使用调试信息"
+            android:onClick="OnClickIsUseDebugInfoRdBtn"/>
+
+        <TextView
+            android:gravity="center_horizontal"
+            android:textAlignment="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="normal|bold"
+            android:textSize="20sp"
+            android:text="\n————    一般设置    ————\n" />
+
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
@@ -170,78 +257,7 @@
             android:layout_height="wrap_content"
             android:textStyle="normal|bold"
             android:textSize="20sp"
-            android:text="\n—————    预设设置    —————\n" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:gravity="center_vertical"
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="match_parent"
-                android:text="效果等级：" />
-
-            <RadioGroup
-                android:orientation="horizontal"
-                android:layout_weight="9"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:text="低"
-                    android:id="@+id/UseEffectLowRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectLowRdBtn"/>
-
-                <RadioButton
-                    android:text="中"
-                    android:id="@+id/UseEffectMidRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectMidRdBtn"/>
-
-                <RadioButton
-                    android:text="高"
-                    android:id="@+id/UseEffectHighRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectHighRdBtn"/>
-
-                <RadioButton
-                    android:text="超"
-                    android:id="@+id/UseEffectSuperRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectSuperRdBtn"/>
-
-                <RadioButton
-                    android:text="特"
-                    android:id="@+id/UseEffectPremiumRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectPremiumRdBtn"/>
-
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <TextView
-            android:gravity="center_horizontal"
-            android:textAlignment="center"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textStyle="normal|bold"
-            android:textSize="20sp"
-            android:text="\n—————    音频设置    —————\n" />
+            android:text="\n————    音频设置    ————\n" />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -671,7 +687,7 @@
             android:layout_height="wrap_content"
             android:textStyle="normal|bold"
             android:textSize="20sp"
-            android:text="\n—————    视频设置    —————\n" />
+            android:text="\n————    视频设置    ————\n" />
 
         <LinearLayout
             android:orientation="horizontal"

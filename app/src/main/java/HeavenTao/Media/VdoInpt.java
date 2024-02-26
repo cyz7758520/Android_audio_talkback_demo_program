@@ -51,13 +51,13 @@ public class VdoInpt //视频输入。
     }
     SystemH264Encd m_SystemH264EncdPt = new SystemH264Encd();
 
-    class Dvc //存放设备。
+    public class Dvc //存放设备。
     {
         Camera m_Pt; //存放指针。
         int m_UseWhatDvc; //存放使用什么设备，为0表示前置摄像头，为1表示后置摄像头。
         int m_FrontCameraId; //存放前置摄像头的标识符，为-1表示自动查找。
         int m_BackCameraId; //存放后置摄像头的标识符，为-1表示自动查找。
-        HTSurfaceView m_PrvwSurfaceViewPt; //存放预览Surface视图的指针。
+        public HTSurfaceView m_PrvwSurfaceViewPt; //存放预览Surface视图的指针。
         SurfaceHolder.Callback m_PrvwSurfaceClbkPt; //存放预览Surface回调函数的指针。
         byte m_PrvwClbkBufPtPt[][]; //存放预览回调函数缓冲区的指针。
         VodInptPrvwClbk m_PrvwClbkPt; //存放预览回调函数的指针。
@@ -79,7 +79,7 @@ public class VdoInpt //视频输入。
         long m_Yu12SrcFrmScaleLenByt; //存放Yu12格式原始帧缩放后的长度，单位为字节，为m_Yu12SrcFrmScaleWidth * m_Yu12SrcFrmScaleHeight * 3 / 2。
         int m_IsBlack; //存放是否黑屏，为0表示有图像，为非0表示黑屏。
     }
-    Dvc m_DvcPt = new Dvc();
+    public Dvc m_DvcPt = new Dvc();
 
     public class Frm //存放帧。
     {

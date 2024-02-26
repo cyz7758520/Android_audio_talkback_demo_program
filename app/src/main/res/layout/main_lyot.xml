@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="版本：2024年01月26日"
+                android:text="版本：2024年02月26日"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="normal|bold" />
@@ -121,27 +121,19 @@
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="16"
+                    android:layout_weight="18"
                     android:gravity="center_vertical"
                     android:text="连接列表:" />
 
                 <Button
-                    android:layout_weight="2"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:padding="0dp"
-                    android:id="@+id/CnctActBtnId"
-                    android:text="激活"
-                    android:onClick="OnClickCnctActBtn" />
-
-                <Button
-                    android:layout_weight="2"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:padding="0dp"
                     android:id="@+id/CnctDstoyBtnId"
-                    android:text="销毁"
-                    android:onClick="OnClickCnctDstoyBtn" />
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:enabled="false"
+                    android:onClick="OnClickCnctDstoyBtn"
+                    android:padding="0dp"
+                    android:text="销毁" />
 
             </LinearLayout>
 
@@ -222,9 +214,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:padding="0dp"
-                    android:id="@+id/ClntCnctBtnId"
+                    android:id="@+id/ClntCnctOrDstoyBtnId"
                     android:text="连接"
-                    android:onClick="OnClickClntCnctBtn" />
+                    android:onClick="OnClickClntCnctOrDstoyBtn" />
 
                 <Button
                     android:layout_weight="2"
@@ -545,129 +537,87 @@
 
             </LinearLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <CheckBox
-                android:id="@+id/IsDrawAdoWavfmToSurfaceCkBoxId"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:onClick="onClickIsDrawAdoWavfmToSurfaceCkBox"
-                android:text="" />
-
             <LinearLayout
-                android:orientation="vertical"
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" >
 
+                <CheckBox
+                    android:id="@+id/IsDrawAdoWavfmToSurfaceCkBoxId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:onClick="onClickIsDrawAdoWavfmToSurfaceCkBox"
+                    android:text="" />
+
                 <LinearLayout
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" >
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:gravity="center_vertical"
-                        android:text="音频输入\n原始波形:" />
-
-                    <SurfaceView
-                        android:id="@+id/AdoInptWavfmSurfaceId"
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
+                        android:layout_height="wrap_content" >
 
-                </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:text="音频输入\n原始波形:" />
 
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" >
+                        <SurfaceView
+                            android:id="@+id/AdoInptWavfmSurfaceId"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:gravity="center_vertical"
-                        android:text="音频输入\n结果波形:" />
+                    </LinearLayout>
 
-                    <SurfaceView
-                        android:id="@+id/AdoRsltWavfmSurfaceId"
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
+                        android:layout_height="wrap_content" >
 
-                </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:text="音频输入\n结果波形:" />
 
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" >
+                        <SurfaceView
+                            android:id="@+id/AdoRsltWavfmSurfaceId"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:gravity="center_vertical"
-                        android:text="音频输出\n原始波形:" />
+                    </LinearLayout>
 
-                    <SurfaceView
-                        android:id="@+id/AdoOtptWavfmSurfaceId"
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
+                        android:layout_height="wrap_content" >
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:text="音频输出\n原始波形:" />
+
+                        <SurfaceView
+                            android:id="@+id/AdoOtptWavfmSurfaceId"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
             </LinearLayout>
 
-        </LinearLayout>
-
             <LinearLayout
+                android:id="@+id/VdoInptOtptLinearLyotId"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal" >
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" >
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="视频输入预览" />
-
-                    <HeavenTao.Media.HTSurfaceView
-                        android:id="@+id/VdoInptPrvwSurfaceId"
-                        android:layout_width="match_parent"
-                        android:layout_height="100dp"
-                        android:background="@android:color/transparent"
-                        android:onClick="onClickVdoInptPrvwAndVdoOtptDspySurface" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" >
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="视频输出显示" />
-
-                    <HeavenTao.Media.HTSurfaceView
-                        android:id="@+id/VdoOtptDspySurfaceId"
-                        android:layout_width="match_parent"
-                        android:layout_height="100dp"
-                        android:layout_weight="1"
-                        android:background="@android:color/transparent"
-                        android:onClick="onClickVdoInptPrvwAndVdoOtptDspySurface" />
-
-                </LinearLayout>
 
             </LinearLayout>
 

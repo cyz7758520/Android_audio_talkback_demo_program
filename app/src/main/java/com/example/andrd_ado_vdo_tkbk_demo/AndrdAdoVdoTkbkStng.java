@@ -115,10 +115,6 @@ public class AndrdAdoVdoTkbkStng
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement1Pt, "SrvrStng" );
                 p_StngXMLElementPt.InsertEndChild( p_TmpXMLElement1Pt );
 
-                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "IsAutoActCnct" );
-                p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_SrvrStngLyotViewPt.findViewById( R.id.IsAutoActCnctCkBoxId ) ).isChecked() ) ? "1" : "0" );
-                p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
-
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "MaxCnctNum" );
                 p_TmpXMLElement2Pt.SetText( ( ( EditText ) MainActPt.m_SrvrStngLyotViewPt.findViewById( R.id.MaxCnctNumEdTxtId ) ).getText().toString() );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
@@ -143,6 +139,18 @@ public class AndrdAdoVdoTkbkStng
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement1Pt, "Stng" );
                 p_StngXMLElementPt.InsertEndChild( p_TmpXMLElement1Pt );
 
+                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "Effect" );
+                p_TmpXMLElement2Pt.SetText(
+                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectLowRdBtnId ) ).isChecked() ) ? "Low" :
+                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectMidRdBtnId ) ).isChecked() ) ? "Mid" :
+                                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectHighRdBtnId ) ).isChecked() ) ? "High" :
+                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectSuperRdBtnId ) ).isChecked() ) ? "Super" : "Premium" );
+                p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
+
+                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "IsUseDebugInfo" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseDebugInfoCkBoxId ) ).isChecked() ) ? "1" : "0" );
+                p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
+
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "UseWhatRecvOtptFrm" );
                 p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseCntnrRecvOtptFrmRdBtnId ) ).isChecked() ) ? "Cntnr" : "Ajb" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
@@ -165,14 +173,6 @@ public class AndrdAdoVdoTkbkStng
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "IsSaveAdoVdoInptOtptToAviFile" );
                 p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveAdoVdoInptOtptToAviFileCkBoxId ) ).isChecked() ) ? "1" : "0" );
-                p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
-
-                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "Effect" );
-                p_TmpXMLElement2Pt.SetText(
-                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectLowRdBtnId ) ).isChecked() ) ? "Low" :
-                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectMidRdBtnId ) ).isChecked() ) ? "Mid" :
-                                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectHighRdBtnId ) ).isChecked() ) ? "High" :
-                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectSuperRdBtnId ) ).isChecked() ) ? "Super" : "Premium" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "AdoSmplRate" );
@@ -308,6 +308,10 @@ public class AndrdAdoVdoTkbkStng
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "WrBufSzByt" );
                 p_TmpXMLElement2Pt.SetText( ( ( EditText ) MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileWrBufSzBytEdTxtId ) ).getText().toString() );
+                p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
+
+                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "MaxStrmNum" );
+                p_TmpXMLElement2Pt.SetText( ( ( EditText ) MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileMaxStrmNumEdTxtId ) ).getText().toString() );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "IsSaveAdoInpt" );
@@ -857,19 +861,7 @@ public class AndrdAdoVdoTkbkStng
                             for( p_TmpXMLElement1Pt.FirstChildElement( p_TmpXMLElement2Pt ); p_TmpXMLElement2Pt.m_XMLElementPt != 0; p_TmpXMLElement2Pt.NextSiblingElement( p_TmpXMLElement2Pt ) )
                             {
                                 p_TmpXMLElement2Pt.Name( p_HTString1Pt );
-                                if( p_HTString1Pt.m_Val.equals( "IsAutoActCnct" ) )
-                                {
-                                    p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
-                                    if( p_HTString1Pt.m_Val.equals( "0" ) )
-                                    {
-                                        ( ( CheckBox ) MainActPt.m_SrvrStngLyotViewPt.findViewById( R.id.IsAutoActCnctCkBoxId ) ).setChecked( false );
-                                    }
-                                    else
-                                    {
-                                        ( ( CheckBox ) MainActPt.m_SrvrStngLyotViewPt.findViewById( R.id.IsAutoActCnctCkBoxId ) ).setChecked( true );
-                                    }
-                                }
-                                else if( p_HTString1Pt.m_Val.equals( "MaxCnctNum" ) )
+                                if( p_HTString1Pt.m_Val.equals( "MaxCnctNum" ) )
                                 {
                                     p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
                                     ( ( EditText ) MainActPt.m_SrvrStngLyotViewPt.findViewById( R.id.MaxCnctNumEdTxtId ) ).setText( p_HTString1Pt.m_Val );
@@ -905,7 +897,43 @@ public class AndrdAdoVdoTkbkStng
                             for( p_TmpXMLElement1Pt.FirstChildElement( p_TmpXMLElement2Pt ); p_TmpXMLElement2Pt.m_XMLElementPt != 0; p_TmpXMLElement2Pt.NextSiblingElement( p_TmpXMLElement2Pt ) )
                             {
                                 p_TmpXMLElement2Pt.Name( p_HTString1Pt );
-                                if( p_HTString1Pt.m_Val.equals( "UseWhatRecvOtptFrm" ) )
+                                if( p_HTString1Pt.m_Val.equals( "Effect" ) )
+                                {
+                                    p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
+                                    if( p_HTString1Pt.m_Val.equals( "Low" ) )
+                                    {
+                                        ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectLowRdBtnId ) ).setChecked( true );
+                                    }
+                                    else if( p_HTString1Pt.m_Val.equals( "Mid" ) )
+                                    {
+                                        ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectMidRdBtnId ) ).setChecked( true );
+                                    }
+                                    else if( p_HTString1Pt.m_Val.equals( "High" ) )
+                                    {
+                                        ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectHighRdBtnId ) ).setChecked( true );
+                                    }
+                                    else if( p_HTString1Pt.m_Val.equals( "Super" ) )
+                                    {
+                                        ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectSuperRdBtnId ) ).setChecked( true );
+                                    }
+                                    else
+                                    {
+                                        ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectPremiumRdBtnId ) ).setChecked( true );
+                                    }
+                                }
+                                else if( p_HTString1Pt.m_Val.equals( "IsUseDebugInfo" ) )
+                                {
+                                    p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
+                                    if( p_HTString1Pt.m_Val.equals( "0" ) )
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseDebugInfoCkBoxId ) ).setChecked( false );
+                                    }
+                                    else
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseDebugInfoCkBoxId ) ).setChecked( true );
+                                    }
+                                }
+                                else if( p_HTString1Pt.m_Val.equals( "UseWhatRecvOtptFrm" ) )
                                 {
                                     p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
                                     if( p_HTString1Pt.m_Val.equals( "Cntnr" ) )
@@ -975,30 +1003,6 @@ public class AndrdAdoVdoTkbkStng
                                     else
                                     {
                                         ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveAdoVdoInptOtptToAviFileCkBoxId ) ).setChecked( true );
-                                    }
-                                }
-                                else if( p_HTString1Pt.m_Val.equals( "Effect" ) )
-                                {
-                                    p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
-                                    if( p_HTString1Pt.m_Val.equals( "Low" ) )
-                                    {
-                                        ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectLowRdBtnId ) ).setChecked( true );
-                                    }
-                                    else if( p_HTString1Pt.m_Val.equals( "Mid" ) )
-                                    {
-                                        ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectMidRdBtnId ) ).setChecked( true );
-                                    }
-                                    else if( p_HTString1Pt.m_Val.equals( "High" ) )
-                                    {
-                                        ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectHighRdBtnId ) ).setChecked( true );
-                                    }
-                                    else if( p_HTString1Pt.m_Val.equals( "Super" ) )
-                                    {
-                                        ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectSuperRdBtnId ) ).setChecked( true );
-                                    }
-                                    else
-                                    {
-                                        ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectPremiumRdBtnId ) ).setChecked( true );
                                     }
                                 }
                                 else if( p_HTString1Pt.m_Val.equals( "AdoSmplRate" ) )
@@ -1285,6 +1289,11 @@ public class AndrdAdoVdoTkbkStng
                                 {
                                     p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
                                     ( ( EditText ) MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileWrBufSzBytEdTxtId ) ).setText( p_HTString1Pt.m_Val );
+                                }
+                                else if( p_HTString1Pt.m_Val.equals( "MaxStrmNum" ) )
+                                {
+                                    p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
+                                    ( ( EditText ) MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileMaxStrmNumEdTxtId ) ).setText( p_HTString1Pt.m_Val );
                                 }
                                 else if( p_HTString1Pt.m_Val.equals( "IsSaveAdoInpt" ) )
                                 {
@@ -1965,7 +1974,6 @@ public class AndrdAdoVdoTkbkStng
     public static void ResetStng( MainAct MainActPt )
     {
         //设置服务端。
-        ( ( CheckBox ) MainActPt.m_SrvrStngLyotViewPt.findViewById( R.id.IsAutoActCnctCkBoxId ) ).setChecked( true );
         ( ( EditText ) MainActPt.m_SrvrStngLyotViewPt.findViewById( R.id.MaxCnctNumEdTxtId ) ).setText( "10" );
 
         //设置客户端。
@@ -2124,12 +2132,14 @@ public class AndrdAdoVdoTkbkStng
 
         //设置设置。
         {
+            //设置预设设置。
+            ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectSuperRdBtnId ) ).performClick();
+            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseDebugInfoCkBoxId ) ).performClick();
+
+            //设置一般设置。
             ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAjbRecvOtptFrmRdBtnId ) ).performClick();
             ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseFrgndSrvcCkBoxId ) ).setChecked( true );
-            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveStsToTxtFileCkBoxId ) ).setChecked( true );
-            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).setChecked( true );
             ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseWakeLockCkBoxId ) ).setChecked( true );
-            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveAdoVdoInptOtptToAviFileCkBoxId ) ).setChecked( true );
 
             //设置视频帧的大小。
             {
@@ -2144,9 +2154,6 @@ public class AndrdAdoVdoTkbkStng
                 ( ( EditText ) MainActPt.m_StngLyotViewPt.findViewById( R.id.VdoFrmSzOtherWidthEdTxtId ) ).setText( "640" );
                 ( ( EditText ) MainActPt.m_StngLyotViewPt.findViewById( R.id.VdoFrmSzOtherHeightEdTxtId ) ).setText( "480" );
             }
-
-            //设置使用什么效果等级。
-            ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectSuperRdBtnId ) ).performClick();
 
             //设置自适应抖动缓冲器。
             ( ( EditText ) MainActPt.m_AjbStngLyotViewPt.findViewById( R.id.AAjbMinNeedBufFrmCntEdTxtId ) ).setText( "5" );
@@ -2163,6 +2170,7 @@ public class AndrdAdoVdoTkbkStng
             //设置保存音视频输入输出到Avi文件。
             ( ( EditText ) MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileFullPathEdTxtId ) ).setText( "AdoVdoInptOtpt.avi" );
             ( ( EditText ) MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileWrBufSzBytEdTxtId ) ).setText( "8192" );
+            ( ( EditText ) MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileMaxStrmNumEdTxtId ) ).setText( "10" );
             ( ( CheckBox ) MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileIsSaveAdoInptCkBoxId ) ).setChecked( true );
             ( ( CheckBox ) MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileIsSaveAdoOtptCkBoxId ) ).setChecked( true );
             ( ( CheckBox ) MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileIsSaveVdoInptCkBoxId ) ).setChecked( true );
@@ -2189,7 +2197,6 @@ public class AndrdAdoVdoTkbkStng
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexPrpocsNsRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
-        ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveAdoInptOtptToWaveFileCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate12RdBtnId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
@@ -2281,7 +2288,6 @@ public class AndrdAdoVdoTkbkStng
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcNsxRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
-        ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveAdoInptOtptToWaveFileCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
         ( ( Spinner ) MainActPt.m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 1 );
@@ -2372,7 +2378,6 @@ public class AndrdAdoVdoTkbkStng
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcNsRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
-        ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveAdoInptOtptToWaveFileCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
         ( ( Spinner ) MainActPt.m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 2 );
@@ -2463,7 +2468,6 @@ public class AndrdAdoVdoTkbkStng
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseRNNoiseRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
-        ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveAdoInptOtptToWaveFileCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate24RdBtnId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
         ( ( Spinner ) MainActPt.m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 2 );
@@ -2554,7 +2558,6 @@ public class AndrdAdoVdoTkbkStng
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseRNNoiseRdBtnId ) ).setChecked( true );
         ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseSpeexPrpocsCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).setChecked( true );
-        ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveAdoInptOtptToWaveFileCkBoxId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate30RdBtnId ) ).setChecked( true );
         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).setChecked( true );
         ( ( Spinner ) MainActPt.m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).setSelection( 3 );
@@ -2632,5 +2635,26 @@ public class AndrdAdoVdoTkbkStng
         ( ( TextView ) MainActPt.m_SystemH264CodecStngLyotViewPt.findViewById( R.id.SystemH264EncdBitrateCtrlModeEdTxtId ) ).setText( "1" );
         ( ( TextView ) MainActPt.m_SystemH264CodecStngLyotViewPt.findViewById( R.id.SystemH264EncdIDRFrmIntvlEdTxtId ) ).setText( "1" );
         ( ( TextView ) MainActPt.m_SystemH264CodecStngLyotViewPt.findViewById( R.id.SystemH264EncdCmplxtEdTxtId ) ).setText( "2" );
+    }
+
+    //是否使用调试信息。
+    public static void IsUseDebugInfo( MainAct MainActPt, int IsUseDebugInfo )
+    {
+        if( IsUseDebugInfo != 0 )
+        {
+            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveStsToTxtFileCkBoxId ) ).setChecked( true );
+            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).setChecked( true );
+            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveAdoVdoInptOtptToAviFileCkBoxId ) ).setChecked( true );
+
+            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveAdoInptOtptToWaveFileCkBoxId ) ).setChecked( true );
+        }
+        else
+        {
+            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveStsToTxtFileCkBoxId ) ).setChecked( false );
+            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).setChecked( false );
+            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveAdoVdoInptOtptToAviFileCkBoxId ) ).setChecked( false );
+
+            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsSaveAdoInptOtptToWaveFileCkBoxId ) ).setChecked( false );
+        }
     }
 }
