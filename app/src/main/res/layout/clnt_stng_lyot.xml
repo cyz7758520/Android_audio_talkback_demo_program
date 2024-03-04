@@ -81,6 +81,12 @@
 
         </LinearLayout>
 
+        <CheckBox
+            android:id="@+id/IsReferRmtTkbkModeSetTkbkModeCkBoxId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="参考远端对讲模式来设置对讲模式" />
+
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

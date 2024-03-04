@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="版本：2024年02月26日"
+                android:text="版本：2024年03月04日"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="normal|bold" />
@@ -248,49 +248,87 @@
                     android:layout_height="match_parent"
                     android:gravity="center_vertical" />
 
-                <RadioGroup
-                    android:orientation="horizontal"
-                    android:layout_weight="8"
+                <CheckBox
+                    android:text="音频输入"
+                    android:id="@+id/UseAdoInptTkbkModeCkBoxId"
+                    android:layout_weight="2"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent" >
+                    android:layout_height="match_parent"
+                    android:padding="0dp"
+                    android:onClick="OnClickUseAdoVdoInptOtptTkbkModeCkBox" />
 
-                    <RadioButton
-                        android:text="挂起"
-                        android:id="@+id/UseNoneTkbkModeRdBtnId"
-                        android:layout_weight="9"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:padding="0dp"
-                        android:onClick="OnClickUseNoneTkbkModeRdBtn" />
+                <CheckBox
+                    android:text="音频输出"
+                    android:id="@+id/UseAdoOtptTkbkModeCkBoxId"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:padding="0dp"
+                    android:onClick="OnClickUseAdoVdoInptOtptTkbkModeCkBox" />
 
-                    <RadioButton
-                        android:text="音频"
-                        android:id="@+id/UseAdoTkbkModeRdBtnId"
-                        android:layout_weight="9"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:padding="0dp"
-                        android:onClick="OnClickUseAdoTkbkModeRdBtn" />
+                <CheckBox
+                    android:text="视频输入"
+                    android:id="@+id/UseVdoInptTkbkModeCkBoxId"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:padding="0dp"
+                    android:onClick="OnClickUseAdoVdoInptOtptTkbkModeCkBox" />
 
-                    <RadioButton
-                        android:text="视频"
-                        android:id="@+id/UseVdoTkbkModeRdBtnId"
-                        android:layout_weight="9"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:padding="0dp"
-                        android:onClick="OnClickUseVdoTkbkModeRdBtn" />
+                <CheckBox
+                    android:text="视频输出"
+                    android:id="@+id/UseVdoOtptTkbkModeCkBoxId"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:padding="0dp"
+                    android:onClick="OnClickUseAdoVdoInptOtptTkbkModeCkBox" />
 
-                    <RadioButton
-                        android:text="音视频"
-                        android:id="@+id/UseAdoVdoTkbkModeRdBtnId"
-                        android:layout_weight="11"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:padding="0dp"
-                        android:onClick="OnClickUseAdoVdoTkbkModeRdBtn" />
+            </LinearLayout>
 
-                </RadioGroup>
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:text="对讲控制:"
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical" />
+
+                <CheckBox
+                    android:id="@+id/AdoInptIsMuteCkBoxId"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:onClick="onClickAdoInptIsMuteCkBox"
+                    android:text="静音" />
+
+                <CheckBox
+                    android:id="@+id/AdoOtptIsMuteCkBoxId"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:onClick="onClickAdoOtptIsMuteCkBox"
+                    android:text="静音" />
+
+                <CheckBox
+                    android:id="@+id/VdoInptIsBlackCkBoxId"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:onClick="onClickVdoInptIsBlackCkBox"
+                    android:text="黑屏" />
+
+                <CheckBox
+                    android:id="@+id/VdoOtptIsBlackCkBoxId"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:onClick="onClickVdoOtptIsBlackCkBox"
+                    android:text="黑屏" />
 
             </LinearLayout>
 
@@ -367,45 +405,6 @@
                         android:onClick="onClickUseBackCamereRdBtn" />
 
                 </RadioGroup>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-
-                <CheckBox
-                    android:id="@+id/AdoInptIsMuteCkBoxId"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:onClick="onClickAdoInptIsMuteCkBox"
-                    android:text="音频输入静音" />
-
-                <CheckBox
-                    android:id="@+id/AdoOtptIsMuteCkBoxId"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:onClick="onClickAdoOtptIsMuteCkBox"
-                    android:text="音频输出静音" />
-
-                <CheckBox
-                    android:id="@+id/VdoInptIsBlackCkBoxId"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:onClick="onClickVdoInptIsBlackCkBox"
-                    android:text="视频输入黑屏" />
-
-                <CheckBox
-                    android:id="@+id/VdoOtptIsBlackCkBoxId"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:onClick="onClickVdoOtptIsBlackCkBox"
-                    android:text="视频输出黑屏" />
 
             </LinearLayout>
 

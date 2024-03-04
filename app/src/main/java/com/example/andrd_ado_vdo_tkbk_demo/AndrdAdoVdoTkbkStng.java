@@ -75,10 +75,20 @@ public class AndrdAdoVdoTkbkStng
                     p_TmpXMLElement2Pt.InsertEndChild( p_TmpXMLElement3Pt );
                 }
 
-                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "TkbkMode" );
-                p_TmpXMLElement2Pt.SetText(
-                        ( ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoTkbkModeRdBtnId ) ).isChecked() ) ? "Ado" :
-                            ( ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoTkbkModeRdBtnId ) ).isChecked() ) ? "Vdo" : "AdoVdo" );
+                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "UseAdoInptTkbkMode" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).isChecked() ) ? "1" : "0" );
+                p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
+
+                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "UseAdoOtptTkbkMode" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? "1" : "0" );
+                p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
+
+                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "UseVdoInptTkbkMode" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).isChecked() ) ? "1" : "0" );
+                p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
+
+                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "UseVdoOtptTkbkMode" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? "1" : "0" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "AdoOtptDvc" );
@@ -131,6 +141,10 @@ public class AndrdAdoVdoTkbkStng
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "MaxCnctTimes" );
                 p_TmpXMLElement2Pt.SetText( ( ( EditText ) MainActPt.m_ClntStngLyotViewPt.findViewById( R.id.MaxCnctTimesEdTxtId ) ).getText().toString() );
+                p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
+
+                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "IsReferRmtTkbkModeSetTkbkMode" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_ClntStngLyotViewPt.findViewById( R.id.IsReferRmtTkbkModeSetTkbkModeCkBoxId ) ).isChecked() ) ? "1" : "0" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
             }
 
@@ -766,20 +780,52 @@ public class AndrdAdoVdoTkbkStng
                                     }
                                     MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.ClntLstAddItem, p_HTString2Pt.m_Val, p_HTString3Pt.m_Val, p_HTString4Pt.m_Val );
                                 }
-                                else if( p_HTString1Pt.m_Val.equals( "TkbkMode" ) )
+                                else if( p_HTString1Pt.m_Val.equals( "UseAdoInptTkbkMode" ) )
                                 {
                                     p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
-                                    if( p_HTString1Pt.m_Val.equals( "Ado" ) )
+                                    if( p_HTString1Pt.m_Val.equals( "0" ) )
                                     {
-                                        ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoTkbkModeRdBtnId ) ).setChecked( true );
-                                    }
-                                    else if( p_HTString1Pt.m_Val.equals( "Vdo" ) )
-                                    {
-                                        ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoTkbkModeRdBtnId ) ).setChecked( true );
+                                        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).setChecked( false );
                                     }
                                     else
                                     {
-                                        ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).setChecked( true );
+                                        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).setChecked( true );
+                                    }
+                                }
+                                else if( p_HTString1Pt.m_Val.equals( "UseAdoOtptTkbkMode" ) )
+                                {
+                                    p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
+                                    if( p_HTString1Pt.m_Val.equals( "0" ) )
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).setChecked( false );
+                                    }
+                                    else
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).setChecked( true );
+                                    }
+                                }
+                                else if( p_HTString1Pt.m_Val.equals( "UseVdoInptTkbkMode" ) )
+                                {
+                                    p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
+                                    if( p_HTString1Pt.m_Val.equals( "0" ) )
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).setChecked( false );
+                                    }
+                                    else
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).setChecked( true );
+                                    }
+                                }
+                                else if( p_HTString1Pt.m_Val.equals( "UseVdoOtptTkbkMode" ) )
+                                {
+                                    p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
+                                    if( p_HTString1Pt.m_Val.equals( "0" ) )
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).setChecked( false );
+                                    }
+                                    else
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).setChecked( true );
                                     }
                                 }
                                 else if( p_HTString1Pt.m_Val.equals( "AdoOtptDvc" ) )
@@ -854,6 +900,18 @@ public class AndrdAdoVdoTkbkStng
                                         ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.VdoOtptIsBlackCkBoxId ) ).setChecked( true );
                                     }
                                 }
+                                else if( p_HTString1Pt.m_Val.equals( "IsDrawAdoWavfm" ) )
+                                {
+                                    p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
+                                    if( p_HTString1Pt.m_Val.equals( "0" ) )
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );
+                                    }
+                                    else
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( true );
+                                    }
+                                }
                             }
                         }
                         else if( p_HTString1Pt.m_Val.equals( "SrvrStng" ) )
@@ -889,6 +947,18 @@ public class AndrdAdoVdoTkbkStng
                                 {
                                     p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
                                     ( ( EditText ) MainActPt.m_ClntStngLyotViewPt.findViewById( R.id.MaxCnctTimesEdTxtId ) ).setText( p_HTString1Pt.m_Val );
+                                }
+                                else if( p_HTString1Pt.m_Val.equals( "IsReferRmtTkbkModeSetTkbkMode" ) )
+                                {
+                                    p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
+                                    if( p_HTString1Pt.m_Val.equals( "0" ) )
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_ClntStngLyotViewPt.findViewById( R.id.IsReferRmtTkbkModeSetTkbkModeCkBoxId ) ).setChecked( false );
+                                    }
+                                    else
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_ClntStngLyotViewPt.findViewById( R.id.IsReferRmtTkbkModeSetTkbkModeCkBoxId ) ).setChecked( true );
+                                    }
                                 }
                             }
                         }
@@ -1979,6 +2049,7 @@ public class AndrdAdoVdoTkbkStng
         //设置客户端。
         ( ( RadioButton ) MainActPt.m_ClntStngLyotViewPt.findViewById( R.id.UseRtFdRdBtnId ) ).performClick();
         ( ( EditText ) MainActPt.m_ClntStngLyotViewPt.findViewById( R.id.MaxCnctTimesEdTxtId ) ).setText( "5" );
+        ( ( CheckBox ) MainActPt.m_ClntStngLyotViewPt.findViewById( R.id.IsReferRmtTkbkModeSetTkbkModeCkBoxId ) ).setChecked( true );
 
         //设置服务端Url组合框和客户端Url组合框的内容。
         try
@@ -2073,7 +2144,10 @@ public class AndrdAdoVdoTkbkStng
         }
 
         //设置使用什么对讲模式。
-        ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoTkbkModeRdBtnId ) ).performClick();
+        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).setChecked( true );
+        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).setChecked( true );
+        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).setChecked( false );
+        ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).setChecked( false );
 
         //设置音频输入设备、音频输出设备。
         ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseSpeakerRdBtnId ) ).performClick();
@@ -2132,10 +2206,6 @@ public class AndrdAdoVdoTkbkStng
 
         //设置设置。
         {
-            //设置预设设置。
-            ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectSuperRdBtnId ) ).performClick();
-            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseDebugInfoCkBoxId ) ).performClick();
-
             //设置一般设置。
             ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAjbRecvOtptFrmRdBtnId ) ).performClick();
             ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseFrgndSrvcCkBoxId ) ).setChecked( true );
@@ -2183,6 +2253,10 @@ public class AndrdAdoVdoTkbkStng
             ( ( CheckBox ) MainActPt.m_SaveAdoInptOtptToWaveFileStngLyotViewPt.findViewById( R.id.SaveAdoInptOtptToWaveFileIsSaveAdoOtptCkBoxId ) ).setChecked( true );
             ( ( EditText ) MainActPt.m_SaveAdoInptOtptToWaveFileStngLyotViewPt.findViewById( R.id.SaveAdoInptOtptToWaveFileAdoOtptSrcFullPathEdTxtId ) ).setText( "AdoOtptSrc.wav" );
             ( ( EditText ) MainActPt.m_SaveAdoInptOtptToWaveFileStngLyotViewPt.findViewById( R.id.SaveAdoInptOtptToWaveFileWrBufSzBytEdTxtId ) ).setText( "8192" );
+
+            //设置预设设置。最后设置预设设置，因为有些选项是前面生成的。
+            ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectSuperRdBtnId ) ).performClick();
+            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseDebugInfoCkBoxId ) ).performClick();
         }
     }
 

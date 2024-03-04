@@ -101,36 +101,65 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
     //用户定义的对讲客户端本端对讲模式函数。
     @Override public void UserTkbkClntLclTkbkMode( int OldLclTkbkMode, int NewLclTkbkMode )
     {
-        if( ( NewLclTkbkMode & TkbkMode.Ado ) != 0 ) //如果新对讲模式有音频。
+        if( ( NewLclTkbkMode & TkbkMode.AdoInpt ) != 0 ) //如果新对讲模式有音频输入。
         {
-            if( ( OldLclTkbkMode & TkbkMode.Ado ) == 0 ) //如果旧对讲模式无音频。
+            if( ( OldLclTkbkMode & TkbkMode.AdoInpt ) == 0 ) //如果旧对讲模式无音频输入。
             {
-                SetToUseAdoInpt(); //设置要使用音频输入。
+                if( m_AdoInptPt.m_IsInit == 0 ) //如果音频输入未初始化。
+                {
+                    SetToUseAdoInpt(); //设置要使用音频输入。
+                }
+            }
+        }
+        else //如果新对讲模式无音频输入。
+        {
+            if( ( OldLclTkbkMode & TkbkMode.AdoInpt ) != 0 ) //如果旧对讲模式有音频输入。
+            {
+                SetNotUseAdoInpt(); //设置不使用音频输入。
+            }
+        }
+
+        if( ( NewLclTkbkMode & TkbkMode.AdoOtpt ) != 0 ) //如果新对讲模式有音频输出。
+        {
+            if( ( OldLclTkbkMode & TkbkMode.AdoOtpt ) == 0 ) //如果旧对讲模式无音频输出。
+            {
                 SetToUseAdoOtpt(); //设置要使用音频输出。
             }
         }
-        else //如果新对讲模式无音频。
+        else //如果新对讲模式无音频输出。
         {
-            if( ( OldLclTkbkMode & TkbkMode.Ado ) != 0 ) //如果旧对讲模式有音频。
+            if( ( OldLclTkbkMode & TkbkMode.AdoOtpt ) != 0 ) //如果旧对讲模式有音频输出。
             {
-                SetNotUseAdoInpt(); //设置不使用音频输入。
                 SetNotUseAdoOtpt(); //设置不使用音频输入。
             }
         }
 
-        if( ( NewLclTkbkMode & TkbkMode.Vdo ) != 0 ) //如果新对讲模式有视频。
+        if( ( NewLclTkbkMode & TkbkMode.VdoInpt ) != 0 ) //如果新对讲模式有视频输入。
         {
-            if( ( OldLclTkbkMode & TkbkMode.Vdo ) == 0 ) //如果旧对讲模式无视频。
+            if( ( OldLclTkbkMode & TkbkMode.VdoInpt ) == 0 ) //如果旧对讲模式无视频输入。
             {
                 SetToUseVdoInpt(); //设置要使用视频输入。
+            }
+        }
+        else //如果新对讲模式无视频输入。
+        {
+            if( ( OldLclTkbkMode & TkbkMode.VdoInpt ) != 0 ) //如果旧对讲模式有视频输入。
+            {
+                SetNotUseVdoInpt(); //设置不使用视频输入。
+            }
+        }
+
+        if( ( NewLclTkbkMode & TkbkMode.VdoOtpt ) != 0 ) //如果新对讲模式有视频输出。
+        {
+            if( ( OldLclTkbkMode & TkbkMode.VdoOtpt ) == 0 ) //如果旧对讲模式无视频输出。
+            {
                 SetToUseVdoOtpt(); //设置要使用视频输出。
             }
         }
-        else //如果新对讲模式无视频。
+        else //如果新对讲模式无视频输出。
         {
-            if( ( OldLclTkbkMode & TkbkMode.Vdo ) != 0 ) //如果旧对讲模式有视频。
+            if( ( OldLclTkbkMode & TkbkMode.VdoOtpt ) != 0 ) //如果旧对讲模式有视频输出。
             {
-                SetNotUseVdoInpt(); //设置不使用视频输入。
                 SetNotUseVdoOtpt(); //设置不使用视频输出。
             }
         }
@@ -199,21 +228,21 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
     @Override public void UserTkbkClntTkbkInfoRmtTkbkMode( TkbkClnt.TkbkInfo TkbkInfoPt, int OldRmtTkbkMode, int NewRmtTkbkMode )
     {
         //设置音频输出流。
-        if( ( NewRmtTkbkMode & TkbkMode.Ado ) != 0 ) //如果新对讲模式有音频。
+        if( ( NewRmtTkbkMode & TkbkMode.AdoInpt ) != 0 ) //如果新对讲模式有音频输入。
         {
-            if( ( OldRmtTkbkMode & TkbkMode.Ado ) == 0 ) //如果旧对讲模式无音频。
+            if( ( OldRmtTkbkMode & TkbkMode.AdoInpt ) == 0 ) //如果旧对讲模式无音频输入。
             {
-                if( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.Ado ) != 0 ) //如果本端对讲模式有音频。
+                if( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.AdoOtpt ) != 0 ) //如果本端对讲模式有音频输出。
                 {
                     SetToUseAdoOtptStrm( TkbkInfoPt.m_TkbkIdx ); //设置要使用音频输出流。
                 }
             }
         }
-        else //如果新对讲模式无音频。
+        else //如果新对讲模式无音频输出。
         {
-            if( ( OldRmtTkbkMode & TkbkMode.Ado ) != 0 ) //如果旧对讲模式有音频。
+            if( ( OldRmtTkbkMode & TkbkMode.AdoInpt ) != 0 ) //如果旧对讲模式有音频输入。
             {
-                if( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.Ado ) != 0 ) //如果本端对讲模式有音频。
+                if( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.AdoOtpt ) != 0 ) //如果本端对讲模式有音频输出。
                 {
                     SetNotUseAdoOtptStrm( TkbkInfoPt.m_TkbkIdx ); //设置不使用音频输出流。
                 }
@@ -221,26 +250,41 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
         }
 
         //设置视频输出流。
-        if( ( NewRmtTkbkMode & TkbkMode.Vdo ) != 0 ) //如果新对讲模式有视频。
+        if( ( NewRmtTkbkMode & TkbkMode.VdoInpt ) != 0 ) //如果新对讲模式有视频输入。
         {
-            if( ( OldRmtTkbkMode & TkbkMode.Vdo ) == 0 ) //如果旧对讲模式无视频。
+            if( ( OldRmtTkbkMode & TkbkMode.VdoInpt ) == 0 ) //如果旧对讲模式无视频输入。
             {
-                if( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.Vdo ) != 0 ) //如果本端对讲模式有视频。
+                if( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.VdoOtpt ) != 0 ) //如果本端对讲模式有视频输出。
                 {
                     SetToUseVdoOtptStrm( TkbkInfoPt.m_TkbkIdx ); //设置要使用视频输出流。
                 }
             }
         }
-        else //如果新对讲模式无视频。
+        else //如果新对讲模式无视频输入。
         {
-            if( ( OldRmtTkbkMode & TkbkMode.Vdo ) != 0 ) //如果旧对讲模式有视频。
+            if( ( OldRmtTkbkMode & TkbkMode.VdoInpt ) != 0 ) //如果旧对讲模式有视频输入。
             {
-                if( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.Vdo ) != 0 ) //如果本端对讲模式有视频。
+                if( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.VdoOtpt ) != 0 ) //如果本端对讲模式有视频输出。
                 {
                     SetNotUseVdoOtptStrm( TkbkInfoPt.m_TkbkIdx ); //设置不使用视频输出流。
                 }
             }
         }
+    }
+
+    //用户定义的广播客户端初始化函数。
+    @Override public void UserBdctClntInit()
+    {
+        if( m_AdoInptPt.m_IsInit == 0 ) //如果音频输入未初始化。
+        {
+            SetToUseAdoInpt(); //设置要使用音频输入。
+        }
+    }
+
+    //用户定义的广播客户端销毁函数。
+    @Override public void UserBdctClntDstoy()
+    {
+
     }
 
     //设置要使用音频输入。
@@ -590,7 +634,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
         for( TkbkClnt.TkbkInfo p_TkbkInfoTmpPt : m_TkbkClntPt.m_TkbkInfoCntnrPt )
         {
             if( ( p_TkbkInfoTmpPt.m_IsInit != 0 ) &&
-                ( ( p_TkbkInfoTmpPt.m_RmtTkbkMode & TkbkMode.Ado ) != 0 ) )
+                ( ( p_TkbkInfoTmpPt.m_RmtTkbkMode & TkbkMode.AdoInpt ) != 0 ) )
             {
                 SetToUseAdoOtptStrm( p_TkbkInfoTmpPt.m_TkbkIdx );
             }
@@ -603,7 +647,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
         for( TkbkClnt.TkbkInfo p_TkbkInfoTmpPt : m_TkbkClntPt.m_TkbkInfoCntnrPt )
         {
             if( ( p_TkbkInfoTmpPt.m_IsInit != 0 ) &&
-                ( ( p_TkbkInfoTmpPt.m_RmtTkbkMode & TkbkMode.Ado ) != 0 ) )
+                ( ( p_TkbkInfoTmpPt.m_RmtTkbkMode & TkbkMode.AdoInpt ) != 0 ) )
             {
                 SetNotUseAdoOtptStrm( p_TkbkInfoTmpPt.m_TkbkIdx );
             }
@@ -752,7 +796,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
         for( TkbkClnt.TkbkInfo p_TkbkInfoTmpPt : m_TkbkClntPt.m_TkbkInfoCntnrPt )
         {
             if( ( p_TkbkInfoTmpPt.m_IsInit != 0 ) &&
-                ( ( p_TkbkInfoTmpPt.m_RmtTkbkMode & TkbkMode.Vdo ) != 0 ) )
+                ( ( p_TkbkInfoTmpPt.m_RmtTkbkMode & TkbkMode.VdoInpt ) != 0 ) )
             {
                 SetToUseVdoOtptStrm( p_TkbkInfoTmpPt.m_TkbkIdx );
             }
@@ -765,7 +809,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
         for( TkbkClnt.TkbkInfo p_TkbkInfoTmpPt : m_TkbkClntPt.m_TkbkInfoCntnrPt )
         {
             if( ( p_TkbkInfoTmpPt.m_IsInit != 0 ) &&
-                ( ( p_TkbkInfoTmpPt.m_RmtTkbkMode & TkbkMode.Vdo ) != 0 ) )
+                ( ( p_TkbkInfoTmpPt.m_RmtTkbkMode & TkbkMode.VdoInpt ) != 0 ) )
             {
                 SetNotUseVdoOtptStrm( p_TkbkInfoTmpPt.m_TkbkIdx );
             }

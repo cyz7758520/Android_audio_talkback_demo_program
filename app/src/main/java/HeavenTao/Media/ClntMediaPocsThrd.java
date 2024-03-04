@@ -23,12 +23,34 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
     public class TkbkMode //对讲模式。
     {
         public static final int None = 0; //挂起。
-        public static final int Ado = 1; //音频。
-        public static final int Vdo = 2; //视频。
+        public static final int AdoInpt = 1; //音频输入。
+        public static final int AdoOtpt = 2; //音频输出。
+        public static final int VdoInpt = 4; //视频输入。
+        public static final int VdoOtpt = 8; //视频输出。
+        public static final int Ado = AdoInpt | AdoOtpt; //音频。
+        public static final int Vdo = VdoInpt | VdoOtpt; //视频。
         public static final int AdoVdo = Ado | Vdo; //音视频。
-        public static final int NoChg = 4; //不变。
+        public static final int NoChg = VdoOtpt << 1; //不变。
     }
-    public static String m_TkbkModeStrArrPt[] = { "挂起", "音频", "视频", "音视频", "不变" };
+    public static String m_TkbkModeStrArrPt[] = {
+            "挂起", //0：挂起。
+            "音入", //1：音频输入。
+            "音出", //2：音频输出。
+            "音入出", //3：音频输入、音频输出。
+            "视入", //4：视频输入。
+            "音入视入", //5：音频输入、视频输入。
+            "音出视入", //6：音频输出、视频输入。
+            "音入出视入", //7：音频输入、音频输出、视频输入。
+            "视出", //8：视频输出。
+            "音入视出", //9：音频输入、视频输出。
+            "音出视出", //10：音频输出、视频输出。
+            "音入出视出", //11：音频输入、音频输出、视频输出。
+            "视入出", //12：视频输入、视频输出。
+            "音入视入出", //13：音频输入、视频输入、视频输出。
+            "音出视入出", //14：音频输出、视频输入、视频输出。
+            "音入出视入出", //15：音频输入、音频输出、视频输入、视频输出。
+            "不变", //16：不变。
+    };
 
     public class CnctSts //连接状态。
     {
@@ -42,7 +64,8 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
     public BdctClnt m_BdctClntPt = new BdctClnt();
 
     public int m_MaxCnctTimes; //存放最大连接次数，取值区间为[1,2147483647]。
-    public int m_IsAutoRqirExit; //存放是否自动请求退出，为0表示手动，为1表示在连接销毁时自动请求退出。
+    public int m_IsReferRmtTkbkModeSetTkbkMode; //存放是否参考远端对讲模式来设置对讲模式，为1表示要参考，为0表示不参考。
+    public int m_IsAutoRqirExit; //存放是否自动请求退出，为0表示手动，为1表示在对讲客户端的连接销毁且广播客户端销毁时自动请求退出。
     public AudpSokt m_AudpClntSoktPt; //存放本端高级Udp协议客户端套接字的指针。
 
     //临时变量。
@@ -71,8 +94,10 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
         public static final int TkbkClntPttBtnDown       = 3; //对讲客户端的一键即按即通按钮按下。
         public static final int TkbkClntPttBtnUp         = 4; //对讲客户端的一键即按即通按钮弹起。
 
-        public static final int BdctClntCnctInit         = 5; //广播客户端的连接初始化。
-        public static final int BdctClntCnctAllDstoy     = 6; //广播客户端的连接全部销毁。
+        public static final int BdctClntInit             = 5; //广播客户端初始化。
+        public static final int BdctClntDstoy            = 6; //广播客户端销毁。
+        public static final int BdctClntCnctInit         = 7; //广播客户端的连接初始化。
+        public static final int BdctClntCnctDstoy        = 8; //广播客户端的连接销毁。
     }
 
     //用户定义的相关回调函数。
@@ -115,6 +140,12 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 
     //用户定义的对讲客户端对讲信息远端对讲模式函数。
     public abstract void UserTkbkClntTkbkInfoRmtTkbkMode( TkbkClnt.TkbkInfo TkbkInfoPt, int OldRmtTkbkMode, int NewRmtTkbkMode );
+
+    //用户定义的广播客户端初始化函数。
+    public abstract void UserBdctClntInit();
+
+    //用户定义的广播客户端销毁函数。
+    public abstract void UserBdctClntDstoy();
 
     //构造函数。
     public ClntMediaPocsThrd( Context CtxPt )
@@ -163,16 +194,28 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
         return SendUserMsg( IsBlockWait, UserMsgTyp.TkbkClntPttBtnUp );
     }
 
+    //发送广播客户端初始化消息。
+    public int SendBdctClntInitMsg( int IsBlockWait )
+    {
+        return SendUserMsg( IsBlockWait, UserMsgTyp.BdctClntInit );
+    }
+
+    //发送广播客户端销毁消息。
+    public int SendBdctClntDstoyMsg( int IsBlockWait )
+    {
+        return SendUserMsg( IsBlockWait, UserMsgTyp.BdctClntDstoy );
+    }
+
     //发送广播客户端的连接初始化消息。
     public int SendBdctClntCnctInitMsg( int IsBlockWait, int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
     {
         return SendUserMsg( IsBlockWait, UserMsgTyp.BdctClntCnctInit, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt );
     }
 
-    //发送广播客户端的连接全部销毁消息。
-    public int SendBdctClntCnctAllDstoyMsg( int IsBlockWait )
+    //发送广播客户端的连接销毁消息。
+    public int SendBdctClntCnctDstoyMsg( int IsBlockWait, int CnctNum )
     {
-        return SendUserMsg( IsBlockWait, UserMsgTyp.BdctClntCnctAllDstoy );
+        return SendUserMsg( IsBlockWait, UserMsgTyp.BdctClntCnctDstoy, CnctNum );
     }
 
     //判断是否自动请求退出。
@@ -188,7 +231,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
             }
             else if( m_IsAutoRqirExit == 1 )
             {
-                if( ( m_TkbkClntPt.m_CnctIsInit == 0 ) && ( m_BdctClntPt.m_CnctInfoCurMaxNum == -1 ) )
+                if( ( m_TkbkClntPt.m_CnctIsInit == 0 ) && ( m_BdctClntPt.m_IsInit == 0 ) )
                 {
                     RqirExit( 0, 1 );
 
@@ -222,52 +265,70 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
         Out:
         {
             //设置实际对讲模式。
-            if( m_TkbkClntPt.m_CurCnctSts == CnctSts.Cnct ) p_RealTkbkMode = m_TkbkClntPt.m_LclTkbkMode; //如果对讲客户端已连接，就设置实际对讲模式为本端对讲模式。
-            else p_RealTkbkMode = TkbkMode.None; //如果对讲客户端已连接，就设置实际对讲模式为挂起。
+            p_RealTkbkMode = TkbkMode.None; //设置实际对讲模式为挂起。
+            if( m_TkbkClntPt.m_CurCnctSts == CnctSts.Cnct ) //如果对讲客户端已连接。
+            {
+                if( m_IsReferRmtTkbkModeSetTkbkMode != 0 ) //如果要参考远端对讲模式来设置对讲模式。
+                {
+                    TkbkClnt.TkbkInfo p_TkbkClntTkbkInfoTmpPt;
+                    int p_TmpTkbkMode = 0; //存放临时对讲模式。
+
+                    //综合全部的远端对讲模式。
+                    for( int p_TkbkInfoIdx = 0; p_TkbkInfoIdx < m_TkbkClntPt.m_TkbkInfoCntnrPt.size(); p_TkbkInfoIdx++ )
+                    {
+                        p_TkbkClntTkbkInfoTmpPt = m_TkbkClntPt.m_TkbkInfoCntnrPt.get( p_TkbkInfoIdx );
+
+                        if( p_TkbkClntTkbkInfoTmpPt.m_IsInit != 0 )
+                        {
+                            p_TmpTkbkMode |= p_TkbkClntTkbkInfoTmpPt.m_RmtTkbkMode;
+                        }
+                    }
+
+                    if( ( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.AdoInpt ) != 0 ) && ( ( p_TmpTkbkMode & TkbkMode.AdoOtpt ) != 0 ) )
+                    {
+                        p_RealTkbkMode |= TkbkMode.AdoInpt;
+                    }
+                    if( ( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.AdoOtpt ) != 0 ) && ( ( p_TmpTkbkMode & TkbkMode.AdoInpt ) != 0 ) )
+                    {
+                        p_RealTkbkMode |= TkbkMode.AdoOtpt;
+                    }
+                    if( ( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.VdoInpt ) != 0 ) && ( ( p_TmpTkbkMode & TkbkMode.VdoOtpt ) != 0 ) )
+                    {
+                        p_RealTkbkMode |= TkbkMode.VdoInpt;
+                    }
+                    if( ( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.VdoOtpt ) != 0 ) && ( ( p_TmpTkbkMode & TkbkMode.VdoInpt ) != 0 ) )
+                    {
+                        p_RealTkbkMode |= TkbkMode.VdoOtpt;
+                    }
+                }
+                else //如果不参考远端对讲模式来设置对讲模式。
+                {
+                    p_RealTkbkMode = m_TkbkClntPt.m_LclTkbkMode;
+                }
+            }
 
             if( m_TkbkClntPt.m_XfrMode == 0 ) //如果传输模式为实时半双工（一键通）。
             {
                 if( m_TkbkClntPt.m_PttBtnIsDown != 0 ) //如果一键即按即通按钮为按下。
                 {
-                    if( ( p_RealTkbkMode & TkbkMode.Ado ) != 0 )
-                    {
-                        p_IsUseAdoInpt = 1;
-                    }
-                    if( ( p_RealTkbkMode & TkbkMode.Vdo ) != 0 )
-                    {
-                        p_IsUseVdoInpt = 1;
-                    }
+                    if( ( p_RealTkbkMode & TkbkMode.AdoInpt ) != 0 ) p_IsUseAdoInpt = 1;
+                    if( ( p_RealTkbkMode & TkbkMode.VdoInpt ) != 0 ) p_IsUseVdoInpt = 1;
                 }
                 else //如果一键即按即通按钮为弹起。
                 {
-                    if( ( p_RealTkbkMode & TkbkMode.Ado ) != 0 )
-                    {
-                        p_IsUseAdoOtpt = 1;
-                    }
-                    if( ( p_RealTkbkMode & TkbkMode.Vdo ) != 0 )
-                    {
-                        p_IsUseVdoOtpt = 1;
-                    }
+                    if( ( p_RealTkbkMode & TkbkMode.AdoOtpt ) != 0 ) p_IsUseAdoOtpt = 1;
+                    if( ( p_RealTkbkMode & TkbkMode.VdoOtpt ) != 0 ) p_IsUseVdoOtpt = 1;
                 }
             }
             else //如果传输模式为实时全双工。
             {
-                if( ( p_RealTkbkMode & TkbkMode.Ado ) != 0 )
-                {
-                    p_IsUseAdoInpt = 1;
-                    p_IsUseAdoOtpt = 1;
-                }
-                if( ( p_RealTkbkMode & TkbkMode.Vdo ) != 0 )
-                {
-                    p_IsUseVdoInpt = 1;
-                    p_IsUseVdoOtpt = 1;
-                }
+                if( ( p_RealTkbkMode & TkbkMode.AdoInpt ) != 0 ) p_IsUseAdoInpt = 1;
+                if( ( p_RealTkbkMode & TkbkMode.AdoOtpt ) != 0 ) p_IsUseAdoOtpt = 1;
+                if( ( p_RealTkbkMode & TkbkMode.VdoInpt ) != 0 ) p_IsUseVdoInpt = 1;
+                if( ( p_RealTkbkMode & TkbkMode.VdoOtpt ) != 0 ) p_IsUseVdoOtpt = 1;
             }
 
-            if( !m_BdctClntPt.m_CnctInfoCntnrPt.isEmpty() ) //如果有广播连接。
-            {
-                p_IsUseAdoInpt = 1;
-            }
+            if( m_BdctClntPt.m_IsInit != 0 ) p_IsUseAdoInpt = 1; //如果广播客户端已初始化，就要使用音频输入。
 
             //设置是否使用音视频输入输出。
             if( SetMode == 0 ) //如果同时设置不使用和要使用。
@@ -341,8 +402,8 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 
         Out:
         {
-            m_TkbkClntPt.CnctInfoDstoy(); //连接销毁。
-            m_BdctClntPt.CnctInfoAllDstoy(); //连接信息全部销毁。
+            m_TkbkClntPt.CnctInfoDstoy(); //对讲客户端的连接销毁。
+            m_BdctClntPt.Dstoy(); //广播客户端销毁。
 
             //销毁本端高级Udp协议客户端套接字。
             if( m_AudpClntSoktPt != null )
@@ -440,6 +501,18 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
                     SetTkbkMode( 1, 0 ); //设置对讲模式。
                     break;
                 }
+                case UserMsgTyp.BdctClntInit:
+                {
+                    m_BdctClntPt.Init();
+                    SetTkbkMode( 1, 0 ); //设置对讲模式。
+                    break;
+                }
+                case UserMsgTyp.BdctClntDstoy:
+                {
+                    m_BdctClntPt.Dstoy();
+                    SetTkbkMode( 1, 0 ); //设置对讲模式。
+                    break;
+                }
                 case UserMsgTyp.BdctClntCnctInit:
                 {
                     int p_IsTcpOrAudpPrtcl = ( int ) MsgArgPt[ 0 ];
@@ -481,10 +554,43 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
                     }
                     break;
                 }
-                case UserMsgTyp.BdctClntCnctAllDstoy:
+                case UserMsgTyp.BdctClntCnctDstoy:
                 {
-                    m_BdctClntPt.CnctInfoAllDstoy();
-                    SetTkbkMode( 1, 0 ); //设置对讲模式。
+                    int p_CnctNum = ( int ) MsgArgPt[ 0 ];
+                    BdctClnt.CnctInfo p_BdctClntCnctInfoTmpPt = null;
+
+                    OutBdctClntCnctDstoy:
+                    {
+                        if( ( p_CnctNum > m_BdctClntPt.m_CnctInfoCurMaxNum ) || ( p_CnctNum < 0 ) )
+                        {
+                            String p_InfoStrPt = "客户端媒体处理线程：广播客户端：没有序号为" + p_CnctNum + "]的连接，无法删除。";
+                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                            UserShowLog( p_InfoStrPt );
+                            break OutBdctClntCnctDstoy;
+                        }
+
+                        for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_BdctClntPt.m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
+                        {
+                            p_BdctClntCnctInfoTmpPt = m_BdctClntPt.m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx );
+
+                            if( ( p_BdctClntCnctInfoTmpPt.m_IsInit != 0 ) && ( p_BdctClntCnctInfoTmpPt.m_Num == p_CnctNum ) )
+                            {
+                                p_BdctClntCnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。
+                                break;
+                            }
+                        }
+
+                        String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_BdctClntCnctInfoTmpPt.m_Idx + "：请求销毁远端节点" + ( ( p_BdctClntCnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) ? "Tcp协议" : "高级Udp协议" ) + "[" + p_BdctClntCnctInfoTmpPt.m_RmtNodeNameStrPt + ":" + p_BdctClntCnctInfoTmpPt.m_RmtNodeSrvcStrPt + "]的连接。";
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+                        UserShowLog( p_InfoStrPt );
+
+                        p_Rslt = 0; //设置本函数执行成功。
+                    }
+
+                    if( p_Rslt != 0 ) //如果本函数执行失败。
+                    {
+
+                    }
                     break;
                 }
             }
@@ -515,7 +621,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
                                                 VdoInptEncdRsltFrmPt, VdoInptEncdRsltFrmLenByt );
         }
 
-        if( ( AdoInptPcmSrcFrmPt != null ) && ( !m_BdctClntPt.m_CnctInfoCntnrPt.isEmpty() ) )
+        if( ( AdoInptPcmSrcFrmPt != null ) && ( m_BdctClntPt.m_CnctInfoCurMaxNum > -1 ) )
         {
             m_BdctClntPt.UserReadAdoVdoInptFrm( AdoInptPcmSrcFrmPt, AdoInptPcmRsltFrmPt, AdoInptPcmFrmLenUnit, AdoInptPcmRsltFrmVoiceActSts,
                                                 AdoInptEncdRsltFrmPt, AdoInptEncdRsltFrmLenByt, AdoInptEncdRsltFrmIsNeedTrans,

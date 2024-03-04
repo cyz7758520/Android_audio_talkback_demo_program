@@ -54,12 +54,34 @@ public abstract class SrvrThrd extends Thread //服务端线程。
     public class TkbkMode //对讲模式。
     {
         public static final int None = 0; //挂起。
-        public static final int Ado = 1; //音频。
-        public static final int Vdo = 2; //视频。
+        public static final int AdoInpt = 1; //音频输入。
+        public static final int AdoOtpt = 2; //音频输出。
+        public static final int VdoInpt = 4; //视频输入。
+        public static final int VdoOtpt = 8; //视频输出。
+        public static final int Ado = AdoInpt | AdoOtpt; //音频。
+        public static final int Vdo = VdoInpt | VdoOtpt; //视频。
         public static final int AdoVdo = Ado | Vdo; //音视频。
-        public static final int NoChg = 4; //不变。
+        public static final int NoChg = VdoOtpt << 1; //不变。
     }
-    public static String m_TkbkModeStrArrPt[] = { "挂起", "音频", "视频", "音视频", "不变" };
+    public static String m_TkbkModeStrArrPt[] = {
+            "挂起", //0：挂起。
+            "音入", //1：音频输入。
+            "音出", //2：音频输出。
+            "音入出", //3：音频输入、音频输出。
+            "视入", //4：视频输入。
+            "音入视入", //5：音频输入、视频输入。
+            "音出视入", //6：音频输出、视频输入。
+            "音入出视入", //7：音频输入、音频输出、视频输入。
+            "视出", //8：视频输出。
+            "音入视出", //9：音频输入、视频输出。
+            "音出视出", //10：音频输出、视频输出。
+            "音入出视出", //11：音频输入、音频输出、视频输出。
+            "视入出", //12：视频输入、视频输出。
+            "音入视入出", //13：音频输入、视频输入、视频输出。
+            "音出视入出", //14：音频输出、视频输入、视频输出。
+            "音入出视入出", //15：音频输入、音频输出、视频输入、视频输出。
+            "不变", //16：不变。
+    };
 
     public class CnctSts //连接状态。
     {
@@ -981,22 +1003,29 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                                         }
 
                                         //全部发送音频输出帧包。
-                                        for( int p_CnctInfoLstIdx2 = 0; p_CnctInfoLstIdx2 < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx2++ )
+                                        if( ( p_CnctInfoTmpPt.m_RmtTkbkMode & TkbkMode.AdoInpt ) != 0 ) //如果远端对讲模式有音频输入。
                                         {
-                                            p_CnctInfoTmp2Pt = m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx2 );
-
-                                            if( ( p_CnctInfoTmp2Pt.m_IsInit != 0 ) && ( p_CnctInfoTmp2Pt.m_CurCnctSts == CnctSts.Cnct ) && ( ( p_CnctInfoTmp2Pt.m_RmtTkbkMode & TkbkMode.Ado ) != 0 ) && ( p_CnctInfoTmp2Pt.m_Idx != p_CnctInfoTmpPt.m_Idx ) ) //如果连接信息已初始化，且当前连接状态为已连接，且对讲模式包含音频，且不是发送端的连接信息。
+                                            for( int p_CnctInfoLstIdx2 = 0; p_CnctInfoLstIdx2 < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx2++ )
                                             {
-                                                if( ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmp2Pt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, m_TmpHTLongPt.m_Val, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-                                                    ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmp2Pt.m_AudpClntCnctIdx, m_TmpBytePt, m_TmpHTLongPt.m_Val, 1, m_TmpHTIntPt.m_Val, m_ErrInfoVstrPt ) == 0 ) ) )
+                                                p_CnctInfoTmp2Pt = m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx2 );
+
+                                                if( ( p_CnctInfoTmp2Pt.m_IsInit != 0 ) && ( p_CnctInfoTmp2Pt.m_CurCnctSts == CnctSts.Cnct ) && ( ( p_CnctInfoTmp2Pt.m_RmtTkbkMode & TkbkMode.AdoOtpt ) != 0 ) && ( p_CnctInfoTmp2Pt.m_Idx != p_CnctInfoTmpPt.m_Idx ) ) //如果连接信息已初始化，且当前连接状态为已连接，且对讲模式有音频输出，且不是发送端的连接信息。
                                                 {
-                                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送音频输出帧包成功。索引：" + m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
-                                                }
-                                                else
-                                                {
-                                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送音频输出帧包失败。索引：" + m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。原因：" + m_ErrInfoVstrPt.GetStr() );
+                                                    if( ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmp2Pt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, m_TmpHTLongPt.m_Val, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+                                                        ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmp2Pt.m_AudpClntCnctIdx, m_TmpBytePt, m_TmpHTLongPt.m_Val, 1, m_TmpHTIntPt.m_Val, m_ErrInfoVstrPt ) == 0 ) ) )
+                                                    {
+                                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送音频输出帧包成功。索引：" + m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                                    }
+                                                    else
+                                                    {
+                                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送音频输出帧包失败。索引：" + m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。原因：" + m_ErrInfoVstrPt.GetStr() );
+                                                    }
                                                 }
                                             }
+                                        }
+                                        else //如果远端对讲模式无音频输入。
+                                        {
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：远端对讲模式无音频输入，不进行全部发送音频输出帧包。" );
                                         }
                                     }
                                     else if( m_TmpBytePt[ 0 ] == ( byte ) PktTyp.VdoFrm ) //如果是视频输出帧包。
@@ -1025,22 +1054,29 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                                         }
 
                                         //全部发送视频输出帧包。
-                                        for( int p_CnctInfoLstIdx2 = 0; p_CnctInfoLstIdx2 < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx2++ )
+                                        if( ( p_CnctInfoTmpPt.m_RmtTkbkMode & TkbkMode.VdoInpt ) != 0 ) //如果远端对讲模式有视频输入。
                                         {
-                                            p_CnctInfoTmp2Pt = m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx2 );
-
-                                            if( ( p_CnctInfoTmp2Pt.m_IsInit != 0 ) && ( p_CnctInfoTmp2Pt.m_CurCnctSts == CnctSts.Cnct ) && ( ( p_CnctInfoTmp2Pt.m_RmtTkbkMode & TkbkMode.Vdo ) != 0 ) && ( p_CnctInfoTmp2Pt.m_Idx != p_CnctInfoTmpPt.m_Idx ) ) //如果连接信息已初始化，且当前连接状态为已连接，且对讲模式包含视频，且不是发送端的连接信息。
+                                            for( int p_CnctInfoLstIdx2 = 0; p_CnctInfoLstIdx2 < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx2++ )
                                             {
-                                                if( ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmp2Pt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, m_TmpHTLongPt.m_Val, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-                                                        ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmp2Pt.m_AudpClntCnctIdx, m_TmpBytePt, m_TmpHTLongPt.m_Val, 1, m_TmpHTIntPt.m_Val, m_ErrInfoVstrPt ) == 0 ) ) )
+                                                p_CnctInfoTmp2Pt = m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx2 );
+
+                                                if( ( p_CnctInfoTmp2Pt.m_IsInit != 0 ) && ( p_CnctInfoTmp2Pt.m_CurCnctSts == CnctSts.Cnct ) && ( ( p_CnctInfoTmp2Pt.m_RmtTkbkMode & TkbkMode.VdoOtpt ) != 0 ) && ( p_CnctInfoTmp2Pt.m_Idx != p_CnctInfoTmpPt.m_Idx ) ) //如果连接信息已初始化，且当前连接状态为已连接，且对讲模式有视频输出，且不是发送端的连接信息。
                                                 {
-                                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送视频输出帧包成功。索引：" + m_TmpBytePt[ 1 ] + "。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
-                                                }
-                                                else
-                                                {
-                                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送视频输出帧包失败。索引：" + m_TmpBytePt[ 1 ] + "。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。原因：" + m_ErrInfoVstrPt.GetStr() );
+                                                    if( ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmp2Pt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, m_TmpHTLongPt.m_Val, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+                                                            ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmp2Pt.m_AudpClntCnctIdx, m_TmpBytePt, m_TmpHTLongPt.m_Val, 1, m_TmpHTIntPt.m_Val, m_ErrInfoVstrPt ) == 0 ) ) )
+                                                    {
+                                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送视频输出帧包成功。索引：" + m_TmpBytePt[ 1 ] + "。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                                    }
+                                                    else
+                                                    {
+                                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送视频输出帧包失败。索引：" + m_TmpBytePt[ 1 ] + "。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。原因：" + m_ErrInfoVstrPt.GetStr() );
+                                                    }
                                                 }
                                             }
+                                        }
+                                        else //如果远端对讲模式无视频输入。
+                                        {
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：远端对讲模式无视频输入，不进行全部发送视频输出帧包。" );
                                         }
                                     }
                                     else if( m_TmpBytePt[ 0 ] == ( byte ) PktTyp.Exit ) //如果是退出包。
@@ -1170,7 +1206,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
             CnctPocs(); //连接处理。
 
-            //if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接处理全部完毕，耗时 " + ( SystemClock.uptimeMillis() - p_LastTickMsec ) + " 毫秒。" );
+            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接处理全部完毕，耗时 " + ( SystemClock.uptimeMillis() - p_LastTickMsec ) + " 毫秒。" );
 
             SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
         } //媒体处理循环结束。

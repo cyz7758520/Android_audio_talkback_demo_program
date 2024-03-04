@@ -219,7 +219,7 @@ public class AdoOtpt //音频输出。
                     {
                         p_StrmPt.Dstoy();
                     }
-                    if( m_IsUse != 0 )
+                    if( p_StrmPt.m_IsUse != 0 ) //如果要使用音频输出流。
                     {
                         m_StrmUseTotal--;
                     }

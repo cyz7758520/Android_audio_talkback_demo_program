@@ -2,7 +2,7 @@
 # 必读说明
 
 # 简介
-&emsp;&emsp;本软件根据《道德经》为核心思想而设计，实现了两至多个设备之间进行音视频对讲，实现了一个设备对多个设备进行广播对讲，一般可用于楼宇对讲、智能门铃对讲、企业员工对讲、智能对讲机、以及类似于微信QQ音视频对讲的其他场景。本软件支持以下增强处理：  
+&emsp;&emsp;本软件根据《道德经》为核心思想而设计，实现了两至多个设备之间进行音视频对讲，实现了一个设备对多个设备进行广播对讲，一般可用于楼宇对讲、智能门铃对讲、企业员工对讲、智能对讲机、视频会议、以及类似于微信QQ这种需要两至多人需要进行音视频对讲的场景。本软件支持以下增强处理：  
 &emsp;&emsp;* 支持同时与多个设备建立连接，并同时与多个设备进行音视频对讲。  
 &emsp;&emsp;* 支持IPv4和IPv6的TCP和UDP协议传输，UDP协议支持可靠传输、支持连接中途更换IP不中断。  
 &emsp;&emsp;* 支持实时半双工（一键通）和实时全双工的音频或视频或音视频对讲。  
@@ -37,8 +37,10 @@
 # 开始
 &emsp;&emsp;1、在一个设备上直接点击服务端的创建按钮。  
 &emsp;&emsp;2、在全部需要参与对讲的设备上将客户端的IP地址改为服务端设备的IP地址，并点击添加按钮。  
-&emsp;&emsp;3、在客户端列表里点击刚刚添加的IP地址，再点击连接按钮，即可与连接上改服务端的全部设备进行对讲。
-&emsp;&emsp;4、如果服务端所在设备也需要参与对讲，则也需要进行添加和连接操作。
+&emsp;&emsp;3、在客户端列表里点击刚刚添加的IP地址，再点击连接按钮，即可与连接上该服务端的全部设备进行对讲。  
+&emsp;&emsp;**4、如果服务端所在设备也需要参与对讲，则也需要进行添加和连接操作。**  
+
+&emsp;&emsp;一键即按即广播按钮：批量连接客户端列表里全部服务端，并广播音频输入到全部服务端，连接到这些服务端的客户端都能听见该音频。  
 
 &emsp;&emsp;设置按钮：提供了各项功能的参数设置，大部分情况下都不需要修改，如果发现不适合某些设备，则需要根据设备情况修改。  
 &emsp;&emsp;保存设置按钮：将各项功能的参数保存到Stng.xml中，每次运行本软件时会自动读取设置。  
@@ -54,7 +56,7 @@
 &emsp;&emsp;2、将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中。  
 &emsp;&emsp;3、如果自己的软件已有传输协议：继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserPocs、UserDstoy、UserMsg、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetAdoOtptFrm、UserWriteVdoOtptFrm、UserGetVdoOtptFrm这九个回调成员函数。  
 &emsp;&emsp;&emsp;&emsp;如果自己的软件没有传输协议：继承HeavenTao.Media.SrvrThrd服务端线程类，实现UserShowLog、UserShowToast、UserVibrate、UserMsg、UserSrvrThrdInit、UserSrvrThrdDstoy、UserSrvrInit、UserSrvrDstoy、UserCnctInit、UserCnctDstoy、UserCnctSts、UserCnctRmtTkbkMode这些回调成员函数。  
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;继承HeavenTao.Media.ClntMediaPocsThrd客户端媒体处理线程类，实现UserShowLog、UserShowToast、UserVibrate、UserClntMediaPocsThrdInit、UserClntMediaPocsThrdDstoy、UserTkbkClntCnctInit、UserTkbkClntCnctDstoy、UserTkbkClntCnctSts、UserTkbkClntMyTkbkIdx、UserTkbkClntLclTkbkMode、UserTkbkClntTkbkInfoInit、UserTkbkClntTkbkInfoDstoy、UserTkbkClntTkbkInfoRmtTkbkMode这些回调成员函数。  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;继承HeavenTao.Media.ClntMediaPocsThrd客户端媒体处理线程类，实现UserShowLog、UserShowToast、UserVibrate、UserClntMediaPocsThrdInit、UserClntMediaPocsThrdDstoy、UserTkbkClntCnctInit、UserTkbkClntCnctDstoy、UserTkbkClntCnctSts、UserTkbkClntMyTkbkIdx、UserTkbkClntLclTkbkMode、UserTkbkClntTkbkInfoInit、UserTkbkClntTkbkInfoDstoy、UserTkbkClntTkbkInfoRmtTkbkMode、UserBdctClntInit、UserBdctClntDstoy这些回调成员函数。  
 &emsp;&emsp;&emsp;&emsp;如果要在JNI层处理音视频帧，则可以将这些回调成员函数继承为native函数，然后在JNI层实现即可。  
 &emsp;&emsp;4、new这个继承的类，然后调用类的相关设置成员函数，最后调用start()成员函数启动该线程即可。  
 &emsp;&emsp;5、当需要线程退出时，调用线程类的RqirExit()成员函数即可。  
@@ -284,4 +286,10 @@ ___
 ___
 函数名称：UserTkbkClntTkbkInfoRmtTkbkMode  
 功能说明：用户定义的对讲客户端对讲信息远端对讲模式函数。  
+___
+函数名称：UserBdctClntInit
+功能说明：用户定义的广播客户端初始化函数。
+___
+函数名称：UserBdctClntDstoy
+功能说明：用户定义的广播客户端销毁函数。
 ___

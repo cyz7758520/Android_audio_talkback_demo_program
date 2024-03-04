@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
@@ -50,6 +51,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     String m_CurClsNameStrPt = this.getClass().getSimpleName(); //存放当前类名称字符串。
 
     View m_MainLyotViewPt; //存放主布局视图的指针。
+    Drawable m_PttBtnBackgroundPt; //存放一键即按即通按钮背景的指针。
+    Drawable m_PtbBtnBackgroundPt; //存放一键即按即广播按钮背景的指针。
     View m_SrvrStngLyotViewPt; //存放服务端设置布局视图的指针。
     ListView m_CnctLstViewPt; //存放连接列表视图的指针。
     ArrayList< Map< String, String > > m_CnctLstItemArrayLstPt; //存放连接列表项目数组列表的指针。
@@ -434,6 +437,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         //显示布局。
         setContentView( m_MainLyotViewPt ); //设置主界面的内容为主布局。
         m_CurActivityLyotViewPt = m_MainLyotViewPt; //设置当前界面布局视图。
+        m_PttBtnBackgroundPt = ( ( Button ) findViewById( R.id.PttBtnId ) ).getBackground(); //设置一键即按即通按钮背景。
+        m_PtbBtnBackgroundPt = ( ( Button ) findViewById( R.id.PtbBtnId ) ).getBackground(); //设置一键即按即广播按钮背景。
         ( ( Button ) findViewById( R.id.PttBtnId ) ).setOnTouchListener( this ); //设置一键即按即通按钮的触摸监听器。
         ( ( Button ) findViewById( R.id.PtbBtnId ) ).setOnTouchListener( this ); //设置一键即按广播按钮的触摸监听器。
 
@@ -760,24 +765,11 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         {
             if( ( m_MyClntMediaPocsThrdPt == null ) || ( m_MyClntMediaPocsThrdPt.m_TkbkClntPt.m_CnctIsInit == 0 ) ) //如果我的客户端媒体处理线程还没有初始化，或对讲客户端未初始化。
             {
-                m_TkbkClntNum = m_ClntLstViewPt.getCheckedItemPosition();
-                if( ( m_TkbkClntNum != -1 ) && ( m_TkbkClntNum < m_ClntLstItemArrayLstPt.size() ) )
-                {
-                    if( m_MyClntMediaPocsThrdPt == null ) //如果我的客户端媒体处理线程还没有初始化。
-                    {
-                        if( MyClntMediaPocsThrdInit() != 0 ) //如果我的客户端媒体处理线程初始化失败。
-                        {
-                            break Out;
-                        }
-                    }
-                    Map< String, String > p_ClntLstItemPt = m_ClntLstItemArrayLstPt.get( m_TkbkClntNum );
-
-                    m_MyClntMediaPocsThrdPt.SendTkbkClntCnctInitMsg( 1, p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1, p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ), p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) );
-                }
+                TkbkInit();
             }
             else //如果对讲客户端端连接已初始化。
             {
-                m_MyClntMediaPocsThrdPt.SendTkbkClntCnctDstoyMsg( 1 );
+                TkbkDstoy();
             }
 
             p_Rslt = 0;
@@ -800,39 +792,17 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         }
     }
 
-    //使用挂起对讲模式单选按钮。
-    public void OnClickUseNoneTkbkModeRdBtn( View ViewPt )
+    //使用音视频输入输出对讲模式复选框。
+    public void OnClickUseAdoVdoInptOtptTkbkModeCkBox( View ViewPt )
     {
         if( m_MyClntMediaPocsThrdPt != null )
         {
-            m_MyClntMediaPocsThrdPt.SendTkbkClntLclTkbkModeMsg( 1, MyClntMediaPocsThrd.TkbkMode.None );
-        }
-    }
+            m_MyClntMediaPocsThrdPt.SendTkbkClntLclTkbkModeMsg( 0,
+                    ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoInpt : 0 ) +
+                            ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoOtpt : 0 ) +
+                            ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoInpt : 0 ) +
+                            ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoOtpt : 0 ) );
 
-    //使用音频对讲模式单选按钮。
-    public void OnClickUseAdoTkbkModeRdBtn( View ViewPt )
-    {
-        if( m_MyClntMediaPocsThrdPt != null )
-        {
-            m_MyClntMediaPocsThrdPt.SendTkbkClntLclTkbkModeMsg( 1, MyClntMediaPocsThrd.TkbkMode.Ado );
-        }
-    }
-
-    //使用视频对讲模式按钮。
-    public void OnClickUseVdoTkbkModeRdBtn( View ViewPt )
-    {
-        if( m_MyClntMediaPocsThrdPt != null )
-        {
-            m_MyClntMediaPocsThrdPt.SendTkbkClntLclTkbkModeMsg( 0, MyClntMediaPocsThrd.TkbkMode.Vdo ); //要使用视频时会给主界面阻塞发送VdoInptOtptSurfaceViewInit消息，所以不能阻塞等待。
-        }
-    }
-
-    //使用音视频对讲模式按钮。
-    public void OnClickUseAdoVdoTkbkModeRdBtn( View ViewPt )
-    {
-        if( m_MyClntMediaPocsThrdPt != null )
-        {
-            m_MyClntMediaPocsThrdPt.SendTkbkClntLclTkbkModeMsg( 0, MyClntMediaPocsThrd.TkbkMode.AdoVdo ); //要使用视频时会给主界面阻塞发送VdoInptOtptSurfaceViewInit消息，所以不能阻塞等待。
         }
     }
 
@@ -904,7 +874,10 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     {
         if( m_MyClntMediaPocsThrdPt != null )
         {
-            m_MyClntMediaPocsThrdPt.VdoOtptSetStrmIsBlack( 1, 0, ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.VdoOtptIsBlackCkBoxId ) ).isChecked() ) ? 1 : 0 );
+            for( TkbkClnt.TkbkInfo p_TkbkInfoTmpPt : m_MyClntMediaPocsThrdPt.m_TkbkClntPt.m_TkbkInfoCntnrPt )
+            {
+                m_MyClntMediaPocsThrdPt.VdoOtptSetStrmIsBlack( 1, p_TkbkInfoTmpPt.m_TkbkIdx, ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.VdoOtptIsBlackCkBoxId ) ).isChecked() ) ? 1 : 0 );
+            }
         }
     }
 
@@ -994,11 +967,15 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                 case MotionEvent.ACTION_DOWN: //如果是按下消息。
                 {
                     if( m_MyClntMediaPocsThrdPt != null ) m_MyClntMediaPocsThrdPt.SendTkbkClntPttBtnDownMsg( 1 );
+
+                    ViewPt.setBackgroundColor( Color.GREEN );
                     break;
                 }
                 case MotionEvent.ACTION_UP: //如果是弹起消息。
                 {
                     if( m_MyClntMediaPocsThrdPt != null ) m_MyClntMediaPocsThrdPt.SendTkbkClntPttBtnUpMsg( 1 );
+
+                    ViewPt.setBackgroundDrawable( m_PttBtnBackgroundPt );
                     break;
                 }
             }
@@ -1010,11 +987,15 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                 case MotionEvent.ACTION_DOWN: //如果是按下消息。
                 {
                     BdctInit();
+
+                    ViewPt.setBackgroundColor( Color.GREEN );
                     break;
                 }
                 case MotionEvent.ACTION_UP: //如果是弹起消息。
                 {
                     BdctDstoy();
+
+                    ViewPt.setBackgroundDrawable( m_PtbBtnBackgroundPt );
                     break;
                 }
             }
@@ -1447,6 +1428,9 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                 //创建我的服务端线程。
                 m_MySrvrThrdPt = new MySrvrThrd( this );
 
+                //设置在所有连接和服务端都销毁时自动请求退出。
+                m_MySrvrThrdPt.m_IsAutoRqirExit = 2;
+
                 //设置是否打印Logcat日志、显示Toast。
                 m_MySrvrThrdPt.SetIsPrintLogcatShowToast(
                         ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).isChecked() ) ? 1 : 0,
@@ -1511,7 +1495,10 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                         break Out;
                     }
 
-                    //设置所有连接销毁时是否自动请求退出。
+                    //设置要参考远端对讲模式来设置对讲模式。
+                    m_MyClntMediaPocsThrdPt.m_IsReferRmtTkbkModeSetTkbkMode = ( ( ( CheckBox ) m_ClntStngLyotViewPt.findViewById( R.id.IsReferRmtTkbkModeSetTkbkModeCkBoxId ) ).isChecked() ) ? 1 : 0;
+
+                    //设置在对讲客户端的连接销毁且广播客户端销毁时自动请求退出。
                     m_MyClntMediaPocsThrdPt.m_IsAutoRqirExit = 1;
                 }
 
@@ -1553,14 +1540,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                 //设置是否使用唤醒锁。
                 m_MyClntMediaPocsThrdPt.SetIsUseWakeLock( 0, ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseWakeLockCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
-                //设置本端对讲模式。
-                m_MyClntMediaPocsThrdPt.SendTkbkClntLclTkbkModeMsg(
-                        0,
-                        ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoTkbkModeRdBtnId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.Ado :
-                                ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseVdoTkbkModeRdBtnId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.Vdo :
-                                        ( ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseAdoVdoTkbkModeRdBtnId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoVdo :
-                                                MyClntMediaPocsThrd.TkbkMode.NoChg );
-
                 //启动我的网络媒体处理线程。
                 m_MyClntMediaPocsThrdPt.start();
 
@@ -1589,6 +1568,61 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         }
     }
 
+    //对讲初始化。
+    public int TkbkInit()
+    {
+        int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+
+        Out:
+        {
+            Log.i( m_CurClsNameStrPt, "对讲初始化开始。" );
+
+            m_TkbkClntNum = m_ClntLstViewPt.getCheckedItemPosition();
+            if( ( m_TkbkClntNum != -1 ) && ( m_TkbkClntNum < m_ClntLstItemArrayLstPt.size() ) )
+            {
+                if( m_MyClntMediaPocsThrdPt == null ) //如果我的客户端媒体处理线程还没有初始化。
+                {
+                    if( MyClntMediaPocsThrdInit() != 0 ) //如果我的客户端媒体处理线程初始化失败。
+                    {
+                        break Out;
+                    }
+                }
+
+                Map< String, String > p_ClntLstItemPt = m_ClntLstItemArrayLstPt.get( m_TkbkClntNum );
+                m_MyClntMediaPocsThrdPt.SendTkbkClntCnctInitMsg( 1, p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1, p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ), p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) );
+
+                //设置本端对讲模式。
+                m_MyClntMediaPocsThrdPt.SendTkbkClntLclTkbkModeMsg(
+                        0,
+                        ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoInpt : 0 ) +
+                                ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoOtpt : 0 ) +
+                                ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoInpt : 0 ) +
+                                ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoOtpt : 0 ) );
+            }
+
+            Log.i( m_CurClsNameStrPt, "对讲初始化结束。" );
+
+            p_Rslt = 0; //设置本函数执行成功。
+        }
+
+        if( p_Rslt != 0 ) //如果本函数执行失败。
+        {
+            TkbkDstoy();
+        }
+        return p_Rslt;
+    }
+
+    //对讲销毁。
+    public void TkbkDstoy()
+    {
+        if( m_MyClntMediaPocsThrdPt != null )
+        {
+            Log.i( m_CurClsNameStrPt, "开始请求并等待对讲销毁。" );
+            m_MyClntMediaPocsThrdPt.SendTkbkClntCnctDstoyMsg( 1 );
+            Log.i( m_CurClsNameStrPt, "结束请求并等待对讲销毁。" );
+        }
+    }
+
     //广播初始化。
     public int BdctInit()
     {
@@ -1606,16 +1640,14 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                 }
             }
 
-            //添加客户端列表。
+            //发送广播客户端初始化消息。
+            m_MyClntMediaPocsThrdPt.SendBdctClntInitMsg( 0 );
+
+            //发送广播客户端的连接初始化消息。
             for( Map< String, String > p_ClntLstItemPt : m_ClntLstItemArrayLstPt )
             {
                 m_MyClntMediaPocsThrdPt.SendBdctClntCnctInitMsg( 0, p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1, p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ), p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) ); //向广播媒体处理线程发送连接初始化消息。
             }
-
-            //设置本端对讲模式。
-            m_MyClntMediaPocsThrdPt.SendTkbkClntLclTkbkModeMsg(
-                    1,
-                    MyClntMediaPocsThrd.TkbkMode.NoChg );
 
             Log.i( m_CurClsNameStrPt, "广播初始化结束。" );
 
@@ -1635,7 +1667,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         if( m_MyClntMediaPocsThrdPt != null )
         {
             Log.i( m_CurClsNameStrPt, "开始请求并等待广播销毁。" );
-            m_MyClntMediaPocsThrdPt.SendBdctClntCnctAllDstoyMsg( 1 );
+            m_MyClntMediaPocsThrdPt.SendBdctClntDstoyMsg( 1 );
             Log.i( m_CurClsNameStrPt, "结束请求并等待广播销毁。" );
         }
     }
