@@ -155,7 +155,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
     public VdoInpt m_VdoInptPt = new VdoInpt(); //存放视频输入的指针。
     public VdoOtpt m_VdoOtptPt = new VdoOtpt(); //存放视频输出的指针。
 
-    class Thrd //存放线程。
+    class Thrd //线程。
     {
         int m_IsInitThrdTmpVar; //存放是否初始化线程的临时变量。
         short m_AdoInptPcmSrcFrmPt[]; //存放音频输入Pcm格式原始帧的指针。
@@ -169,7 +169,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         VdoInpt.Frm m_VdoInptFrmPt; //存放视频输入帧的指针。
         VdoOtpt.Frm m_VdoOtptFrmPt; //存放视频输出帧的指针。
     }
-    Thrd m_ThrdPt = new Thrd();
+    Thrd m_ThrdPt = new Thrd(); //存放线程。
 
     public Vstr m_ErrInfoVstrPt = new Vstr(); //存放错误信息动态字符串的指针。
 
@@ -593,7 +593,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.SaveStsToTxtFile, StngFileFullPathStrPt );
     }
 
-    //初始化或销毁媒体处理线程的唤醒锁。
+    //媒体处理线程的唤醒锁初始化或销毁。
     private void WakeLockInitOrDstoy( int IsInitWakeLock )
     {
         if( IsInitWakeLock != 0 ) //如果要初始化唤醒锁。
@@ -675,7 +675,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
     }
 
     //请求权限。
-    public static void RqstPrmsn( Activity RqstActivity, int IsRqstInternet, int IsRqstModifyAudioStng, int IsRqstForegroundService, int IsRqstWakeLock, int IsRqstReadPhoneState, int IsRqstRecordAdo, int IsRqstCamera, int DeniedIsPrintLogcat, int DeniedIsShowToast )
+    public static void RqstPrmsn( Activity RqstActivity, int IsRqstInternet, int IsRqstModifyAudioStng, int IsRqstForegroundService, int IsRqstForegroundServicePhoneCall, int IsRqstWakeLock, int IsRqstReadPhoneState, int IsRqstRecordAdo, int IsRqstCamera, int DeniedIsPrintLogcat, int DeniedIsShowToast )
     {
         String p_DeniedPermissionStrPt = "拒绝的权限：";
         int p_DeniedPermissionNum = 0;
@@ -702,6 +702,14 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         {
             p_RqstPermissionStrArrPt.add( Manifest.permission.FOREGROUND_SERVICE );
             p_DeniedPermissionStrPt += "前台服务  ";
+            p_DeniedPermissionNum++;
+        }
+
+        //检测前台服务通话权限。
+        if( ( IsRqstForegroundService != 0 ) && ( android.os.Build.VERSION.SDK_INT >= 34 ) && ( ContextCompat.checkSelfPermission( RqstActivity, Manifest.permission.FOREGROUND_SERVICE_PHONE_CALL ) != PackageManager.PERMISSION_GRANTED ) )
+        {
+            p_RqstPermissionStrArrPt.add( Manifest.permission.FOREGROUND_SERVICE_PHONE_CALL );
+            p_DeniedPermissionStrPt += "前台服务通话  ";
             p_DeniedPermissionNum++;
         }
 
@@ -759,7 +767,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         }
     }
 
-    //请求媒体处理线程退出。
+    //媒体处理线程请求退出。
     public int RqirExit( int IsBlockWait, int ExitFlag )
     {
         if( ( ExitFlag < 1 ) || ( ExitFlag > 3 ) )
@@ -776,7 +784,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.UserMsgMinVal + MsgTyp, MsgArgPt );
     }
 
-    //初始化媒体处理线程的Avi文件写入器。
+    //媒体处理线程的音视频输入输出Avi文件写入器初始化。
     private int AdoVdoInptOtptAviFileWriterInit()
     {
         int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
@@ -881,7 +889,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         return p_Rslt;
     }
 
-    //销毁媒体处理线程的Avi文件写入器。
+    //媒体处理线程的音视频输入输出Avi文件写入器销毁。
     private void AdoVdoInptOtptAviFileWriterDstoy()
     {
         if( m_AdoVdoInptOtptAviFilePt.m_WriterPt != null )
@@ -905,7 +913,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         }
     }
 
-    //初始化媒体处理线程的临时变量。
+    //媒体处理线程的临时变量初始化。
     private void MediaPocsThrdTmpVarInit()
     {
         m_ThrdPt.m_IsInitThrdTmpVar = 1; //设置已初始化线程的临时变量。
@@ -950,7 +958,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：初始化媒体处理线程的临时变量成功。" );
     }
 
-    //销毁媒体处理线程的临时变量。
+    //媒体处理线程的临时变量销毁。
     private void MediaPocsThrdTmpVarDstoy()
     {
         if( m_ThrdPt.m_IsInitThrdTmpVar != 0 )
@@ -970,7 +978,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         }
     }
 
-    //初始化音视频输入输出。
+    //媒体处理线程的音视频输入输出初始化。
     private int AdoVdoInptOtptInit()
     {
         int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
@@ -1097,7 +1105,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         return p_Rslt;
     }
 
-    //音视频输入输出销毁。
+    //媒体处理线程的音视频输入输出销毁。
     private void AdoVdoInptOtptDstoy()
     {
         if( m_AdoInptPt.m_IsInit != 0 ) //如果未初始化音频输入。
@@ -1126,7 +1134,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         }
     }
 
-    //线程消息处理。
+    //媒体处理线程的线程消息处理。
     private int ThrdMsgPocs( int MsgTyp, Object[] MsgArgPt )
     {
         int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
@@ -1941,7 +1949,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                     {
                         case 1: //为请求退出。
                         {
-                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：接收到退出请求：退出。" );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：接收退出请求：退出。" );
 
                             //执行顺序：媒体销毁，用户销毁。
                             if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数。
@@ -1957,7 +1965,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         }
                         case 2: //请求重启。
                         {
-                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：接收到退出请求：重启。" );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：接收退出请求：重启。" );
 
                             //执行顺序：媒体销毁，用户销毁，用户初始化，媒体初始化。
                             if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数。
@@ -1975,7 +1983,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                         }
                         case 3: //请求重启但不执行用户定义的UserInit初始化函数和UserDstoy销毁函数。
                         {
-                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：接收到退出请求：重启但不调用用户定义的UserInit初始化函数和UserDstoy销毁函数。" );
+                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：接收退出请求：重启但不调用用户定义的UserInit初始化函数和UserDstoy销毁函数。" );
 
                             //执行顺序：媒体销毁，媒体初始化。
                             if( m_ThrdMsgQueuePt.SendMsg( 1, 0, ThrdMsgTyp.AdoVdoInptOtptDstoy ) != 0 ) break Out;
@@ -2061,7 +2069,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         return p_Rslt;
     }
 
-    //音视频输入输出帧处理。
+    //媒体处理线程的音视频输入输出帧处理。
     private int AdoVdoInptOtptFrmPocs()
     {
         int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
@@ -2681,7 +2689,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         return p_Rslt;
     }
 
-    //本线程执行函数。
+    //媒体处理线程的主函数。
     public void run()
     {
         long p_LastTickMsec = 0;

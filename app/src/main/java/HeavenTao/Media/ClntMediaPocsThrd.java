@@ -56,7 +56,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
     {
         public static final int Wait = 0; //等待远端接受连接。
         public static final int Cnct = 1; //已连接。
-        public static final int Tmot = 2; //超时未接收到任何数据包。异常断开。
+        public static final int Tmot = 2; //超时未接收任何数据包。异常断开。
         public static final int Dsct = 3; //已断开。
     }
 
@@ -68,23 +68,26 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
     public int m_IsAutoRqirExit; //存放是否自动请求退出，为0表示手动，为1表示在对讲客户端的连接销毁且广播客户端销毁时自动请求退出。
     public AudpSokt m_AudpClntSoktPt; //存放本端高级Udp协议客户端套接字的指针。
 
-    //临时变量。
-    HTString m_LclNodeAddrPt = new HTString(); //存放本端节点名称字符串的指针。
-    HTString m_LclNodePortPt = new HTString(); //存放本端节点端口字符串的指针。
-    HTString m_RmtNodeAddrPt = new HTString(); //存放远端节点名称字符串的指针。
-    HTString m_RmtNodePortPt = new HTString(); //存放远端节点端口字符串的指针。
+    class Thrd //线程。
+    {
+        HTString m_LclNodeAddrPt = new HTString(); //存放本端节点名称字符串的指针。
+        HTString m_LclNodePortPt = new HTString(); //存放本端节点端口字符串的指针。
+        HTString m_RmtNodeAddrPt = new HTString(); //存放远端节点名称字符串的指针。
+        HTString m_RmtNodePortPt = new HTString(); //存放远端节点端口字符串的指针。
 
-    HTInt m_CurHaveBufActFrmCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
-    HTInt m_CurHaveBufInactFrmCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
-    HTInt m_CurHaveBufFrmCntPt = new HTInt(); //存放当前已缓冲帧的数量。
-    HTInt m_MinNeedBufFrmCntPt = new HTInt(); //存放最小需缓冲帧的数量。
-    HTInt m_MaxNeedBufFrmCntPt = new HTInt(); //存放最大需缓冲帧的数量。
-    HTInt m_MaxCntuLostFrmCntPt = new HTInt(); //存放最大连续丢失帧的数量。
-    HTInt m_CurNeedBufFrmCntPt = new HTInt(); //存放当前需缓冲帧的数量。
+        HTInt m_CurHaveBufActFrmCntPt = new HTInt(); //存放当前已缓冲有活动帧的数量。
+        HTInt m_CurHaveBufInactFrmCntPt = new HTInt(); //存放当前已缓冲无活动帧的数量。
+        HTInt m_CurHaveBufFrmCntPt = new HTInt(); //存放当前已缓冲帧的数量。
+        HTInt m_MinNeedBufFrmCntPt = new HTInt(); //存放最小需缓冲帧的数量。
+        HTInt m_MaxNeedBufFrmCntPt = new HTInt(); //存放最大需缓冲帧的数量。
+        HTInt m_MaxCntuLostFrmCntPt = new HTInt(); //存放最大连续丢失帧的数量。
+        HTInt m_CurNeedBufFrmCntPt = new HTInt(); //存放当前需缓冲帧的数量。
 
-    byte m_TmpBytePt[] = new byte[ 1024 * 1024 ]; //存放临时数据。
-    HTInt m_TmpHTIntPt = new HTInt(); //存放临时数据。
-    HTLong m_TmpHTLongPt = new HTLong(); //存放临时数据。
+        byte m_TmpBytePt[] = new byte[ 1024 * 1024 ]; //存放临时数据。
+        HTInt m_TmpHTIntPt = new HTInt(); //存放临时数据。
+        HTLong m_TmpHTLongPt = new HTLong(); //存放临时数据。
+    }
+    Thrd m_ThrdPt = new Thrd(); //存放线程。
 
     public class UserMsgTyp //用户消息。
     {

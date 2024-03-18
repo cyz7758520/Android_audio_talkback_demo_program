@@ -202,6 +202,10 @@ public class AndrdAdoVdoTkbkStng
                                 ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen20msRdBtnId ) ).isChecked() ) ? "20" : "30" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
+                p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "IsStartRecordingAfterRead" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsStartRecordingAfterReadCkBoxId ) ).isChecked() ) ? "1" : "0" );
+                p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
+
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "IsUseSystemAecNsAgc" );
                 p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseSystemAecNsAgcCkBoxId ) ).isChecked() ) ? "1" : "0" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
@@ -1109,6 +1113,18 @@ public class AndrdAdoVdoTkbkStng
                                     else
                                     {
                                         ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen30msRdBtnId ) ).setChecked( true );
+                                    }
+                                }
+                                else if( p_HTString1Pt.m_Val.equals( "IsStartRecordingAfterRead" ) )
+                                {
+                                    p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
+                                    if( p_HTString1Pt.m_Val.equals( "0" ) )
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsStartRecordingAfterReadCkBoxId ) ).setChecked( false );
+                                    }
+                                    else
+                                    {
+                                        ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsStartRecordingAfterReadCkBoxId ) ).setChecked( true );
                                     }
                                 }
                                 else if( p_HTString1Pt.m_Val.equals( "IsUseSystemAecNsAgc" ) )
@@ -2210,6 +2226,9 @@ public class AndrdAdoVdoTkbkStng
             ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAjbRecvOtptFrmRdBtnId ) ).performClick();
             ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseFrgndSrvcCkBoxId ) ).setChecked( true );
             ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseWakeLockCkBoxId ) ).setChecked( true );
+
+            //设置音频。
+            ( ( CheckBox ) MainActPt.m_StngLyotViewPt.findViewById( R.id.IsStartRecordingAfterReadCkBoxId ) ).setChecked( false );
 
             //设置视频帧的大小。
             {

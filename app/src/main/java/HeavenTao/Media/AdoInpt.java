@@ -1229,7 +1229,7 @@ public class AdoInpt //存放音频输入。
 
                 if( m_ThrdPt.m_ExitFlag == 1 ) //如果退出标记为请求退出。
                 {
-                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：接收到退出请求。" );
+                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：接收退出请求。" );
                     break;
                 }
             } //音频输入循环结束。

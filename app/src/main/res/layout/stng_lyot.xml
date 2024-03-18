@@ -353,6 +353,12 @@
         </LinearLayout>
 
         <CheckBox
+            android:id="@+id/IsStartRecordingAfterReadCkBoxId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="在调用read函数后才开始音频输入（有些设备在第一次调用read函数时才开始音频输入）"/>
+
+        <CheckBox
             android:id="@+id/IsUseSystemAecNsAgcCkBoxId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -103,11 +103,13 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         public static final int TkbkClntCnctDstoy              = 10; //对讲客户端连接销毁。
 
         public static final int CnctLstAddItem                 = 11; //连接列表添加项目。
-        public static final int CnctLstModifyItem              = 12; //连接列表修改项目。
-        public static final int CnctLstDelItem                 = 13; //连接列表删除项目。
+        public static final int CnctLstDelItem                 = 12; //连接列表删除项目。
+        public static final int CnctLstModifyItem              = 13; //连接列表修改项目。
+
         public static final int ClntLstAddItem                 = 14; //客户端列表添加项目。
         public static final int ClntLstDelItem                 = 15; //客户端列表删除项目。
         public static final int ClntLstModifyItem              = 16; //客户端列表修改项目。
+
         public static final int VdoInptOtptSurfaceViewInit     = 17; //视频输入输出SurfaceView初始化。
         public static final int VdoInptOtptSurfaceViewDstoy    = 18; //视频输入输出SurfaceView销毁。
         public static final int VdoInptOtptSurfaceViewSetTitle = 19; //视频输入输出SurfaceView设置标题。
@@ -196,7 +198,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                     ( ( EditText ) m_MainActPt.findViewById( R.id.SrvrUrlEdTxtId ) ).setEnabled( false ); //设置服务端Url编辑框为不可用。
                     ( ( Spinner ) m_MainActPt.findViewById( R.id.SrvrUrlSpinnerId ) ).setEnabled( false ); //设置服务端Url下拉框为不可用。
                     ( ( Button ) m_MainActPt.findViewById( R.id.SrvrCreateOrDstoyBtnId ) ).setText( "销毁" ); //设置服务端创建或销毁按钮的内容为“销毁”。
-                    ( ( Button ) m_MainActPt.findViewById( R.id.CnctDstoyBtnId ) ).setEnabled( true ); //设置服务端连接销毁按钮的内容为可用。
+                    ( ( Button ) m_MainActPt.findViewById( R.id.CnctDstoyBtnId ) ).setEnabled( true ); //设置服务端连接销毁按钮为可用。
                     break;
                 }
                 case MainActMsgTyp.SrvrDstoy:
@@ -204,7 +206,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                     ( ( EditText ) m_MainActPt.findViewById( R.id.SrvrUrlEdTxtId ) ).setEnabled( true ); //设置服务端Url编辑框为可用。
                     ( ( Spinner ) m_MainActPt.findViewById( R.id.SrvrUrlSpinnerId ) ).setEnabled( true ); //设置服务端Url下拉框为可用。
                     ( ( Button ) m_MainActPt.findViewById( R.id.SrvrCreateOrDstoyBtnId ) ).setText( "创建" ); //设置服务端创建或销毁按钮的内容为“创建”。
-                    ( ( Button ) m_MainActPt.findViewById( R.id.CnctDstoyBtnId ) ).setEnabled( false ); //设置服务端连接销毁按钮的内容为不可用。
+                    ( ( Button ) m_MainActPt.findViewById( R.id.CnctDstoyBtnId ) ).setEnabled( false ); //设置服务端连接销毁按钮为不可用。
                     break;
                 }
                 case MainActMsgTyp.MyClntMediaPocsThrdInit:
@@ -443,7 +445,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         ( ( Button ) findViewById( R.id.PtbBtnId ) ).setOnTouchListener( this ); //设置一键即按广播按钮的触摸监听器。
 
         //请求权限。
-        MediaPocsThrd.RqstPrmsn( this, 1, 1, 1, 1, 0, 1, 1, 1, 1 );
+        MediaPocsThrd.RqstPrmsn( this, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1 );
 
         //初始化主界面消息处理。
         m_MainActPt = this;
@@ -1436,6 +1438,9 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                         ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).isChecked() ) ? 1 : 0,
                         ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).isChecked() ) ? 1 : 0,
                         this );
+
+                //设置是否使用唤醒锁。
+                m_MySrvrThrdPt.SendSetIsUseWakeLockMsg( 0, ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseWakeLockCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
                 //启动我的服务端线程。
                 m_MySrvrThrdPt.start();

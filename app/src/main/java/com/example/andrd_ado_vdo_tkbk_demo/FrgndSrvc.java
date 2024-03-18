@@ -42,6 +42,7 @@ public class FrgndSrvc extends Service
                             .setSmallIcon( R.mipmap.tkbk_icon )
                             .setContentTitle( m_MainActPt.getString( R.string.app_name ) )
                             .setContentText( "前台服务" )
+                            .setOngoing( true )
                             .setSound( null )
                             .setContentIntent( pendingIntent )
                             .build();

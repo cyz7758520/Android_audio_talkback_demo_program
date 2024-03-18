@@ -9,6 +9,8 @@ public class MySrvrThrd extends SrvrThrd
 
     MySrvrThrd( MainAct MainActPt )
     {
+        super( MainActPt );
+
         MediaPocsThrd.m_CtxPt = MainActPt;
 
         m_MainActPt = MainActPt;

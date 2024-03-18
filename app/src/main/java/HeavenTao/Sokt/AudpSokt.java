@@ -28,7 +28,7 @@ public class AudpSokt
 
     public static final int AudpCnctStsWait = 0; //连接状态：等待远端接受连接。
     public static final int AudpCnctStsCnct = 1; //连接状态：已连接。
-    public static final int AudpCnctStsTmot = 2; //连接状态：超时未接收到任何数据包。异常断开。
+    public static final int AudpCnctStsTmot = 2; //连接状态：超时未接收任何数据包。异常断开。
     public static final int AudpCnctStsDsct = 3; //连接状态：已断开。本端或远端正常断开。
 
     //获取本端高级UDP协议套接字的指针。

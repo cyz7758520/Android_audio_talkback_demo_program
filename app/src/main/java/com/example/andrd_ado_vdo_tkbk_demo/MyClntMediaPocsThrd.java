@@ -300,7 +300,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
                 ( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen10msRdBtnId ) ).isChecked() ) ? 10 :
                         ( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen20msRdBtnId ) ).isChecked() ) ? 20 :
                                 ( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen30msRdBtnId ) ).isChecked() ) ? 30 : 0,
-                0 );
+                ( ( ( CheckBox ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.IsStartRecordingAfterReadCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
         //设置音频输入是否使用系统自带声学回音消除器、噪音抑制器和自动增益控制器。
         AdoInptSetIsUseSystemAecNsAgc(

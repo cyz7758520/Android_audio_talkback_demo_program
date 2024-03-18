@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL"/>
+    <uses-permission android:name="android.permission.MANAGE_OWN_CALLS"/>
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
@@ -33,7 +35,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name="com.example.andrd_ado_vdo_tkbk_demo.FrgndSrvc" android:exported ="false" />
+        <service android:name="com.example.andrd_ado_vdo_tkbk_demo.FrgndSrvc" android:exported="false" android:foregroundServiceType="phoneCall" />
     </application>
 
 </manifest>

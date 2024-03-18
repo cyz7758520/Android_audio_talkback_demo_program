@@ -2,18 +2,13 @@ package HeavenTao.Media;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.Log;
-import android.view.SurfaceView;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import HeavenTao.Media.*;
 import HeavenTao.Data.*;
@@ -25,12 +20,14 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
     public class ThrdMsgTyp
     {
-        public static final int SrvrInit = 0; //服务端初始化。
-        public static final int SrvrDstoy = 1; //服务端销毁。
+        public static final int SetIsUseWakeLock = 0;
 
-        public static final int CnctDstoy = 2; //连接销毁。
+        public static final int SrvrInit = 1;
+        public static final int SrvrDstoy = 2;
 
-        public static final int RqirExit = 3;
+        public static final int CnctDstoy = 3;
+
+        public static final int RqirExit = 4;
 
         public static final int UserMsgMinVal = 100; //用户消息的最小值。
     }
@@ -87,15 +84,20 @@ public abstract class SrvrThrd extends Thread //服务端线程。
     {
         public static final int Wait = 0; //等待远端接受连接。
         public static final int Cnct = 1; //已连接。
-        public static final int Tmot = 2; //超时未接收到任何数据包。异常断开。
+        public static final int Tmot = 2; //超时未接收任何数据包。异常断开。
         public static final int Dsct = 3; //已断开。
     }
 
     public int m_IsRqirExit; //存放是否请求退出，为0表示未请求退出，为1表示已请求退出。
 
+    public static Context m_CtxPt; //存放上下文的指针。
+
     public int m_IsPrintLogcat; //存放是否打印Logcat日志，为非0表示要打印，为0表示不打印。
     public int m_IsShowToast; //存放是否显示Toast，为非0表示要显示，为0表示不显示。
     public Activity m_ShowToastActPt; //存放显示Toast界面的指针。
+
+    int m_IsUseWakeLock; //存放是否使用唤醒锁，为非0表示要使用，为0表示不使用。
+    PowerManager.WakeLock m_FullWakeLockPt; //存放屏幕键盘全亮唤醒锁的指针。
 
     public int m_SrvrIsInit; //存放服务端是否初始化，为0表示未初始化，为1表示已初始化。
     public TcpSrvrSokt m_TcpSrvrSoktPt; //存放本端Tcp协议服务端套接字的指针。
@@ -118,23 +120,26 @@ public abstract class SrvrThrd extends Thread //服务端线程。
         public int m_CurCnctSts; //存放当前连接状态，为[-m_MaxCnctTimes,0]表示等待远端接受连接。
         public int m_RmtTkbkMode; //存放远端对讲模式。
 
-        public int m_IsRecvExitPkt; //存放是否接收到退出包，为0表示否，为1表示是。
+        public int m_IsRecvExitPkt; //存放是否接收退出包，为0表示未接收，为1表示已接收。
     }
     public ArrayList< CnctInfo > m_CnctInfoCntnrPt = new ArrayList<>(); //存放连接信息容器的指针。
     public int m_CnctInfoCurMaxNum; //存放连接信息的当前最大序号。
     public int m_MaxCnctNum; //存放最大连接数。
 
+    class Thrd //线程。
+    {
+        HTString m_LclNodeAddrPt = new HTString(); //存放本端节点名称字符串的指针。
+        HTString m_LclNodePortPt = new HTString(); //存放本端节点端口字符串的指针。
+        HTString m_RmtNodeAddrPt = new HTString(); //存放远端节点名称字符串的指针。
+        HTString m_RmtNodePortPt = new HTString(); //存放远端节点端口字符串的指针。
+
+        byte m_TmpBytePt[] = new byte[ 1024 * 1024 ]; //存放临时数据。
+        HTInt m_TmpHTIntPt = new HTInt(); //存放临时数据。
+        HTLong m_TmpHTLongPt = new HTLong(); //存放临时数据。
+    }
+    Thrd m_ThrdPt = new Thrd(); //存放线程。
+
     public Vstr m_ErrInfoVstrPt = new Vstr(); //存放错误信息动态字符串的指针。
-
-    //临时变量。
-    HTString m_LclNodeAddrPt = new HTString(); //存放本端节点名称字符串的指针。
-    HTString m_LclNodePortPt = new HTString(); //存放本端节点端口字符串的指针。
-    HTString m_RmtNodeAddrPt = new HTString(); //存放远端节点名称字符串的指针。
-    HTString m_RmtNodePortPt = new HTString(); //存放远端节点端口字符串的指针。
-
-    byte m_TmpBytePt[] = new byte[ 1024 * 1024 ]; //存放临时数据。
-    HTInt m_TmpHTIntPt = new HTInt(); //存放临时数据。
-    HTLong m_TmpHTLongPt = new HTLong(); //存放临时数据。
 
     //用户定义的相关回调函数。
 
@@ -175,15 +180,17 @@ public abstract class SrvrThrd extends Thread //服务端线程。
     public abstract void UserCnctRmtTkbkMode( CnctInfo CnctInfoPt, int RmtTkbkMode );
 
     //构造函数。
-    public SrvrThrd()
+    public SrvrThrd( Context CtxPt )
     {
+        m_CtxPt = CtxPt; //设置上下文的指针。
+
         m_CnctInfoCurMaxNum = -1; //设置连接信息的当前最大序号。
 
         //初始化错误信息动态字符串。
         m_ErrInfoVstrPt.Init( null );
     }
 
-    //媒体处理线程的设置是否打印Logcat日志、显示Toast。
+    //设置是否打印Logcat日志、显示Toast。
     public int SetIsPrintLogcatShowToast( int IsPrintLogcat, int IsShowToast, Activity ShowToastActPt )
     {
         if( ( IsShowToast != 0 ) && ( ShowToastActPt == null ) ) //如果显示Toast界面的指针不正确。
@@ -196,6 +203,49 @@ public abstract class SrvrThrd extends Thread //服务端线程。
         m_ShowToastActPt = ShowToastActPt;
 
         return 0;
+    }
+
+    //发送设置是否使用唤醒锁消息。
+    public int SendSetIsUseWakeLockMsg( int IsBlockWait, int IsUseWakeLock )
+    {
+        return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.SetIsUseWakeLock, IsUseWakeLock );
+    }
+
+    //唤醒锁初始化或销毁。
+    private void WakeLockInitOrDstoy( int IsInitWakeLock )
+    {
+        if( IsInitWakeLock != 0 ) //如果要初始化唤醒锁。
+        {
+            if( m_FullWakeLockPt == null ) //如果屏幕键盘全亮唤醒锁还没有初始化。
+            {
+                m_FullWakeLockPt = ( ( PowerManager ) m_CtxPt.getSystemService( Activity.POWER_SERVICE ) ).newWakeLock( PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, m_CurClsNameStrPt );
+                if( m_FullWakeLockPt != null )
+                {
+                    m_FullWakeLockPt.acquire();
+                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：初始化屏幕键盘全亮唤醒锁成功。" );
+                }
+                else
+                {
+                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：初始化屏幕键盘全亮唤醒锁失败。" );
+                }
+            }
+        }
+        else //如果要销毁唤醒锁。
+        {
+            //销毁唤醒锁。
+            if( m_FullWakeLockPt != null )
+            {
+                try
+                {
+                    m_FullWakeLockPt.release();
+                }
+                catch( RuntimeException ignored )
+                {
+                }
+                m_FullWakeLockPt = null;
+                if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：销毁屏幕键盘全亮唤醒锁成功。" );
+            }
+        }
     }
 
     //发送请求退出消息。
@@ -296,7 +346,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
                     if( m_TcpSrvrSoktPt.Init( p_RmtNodeAddrFamly, p_SrvrNodeNameStrPt.m_Val, p_SrvrNodeSrvcStrPt.m_Val, 1, 1, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端Tcp协议服务端套接字成功。
                     {
-                        if( m_TcpSrvrSoktPt.GetLclAddr( null, m_LclNodeAddrPt, m_LclNodePortPt, 0, m_ErrInfoVstrPt ) != 0 ) //如果获取本端Tcp协议服务端套接字绑定的本地节点地址和端口失败。
+                        if( m_TcpSrvrSoktPt.GetLclAddr( null, m_ThrdPt.m_LclNodeAddrPt, m_ThrdPt.m_LclNodePortPt, 0, m_ErrInfoVstrPt ) != 0 ) //如果获取本端Tcp协议服务端套接字绑定的本地节点地址和端口失败。
                         {
                             String p_InfoStrPt = "服务端线程：获取本端Tcp协议服务端套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVstrPt.GetStr();
                             if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -304,7 +354,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                             break Out;
                         }
 
-                        String p_InfoStrPt = "服务端线程：初始化本端Tcp协议服务端套接字[" + m_LclNodeAddrPt.m_Val + ":" + m_LclNodePortPt.m_Val + "]成功。";
+                        String p_InfoStrPt = "服务端线程：初始化本端Tcp协议服务端套接字[" + m_ThrdPt.m_LclNodeAddrPt.m_Val + ":" + m_ThrdPt.m_LclNodePortPt.m_Val + "]成功。";
                         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                         UserShowLog( p_InfoStrPt );
                     }
@@ -340,7 +390,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                             break Out;
                         }
 
-                        if( m_AudpSrvrSoktPt.GetLclAddr( null, m_LclNodeAddrPt, m_LclNodePortPt, m_ErrInfoVstrPt ) != 0 ) //如果获取本端高级Udp协议套接字绑定的本地节点地址和端口失败。
+                        if( m_AudpSrvrSoktPt.GetLclAddr( null, m_ThrdPt.m_LclNodeAddrPt, m_ThrdPt.m_LclNodePortPt, m_ErrInfoVstrPt ) != 0 ) //如果获取本端高级Udp协议套接字绑定的本地节点地址和端口失败。
                         {
                             String p_InfoStrPt = "服务端线程：获取本端高级Udp协议服务端套接字绑定的本地节点地址和端口失败。原因：" + m_ErrInfoVstrPt.GetStr();
                             if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -348,7 +398,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                             break Out;
                         }
 
-                        String p_InfoStrPt = "服务端线程：初始化本端高级Udp协议服务端套接字[" + m_LclNodeAddrPt.m_Val + ":" + m_LclNodePortPt.m_Val + "]成功。";
+                        String p_InfoStrPt = "服务端线程：初始化本端高级Udp协议服务端套接字[" + m_ThrdPt.m_LclNodeAddrPt.m_Val + ":" + m_ThrdPt.m_LclNodePortPt.m_Val + "]成功。";
                         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                         UserShowLog( p_InfoStrPt );
                     }
@@ -361,11 +411,11 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                     }
                 }
 
+                m_MaxCnctNum = MaxCnctNum; //设置最大连接数。
+                m_IsAutoRqirExit = IsAutoRqirExit; //设置是否自动请求退出。
+
                 UserVibrate(); //调用用户定义的振动函数。
             }
-
-            m_MaxCnctNum = MaxCnctNum; //设置最大连接数。
-            m_IsAutoRqirExit = IsAutoRqirExit; //设置是否自动请求退出。
 
             p_Rslt = 0; //设置本函数执行成功。
         }
@@ -478,14 +528,14 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                 p_CnctInfoTmpPt.m_CurCnctSts = CurCnctSts; //设置当前连接状态。
                 p_CnctInfoTmpPt.m_RmtTkbkMode = TkbkMode.None; //设置远端对讲模式。
 
-                p_CnctInfoTmpPt.m_IsRecvExitPkt = 0; //设置未接收到退出包。
+                p_CnctInfoTmpPt.m_IsRecvExitPkt = 0; //设置未接收退出包。
 
                 UserCnctInit( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl, p_CnctInfoTmpPt.m_RmtNodeNameStrPt, p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt ); //调用用户定义的连接添加函数。
 
                 //全部发送索引包。
                 {
-                    m_TmpBytePt[ 0 ] = PktTyp.Idx; //设置索引包。
-                    m_TmpBytePt[ 1 ] = ( byte ) p_CnctInfoTmpPt.m_Idx; //设置索引。
+                    m_ThrdPt.m_TmpBytePt[ 0 ] = PktTyp.Idx; //设置索引包。
+                    m_ThrdPt.m_TmpBytePt[ 1 ] = ( byte ) p_CnctInfoTmpPt.m_Idx; //设置索引。
 
                     for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
                     {
@@ -493,8 +543,8 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
                         if( ( p_CnctInfoTmp2Pt.m_IsInit != 0 ) && ( p_CnctInfoTmp2Pt.m_CurCnctSts == CnctSts.Cnct ) ) //如果连接信息已初始化，且当前连接状态为已连接。
                         {
-                            if( ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmp2Pt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, 2, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-                                    ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmp2Pt.m_AudpClntCnctIdx, m_TmpBytePt, 2, 1, 1, m_ErrInfoVstrPt ) == 0 ) ) )
+                            if( ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmp2Pt.m_TcpClntSoktPt.SendApkt( m_ThrdPt.m_TmpBytePt, 2, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+                                ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmp2Pt.m_AudpClntCnctIdx, m_ThrdPt.m_TmpBytePt, 2, 1, 1, m_ErrInfoVstrPt ) == 0 ) ) )
                             {
                                 String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送索引包成功。索引：" + p_CnctInfoTmpPt.m_Idx + "。总长度：2。";
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
@@ -512,17 +562,17 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
                 //补发之前的索引包。
                 {
-                    m_TmpBytePt[ 0 ] = PktTyp.Idx; //设置索引包。
+                    m_ThrdPt.m_TmpBytePt[ 0 ] = PktTyp.Idx; //设置索引包。
 
                     for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
                     {
                         p_CnctInfoTmp2Pt = m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx );
 
-                        if( ( p_CnctInfoTmp2Pt.m_IsInit != 0 ) && ( p_CnctInfoTmp2Pt.m_CurCnctSts == CnctSts.Cnct ) && ( p_CnctInfoTmp2Pt.m_Idx != p_CnctInfoTmpPt.m_Idx ) ) //如果连接信息已初始化，且当前连接状态为已连接。
+                        if( ( p_CnctInfoTmp2Pt.m_IsInit != 0 ) && ( p_CnctInfoTmp2Pt.m_CurCnctSts == CnctSts.Cnct ) && ( p_CnctInfoTmp2Pt.m_Idx != p_CnctInfoTmpPt.m_Idx ) ) //如果连接信息已初始化，且当前连接状态为已连接，且不是本次连接信息。
                         {
-                            m_TmpBytePt[ 1 ] = ( byte ) p_CnctInfoTmp2Pt.m_Idx; //设置索引。
-                            if( ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmpPt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, 2, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-                                ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmpPt.m_AudpClntCnctIdx, m_TmpBytePt, 2, 1, 1, m_ErrInfoVstrPt ) == 0 ) ) )
+                            m_ThrdPt.m_TmpBytePt[ 1 ] = ( byte ) p_CnctInfoTmp2Pt.m_Idx; //设置索引。
+                            if( ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmpPt.m_TcpClntSoktPt.SendApkt( m_ThrdPt.m_TmpBytePt, 2, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+                                ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmpPt.m_AudpClntCnctIdx, m_ThrdPt.m_TmpBytePt, 2, 1, 1, m_ErrInfoVstrPt ) == 0 ) ) )
                             {
                                 String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：发送索引包成功。索引：" + p_CnctInfoTmp2Pt.m_Idx + "。总长度：2。";
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
@@ -540,7 +590,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
                 //补发之前的对讲模式包。
                 {
-                    m_TmpBytePt[ 0 ] = PktTyp.TkbkMode; //设置对讲模式包。
+                    m_ThrdPt.m_TmpBytePt[ 0 ] = PktTyp.TkbkMode; //设置对讲模式包。
 
                     for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
                     {
@@ -548,18 +598,18 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
                         if( ( p_CnctInfoTmp2Pt.m_IsInit != 0 ) && ( p_CnctInfoTmp2Pt.m_CurCnctSts == CnctSts.Cnct ) && ( p_CnctInfoTmp2Pt.m_Idx != p_CnctInfoTmpPt.m_Idx ) ) //如果连接信息已初始化，且当前连接状态为已连接。
                         {
-                            m_TmpBytePt[ 1 ] = ( byte ) p_CnctInfoTmp2Pt.m_Idx; //设置索引。
-                            m_TmpBytePt[ 2 ] = ( byte ) p_CnctInfoTmp2Pt.m_RmtTkbkMode; //设置对讲模式。
-                            if( ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmpPt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, 3, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-                                    ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmpPt.m_AudpClntCnctIdx, m_TmpBytePt, 3, 1, 1, m_ErrInfoVstrPt ) == 0 ) ) )
+                            m_ThrdPt.m_TmpBytePt[ 1 ] = ( byte ) p_CnctInfoTmp2Pt.m_Idx; //设置索引。
+                            m_ThrdPt.m_TmpBytePt[ 2 ] = ( byte ) p_CnctInfoTmp2Pt.m_RmtTkbkMode; //设置对讲模式。
+                            if( ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmpPt.m_TcpClntSoktPt.SendApkt( m_ThrdPt.m_TmpBytePt, 3, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+                                ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmpPt.m_AudpClntCnctIdx, m_ThrdPt.m_TmpBytePt, 3, 1, 1, m_ErrInfoVstrPt ) == 0 ) ) )
                             {
-                                String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：发送对讲模式包成功。索引：" + p_CnctInfoTmp2Pt.m_Idx + "。对讲模式：" + ClntMediaPocsThrd.m_TkbkModeStrArrPt[ p_CnctInfoTmp2Pt.m_RmtTkbkMode ] + "。总长度：3。";
+                                String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：发送对讲模式包成功。索引：" + p_CnctInfoTmp2Pt.m_Idx + "。对讲模式：" + m_TkbkModeStrArrPt[ p_CnctInfoTmp2Pt.m_RmtTkbkMode ] + "。总长度：3。";
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                                 UserShowLog( p_InfoStrPt );
                             }
                             else
                             {
-                                String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：发送对讲模式包失败。索引：" + p_CnctInfoTmp2Pt.m_Idx + "。对讲模式：" + ClntMediaPocsThrd.m_TkbkModeStrArrPt[ p_CnctInfoTmp2Pt.m_RmtTkbkMode ] + "。总长度：3。原因：" + m_ErrInfoVstrPt.GetStr();
+                                String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：发送对讲模式包失败。索引：" + p_CnctInfoTmp2Pt.m_Idx + "。对讲模式：" + m_TkbkModeStrArrPt[ p_CnctInfoTmp2Pt.m_RmtTkbkMode ] + "。总长度：3。原因：" + m_ErrInfoVstrPt.GetStr();
                                 if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                                 UserShowLog( p_InfoStrPt );
                             }
@@ -581,7 +631,10 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
         if( p_Rslt != 0 ) //如果本函数执行失败。
         {
-            p_CnctInfoTmpPt = null;
+            if( p_CnctInfoTmpPt != null )
+            {
+                p_CnctInfoTmpPt.m_IsInit = 0; //设置连接信息未初始化。
+            }
         }
         return p_CnctInfoTmpPt;
     }
@@ -597,16 +650,16 @@ public abstract class SrvrThrd extends Thread //服务端线程。
             if( CnctInfoPt.m_IsInit != 0 )
             {
                 //全部发送退出包。
-                m_TmpBytePt[ 0 ] = PktTyp.Exit; //设置退出包。
+                m_ThrdPt.m_TmpBytePt[ 0 ] = PktTyp.Exit; //设置退出包。
                 for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
                 {
                     p_CnctInfoTmpPt = m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx );
 
-                    if( ( p_CnctInfoTmpPt.m_IsInit != 0 ) && ( p_CnctInfoTmpPt.m_IsRecvExitPkt == 0 ) && ( p_CnctInfoTmpPt.m_CurCnctSts == CnctSts.Cnct ) ) //如果未接收到退出包，且当前连接状态为已连接。
+                    if( ( p_CnctInfoTmpPt.m_IsInit != 0 ) && ( p_CnctInfoTmpPt.m_IsRecvExitPkt == 0 ) && ( p_CnctInfoTmpPt.m_CurCnctSts == CnctSts.Cnct ) ) //如果连接信息已初始化，且未接收退出包，且当前连接状态为已连接。
                     {
-                        m_TmpBytePt[ 1 ] = ( byte ) CnctInfoPt.m_Idx; //设置索引。
-                        if( ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmpPt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, 2, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-                            ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmpPt.m_AudpClntCnctIdx, m_TmpBytePt, 2, 1, 1, m_ErrInfoVstrPt ) == 0 ) ) )
+                        m_ThrdPt.m_TmpBytePt[ 1 ] = ( byte ) CnctInfoPt.m_Idx; //设置索引。
+                        if( ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmpPt.m_TcpClntSoktPt.SendApkt( m_ThrdPt.m_TmpBytePt, 2, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+                            ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmpPt.m_AudpClntCnctIdx, m_ThrdPt.m_TmpBytePt, 2, 1, 1, m_ErrInfoVstrPt ) == 0 ) ) )
                         {
                             String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：发送退出包成功。索引：" + CnctInfoPt.m_Idx + "。总长度：2。";
                             if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
@@ -773,7 +826,6 @@ public abstract class SrvrThrd extends Thread //服务端线程。
         CnctInfo p_CnctInfoTmpPt;
         CnctInfo p_CnctInfoTmp2Pt;
         int p_TmpInt;
-        int p_TmpElmTotal;
 
         Out:
         {
@@ -788,7 +840,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                     while( true )
                     {
                         p_TcpClntSoktTmpPt = new TcpClntSokt();
-                        if( m_TcpSrvrSoktPt.Acpt( p_TcpClntSoktTmpPt, null, m_RmtNodeAddrPt, m_RmtNodePortPt, ( short ) 0, 0, m_ErrInfoVstrPt ) == 0 )
+                        if( m_TcpSrvrSoktPt.Acpt( p_TcpClntSoktTmpPt, null, m_ThrdPt.m_RmtNodeAddrPt, m_ThrdPt.m_RmtNodePortPt, ( short ) 0, 0, m_ErrInfoVstrPt ) == 0 )
                         {
                             if( p_TcpClntSoktTmpPt.m_TcpClntSoktPt != 0 ) //如果用本端Tcp协议服务端套接字接受远端Tcp协议客户端套接字的连接成功。
                             {
@@ -824,11 +876,11 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                                     break TcpSrvrSoktAcptOut;
                                 }
 
-                                if( ( p_CnctInfoTmpPt = CnctInfoInit( 0, m_RmtNodeAddrPt.m_Val, m_RmtNodePortPt.m_Val, p_TcpClntSoktTmpPt, -1, CnctSts.Cnct ) ) == null ) break TcpSrvrSoktAcptOut; //如果连接信息初始化失败。
+                                if( ( p_CnctInfoTmpPt = CnctInfoInit( 0, m_ThrdPt.m_RmtNodeAddrPt.m_Val, m_ThrdPt.m_RmtNodePortPt.m_Val, p_TcpClntSoktTmpPt, -1, CnctSts.Cnct ) ) == null ) break TcpSrvrSoktAcptOut; //如果连接信息初始化失败。
                                 UserCnctSts( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_CurCnctSts ); //调用用户定义的连接状态函数。
-                                UserCnctRmtTkbkMode( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_RmtTkbkMode );
+                                UserCnctRmtTkbkMode( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_RmtTkbkMode ); //调用用户定义的连接远端对讲模式函数。
 
-                                String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：用本端Tcp协议服务端套接字接受远端Tcp协议客户端套接字[" + m_RmtNodeAddrPt.m_Val + ":" + m_RmtNodePortPt.m_Val + "]的连接成功。";
+                                String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：用本端Tcp协议服务端套接字接受远端Tcp协议客户端套接字[" + m_ThrdPt.m_RmtNodeAddrPt.m_Val + ":" + m_ThrdPt.m_RmtNodePortPt.m_Val + "]的连接成功。";
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                                 UserShowLog( p_InfoStrPt );
                                 break;
@@ -856,8 +908,8 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                 {
                     if( p_TcpClntSoktTmpPt != null )
                     {
-                        m_TmpBytePt[ 0 ] = ( byte ) PktTyp.Exit; //设置退出包。
-                        p_TcpClntSoktTmpPt.SendApkt( m_TmpBytePt, 1, ( short ) 0, 1, 0, null ); //发送退出包。
+                        m_ThrdPt.m_TmpBytePt[ 0 ] = ( byte ) PktTyp.Exit; //设置退出包。
+                        p_TcpClntSoktTmpPt.SendApkt( m_ThrdPt.m_TmpBytePt, 1, ( short ) 0, 1, 0, null ); //发送退出包。
                         p_TcpClntSoktTmpPt.Dstoy( ( short ) -1, null );
                     }
                 }
@@ -867,21 +919,21 @@ public abstract class SrvrThrd extends Thread //服务端线程。
             if( m_AudpSrvrSoktPt != null )
             {
                 int p_PocsRslt = -1; //存放本处理段的执行结果，为0表示成功，为非0表示失败。
-                m_TmpHTLongPt.m_Val = -1;
+                m_ThrdPt.m_TmpHTLongPt.m_Val = -1;
 
                 AudpSrvrSoktAcptOut:
                 {
                     while( true ) //循环接受远端高级Udp协议套接字的连接。
                     {
-                        if( m_AudpSrvrSoktPt.Acpt( m_TmpHTLongPt, null, m_RmtNodeAddrPt, m_RmtNodePortPt, ( short ) 0, m_ErrInfoVstrPt ) == 0 )
+                        if( m_AudpSrvrSoktPt.Acpt( m_ThrdPt.m_TmpHTLongPt, null, m_ThrdPt.m_RmtNodeAddrPt, m_ThrdPt.m_RmtNodePortPt, ( short ) 0, m_ErrInfoVstrPt ) == 0 )
                         {
-                            if( m_TmpHTLongPt.m_Val != -1 ) //如果用本端高级Udp协议套接字接受远端高级Udp协议套接字的连接成功。
+                            if( m_ThrdPt.m_TmpHTLongPt.m_Val != -1 ) //如果用本端高级Udp协议套接字接受远端高级Udp协议套接字的连接成功。
                             {
-                                if( ( p_CnctInfoTmpPt = CnctInfoInit( 1,  m_RmtNodeAddrPt.m_Val, m_RmtNodePortPt.m_Val, null, m_TmpHTLongPt.m_Val, CnctSts.Cnct ) ) == null ) break AudpSrvrSoktAcptOut; //如果连接信息初始化失败。
+                                if( ( p_CnctInfoTmpPt = CnctInfoInit( 1,  m_ThrdPt.m_RmtNodeAddrPt.m_Val, m_ThrdPt.m_RmtNodePortPt.m_Val, null, m_ThrdPt.m_TmpHTLongPt.m_Val, CnctSts.Cnct ) ) == null ) break AudpSrvrSoktAcptOut; //如果连接信息初始化失败。
                                 UserCnctSts( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_CurCnctSts ); //调用用户定义的连接状态函数。
-                                UserCnctRmtTkbkMode( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_RmtTkbkMode );
+                                UserCnctRmtTkbkMode( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_RmtTkbkMode ); //调用用户定义的连接远端对讲模式函数。
 
-                                String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：用本端高级Udp协议服务端套接字接受远端高级Udp协议客户端套接字[" + m_RmtNodeAddrPt.m_Val + ":" + m_RmtNodePortPt.m_Val + "]的连接成功。";
+                                String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：用本端高级Udp协议服务端套接字接受远端高级Udp协议客户端套接字[" + m_ThrdPt.m_RmtNodeAddrPt.m_Val + ":" + m_ThrdPt.m_RmtNodePortPt.m_Val + "]的连接成功。";
                                 if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                                 UserShowLog( p_InfoStrPt );
                                 break;
@@ -905,11 +957,11 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
                 if( p_PocsRslt != 0 ) //如果本处理段执行失败。
                 {
-                    if( m_TmpHTLongPt.m_Val != -1 )
+                    if( m_ThrdPt.m_TmpHTLongPt.m_Val != -1 )
                     {
-                        m_TmpBytePt[ 0 ] = ( byte ) PktTyp.Exit; //设置退出包。
-                        m_AudpSrvrSoktPt.SendApkt( m_TmpHTLongPt.m_Val, m_TmpBytePt, 1, 1, 1, null ); //发送退出包。
-                        m_AudpSrvrSoktPt.ClosCnct( m_TmpHTLongPt.m_Val, null );
+                        m_ThrdPt.m_TmpBytePt[ 0 ] = ( byte ) PktTyp.Exit; //设置退出包。
+                        m_AudpSrvrSoktPt.SendApkt( m_ThrdPt.m_TmpHTLongPt.m_Val, m_ThrdPt.m_TmpBytePt, 1, 1, 1, null ); //发送退出包。
+                        m_AudpSrvrSoktPt.ClosCnct( m_ThrdPt.m_TmpHTLongPt.m_Val, null );
                     }
                 }
             }
@@ -926,37 +978,37 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                     {
                         RecvPktOut:
                         {
-                            if( ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmpPt.m_TcpClntSoktPt.RecvApkt( m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, ( short ) 0, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-                                ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.RecvApkt( p_CnctInfoTmpPt.m_AudpClntCnctIdx, m_TmpBytePt, m_TmpBytePt.length, m_TmpHTLongPt, m_TmpHTIntPt, ( short ) 0, m_ErrInfoVstrPt ) == 0 ) ) )
+                            if( ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmpPt.m_TcpClntSoktPt.RecvApkt( m_ThrdPt.m_TmpBytePt, m_ThrdPt.m_TmpBytePt.length, m_ThrdPt.m_TmpHTLongPt, ( short ) 0, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+                                ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.RecvApkt( p_CnctInfoTmpPt.m_AudpClntCnctIdx, m_ThrdPt.m_TmpBytePt, m_ThrdPt.m_TmpBytePt.length, m_ThrdPt.m_TmpHTLongPt, m_ThrdPt.m_TmpHTIntPt, ( short ) 0, m_ErrInfoVstrPt ) == 0 ) ) )
                             {
-                                if( m_TmpHTLongPt.m_Val != -1 ) //如果用本端套接字接收连接的远端套接字发送的数据包成功。
+                                if( m_ThrdPt.m_TmpHTLongPt.m_Val != -1 ) //如果用本端套接字接收连接的远端套接字发送的数据包成功。
                                 {
-                                    if( m_TmpHTLongPt.m_Val == 0 ) //如果数据包的长度为0。
+                                    if( m_ThrdPt.m_TmpHTLongPt.m_Val == 0 ) //如果数据包的长度为0。
                                     {
-                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收数据包。长度为" + m_TmpHTLongPt.m_Val + "，表示没有数据，无法继续接收。" );
+                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收数据包。长度为" + m_ThrdPt.m_TmpHTLongPt.m_Val + "，表示没有数据，无法继续接收。" );
                                         break RecvPktOut;
                                     }
-                                    else if( m_TmpBytePt[ 0 ] == ( byte ) PktTyp.TkbkMode ) //如果是对讲模式包。
+                                    else if( m_ThrdPt.m_TmpBytePt[ 0 ] == ( byte ) PktTyp.TkbkMode ) //如果是对讲模式包。
                                     {
-                                        if( m_TmpHTLongPt.m_Val < 1 + 1 + 1 ) //如果音频输出帧包的长度小于1 + 1 + 1，表示没有对讲索引和对讲模式。
+                                        if( m_ThrdPt.m_TmpHTLongPt.m_Val < 1 + 1 + 1 ) //如果对讲模式包的长度小于1 + 1 + 1，表示没有对讲索引和对讲模式。
                                         {
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收对讲模式包。长度为" + m_TmpHTLongPt.m_Val + "小于1 + 1 + 1，表示没有对讲索引和对讲模式，无法继续接收。" );
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收对讲模式包。长度为" + m_ThrdPt.m_TmpHTLongPt.m_Val + "小于1 + 1 + 1，表示没有对讲索引和对讲模式，无法继续接收。" );
                                             break RecvPktOut;
                                         }
-                                        if( m_TmpBytePt[ 1 ] != p_CnctInfoTmpPt.m_Idx )
+                                        if( m_ThrdPt.m_TmpBytePt[ 1 ] != p_CnctInfoTmpPt.m_Idx )
                                         {
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收音频输出帧包。索引为" + m_TmpBytePt[ 1 ] + "与发送端的索引" + p_CnctInfoTmpPt.m_Idx + "不一致，无法继续接收。" );
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收对讲模式包。索引为" + m_ThrdPt.m_TmpBytePt[ 1 ] + "与发送端的索引" + p_CnctInfoTmpPt.m_Idx + "不一致，无法继续接收。" );
                                             break RecvPktOut;
                                         }
-                                        if( ( m_TmpBytePt[ 2 ] < ( byte ) TkbkMode.None ) || ( m_TmpBytePt[ 2 ] >= ( byte ) TkbkMode.NoChg ) )
+                                        if( ( m_ThrdPt.m_TmpBytePt[ 2 ] < ( byte ) TkbkMode.None ) || ( m_ThrdPt.m_TmpBytePt[ 2 ] >= ( byte ) TkbkMode.NoChg ) )
                                         {
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收对讲模式包。对讲模式为" + m_TmpBytePt[ 2 ] + "不正确，无法继续接收。" );
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收对讲模式包。对讲模式为" + m_ThrdPt.m_TmpBytePt[ 2 ] + "不正确，无法继续接收。" );
                                             break RecvPktOut;
                                         }
 
-                                        p_CnctInfoTmpPt.m_RmtTkbkMode = m_TmpBytePt[ 2 ]; //设置远端对讲模式。
-                                        UserCnctRmtTkbkMode( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_RmtTkbkMode );
-                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收对讲模式包。索引：" + m_TmpBytePt[ 1 ] + "。对讲模式：" + m_TkbkModeStrArrPt[ p_CnctInfoTmpPt.m_RmtTkbkMode ] + "。" );
+                                        p_CnctInfoTmpPt.m_RmtTkbkMode = m_ThrdPt.m_TmpBytePt[ 2 ]; //设置远端对讲模式。
+                                        UserCnctRmtTkbkMode( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_RmtTkbkMode ); //调用用户定义的连接远端对讲模式函数。
+                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收对讲模式包。索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。对讲模式：" + m_TkbkModeStrArrPt[ p_CnctInfoTmpPt.m_RmtTkbkMode ] + "。" );
 
                                         //全部发送对讲模式包。
                                         for( int p_CnctInfoLstIdx2 = 0; p_CnctInfoLstIdx2 < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx2++ )
@@ -965,41 +1017,41 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
                                             if( ( p_CnctInfoTmp2Pt.m_IsInit != 0 ) && ( p_CnctInfoTmp2Pt.m_CurCnctSts == CnctSts.Cnct ) && ( p_CnctInfoTmp2Pt.m_Idx != p_CnctInfoTmpPt.m_Idx ) ) //如果连接信息已初始化，且当前连接状态为已连接，且不是发送端的连接信息。
                                             {
-                                                if( ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmp2Pt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, m_TmpHTLongPt.m_Val, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-                                                        ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmp2Pt.m_AudpClntCnctIdx, m_TmpBytePt, m_TmpHTLongPt.m_Val, 1, m_TmpHTIntPt.m_Val, m_ErrInfoVstrPt ) == 0 ) ) )
+                                                if( ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmp2Pt.m_TcpClntSoktPt.SendApkt( m_ThrdPt.m_TmpBytePt, m_ThrdPt.m_TmpHTLongPt.m_Val, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+                                                    ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmp2Pt.m_AudpClntCnctIdx, m_ThrdPt.m_TmpBytePt, m_ThrdPt.m_TmpHTLongPt.m_Val, 1, m_ThrdPt.m_TmpHTIntPt.m_Val, m_ErrInfoVstrPt ) == 0 ) ) )
                                                 {
-                                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送对讲模式包成功。索引：" + m_TmpBytePt[ 1 ] + "。对讲模式：" + m_TkbkModeStrArrPt[ p_CnctInfoTmpPt.m_RmtTkbkMode ] + "。总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                                    if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送对讲模式包成功。索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。对讲模式：" + m_TkbkModeStrArrPt[ p_CnctInfoTmpPt.m_RmtTkbkMode ] + "。总长度：" + m_ThrdPt.m_TmpHTLongPt.m_Val + "。" );
                                                 }
                                                 else
                                                 {
-                                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送对讲模式包失败。索引：" + m_TmpBytePt[ 1 ] + "。对讲模式：" + m_TkbkModeStrArrPt[ p_CnctInfoTmpPt.m_RmtTkbkMode ] + "。总长度：" + m_TmpHTLongPt.m_Val + "。原因：" + m_ErrInfoVstrPt.GetStr() );
+                                                    if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送对讲模式包失败。索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。对讲模式：" + m_TkbkModeStrArrPt[ p_CnctInfoTmpPt.m_RmtTkbkMode ] + "。总长度：" + m_ThrdPt.m_TmpHTLongPt.m_Val + "。原因：" + m_ErrInfoVstrPt.GetStr() );
                                                 }
                                             }
                                         }
                                     }
-                                    else if( m_TmpBytePt[ 0 ] == ( byte ) PktTyp.AdoFrm ) //如果是音频输出帧包。
+                                    else if( m_ThrdPt.m_TmpBytePt[ 0 ] == ( byte ) PktTyp.AdoFrm ) //如果是音频输出帧包。
                                     {
-                                        if( m_TmpHTLongPt.m_Val < 1 + 1 + 4 ) //如果音频输出帧包的长度小于1 + 1 + 4，表示没有索引和音频输出帧时间戳。
+                                        if( m_ThrdPt.m_TmpHTLongPt.m_Val < 1 + 1 + 4 ) //如果音频输出帧包的长度小于1 + 1 + 4，表示没有索引和音频输出帧时间戳。
                                         {
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收音频输出帧包。长度为" + m_TmpHTLongPt.m_Val + "小于1 + 1 + 4，表示没有索引和音频输出帧时间戳，无法继续接收。" );
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收音频输出帧包。长度为" + m_ThrdPt.m_TmpHTLongPt.m_Val + "小于1 + 1 + 4，表示没有索引和音频输出帧时间戳，无法继续接收。" );
                                             break RecvPktOut;
                                         }
-                                        if( m_TmpBytePt[ 1 ] != p_CnctInfoTmpPt.m_Idx )
+                                        if( m_ThrdPt.m_TmpBytePt[ 1 ] != p_CnctInfoTmpPt.m_Idx )
                                         {
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收音频输出帧包。索引为" + m_TmpBytePt[ 1 ] + "与发送端的索引" + p_CnctInfoTmpPt.m_Idx + "不一致，无法继续接收。" );
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收音频输出帧包。索引为" + m_ThrdPt.m_TmpBytePt[ 1 ] + "与发送端的索引" + p_CnctInfoTmpPt.m_Idx + "不一致，无法继续接收。" );
                                             break RecvPktOut;
                                         }
 
                                         //读取音频输出帧时间戳。
-                                        p_TmpInt = ( m_TmpBytePt[ 2 ] & 0xFF ) + ( ( m_TmpBytePt[ 3 ] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[ 4 ] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[ 5 ] & 0xFF ) << 24 );
+                                        p_TmpInt = ( m_ThrdPt.m_TmpBytePt[ 2 ] & 0xFF ) + ( ( m_ThrdPt.m_TmpBytePt[ 3 ] & 0xFF ) << 8 ) + ( ( m_ThrdPt.m_TmpBytePt[ 4 ] & 0xFF ) << 16 ) + ( ( m_ThrdPt.m_TmpBytePt[ 5 ] & 0xFF ) << 24 );
 
-                                        if( m_TmpHTLongPt.m_Val > 1 + 1 + 4 ) //如果该音频输出帧为有语音活动。
+                                        if( m_ThrdPt.m_TmpHTLongPt.m_Val > 1 + 1 + 4 ) //如果该音频输出帧为有语音活动。
                                         {
-                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收有语音活动的音频输出帧包。索引：" + m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收有语音活动的音频输出帧包。索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ThrdPt.m_TmpHTLongPt.m_Val + "。" );
                                         }
                                         else //如果该音频输出帧为无语音活动。
                                         {
-                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收无语音活动的音频输出帧包。索引：" + m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收无语音活动的音频输出帧包。索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ThrdPt.m_TmpHTLongPt.m_Val + "。" );
                                         }
 
                                         //全部发送音频输出帧包。
@@ -1011,14 +1063,14 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
                                                 if( ( p_CnctInfoTmp2Pt.m_IsInit != 0 ) && ( p_CnctInfoTmp2Pt.m_CurCnctSts == CnctSts.Cnct ) && ( ( p_CnctInfoTmp2Pt.m_RmtTkbkMode & TkbkMode.AdoOtpt ) != 0 ) && ( p_CnctInfoTmp2Pt.m_Idx != p_CnctInfoTmpPt.m_Idx ) ) //如果连接信息已初始化，且当前连接状态为已连接，且对讲模式有音频输出，且不是发送端的连接信息。
                                                 {
-                                                    if( ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmp2Pt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, m_TmpHTLongPt.m_Val, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-                                                        ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmp2Pt.m_AudpClntCnctIdx, m_TmpBytePt, m_TmpHTLongPt.m_Val, 1, m_TmpHTIntPt.m_Val, m_ErrInfoVstrPt ) == 0 ) ) )
+                                                    if( ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmp2Pt.m_TcpClntSoktPt.SendApkt( m_ThrdPt.m_TmpBytePt, m_ThrdPt.m_TmpHTLongPt.m_Val, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+                                                        ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmp2Pt.m_AudpClntCnctIdx, m_ThrdPt.m_TmpBytePt, m_ThrdPt.m_TmpHTLongPt.m_Val, 1, m_ThrdPt.m_TmpHTIntPt.m_Val, m_ErrInfoVstrPt ) == 0 ) ) )
                                                     {
-                                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送音频输出帧包成功。索引：" + m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送音频输出帧包成功。索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ThrdPt.m_TmpHTLongPt.m_Val + "。" );
                                                     }
                                                     else
                                                     {
-                                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送音频输出帧包失败。索引：" + m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。原因：" + m_ErrInfoVstrPt.GetStr() );
+                                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送音频输出帧包失败。索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ThrdPt.m_TmpHTLongPt.m_Val + "。原因：" + m_ErrInfoVstrPt.GetStr() );
                                                     }
                                                 }
                                             }
@@ -1028,29 +1080,29 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                                             if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：远端对讲模式无音频输入，不进行全部发送音频输出帧包。" );
                                         }
                                     }
-                                    else if( m_TmpBytePt[ 0 ] == ( byte ) PktTyp.VdoFrm ) //如果是视频输出帧包。
+                                    else if( m_ThrdPt.m_TmpBytePt[ 0 ] == ( byte ) PktTyp.VdoFrm ) //如果是视频输出帧包。
                                     {
-                                        if( m_TmpHTLongPt.m_Val < 1 + 1 + 4 ) //如果视频输出帧包的长度小于1 + 1 + 4，表示没有索引和视频输出帧时间戳。
+                                        if( m_ThrdPt.m_TmpHTLongPt.m_Val < 1 + 1 + 4 ) //如果视频输出帧包的长度小于1 + 1 + 4，表示没有索引和视频输出帧时间戳。
                                         {
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收视频输出帧包。长度为" + m_TmpHTLongPt.m_Val + "小于1 + 1 + 4，表示没有索引和视频输出帧时间戳，无法继续接收。" );
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收视频输出帧包。长度为" + m_ThrdPt.m_TmpHTLongPt.m_Val + "小于1 + 1 + 4，表示没有索引和视频输出帧时间戳，无法继续接收。" );
                                             break RecvPktOut;
                                         }
-                                        if( m_TmpBytePt[ 1 ] != p_CnctInfoTmpPt.m_Idx )
+                                        if( m_ThrdPt.m_TmpBytePt[ 1 ] != p_CnctInfoTmpPt.m_Idx )
                                         {
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收音频输出帧包。索引为" + m_TmpBytePt[ 1 ] + "与发送端的索引" + p_CnctInfoTmpPt.m_Idx + "不一致，无法继续接收。" );
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收音频输出帧包。索引为" + m_ThrdPt.m_TmpBytePt[ 1 ] + "与发送端的索引" + p_CnctInfoTmpPt.m_Idx + "不一致，无法继续接收。" );
                                             break RecvPktOut;
                                         }
 
                                         //读取视频输出帧时间戳。
-                                        p_TmpInt = ( m_TmpBytePt[ 2 ] & 0xFF ) + ( ( m_TmpBytePt[ 3 ] & 0xFF ) << 8 ) + ( ( m_TmpBytePt[ 4 ] & 0xFF ) << 16 ) + ( ( m_TmpBytePt[ 5 ] & 0xFF ) << 24 );
+                                        p_TmpInt = ( m_ThrdPt.m_TmpBytePt[ 2 ] & 0xFF ) + ( ( m_ThrdPt.m_TmpBytePt[ 3 ] & 0xFF ) << 8 ) + ( ( m_ThrdPt.m_TmpBytePt[ 4 ] & 0xFF ) << 16 ) + ( ( m_ThrdPt.m_TmpBytePt[ 5 ] & 0xFF ) << 24 );
 
-                                        if( m_TmpHTLongPt.m_Val > 1 + 1 + 4 ) //如果该视频输出帧为有图像活动。
+                                        if( m_ThrdPt.m_TmpHTLongPt.m_Val > 1 + 1 + 4 ) //如果该视频输出帧为有图像活动。
                                         {
-                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收有图像活动的视频输出帧包。索引：" + m_TmpBytePt[ 1 ] + "。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "，类型：" + ( m_TmpBytePt[ 10 ] & 0xff ) + "。" );
+                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收有图像活动的视频输出帧包。索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。视频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ThrdPt.m_TmpHTLongPt.m_Val + "。类型：" + ( m_ThrdPt.m_TmpBytePt[ 10 ] & 0xff ) + "。" );
                                         }
                                         else //如果该视频输出帧为无图像活动。
                                         {
-                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收无图像活动的视频输出帧包。索引：" + m_TmpBytePt[ 1 ] + "。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                            if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收无图像活动的视频输出帧包。索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。视频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ThrdPt.m_TmpHTLongPt.m_Val + "。" );
                                         }
 
                                         //全部发送视频输出帧包。
@@ -1062,14 +1114,14 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
                                                 if( ( p_CnctInfoTmp2Pt.m_IsInit != 0 ) && ( p_CnctInfoTmp2Pt.m_CurCnctSts == CnctSts.Cnct ) && ( ( p_CnctInfoTmp2Pt.m_RmtTkbkMode & TkbkMode.VdoOtpt ) != 0 ) && ( p_CnctInfoTmp2Pt.m_Idx != p_CnctInfoTmpPt.m_Idx ) ) //如果连接信息已初始化，且当前连接状态为已连接，且对讲模式有视频输出，且不是发送端的连接信息。
                                                 {
-                                                    if( ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmp2Pt.m_TcpClntSoktPt.SendApkt( m_TmpBytePt, m_TmpHTLongPt.m_Val, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
-                                                            ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmp2Pt.m_AudpClntCnctIdx, m_TmpBytePt, m_TmpHTLongPt.m_Val, 1, m_TmpHTIntPt.m_Val, m_ErrInfoVstrPt ) == 0 ) ) )
+                                                    if( ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 0 ) && ( p_CnctInfoTmp2Pt.m_TcpClntSoktPt.SendApkt( m_ThrdPt.m_TmpBytePt, m_ThrdPt.m_TmpHTLongPt.m_Val, ( short ) 0, 1, 0, m_ErrInfoVstrPt ) == 0 ) ) ||
+                                                            ( ( p_CnctInfoTmp2Pt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_AudpSrvrSoktPt.SendApkt( p_CnctInfoTmp2Pt.m_AudpClntCnctIdx, m_ThrdPt.m_TmpBytePt, m_ThrdPt.m_TmpHTLongPt.m_Val, 1, m_ThrdPt.m_TmpHTIntPt.m_Val, m_ErrInfoVstrPt ) == 0 ) ) )
                                                     {
-                                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送视频输出帧包成功。索引：" + m_TmpBytePt[ 1 ] + "。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。" );
+                                                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送视频输出帧包成功。索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。视频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ThrdPt.m_TmpHTLongPt.m_Val + "。" );
                                                     }
                                                     else
                                                     {
-                                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送视频输出帧包失败。索引：" + m_TmpBytePt[ 1 ] + "。视频输出帧时间戳：" + p_TmpInt + "，总长度：" + m_TmpHTLongPt.m_Val + "。原因：" + m_ErrInfoVstrPt.GetStr() );
+                                                        if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmp2Pt.m_Idx + "：发送视频输出帧包失败。索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。视频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ThrdPt.m_TmpHTLongPt.m_Val + "。原因：" + m_ErrInfoVstrPt.GetStr() );
                                                     }
                                                 }
                                             }
@@ -1079,18 +1131,23 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                                             if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：远端对讲模式无视频输入，不进行全部发送视频输出帧包。" );
                                         }
                                     }
-                                    else if( m_TmpBytePt[ 0 ] == ( byte ) PktTyp.Exit ) //如果是退出包。
+                                    else if( m_ThrdPt.m_TmpBytePt[ 0 ] == ( byte ) PktTyp.Exit ) //如果是退出包。
                                     {
-                                        if( m_TmpHTLongPt.m_Val < 1 + 1 ) //如果退出包的长度小于1 + 1，表示没有索引。
+                                        if( m_ThrdPt.m_TmpHTLongPt.m_Val < 1 + 1 ) //如果退出包的长度小于1 + 1，表示没有索引。
                                         {
-                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收退出包。长度为" + m_TmpHTLongPt.m_Val + "小于1 + 1，表示没有索引，无法继续接收。" );
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收退出包。长度为" + m_ThrdPt.m_TmpHTLongPt.m_Val + "小于1 + 1，表示没有索引，无法继续接收。" );
+                                            break RecvPktOut;
+                                        }
+                                        if( m_ThrdPt.m_TmpBytePt[ 1 ] != p_CnctInfoTmpPt.m_Idx )
+                                        {
+                                            if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收退出包。索引为" + m_ThrdPt.m_TmpBytePt[ 1 ] + "与发送端的索引" + p_CnctInfoTmpPt.m_Idx + "不一致，无法继续接收。" );
                                             break RecvPktOut;
                                         }
 
-                                        p_CnctInfoTmpPt.m_IsRecvExitPkt = 1; //设置已经接收退出包。
+                                        p_CnctInfoTmpPt.m_IsRecvExitPkt = 1; //设置已接收退出包。
                                         p_CnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。
 
-                                        String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收退出包。索引：" + m_TmpBytePt[ 1 ] + "。";
+                                        String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收退出包。索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。";
                                         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
                                         UserShowLog( p_InfoStrPt );
                                         if( m_IsShowToast != 0 ) UserShowToast( p_InfoStrPt );
@@ -1139,6 +1196,12 @@ public abstract class SrvrThrd extends Thread //服务端线程。
         {
             switch( MsgTyp )
             {
+                case ThrdMsgTyp.SetIsUseWakeLock:
+                {
+                    m_IsUseWakeLock = ( Integer ) MsgArgPt[ 0 ];
+                    WakeLockInitOrDstoy( m_IsUseWakeLock ); //重新初始化唤醒锁。
+                    break;
+                }
                 case ThrdMsgTyp.SrvrInit:
                 {
                     p_Rslt = SrvrInit( ( String ) MsgArgPt[ 0 ], ( Integer ) MsgArgPt[ 1 ], ( Integer ) MsgArgPt[ 2 ] );
@@ -1163,7 +1226,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
                 }
                 default: //用户消息。
                 {
-                    p_TmpInt32 = UserMsg( MsgTyp - MediaPocsThrd.ThrdMsgTyp.UserMsgMinVal, MsgArgPt );
+                    p_TmpInt32 = UserMsg( MsgTyp - ThrdMsgTyp.UserMsgMinVal, MsgArgPt );
                     if( p_TmpInt32 == 0 )
                     {
                         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：调用用户定义的消息函数成功。返回值：" + p_TmpInt32 );
@@ -1212,6 +1275,8 @@ public abstract class SrvrThrd extends Thread //服务端线程。
         } //媒体处理循环结束。
 
         UserSrvrThrdDstoy(); //调用用户定义的服务端线程销毁函数。
+
+        WakeLockInitOrDstoy( 0 ); //销毁唤醒锁。
 
         if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：本线程已退出。" );
     }

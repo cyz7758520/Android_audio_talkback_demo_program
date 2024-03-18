@@ -488,7 +488,7 @@ public class VdoOtpt //视频输出。
 
                     if( m_ThrdPt.m_ExitFlag == 1 ) //如果退出标记为请求退出。
                     {
-                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：接收到退出请求。" );
+                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：接收退出请求。" );
                         break;
                     }
 
