@@ -15,7 +15,7 @@
 &emsp;&emsp;* 支持保存音频到文件和绘制音频波形到Surface，可以直观且方便的调试音频。  
 &emsp;&emsp;* 支持视频软硬编解码，支持指定比特率，最低到10KB/s仍然可以进行视频对讲，还支持横竖屏切换。  
 &emsp;&emsp;* 支持音视频自适应抖动缓冲，当网络存在丢包、乱序、延时等抖动情况时，通过自适应调节缓冲深度来应对这些抖动。  
-&emsp;&emsp;* 支持自定义调节各种功能的参数来适应不同的设备，绝大部分情况下都不需要修改。  
+&emsp;&emsp;* 支持自定义调节各种功能的参数来适应不同的设备，绝大部分情况下使用默认设置即可。  
 &emsp;&emsp;* 支持将对讲时全部设备的音视频输入输出保存到一个Avi文件。  
 &emsp;&emsp;* 支持与Windows下音视频对讲演示程序进行音视频对讲。  
 
@@ -32,7 +32,7 @@
 &emsp;&emsp;特别注意：以上是在不使用系统自带的声学回音消除器的效果，且不同设备或不同环境或不同时间效果都会不同，所以需要自己亲自测试。  
 
 # 准备
-&emsp;&emsp;准备两至多个安装了Android 2.3及以上系统的设备（已适配到Android 13.0），设备之间可以相互通信（可以用Ping工具测试，建议设备在同一局域网内，外网的设备访问内网设备可能需要做内网穿透），所有设备都安装相同版本的本软件。  
+&emsp;&emsp;准备两至多个安装了Android 2.3及以上系统的设备（已适配到Android 13.0），设备之间可以相互通信（可以用Ping工具测试，建议设备都在同一局域网内，外网设备访问内网设备可能需要做内网穿透），所有设备都安装相同版本的本软件。  
 
 # 开始
 &emsp;&emsp;1、在一个设备上直接点击服务端的创建按钮。  
@@ -48,13 +48,13 @@
 &emsp;&emsp;删除设置按钮：将Stng.xml文件删除。  
 &emsp;&emsp;重置设置按钮：将本软件的设置重置为默认。  
 
-&emsp;&emsp;**特别注意：如果把两至多个设备放在同一房间里测试，有可能会出现啸叫、声音不完整、等问题，这是因为现在的麦克风都很灵敏了，一点小小的声音都会被录进去，两个设备会相互录音，导致软件无法正确识别回音，所以建议放在不同的房间里测试。如果实在要测试这种情况，就在设置里，Speex预处理器的设置里，关闭“使用自动增益控制”后再测试。**  
+&emsp;&emsp;**特别注意：如果把两至多个设备放在同一房间里测试，有可能会出现啸叫、声音不完整、等问题，这是因为现在的麦克风都很灵敏了，一点小小的声音都会被录进去，设备之间会相互录音，导致软件无法正确识别回音，所以建议放在不同的房间里测试。如果实在要测试这种情况，就在设置里，Speex预处理器的设置里，关闭“使用自动增益控制”后再测试。**  
 
 # 移植
 &emsp;&emsp;如果需要在自己的软件中使用本软件的音视频功能，需要以下几个步骤：  
 &emsp;&emsp;1、在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限。  
 &emsp;&emsp;2、将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中。  
-&emsp;&emsp;3、如果自己的软件已有传输协议：继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserPocs、UserDstoy、UserMsg、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetAdoOtptFrm、UserWriteVdoOtptFrm、UserGetVdoOtptFrm这九个回调成员函数。  
+&emsp;&emsp;3、如果自己的软件已有传输协议：继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserPocs、UserDstoy、UserMsg、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetAdoOtptFrm、UserWriteVdoOtptFrm、UserGetVdoOtptFrm这些回调成员函数。  
 &emsp;&emsp;&emsp;&emsp;如果自己的软件没有传输协议：继承HeavenTao.Media.SrvrThrd服务端线程类，实现UserShowLog、UserShowToast、UserVibrate、UserMsg、UserSrvrThrdInit、UserSrvrThrdDstoy、UserSrvrInit、UserSrvrDstoy、UserCnctInit、UserCnctDstoy、UserCnctSts、UserCnctRmtTkbkMode这些回调成员函数。  
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;继承HeavenTao.Media.ClntMediaPocsThrd客户端媒体处理线程类，实现UserShowLog、UserShowToast、UserVibrate、UserClntMediaPocsThrdInit、UserClntMediaPocsThrdDstoy、UserTkbkClntCnctInit、UserTkbkClntCnctDstoy、UserTkbkClntCnctSts、UserTkbkClntMyTkbkIdx、UserTkbkClntLclTkbkMode、UserTkbkClntTkbkInfoInit、UserTkbkClntTkbkInfoDstoy、UserTkbkClntTkbkInfoRmtTkbkMode、UserBdctClntInit、UserBdctClntDstoy这些回调成员函数。  
 &emsp;&emsp;&emsp;&emsp;如果要在JNI层处理音视频帧，则可以将这些回调成员函数继承为native函数，然后在JNI层实现即可。  
@@ -152,9 +152,9 @@ ___
 &emsp;&emsp;&emsp;&emsp;&emsp;AdoInptPcmRsltFrmPt：\[输入\]，存放音频输入Pcm格式结果帧的指针，就是已经过声学回音消除、噪音抑制、自动增益控制的音频帧。如果不使用音频输入，则本参数为null。  
 &emsp;&emsp;&emsp;&emsp;&emsp;AdoInptPcmFrmLenUnit：\[输入\]，存放音频输入Pcm格式帧的长度，单位为采样单元。如果不使用音频输入，则本参数无意义。  
 &emsp;&emsp;&emsp;&emsp;&emsp;AdoInptPcmRsltFrmVoiceActSts：\[输入\]，存放音频输入Pcm格式结果帧的语音活动状态，为非0表示有语音活动，为0表示无语音活动。如果不使用音频输入，则本参数无意义。  
-&emsp;&emsp;&emsp;&emsp;&emsp;AdoInptEncdRsltFrmPt：\[输入\]，存放音频输入已编码格式结果帧的指针。如果不使用音频输入，或音频输入编码器要使用PCM原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;AdoInptEncdRsltFrmLenByt：\[输入\]，存放音频输入已编码格式结果帧的长度，单位为字节。如果不使用音频输入，或音频输入编码器要使用PCM原始数据，则本参数无意义。  
-&emsp;&emsp;&emsp;&emsp;&emsp;AdoInptEncdRsltFrmIsNeedTrans：\[输入\]，存放音频输入已编码格式结果帧是否需要传输，为非0表示需要传输，为0表示不需要传输。如果不使用音频输入，或音频输入编码器要使用PCM原始数据，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;AdoInptEncdRsltFrmPt：\[输入\]，存放音频输入已编码格式结果帧的指针。如果不使用音频输入，或音频输入编码器要使用Pcm原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;AdoInptEncdRsltFrmLenByt：\[输入\]，存放音频输入已编码格式结果帧的长度，单位为字节。如果不使用音频输入，或音频输入编码器要使用Pcm原始数据，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;AdoInptEncdRsltFrmIsNeedTrans：\[输入\]，存放音频输入已编码格式结果帧是否需要传输，为非0表示需要传输，为0表示不需要传输。如果不使用音频输入，或音频输入编码器要使用Pcm原始数据，则本参数无意义。  
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoInptNv21SrcFrmPt：\[输入\]，存放视频输入Nv21格式原始帧的指针。如果不使用视频输入，或本次没有读取到视频输入帧，则本参数为null。  
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoInptNv21SrcFrmWidth：\[输入\]，存放视频输入Nv21格式原始帧的宽度，单位为像素。如果不使用视频输入，或本次没有读取到视频输入帧，则本参数无意义。  
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoInptNv21SrcFrmHeight：\[输入\]，存放视频输入Nv21格式原始帧的高度，单位为像素。如果不使用视频输入，或本次没有读取到视频输入帧，则本参数无意义。  
@@ -169,26 +169,26 @@ ___
 &emsp;&emsp;&emsp;&emsp;&emsp;非0：失败。  
 ___
 函数名称：UserWriteAdoOtptFrm  
-功能说明：用户定义的写入音频输出帧函数，在需要写入一个音频输出帧时回调一次。如果没有使用音频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。  
+功能说明：用户定义的写入音频输出帧函数，在需要写入一个音频输出帧时回调一次。如果不使用音频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。  
 参数说明：AdoOtptStrmIdx：\[输入\]，存放音频输出流索引。  
-&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptPcmSrcFrmPt：\[输出\]，存放音频输出Pcm格式原始帧的指针。如果音频输出解码器不使用PCM原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptPcmFrmLenUnit：\[输入\]，存放音频输出Pcm格式帧的长度，单位为采样单元。如果音频输出解码器不使用PCM原始数据，则本参数无意义。  
-&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmPt：\[输出\]，存放音频输出已编码格式原始帧的指针。如果音频输出解码器要使用PCM原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmSzByt：\[输入\]，存放音频输出已编码格式原始帧的大小，单位为字节。如果音频输出解码器要使用PCM原始数据，则本参数无意义。  
-&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmLenBytPt：\[输出\]，存放音频输出已编码格式原始帧的长度的指针，单位为字节。如果音频输出解码器要使用PCM原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptPcmSrcFrmPt：\[输出\]，存放音频输出Pcm格式原始帧的指针。如果音频输出解码器不使用Pcm原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptPcmFrmLenUnit：\[输入\]，存放音频输出Pcm格式帧的长度，单位为采样单元。如果音频输出解码器不使用Pcm原始数据，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmPt：\[输出\]，存放音频输出已编码格式原始帧的指针。如果音频输出解码器要使用Pcm原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmSzByt：\[输入\]，存放音频输出已编码格式原始帧的大小，单位为字节。如果音频输出解码器要使用Pcm原始数据，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmLenBytPt：\[输出\]，存放音频输出已编码格式原始帧的长度的指针，单位为字节。如果音频输出解码器要使用Pcm原始数据，则本参数为null。  
 返回说明：无。  
 ___
 函数名称：UserGetAdoOtptFrm  
-功能说明：用户定义的获取音频输出帧函数，在解码完一个已编码音频输出帧时回调一次。如果没有使用音频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。  
+功能说明：用户定义的获取音频输出帧函数，在解码完一个已编码音频输出帧时回调一次。如果不使用音频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。  
 参数说明：AdoOtptStrmIdx：\[输入\]，存放音频输出流索引。  
 &emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptPcmSrcFrmPt：\[输入\]，存放音频输出Pcm格式原始帧的指针。  
 &emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptPcmFrmLenUnit：\[输入\]，存放音频输出Pcm格式帧的长度，单位为采样单元。  
-&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmPt：\[输入\]，存放音频输出已编码格式原始帧的指针。如果音频输出解码器要使用PCM原始数据，则本参数为null。  
-&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmLenByt：\[输入\]，存放音频输出已编码格式原始帧的长度，单位为字节。如果音频输出解码器要使用PCM原始数据，则本参数无意义。  
+&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmPt：\[输入\]，存放音频输出已编码格式原始帧的指针。如果音频输出解码器要使用Pcm原始数据，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;AdoOtptEncdSrcFrmLenByt：\[输入\]，存放音频输出已编码格式原始帧的长度，单位为字节。如果音频输出解码器要使用Pcm原始数据，则本参数无意义。  
 返回说明：无。  
 ___
 函数名称：UserWriteVdoOtptFrm  
-功能说明：用户定义的写入视频输出帧函数，在可以显示一个视频输出帧时回调一次。如果没有使用视频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。  
+功能说明：用户定义的写入视频输出帧函数，在可以显示一个视频输出帧时回调一次。如果不使用视频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。  
 参数说明：VdoOtptStrmIdx：\[输入\]，存放视频输出流索引。  
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptYu12SrcFrmPt：\[输出\]，存放视频输出Yu12格式原始帧的指针。如果视频输出解码器不使用Yu12原始数据，则本参数为null。  
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptYu12SrcFrmWidthPt：\[输出\]，存放视频输出Yu12格式原始帧宽度的指针，单位为像素。如果视频输出解码器不使用Yu12原始数据，则本参数为null。  
@@ -199,7 +199,7 @@ ___
 返回说明：无。  
 ___
 函数名称：UserGetVdoOtptFrm  
-功能说明：用户定义的获取视频输出帧函数，在解码完一个已编码视频输出帧时回调一次。如果没有使用视频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。  
+功能说明：用户定义的获取视频输出帧函数，在解码完一个已编码视频输出帧时回调一次。如果不使用视频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在视频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音视频输出帧不同步。  
 参数说明：VdoOtptStrmIdx：\[输入\]，存放视频输出流索引。  
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptYu12SrcFrmPt：\[输入\]，存放视频输出Yu12格式原始帧的指针。  
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoOtptYu12SrcFrmWidth：\[输入\]，存放视频输出Yu12格式原始帧的宽度，单位为像素。  
@@ -287,9 +287,19 @@ ___
 函数名称：UserTkbkClntTkbkInfoRmtTkbkMode  
 功能说明：用户定义的对讲客户端对讲信息远端对讲模式函数。  
 ___
-函数名称：UserBdctClntInit
-功能说明：用户定义的广播客户端初始化函数。
+函数名称：UserBdctClntInit  
+功能说明：用户定义的广播客户端初始化函数。  
 ___
-函数名称：UserBdctClntDstoy
-功能说明：用户定义的广播客户端销毁函数。
+函数名称：UserBdctClntDstoy  
+功能说明：用户定义的广播客户端销毁函数。  
 ___
+函数名称：UserBdctClntCnctInit  
+功能说明：用户定义的广播客户端连接初始化函数。  
+___
+函数名称：UserBdctClntCnctDstoy  
+功能说明：用户定义的广播客户端连接销毁函数。  
+___
+函数名称：UserBdctClntCnctSts  
+功能说明：用户定义的广播客户端连接状态函数。  
+___
+

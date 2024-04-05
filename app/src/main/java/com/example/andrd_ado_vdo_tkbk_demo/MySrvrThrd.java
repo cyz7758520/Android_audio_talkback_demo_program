@@ -67,7 +67,7 @@ public class MySrvrThrd extends SrvrThrd
     //用户定义的连接初始化函数。
     @Override public void UserCnctInit( CnctInfo CnctInfoPt, int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
     {
-        m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstAddItem, CnctInfoPt.m_Num, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt );
+        m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstAddItem, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt );
     }
 
     //用户定义的连接销毁函数。
@@ -102,8 +102,8 @@ public class MySrvrThrd extends SrvrThrd
     }
 
     //用户定义的连接远端对讲模式函数。
-    @Override public void UserCnctRmtTkbkMode( CnctInfo CnctInfoPt, int RmtTkbkMode )
+    @Override public void UserCnctRmtTkbkMode( CnctInfo CnctInfoPt, int OldRmtTkbkMode, int NewRmtTkbkMode )
     {
-        m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstModifyItem, CnctInfoPt.m_Num, null, m_TkbkModeStrArrPt[ RmtTkbkMode ] );
+        m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.CnctLstModifyItem, CnctInfoPt.m_Num, null, m_TkbkModeStrArrPt[ NewRmtTkbkMode ] );
     }
 }

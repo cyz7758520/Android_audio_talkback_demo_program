@@ -337,7 +337,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
         return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoInptSetIsUseSpeexPrpocs, IsUseSpeexPrpocs, IsUseVad, VadProbStart, VadProbCntu, IsUseAgc, AgcLevel, AgcIncrement, AgcDecrement, AgcMaxGain );
     }
 
-    //媒体处理线程的音频输入设置要使用PCM原始数据。
+    //媒体处理线程的音频输入设置要使用Pcm原始数据。
     public int AdoInptSetUsePcm( int IsBlockWait )
     {
         return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoInptSetUsePcm );
@@ -386,18 +386,18 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
     }
 
     //媒体处理线程的音频输出添加流。
-    public int AddAdoOtptStrm( int IsBlockWait, int StrmIdx )
+    public int AdoOtptAddStrm( int IsBlockWait, int StrmIdx )
     {
         return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoOtptAddStrm, StrmIdx );
     }
 
     //媒体处理线程的音频输出删除流。
-    public int DelAdoOtptStrm( int IsBlockWait, int StrmIdx )
+    public int AdoOtptDelStrm( int IsBlockWait, int AddFirstOrLast, int StrmIdx )
     {
-        return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoOtptDelStrm, StrmIdx );
+        return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, AddFirstOrLast, ThrdMsgTyp.AdoOtptDelStrm, StrmIdx );
     }
 
-    //媒体处理线程的音频输出设置流要使用PCM原始数据。
+    //媒体处理线程的音频输出设置流要使用Pcm原始数据。
     public int AdoOtptSetStrmUsePcm( int IsBlockWait, int StrmIdx )
     {
         return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoOtptSetStrmUsePcm, StrmIdx );
@@ -508,9 +508,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
     }
 
     //媒体处理线程的视频输出删除流。
-    public int VdoOtptDelStrm( int IsBlockWait, int VdoOtptStrmIdx )
+    public int VdoOtptDelStrm( int IsBlockWait, int AddFirstOrLast, int VdoOtptStrmIdx )
     {
-        return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.VdoOtptDelStrm, VdoOtptStrmIdx );
+        return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, AddFirstOrLast, ThrdMsgTyp.VdoOtptDelStrm, VdoOtptStrmIdx );
     }
 
     //媒体处理线程的视频输出设置流。
@@ -2292,9 +2292,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
                 //使用编码器。
                 switch( m_AdoInptPt.m_UseWhatEncd )
                 {
-                    case 0: //如果要使用PCM原始数据。
+                    case 0: //如果要使用Pcm原始数据。
                     {
-                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用PCM原始数据。" );
+                        if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用Pcm原始数据。" );
                         break;
                     }
                     case 1: //如果要使用Speex编码器。

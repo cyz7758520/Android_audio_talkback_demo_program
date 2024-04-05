@@ -35,7 +35,7 @@ public class AdoOtpt //音频输出。
 
         public int m_IsUse; //存放是否使用流，为0表示不使用，为非0表示要使用。
 
-        public int m_UseWhatDecd; //存放使用什么解码器，为0表示PCM原始数据，为1表示Speex解码器，为2表示Opus解码器。
+        public int m_UseWhatDecd; //存放使用什么解码器，为0表示Pcm原始数据，为1表示Speex解码器，为2表示Opus解码器。
 
         class SpeexDecd //存放Speex解码器。
         {
@@ -54,9 +54,9 @@ public class AdoOtpt //音频输出。
                 //初始化解码器。
                 switch( m_UseWhatDecd )
                 {
-                    case 0: //如果要使用PCM原始数据。
+                    case 0: //如果要使用Pcm原始数据。
                     {
-                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：初始化PCM原始数据成功。" );
+                        if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：初始化Pcm原始数据成功。" );
                         break;
                     }
                     case 1: //如果要使用Speex解码器。
@@ -101,9 +101,9 @@ public class AdoOtpt //音频输出。
             //销毁解码器。
             switch( m_UseWhatDecd )
             {
-                case 0: //如果要使用PCM原始数据。
+                case 0: //如果要使用Pcm原始数据。
                 {
-                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：销毁PCM原始数据成功。" );
+                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：销毁Pcm原始数据成功。" );
                     break;
                 }
                 case 1: //如果要使用Speex解码器。
@@ -230,7 +230,7 @@ public class AdoOtpt //音频输出。
         }
     }
 
-    //设置音频输出的流要使用PCM原始数据。
+    //设置音频输出的流要使用Pcm原始数据。
     public void SetStrmUsePcm( int StrmIdx )
     {
         synchronized( m_StrmCntnrPt )
@@ -738,7 +738,7 @@ public class AdoOtpt //音频输出。
 
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) m_ThrdPt.m_LastTickMsec = SystemClock.uptimeMillis();
 
-                    //调用用户定义的写入音频输出帧函数，并解码成PCM原始数据，最后混音。
+                    //调用用户定义的写入音频输出帧函数，并解码成Pcm原始数据，最后混音。
                     synchronized( m_StrmCntnrPt )
                     {
                         if( m_StrmUseTotal > 0 ) //如果有流要使用。
@@ -754,7 +754,7 @@ public class AdoOtpt //音频输出。
                                 {
                                     switch( p_StrmPt.m_UseWhatDecd ) //使用什么解码器。
                                     {
-                                        case 0: //如果要使用PCM原始数据。
+                                        case 0: //如果要使用Pcm原始数据。
                                         {
                                             //调用用户定义的写入音频输出帧函数。
                                             m_MediaPocsThrdPt.UserWriteAdoOtptFrm(
@@ -819,7 +819,7 @@ public class AdoOtpt //音频输出。
                                     {
                                         switch( p_StrmPt.m_UseWhatDecd ) //使用什么解码器。
                                         {
-                                            case 0: //如果要使用PCM原始数据。
+                                            case 0: //如果要使用Pcm原始数据。
                                             {
                                                 //调用用户定义的写入音频输出帧函数。
                                                 m_MediaPocsThrdPt.UserWriteAdoOtptFrm(

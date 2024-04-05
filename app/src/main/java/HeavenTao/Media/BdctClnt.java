@@ -17,8 +17,9 @@ public class BdctClnt //广播客户端。
     ClntMediaPocsThrd m_ClntMediaPocsThrdPt; //存放客户端媒体处理线程的指针。
 
     public int m_IsInit; //存放是否初始化广播客户端，为0表示未初始化，为非0表示已初始化。
+    public int m_CnctNumIsDecr; //存放连接序号是否递减，为0表示不递减，为非0表示要递减。
 
-    class CnctInfo //存放连接信息。
+    public class CnctInfo //存放连接信息。
     {
         public int m_Idx; //存放索引，从0开始，连接信息容器的唯一索引，连接中途不会改变。
         public int m_IsInit; //存放是否初始化，为0表示未初始化，为非0表示已初始化。
@@ -38,19 +39,20 @@ public class BdctClnt //广播客户端。
     ArrayList< CnctInfo > m_CnctInfoCntnrPt = new ArrayList<>(); //存放连接信息容器的指针。
     public int m_CnctInfoCurMaxNum; //存放连接信息的当前最大序号。
 
-    int m_LastSendAdoInptFrmIsAct; //存放最后一个发送的音频输入帧有无语音活动，为1表示有语音活动，为0表示无语音活动。
-    int m_LastSendAdoInptFrmTimeStamp; //存放最后一个发送音频输入帧的时间戳。
+    int m_LastSendAdoInptFrmIsAct; //存放最后发送的音频输入帧有无语音活动，为1表示有语音活动，为0表示无语音活动。
+    int m_LastSendAdoInptFrmTimeStamp; //存放最后发送音频输入帧的时间戳。
 
     int m_IsVibrate; //存放广播客户端是否已振动，用于提醒用户在第一次连接成功后可以开始广播，为1表示已振动，为0表示未振动。
 
     //广播客户端初始化。
-    public int Init()
+    public int Init( int CnctNumIsDecr )
     {
         int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
 
         Out:
         {
             m_IsInit = 1; //设置已初始化广播客户端。
+            m_CnctNumIsDecr = CnctNumIsDecr; //设置连接序号是否递减。
             m_IsVibrate = 0; //设置广播客户端未已振动。
 
             m_ClntMediaPocsThrdPt.UserBdctClntInit(); //调用用户定义的广播客户端初始化函数。
@@ -103,49 +105,57 @@ public class BdctClnt //广播客户端。
     }
 
     //连接信息初始化。
-    public CnctInfo CnctInfoInit( int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt, TcpClntSokt TcpClntSoktPt, long AudpClntCnctIdx, int CurCnctSts )
+    public CnctInfo CnctInfoInit( int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
     {
         int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
         CnctInfo p_CnctInfoTmpPt = null;
 
         Out:
         {
-            if( m_IsInit != 0 ) //如果已初始化广播客户端。
+            if( m_IsInit == 0 ) //如果广播客户端未初始化。
             {
-                CnctInfoFindOut:
-                {
-                    //查找是否有未初始化的连接信息。
-                    for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
-                    {
-                        p_CnctInfoTmpPt = m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx );
-
-                        if( p_CnctInfoTmpPt.m_IsInit == 0 ) break CnctInfoFindOut; //如果找到了未初始化的连接信息。
-                    }
-
-                    //如果没找到未初始化的连接信息。
-                    p_CnctInfoTmpPt = new CnctInfo();
-                    p_CnctInfoTmpPt.m_Idx = m_CnctInfoCntnrPt.size();
-                    m_CnctInfoCntnrPt.add( p_CnctInfoTmpPt ); //添加到连接信息容器。
-                }
-                p_CnctInfoTmpPt.m_IsInit = 1; //设置连接信息已初始化。
-                m_CnctInfoCurMaxNum++; //递增连接信息的当前最大序号。
-                p_CnctInfoTmpPt.m_Num = m_CnctInfoCurMaxNum; //设置序号。
-
-                p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl = IsTcpOrAudpPrtcl; //设置协议为Tcp协议或高级Udp协议。
-                p_CnctInfoTmpPt.m_RmtNodeNameStrPt = RmtNodeNameStrPt; //设置远端套接字绑定的远端节点名称字符串的指针。
-                p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt = RmtNodeSrvcStrPt; //设置远端套接字绑定的远端节点服务字符串的指针。
-                p_CnctInfoTmpPt.m_TcpClntSoktPt = null; //设置本端Tcp协议客户端套接字的指针。
-                p_CnctInfoTmpPt.m_AudpClntCnctIdx = -1; //设置本端高级Udp协议客户端连接索引。
-                p_CnctInfoTmpPt.m_CurCnctSts = ClntMediaPocsThrd.CnctSts.Wait; //设置当前连接状态。
-                p_CnctInfoTmpPt.m_IsRqstDstoy = 0; //设置是否请求销毁。
-
-                p_CnctInfoTmpPt.m_MyTkbkIdx = -1; //设置我的对讲索引。
-                p_CnctInfoTmpPt.m_IsRecvExitPkt = 0; //存放是否接收退出包。
-            }
-            else //如果广播客户端未初始化。
-            {
+                String p_InfoStrPt = "客户端媒体处理线程：广播客户端：广播客户端未初始化，无法继续连接信息初始化。";
+                if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                 break Out;
             }
+
+            CnctInfoFindOut:
+            {
+                //查找是否有未初始化的连接信息。
+                for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
+                {
+                    p_CnctInfoTmpPt = m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx );
+
+                    if( p_CnctInfoTmpPt.m_IsInit == 0 ) break CnctInfoFindOut; //如果找到了未初始化的连接信息。
+                }
+
+                //如果没找到未初始化的连接信息。
+                p_CnctInfoTmpPt = new CnctInfo();
+                p_CnctInfoTmpPt.m_Idx = m_CnctInfoCntnrPt.size();
+                m_CnctInfoCntnrPt.add( p_CnctInfoTmpPt ); //添加到连接信息容器。
+            }
+            p_CnctInfoTmpPt.m_IsInit = 1; //设置连接信息已初始化。
+            m_CnctInfoCurMaxNum++; //递增连接信息的当前最大序号。
+            p_CnctInfoTmpPt.m_Num = m_CnctInfoCurMaxNum; //设置序号。
+
+            p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl = IsTcpOrAudpPrtcl; //设置协议为Tcp协议或高级Udp协议。
+            p_CnctInfoTmpPt.m_RmtNodeNameStrPt = RmtNodeNameStrPt; //设置远端套接字绑定的远端节点名称字符串的指针。
+            p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt = RmtNodeSrvcStrPt; //设置远端套接字绑定的远端节点服务字符串的指针。
+            p_CnctInfoTmpPt.m_TcpClntSoktPt = null; //设置本端Tcp协议客户端套接字的指针。
+            p_CnctInfoTmpPt.m_AudpClntCnctIdx = -1; //设置本端高级Udp协议客户端连接索引。
+            p_CnctInfoTmpPt.m_CurCnctSts = ClntMediaPocsThrd.CnctSts.Wait; //设置当前连接状态。
+            p_CnctInfoTmpPt.m_IsRqstDstoy = 0; //设置是否请求销毁。
+
+            p_CnctInfoTmpPt.m_MyTkbkIdx = -1; //设置我的对讲索引。
+            p_CnctInfoTmpPt.m_IsRecvExitPkt = 0; //存放是否接收退出包。
+
+            String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：初始化与远端节点" + ( ( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) ? "Tcp协议" : "高级Udp协议" ) + "[" + p_CnctInfoTmpPt.m_RmtNodeNameStrPt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt + "]的连接成功。";
+            if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
+            m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
+
+            m_ClntMediaPocsThrdPt.UserBdctClntCnctInit( p_CnctInfoTmpPt, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt ); //调用用户定义的广播客户端连接初始化函数。
+            m_ClntMediaPocsThrdPt.UserBdctClntCnctSts( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_CurCnctSts ); //调用用户定义的广播客户端连接状态函数。
 
             p_Rslt = 0; //设置本函数执行成功。
         }
@@ -177,15 +187,15 @@ public class BdctClnt //广播客户端。
                     m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 0 ] = ClntMediaPocsThrd.PktTyp.Exit; //设置退出包。
                     m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] = ( byte ) CnctInfoPt.m_MyTkbkIdx; //设置对讲索引。
                     if( ( ( CnctInfoPt.m_IsTcpOrAudpPrtcl == 0 ) && ( CnctInfoPt.m_TcpClntSoktPt.SendApkt( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt, 2, ( short ) 0, 1, 0, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 ) ) ||
-                            ( ( CnctInfoPt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.SendApkt( CnctInfoPt.m_AudpClntCnctIdx, m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt, 2, 1, 1, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 ) ) )
+                        ( ( CnctInfoPt.m_IsTcpOrAudpPrtcl == 1 ) && ( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.SendApkt( CnctInfoPt.m_AudpClntCnctIdx, m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt, 2, 1, 1, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 ) ) )
                     {
-                        String p_InfoStrPt = "客户端媒体处理线程：对讲客户端：发送退出包成功。对讲索引：" + CnctInfoPt.m_MyTkbkIdx + "。总长度：2。";
+                        String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + CnctInfoPt.m_Idx + "：发送退出包成功。对讲索引：" + CnctInfoPt.m_MyTkbkIdx + "。总长度：2。";
                         if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                         m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                     }
                     else
                     {
-                        String p_InfoStrPt = "客户端媒体处理线程：对讲客户端：发送退出包失败。对讲索引：" + CnctInfoPt.m_MyTkbkIdx + "。总长度：2。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+                        String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + CnctInfoPt.m_Idx + "：发送退出包失败。对讲索引：" + CnctInfoPt.m_MyTkbkIdx + "。总长度：2。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
                         if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                         m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                     }
@@ -210,6 +220,7 @@ public class BdctClnt //广播客户端。
                 if( ( CnctInfoPt.m_IsRecvExitPkt == 0 ) && ( CnctInfoPt.m_CurCnctSts == ClntMediaPocsThrd.CnctSts.Tmot ) ) //如果未接收退出包，且当前连接状态为异常断开，就重连。
                 {
                     CnctInfoPt.m_CurCnctSts = ClntMediaPocsThrd.CnctSts.Wait; //设置当前连接状态。
+                    m_ClntMediaPocsThrdPt.UserBdctClntCnctSts( CnctInfoPt, CnctInfoPt.m_CurCnctSts ); //调用用户定义的广播客户端连接状态函数。
                     CnctInfoPt.m_IsRqstDstoy = 0; //设置未请求销毁。
 
                     CnctInfoPt.m_MyTkbkIdx = -1; //设置我的对讲索引。
@@ -225,31 +236,38 @@ public class BdctClnt //广播客户端。
                     if( CnctInfoPt.m_CurCnctSts <= ClntMediaPocsThrd.CnctSts.Wait )
                     {
                         CnctInfoPt.m_CurCnctSts = ClntMediaPocsThrd.CnctSts.Tmot;
+                        m_ClntMediaPocsThrdPt.UserBdctClntCnctSts( CnctInfoPt, CnctInfoPt.m_CurCnctSts ); //调用用户定义的广播客户端连接状态函数。
                     }
                     else if( CnctInfoPt.m_CurCnctSts == ClntMediaPocsThrd.CnctSts.Cnct )
                     {
                         CnctInfoPt.m_CurCnctSts = ClntMediaPocsThrd.CnctSts.Dsct;
+                        m_ClntMediaPocsThrdPt.UserBdctClntCnctSts( CnctInfoPt, CnctInfoPt.m_CurCnctSts ); //调用用户定义的广播客户端连接状态函数。
                     }
 
                     CnctInfoPt.m_IsInit = 0; //设置连接信息未初始化。
 
                     //递减后面连接信息的序号。
-                    for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
+                    if( m_CnctNumIsDecr != 0 )
                     {
-                        p_CnctInfoTmpPt = m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx );
-
-                        if( ( p_CnctInfoTmpPt.m_IsInit != 0 ) && ( p_CnctInfoTmpPt.m_Num > CnctInfoPt.m_Num ) )
+                        for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
                         {
-                            p_CnctInfoTmpPt.m_Num--; //设置后面连接信息的序号全部递减1。
+                            p_CnctInfoTmpPt = m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx );
+
+                            if( ( p_CnctInfoTmpPt.m_IsInit != 0 ) && ( p_CnctInfoTmpPt.m_Num > CnctInfoPt.m_Num ) )
+                            {
+                                p_CnctInfoTmpPt.m_Num--; //设置后面连接信息的序号全部递减1。
+                            }
                         }
+                        m_CnctInfoCurMaxNum--; //递减连接信息的当前最大序号。
                     }
-                    m_CnctInfoCurMaxNum--; //递减连接信息的当前最大序号。
 
                     {
                         String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + CnctInfoPt.m_Idx + "：已销毁。";
                         if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                         m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                     }
+
+                    m_ClntMediaPocsThrdPt.UserBdctClntCnctDstoy( CnctInfoPt ); //调用用户定义的广播客户端连接销毁函数。
                 }
             }
 
@@ -316,7 +334,7 @@ public class BdctClnt //广播客户端。
             }
             else
             {
-                String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoPt.m_Idx + "：发送对讲模式包失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+                String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoPt.m_Idx + "：发送对讲模式包失败。对讲索引：" + p_CnctInfoPt.m_MyTkbkIdx + "。对讲模式：" + ClntMediaPocsThrd.m_TkbkModeStrArrPt[ LclTkbkMode ] + "。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
                 if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                 m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
             }
@@ -342,10 +360,11 @@ public class BdctClnt //广播客户端。
             for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
             {
                 p_CnctInfoTmpPt = m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx );
-                if( ( p_CnctInfoTmpPt.m_IsInit != 0 ) && ( p_CnctInfoTmpPt.m_CurCnctSts == ClntMediaPocsThrd.CnctSts.Cnct ) && ( p_CnctInfoTmpPt.m_MyTkbkIdx != -1 ) )
+                if( ( p_CnctInfoTmpPt.m_IsInit != 0 ) &&
+                    ( p_CnctInfoTmpPt.m_CurCnctSts == ClntMediaPocsThrd.CnctSts.Cnct ) &&
+                    ( p_CnctInfoTmpPt.m_MyTkbkIdx != -1 ) )
                 {
-                    //设置对讲索引。
-                    PktPt[ 1 ] = ( byte ) p_CnctInfoTmpPt.m_MyTkbkIdx;
+                    PktPt[ 1 ] = ( byte ) p_CnctInfoTmpPt.m_MyTkbkIdx; //设置对讲索引。
 
                     //发送数据包。
                     if( p_CnctInfoTmpPt.m_IsTcpOrAudpPrtcl == 0 ) p_CnctInfoTmpPt.m_TcpClntSoktPt.SendApkt( PktPt, PktLenByt, ( short ) 0, Times, 0, null );
@@ -363,7 +382,7 @@ public class BdctClnt //广播客户端。
         return;
     }
 
-    //连接处理，包括接受连接、连接服务端、接收数据包、删除连接。
+    //连接处理，包括连接服务端、接收数据包、删除连接信息。
     public void CnctPocs()
     {
         int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
@@ -416,6 +435,7 @@ public class BdctClnt //广播客户端。
                                     }
 
                                     p_CnctInfoTmpPt.m_CurCnctSts--; //递增当前连接次数。
+                                    m_ClntMediaPocsThrdPt.UserBdctClntCnctSts( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_CurCnctSts ); //调用用户定义的广播客户端连接状态函数。
 
                                     {
                                         String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：开始第 " + -p_CnctInfoTmpPt.m_CurCnctSts + " 次连接。";
@@ -490,6 +510,7 @@ public class BdctClnt //广播客户端。
                                         }
 
                                         p_CnctInfoTmpPt.m_CurCnctSts = ClntMediaPocsThrd.CnctSts.Cnct; //设置当前连接状态为已连接。
+                                        m_ClntMediaPocsThrdPt.UserBdctClntCnctSts( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_CurCnctSts ); //调用用户定义的广播客户端连接状态函数。
 
                                         String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：初始化本端Tcp协议客户端套接字[" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_LclNodeAddrPt.m_Val + ":" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_LclNodePortPt.m_Val + "]，并连接远端Tcp协议服务端套接字[" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_RmtNodeAddrPt.m_Val + ":" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_RmtNodePortPt.m_Val + "]成功。";
                                         if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
@@ -536,7 +557,7 @@ public class BdctClnt //广播客户端。
                                     {
                                         if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.SetSendBufSz( 1024 * 1024, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 )
                                         {
-                                            String p_InfoStrPt = "客户端媒体处理线程：对讲客户端：设置本端高级Udp协议客户端套接字的发送缓冲区大小失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+                                            String p_InfoStrPt = "客户端媒体处理线程：广播客户端：设置本端高级Udp协议客户端套接字的发送缓冲区大小失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
                                             if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                                             m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                                             break Out;
@@ -544,7 +565,7 @@ public class BdctClnt //广播客户端。
 
                                         if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.SetRecvBufSz( 1024 * 1024 * 3, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 )
                                         {
-                                            String p_InfoStrPt = "客户端媒体处理线程：对讲客户端：设置本端高级Udp协议客户端套接字的接收缓冲区大小失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+                                            String p_InfoStrPt = "客户端媒体处理线程：广播客户端：设置本端高级Udp协议客户端套接字的接收缓冲区大小失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
                                             if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
                                             m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                                             break Out;
@@ -584,6 +605,7 @@ public class BdctClnt //广播客户端。
                                     }
 
                                     p_CnctInfoTmpPt.m_CurCnctSts--; //递增当前连接次数。
+                                    m_ClntMediaPocsThrdPt.UserBdctClntCnctSts( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_CurCnctSts ); //调用用户定义的广播客户端连接状态函数。
 
                                     {
                                         String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：开始第 " + -p_CnctInfoTmpPt.m_CurCnctSts + " 次连接。";
@@ -618,6 +640,7 @@ public class BdctClnt //广播客户端。
                                         }
 
                                         p_CnctInfoTmpPt.m_CurCnctSts = ClntMediaPocsThrd.CnctSts.Cnct; //设置当前连接状态为已连接。
+                                        m_ClntMediaPocsThrdPt.UserBdctClntCnctSts( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_CurCnctSts ); //调用用户定义的广播客户端连接状态函数。
 
                                         String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字[" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_RmtNodeAddrPt.m_Val + ":" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_RmtNodePortPt.m_Val + "]成功。";
                                         if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
@@ -653,7 +676,7 @@ public class BdctClnt //广播客户端。
                         }
                     }
 
-                    //用本端客户端套接字接收远端服务端套接字发送过来的一个数据包。
+                    //用本端客户端套接字接收远端服务端套接字发送的数据包。
                     if( ( p_CnctInfoTmpPt.m_IsRqstDstoy == 0 ) && ( p_CnctInfoTmpPt.m_CurCnctSts == ClntMediaPocsThrd.CnctSts.Cnct ) ) //如果该连接未请求销毁，且当前连接状态为已连接。
                     {
                         RecvPktOut:
@@ -723,11 +746,11 @@ public class BdctClnt //广播客户端。
 
                                         if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTLongPt.m_Val > 1 + 1 + 4 ) //如果该音频输出帧为有语音活动。
                                         {
-                                            if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：接收有语音活动的音频输出帧包。音频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTLongPt.m_Val + "。" );
+                                            if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：接收有语音活动的音频输出帧包。对讲索引：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTLongPt.m_Val + "。" );
                                         }
                                         else //如果该音频输出帧为无语音活动。
                                         {
-                                            if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：接收无语音活动的音频输出帧包。音频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTLongPt.m_Val + "。" );
+                                            if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：接收无语音活动的音频输出帧包。对讲索引：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] + "。音频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTLongPt.m_Val + "。" );
                                         }
                                     }
                                     else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 0 ] == ( byte ) ClntMediaPocsThrd.PktTyp.VdoFrm ) //如果是视频输出帧包。
@@ -741,9 +764,9 @@ public class BdctClnt //广播客户端。
                                         //读取视频输出帧时间戳。
                                         p_TmpInt = ( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 2 ] & 0xFF ) + ( ( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 3 ] & 0xFF ) << 8 ) + ( ( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 4 ] & 0xFF ) << 16 ) + ( ( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 5 ] & 0xFF ) << 24 );
 
-                                        if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTLongPt.m_Val > 1 + 4 ) //如果该视频输出帧为有图像活动。
+                                        if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTLongPt.m_Val > 1 + 1 + 4 ) //如果该视频输出帧为有图像活动。
                                         {
-                                            if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：接收有图像活动的视频输出帧包。视频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTLongPt.m_Val + "。" );
+                                            if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：接收有图像活动的视频输出帧包。视频输出帧时间戳：" + p_TmpInt + "。总长度：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTLongPt.m_Val + "。类型：" + ( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 10 ] & 0xff ) + "。" );
                                         }
                                         else //如果该视频输出帧为无图像活动。
                                         {
@@ -758,7 +781,7 @@ public class BdctClnt //广播客户端。
                                             break RecvPktOut;
                                         }
 
-                                        String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：接收一个退出包。";
+                                        String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：接收退出包。对讲索引：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] + "。";
                                         if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                                         m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
                                         if( m_ClntMediaPocsThrdPt.m_IsShowToast != 0 ) m_ClntMediaPocsThrdPt.UserShowToast( p_InfoStrPt );
@@ -769,15 +792,16 @@ public class BdctClnt //广播客户端。
                                             p_CnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。
                                         }
                                     }
-                                } //如果用本端套接字接收一个连接的远端套接字发送的数据包超时，就重新接收。
+                                } //如果用本端客户端套接字接收远端服务端套接字发送的数据包超时，就重新接收。
                             }
-                            else //如果用本端套接字接收一个连接的远端套接字发送的数据包失败。
+                            else //如果用本端客户端套接字接收远端服务端套接字发送的数据包失败。
                             {
-                                String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：用本端套接字接收一个连接的远端套接字发送的数据包失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+                                String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：用本端客户端套接字接收远端服务端套接字发送的数据包失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
                                 if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
                                 m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
 
                                 p_CnctInfoTmpPt.m_CurCnctSts = ClntMediaPocsThrd.CnctSts.Tmot; //设置当前连接状态为异常断开。
+                                m_ClntMediaPocsThrdPt.UserBdctClntCnctSts( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_CurCnctSts ); //调用用户定义的广播客户端连接状态函数。
                                 p_CnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。
                                 break RecvPktOut;
                             }
@@ -859,11 +883,11 @@ public class BdctClnt //广播客户端。
                 AllCnctSendAdoPkt( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt, p_PktLenByt, 1, 0 );
                 if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：发送有语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "。总长度：" + p_PktLenByt + "。" );
 
-                m_LastSendAdoInptFrmIsAct = 1; //设置最后一个发送的音频输入帧有语音活动。
+                m_LastSendAdoInptFrmIsAct = 1; //设置最后发送的音频输入帧有语音活动。
             }
             else //如果本次音频输入帧为无语音活动。
             {
-                if( m_LastSendAdoInptFrmIsAct != 0 ) //如果最后一个发送的音频输入帧为有语音活动，就发送。
+                if( m_LastSendAdoInptFrmIsAct != 0 ) //如果最后发送的音频输入帧为有语音活动，就发送。
                 {
                     m_LastSendAdoInptFrmTimeStamp += 1; //音频输入帧的时间戳递增一个步进。
 
@@ -878,9 +902,9 @@ public class BdctClnt //广播客户端。
                     AllCnctSendAdoPkt( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt, p_PktLenByt, 1, 0 );
                     if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：发送无语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "。总长度：" + p_PktLenByt + "。" );
 
-                    m_LastSendAdoInptFrmIsAct = 0; //设置最后一个发送的音频输入帧无语音活动。
+                    m_LastSendAdoInptFrmIsAct = 0; //设置最后发送的音频输入帧无语音活动。
                 }
-                else //如果最后一个发送的音频输入帧为无语音活动，无需发送。
+                else //如果最后发送的音频输入帧为无语音活动，无需发送。
                 {
                     if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：本次音频输入帧为无语音活动，且最后发送的音频输入帧为无语音活动，无需发送。" );
                 }

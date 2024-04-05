@@ -37,11 +37,11 @@
     <TextView
         android:layout_width="0dp"
         android:layout_height="41dp"
-        android:layout_weight="13"
+        android:layout_weight="9"
         android:padding="0dp"
         android:gravity="center"
         android:layout_gravity="center_vertical"
-        android:id="@+id/CnctAndClntLstItemLclTkbkModeTxtId"
+        android:id="@+id/CnctAndClntLstItemTxt1TxtId"
         />
 
     <TextView
@@ -51,7 +51,7 @@
         android:padding="0dp"
         android:gravity="center"
         android:layout_gravity="center_vertical"
-        android:id="@+id/CnctAndClntLstItemRmtTkbkModeTxtId"
+        android:id="@+id/CnctAndClntLstItemTxt2TxtId"
         />
 
 </LinearLayout>

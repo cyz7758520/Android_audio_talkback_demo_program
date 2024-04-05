@@ -2165,15 +2165,15 @@ public class AndrdAdoVdoTkbkStng
         ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).setChecked( false );
         ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).setChecked( false );
 
-        //设置音频输入设备、音频输出设备。
-        ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseSpeakerRdBtnId ) ).performClick();
-        ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseFrontCamereRdBtnId ) ).performClick();
-
         //设置音频输入出是否静音、视频输入输出是否黑屏。
         ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.AdoInptIsMuteCkBoxId ) ).setChecked( false );
         ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.AdoOtptIsMuteCkBoxId ) ).setChecked( false );
         ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.VdoInptIsBlackCkBoxId ) ).setChecked( false );
         ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.VdoOtptIsBlackCkBoxId ) ).setChecked( false );
+
+        //设置音频输出设备、视频输入设备。
+        ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseSpeakerRdBtnId ) ).performClick();
+        ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseFrontCamereRdBtnId ) ).performClick();
 
         //设置是否绘制音频波形到Surface。
         ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );

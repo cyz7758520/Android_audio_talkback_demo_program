@@ -141,7 +141,7 @@ public class AdoInpt //存放音频输入。
     }
     SpeexPrpocs m_SpeexPrpocsPt = new SpeexPrpocs();
 
-    public int m_UseWhatEncd; //存放使用什么编码器，为0表示PCM原始数据，为1表示Speex编码器，为2表示Opus编码器。
+    public int m_UseWhatEncd; //存放使用什么编码器，为0表示Pcm原始数据，为1表示Speex编码器，为2表示Opus编码器。
 
     class SpeexEncd //存放Speex编码器。
     {
@@ -663,9 +663,9 @@ public class AdoInpt //存放音频输入。
         {
             switch( m_UseWhatEncd )
             {
-                case 0: //如果要使用PCM原始数据。
+                case 0: //如果要使用Pcm原始数据。
                 {
-                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化PCM原始数据成功。" );
+                    if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化Pcm原始数据成功。" );
                     break;
                 }
                 case 1: //如果要使用Speex编码器。
@@ -709,9 +709,9 @@ public class AdoInpt //存放音频输入。
     {
         switch( m_UseWhatEncd )
         {
-            case 0: //如果要使用PCM原始数据。
+            case 0: //如果要使用Pcm原始数据。
             {
-                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁PCM原始数据成功。" );
+                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁Pcm原始数据成功。" );
                 break;
             }
             case 1: //如果要使用Speex编码器。

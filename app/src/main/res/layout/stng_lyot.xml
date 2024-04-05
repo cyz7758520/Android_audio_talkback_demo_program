@@ -612,7 +612,7 @@
                     android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:text="PCM原始数据"/>
+                    android:text="Pcm原始数据"/>
 
                 <RadioButton
                     android:id="@+id/UseSpeexCodecRdBtnId"

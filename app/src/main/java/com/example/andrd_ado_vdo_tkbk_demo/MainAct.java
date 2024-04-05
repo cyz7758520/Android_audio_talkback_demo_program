@@ -79,7 +79,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     View m_CurActivityLyotViewPt; //存放当前界面布局视图的指针。
     MySrvrThrd m_MySrvrThrdPt; //存放我的服务端线程的指针。
     MyClntMediaPocsThrd m_MyClntMediaPocsThrdPt; //存放我的客户端媒体处理线程的指针。
-    int m_TkbkClntNum; //存放对讲客户端的序号。
     MainAct m_MainActPt; //存放主界面的指针。
 
     String m_ExternalDirFullAbsPathStrPt; //存放扩展目录完整绝对路径字符串的指针。
@@ -110,9 +109,9 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         public static final int ClntLstDelItem                 = 15; //客户端列表删除项目。
         public static final int ClntLstModifyItem              = 16; //客户端列表修改项目。
 
-        public static final int VdoInptOtptSurfaceViewInit     = 17; //视频输入输出SurfaceView初始化。
-        public static final int VdoInptOtptSurfaceViewDstoy    = 18; //视频输入输出SurfaceView销毁。
-        public static final int VdoInptOtptSurfaceViewSetTitle = 19; //视频输入输出SurfaceView设置标题。
+        public static final int VdoInptOtptViewInit            = 17; //视频输入输出视图初始化。
+        public static final int VdoInptOtptViewDstoy           = 18; //视频输入输出视图销毁。
+        public static final int VdoInptOtptViewSetTitle        = 19; //视频输入输出视图设置标题。
     }
 
     //主界面消息处理。
@@ -246,8 +245,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                 }
                 case MainActMsgTyp.MyClntMediaPocsThrdDstoy:
                 {
-                    m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.ClntLstModifyItem, "", "" ); //清空客户端列表的信息。
-
                     ( ( Button ) m_MainActPt.findViewById( R.id.ClntAddBtnId ) ).setEnabled( true ); //设置客户端添加按钮为可用。
                     ( ( Button ) m_MainActPt.findViewById( R.id.ClntStngBtnId ) ).setEnabled( true ); //设置客户端设置按钮为可用。
                     ( ( Button ) m_MainActPt.findViewById( R.id.ClntDelBtnId ) ).setEnabled( true ); //设置客户端删除按钮为可用。
@@ -272,12 +269,12 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                 }
                 case MainActMsgTyp.TkbkClntCnctInit:
                 {
-                    ( ( Button ) m_MainActPt.findViewById( R.id.ClntCnctOrDstoyBtnId ) ).setText( "销毁" ); //设置服务端创建或销毁按钮的内容为“销毁”。
+                    ( ( Button ) m_MainActPt.findViewById( R.id.ClntCnctOrDstoyBtnId ) ).setText( "销毁" ); //设置客户端创建或销毁按钮的内容为“销毁”。
                     break;
                 }
                 case MainActMsgTyp.TkbkClntCnctDstoy:
                 {
-                    ( ( Button ) m_MainActPt.findViewById( R.id.ClntCnctOrDstoyBtnId ) ).setText( "连接" ); //设置服务端创建或销毁按钮的内容为“连接”。
+                    ( ( Button ) m_MainActPt.findViewById( R.id.ClntCnctOrDstoyBtnId ) ).setText( "连接" ); //设置客户端创建或销毁按钮的内容为“连接”。
                     break;
                 }
                 case MainActMsgTyp.CnctLstAddItem:
@@ -285,9 +282,9 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                     Map< String, String > p_CnctLstItemPt;
 
                     p_CnctLstItemPt = new HashMap< String, String >();
-                    p_CnctLstItemPt.put( "CnctAndClntLstItemPrtclTxtId", ( ( Integer ) ( ( Object[] ) MessagePt.obj )[ 1 ] == 0 ) ? "Tcp" : "Audp" );
-                    p_CnctLstItemPt.put( "CnctAndClntLstItemRmtNodeNameTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 2 ] );
-                    p_CnctLstItemPt.put( "CnctAndClntLstItemRmtNodeSrvcTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 3 ] );
+                    p_CnctLstItemPt.put( "CnctAndClntLstItemPrtclTxtId", ( ( Integer ) ( ( Object[] ) MessagePt.obj )[ 0 ] == 0 ) ? "Tcp" : "Audp" );
+                    p_CnctLstItemPt.put( "CnctAndClntLstItemRmtNodeNameTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
+                    p_CnctLstItemPt.put( "CnctAndClntLstItemRmtNodeSrvcTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 2 ] );
                     p_CnctLstItemPt.put( "Rand", Long.toString( new Random().nextLong() ) ); //必须添加一个随机数，防止有些设备在大量连接时出现连接列表视图项目的指针出现重复，从而导致删除重复项目错误。
 
                     m_CnctLstItemArrayLstPt.add( p_CnctLstItemPt );
@@ -299,8 +296,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                     Map< String, String > p_CnctLstItemPt;
 
                     p_CnctLstItemPt = m_CnctLstItemArrayLstPt.get( ( Integer ) ( ( Object[] ) MessagePt.obj )[ 0 ] );
-                    if( ( ( Object[] ) MessagePt.obj )[ 1 ] != null ) p_CnctLstItemPt.put( "CnctAndClntLstItemLclTkbkModeTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
-                    if( ( ( Object[] ) MessagePt.obj )[ 2 ] != null ) p_CnctLstItemPt.put( "CnctAndClntLstItemRmtTkbkModeTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 2 ] );
+                    if( ( ( Object[] ) MessagePt.obj )[ 1 ] != null ) p_CnctLstItemPt.put( "CnctAndClntLstItemTxt1TxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
+                    if( ( ( Object[] ) MessagePt.obj )[ 2 ] != null ) p_CnctLstItemPt.put( "CnctAndClntLstItemTxt2TxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 2 ] );
 
                     ( ( SimpleAdapter ) m_CnctLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知连接列表视图数据集被改变。
                     break;
@@ -361,26 +358,26 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                 {
                     Map< String, String > p_CnctLstItemPt;
 
-                    p_CnctLstItemPt = m_ClntLstItemArrayLstPt.get( m_TkbkClntNum );
-                    if( ( ( Object[] ) MessagePt.obj )[ 0 ] != null ) p_CnctLstItemPt.put( "CnctAndClntLstItemLclTkbkModeTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 0 ] );
-                    if( ( ( Object[] ) MessagePt.obj )[ 1 ] != null ) p_CnctLstItemPt.put( "CnctAndClntLstItemRmtTkbkModeTxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
+                    p_CnctLstItemPt = m_ClntLstItemArrayLstPt.get( ( Integer ) ( ( Object[] ) MessagePt.obj )[ 0 ] );
+                    if( ( ( Object[] ) MessagePt.obj )[ 1 ] != null ) p_CnctLstItemPt.put( "CnctAndClntLstItemTxt1TxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
+                    if( ( ( Object[] ) MessagePt.obj )[ 2 ] != null ) p_CnctLstItemPt.put( "CnctAndClntLstItemTxt2TxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 2 ] );
 
                     ( ( SimpleAdapter ) m_ClntLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知客户端列表视图数据集被改变。
                     break;
                 }
-                case MainActMsgTyp.VdoInptOtptSurfaceViewInit:
+                case MainActMsgTyp.VdoInptOtptViewInit:
                 {
-                    ( ( HTObject )( ( Object[] ) MessagePt.obj )[ 1 ] ).m_Val = VdoInptOtptSurfaceViewInit( ( String ) ( ( Object[] ) MessagePt.obj )[ 0 ] );
+                    ( ( HTObject )( ( Object[] ) MessagePt.obj )[ 1 ] ).m_Val = VdoInptOtptViewInit( ( String ) ( ( Object[] ) MessagePt.obj )[ 0 ] );
                     break;
                 }
-                case MainActMsgTyp.VdoInptOtptSurfaceViewDstoy:
+                case MainActMsgTyp.VdoInptOtptViewDstoy:
                 {
-                    VdoInptOtptSurfaceViewDstoy( ( HTSurfaceView ) MessagePt.obj );
+                    VdoInptOtptViewDstoy( ( HTSurfaceView ) MessagePt.obj );
                     break;
                 }
-                case MainActMsgTyp.VdoInptOtptSurfaceViewSetTitle:
+                case MainActMsgTyp.VdoInptOtptViewSetTitle:
                 {
-                    VdoInptOtptSurfaceViewSetTitle( ( HTSurfaceView ) ( ( Object[] ) MessagePt.obj )[ 0 ], ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
+                    VdoInptOtptViewSetTitle( ( HTSurfaceView ) ( ( Object[] ) MessagePt.obj )[ 0 ], ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
                     break;
                 }
             }
@@ -412,11 +409,11 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
             m_SrvrStngLyotViewPt = p_LyotInflater.inflate( R.layout.srvr_stng_lyot, null );
             m_CnctLstViewPt = m_MainLyotViewPt.findViewById( R.id.CnctLstId );
             m_CnctLstItemArrayLstPt = new ArrayList< Map< String, String > >();
-            m_CnctLstViewPt.setAdapter( new SimpleAdapter( this, m_CnctLstItemArrayLstPt, R.layout.cnct_and_clnt_lst_item, new String[]{ "CnctAndClntLstItemPrtclTxtId", "CnctAndClntLstItemRmtNodeNameTxtId", "CnctAndClntLstItemRmtNodeSrvcTxtId", "CnctAndClntLstItemLclTkbkModeTxtId", "CnctAndClntLstItemRmtTkbkModeTxtId" }, new int[]{ R.id.CnctAndClntLstItemPrtclTxtId, R.id.CnctAndClntLstItemRmtNodeNameTxtId, R.id.CnctAndClntLstItemRmtNodeSrvcTxtId, R.id.CnctAndClntLstItemLclTkbkModeTxtId, R.id.CnctAndClntLstItemRmtTkbkModeTxtId } ) );
+            m_CnctLstViewPt.setAdapter( new SimpleAdapter( this, m_CnctLstItemArrayLstPt, R.layout.cnct_and_clnt_lst_item, new String[]{ "CnctAndClntLstItemPrtclTxtId", "CnctAndClntLstItemRmtNodeNameTxtId", "CnctAndClntLstItemRmtNodeSrvcTxtId", "CnctAndClntLstItemTxt1TxtId", "CnctAndClntLstItemTxt2TxtId" }, new int[]{ R.id.CnctAndClntLstItemPrtclTxtId, R.id.CnctAndClntLstItemRmtNodeNameTxtId, R.id.CnctAndClntLstItemRmtNodeSrvcTxtId, R.id.CnctAndClntLstItemTxt1TxtId, R.id.CnctAndClntLstItemTxt2TxtId } ) );
             m_ClntStngLyotViewPt = p_LyotInflater.inflate( R.layout.clnt_stng_lyot, null );
             m_ClntLstViewPt = m_MainLyotViewPt.findViewById( R.id.ClntLstId );
             m_ClntLstItemArrayLstPt = new ArrayList< Map< String, String > >();
-            m_ClntLstViewPt.setAdapter( new SimpleAdapter( this, m_ClntLstItemArrayLstPt, R.layout.cnct_and_clnt_lst_item, new String[]{ "CnctAndClntLstItemPrtclTxtId", "CnctAndClntLstItemRmtNodeNameTxtId", "CnctAndClntLstItemRmtNodeSrvcTxtId", "CnctAndClntLstItemLclTkbkModeTxtId", "CnctAndClntLstItemRmtTkbkModeTxtId" }, new int[]{ R.id.CnctAndClntLstItemPrtclTxtId, R.id.CnctAndClntLstItemRmtNodeNameTxtId, R.id.CnctAndClntLstItemRmtNodeSrvcTxtId, R.id.CnctAndClntLstItemLclTkbkModeTxtId, R.id.CnctAndClntLstItemRmtTkbkModeTxtId } ) );
+            m_ClntLstViewPt.setAdapter( new SimpleAdapter( this, m_ClntLstItemArrayLstPt, R.layout.cnct_and_clnt_lst_item, new String[]{ "CnctAndClntLstItemPrtclTxtId", "CnctAndClntLstItemRmtNodeNameTxtId", "CnctAndClntLstItemRmtNodeSrvcTxtId", "CnctAndClntLstItemTxt1TxtId", "CnctAndClntLstItemTxt2TxtId" }, new int[]{ R.id.CnctAndClntLstItemPrtclTxtId, R.id.CnctAndClntLstItemRmtNodeNameTxtId, R.id.CnctAndClntLstItemRmtNodeSrvcTxtId, R.id.CnctAndClntLstItemTxt1TxtId, R.id.CnctAndClntLstItemTxt2TxtId } ) );
 
             m_StngLyotViewPt = p_LyotInflater.inflate( R.layout.stng_lyot, null );
             m_AjbStngLyotViewPt = p_LyotInflater.inflate( R.layout.ajb_stng_lyot, null );
@@ -631,19 +628,11 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         {
             if( m_MySrvrThrdPt == null ) //如果我的服务端线程还没有初始化。
             {
-                if( MySrvrThrdInit() != 0 ) //如果我的服务端线程初始化失败。
-                {
-                    break Out;
-                }
+                MySrvrThrdInit();
             }
-
-            if( m_MySrvrThrdPt.m_SrvrIsInit == 0 ) //如果服务端未初始化。
+            else //如果对讲客户端端连接已初始化。
             {
-                m_MySrvrThrdPt.SendSrvrInitMsg( 1, ( ( EditText ) m_MainLyotViewPt.findViewById( R.id.SrvrUrlEdTxtId ) ).getText().toString(), Integer.parseInt( ( ( TextView ) m_SrvrStngLyotViewPt.findViewById( R.id.MaxCnctNumEdTxtId ) ).getText().toString() ), 2 );
-            }
-            else //如果服务端已初始化。
-            {
-                m_MySrvrThrdPt.SendSrvrDstoyMsg( 1 );
+                MySrvrThrdDstoy();
             }
 
             p_Rslt = 0;
@@ -696,7 +685,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     //客户端添加按钮。
     public void OnClickClntAddBtn( View ViewPt )
     {
-        Vstr p_SrvrUrlVstrPt = null;
+        Vstr p_ClntSrvrUrlVstrPt = null;
         Vstr p_ErrInfoVstrPt = null;
         HTString p_SrvrPrtclStrPt = new HTString();
         HTString p_SrvrNodeNameStrPt = new HTString();
@@ -704,8 +693,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 
         Out:
         {
-            p_SrvrUrlVstrPt = new Vstr();
-            if( p_SrvrUrlVstrPt.Init( ( ( TextView )m_MainLyotViewPt.findViewById( R.id.ClntSrvrUrlEdTxtId ) ).getText().toString() ) != 0 )
+            p_ClntSrvrUrlVstrPt = new Vstr();
+            if( p_ClntSrvrUrlVstrPt.Init( ( ( TextView )m_MainLyotViewPt.findViewById( R.id.ClntSrvrUrlEdTxtId ) ).getText().toString() ) != 0 )
             {
                 String p_InfoStrPt = "初始化客户端的服务端Url动态字符串失败。";
                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -723,7 +712,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
             }
 
             //解析服务端Url字符串。
-            if( p_SrvrUrlVstrPt.UrlParse( p_SrvrPrtclStrPt, null, null, p_SrvrNodeNameStrPt, p_SrvrNodeSrvcStrPt, null, null, null, null, p_ErrInfoVstrPt ) != 0 )
+            if( p_ClntSrvrUrlVstrPt.UrlParse( p_SrvrPrtclStrPt, null, null, p_SrvrNodeNameStrPt, p_SrvrNodeSrvcStrPt, null, null, null, null, p_ErrInfoVstrPt ) != 0 )
             {
                 String p_InfoStrPt = "解析客户端的服务端Url字符串失败。原因：" + p_ErrInfoVstrPt.GetStr();
                 Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -747,7 +736,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
             SendMainActMsg( MainActMsgTyp.ClntLstAddItem, p_SrvrPrtclStrPt.m_Val, p_SrvrNodeNameStrPt.m_Val, p_SrvrNodeSrvcStrPt.m_Val );
         }
 
-        if( p_SrvrUrlVstrPt != null ) p_SrvrUrlVstrPt.Dstoy();
+        if( p_ClntSrvrUrlVstrPt != null ) p_ClntSrvrUrlVstrPt.Dstoy();
         if( p_ErrInfoVstrPt != null ) p_ErrInfoVstrPt.Dstoy();
     }
 
@@ -1336,15 +1325,15 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         m_CurActivityLyotViewPt = m_StngLyotViewPt;
     }
 
-    //视频输入输出SurfaceView初始化。
-    public HTSurfaceView VdoInptOtptSurfaceViewInit( String SurfaceViewTitle )
+    //视频输入输出视图初始化。
+    public HTSurfaceView VdoInptOtptViewInit( String TitleStrPt )
     {
         LinearLayout p_LinearLyotPt = new LinearLayout( this );
         TextView p_TxtViewPt = new TextView( this );
         HTSurfaceView p_HTSurfaceViewPt = new HTSurfaceView( this );
         ViewGroup.LayoutParams p_LayoutParamsPt;
 
-        if( SurfaceViewTitle.substring( 0, 4 ).equals( "视频输入" ) ) ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).addView( p_LinearLyotPt, 0 );
+        if( TitleStrPt.substring( 0, 4 ).equals( "视频输入" ) ) ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).addView( p_LinearLyotPt, 0 );
         else ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).addView( p_LinearLyotPt );
         p_LinearLyotPt.addView( p_TxtViewPt );
         p_LinearLyotPt.addView( p_HTSurfaceViewPt );
@@ -1356,7 +1345,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         ( ( LinearLayout.LayoutParams )p_LayoutParamsPt ).weight = 1;
         p_LinearLyotPt.setLayoutParams( p_LayoutParamsPt );
 
-        p_TxtViewPt.setText( SurfaceViewTitle );
+        p_TxtViewPt.setText( TitleStrPt );
         p_TxtViewPt.setGravity( Gravity.CENTER );
         p_LayoutParamsPt = p_TxtViewPt.getLayoutParams();
         p_LayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
@@ -1374,45 +1363,45 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         return p_HTSurfaceViewPt;
     }
 
-    //发送视频输入输出SurfaceView初始化消息。
-    public HTSurfaceView SendVdoInptOtptSurfaceViewInitMsg( String SurfaceViewTitle )
+    //发送视频输入输出视图初始化消息。
+    public HTSurfaceView SendVdoInptOtptViewInitMsg( String TitleStrPt )
     {
         Message p_MessagePt = new Message();
         HTObject p_HTObjectPt = new HTObject();
-        p_MessagePt.what = MainActMsgTyp.VdoInptOtptSurfaceViewInit;
-        p_MessagePt.obj = new Object[]{ SurfaceViewTitle, p_HTObjectPt };
+        p_MessagePt.what = MainActMsgTyp.VdoInptOtptViewInit;
+        p_MessagePt.obj = new Object[]{ TitleStrPt, p_HTObjectPt };
         m_MainActHandlerPt.sendMessage( p_MessagePt );
         while( p_HTObjectPt.m_Val == null ) SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
         return ( HTSurfaceView ) p_HTObjectPt.m_Val;
     }
 
-    //视频输入输出SurfaceView销毁。
-    public void VdoInptOtptSurfaceViewDstoy( HTSurfaceView HTSurfaceViewPt )
+    //视频输入输出视图销毁。
+    public void VdoInptOtptViewDstoy( HTSurfaceView DspyHTSurfaceViewPt )
     {
-        if( HTSurfaceViewPt != null ) ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).removeView( ( View )HTSurfaceViewPt.getParent() );
+        if( DspyHTSurfaceViewPt != null ) ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).removeView( ( View )DspyHTSurfaceViewPt.getParent() );
     }
 
-    //发送视频输入输出SurfaceView销毁消息。
-    public void SendVdoInptOtptSurfaceViewDstoyMsg( HTSurfaceView HTSurfaceViewPt )
+    //发送视频输入输出视图销毁消息。
+    public void SendVdoInptOtptViewDstoyMsg( HTSurfaceView DspyHTSurfaceViewPt )
     {
         Message p_MessagePt = new Message();
-        p_MessagePt.what = MainActMsgTyp.VdoInptOtptSurfaceViewDstoy;
-        p_MessagePt.obj = HTSurfaceViewPt;
+        p_MessagePt.what = MainActMsgTyp.VdoInptOtptViewDstoy;
+        p_MessagePt.obj = DspyHTSurfaceViewPt;
         m_MainActHandlerPt.sendMessage( p_MessagePt );
     }
 
-    //视频输入输出SurfaceView设置标题。
-    public void VdoInptOtptSurfaceViewSetTitle( HTSurfaceView HTSurfaceViewPt, String SurfaceViewTitle )
+    //视频输入输出视图设置标题。
+    public void VdoInptOtptViewSetTitle( HTSurfaceView DspyHTSurfaceViewPt, String TitleStrPt )
     {
-        if( ( HTSurfaceViewPt != null ) && ( SurfaceViewTitle != null ) ) ( ( TextView )( ( LinearLayout )HTSurfaceViewPt.getParent() ).getChildAt( 0 ) ).setText( SurfaceViewTitle );
+        if( ( DspyHTSurfaceViewPt != null ) && ( TitleStrPt != null ) ) ( ( TextView )( ( LinearLayout )DspyHTSurfaceViewPt.getParent() ).getChildAt( 0 ) ).setText( TitleStrPt );
     }
 
-    //发送视频输入输出SurfaceView设置标题消息。
-    public void SendVdoInptOtptSurfaceViewSetTitleMsg( HTSurfaceView HTSurfaceViewPt, String SurfaceViewTitle )
+    //发送视频输入输出视图设置标题消息。
+    public void SendVdoInptOtptViewSetTitleMsg( HTSurfaceView DspyHTSurfaceViewPt, String TitleStrPt )
     {
         Message p_MessagePt = new Message();
-        p_MessagePt.what = MainActMsgTyp.VdoInptOtptSurfaceViewSetTitle;
-        p_MessagePt.obj = new Object[]{ HTSurfaceViewPt, SurfaceViewTitle };
+        p_MessagePt.what = MainActMsgTyp.VdoInptOtptViewSetTitle;
+        p_MessagePt.obj = new Object[]{ DspyHTSurfaceViewPt, TitleStrPt };
         m_MainActHandlerPt.sendMessage( p_MessagePt );
     }
 
@@ -1420,11 +1409,56 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     public int MySrvrThrdInit()
     {
         int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+        Vstr p_SrvrUrlVstrPt = null;
+        Vstr p_ErrInfoVstrPt = null;
+        HTString p_SrvrPrtclStrPt = new HTString();
+        HTString p_SrvrNodeNameStrPt = new HTString();
+        HTString p_SrvrNodeSrvcStrPt = new HTString();
 
         Out:
         {
             if( m_MySrvrThrdPt == null ) //如果我的服务端线程还没有启动。
             {
+                p_SrvrUrlVstrPt = new Vstr();
+                if( p_SrvrUrlVstrPt.Init( ( ( TextView )m_MainLyotViewPt.findViewById( R.id.SrvrUrlEdTxtId ) ).getText().toString() ) != 0 )
+                {
+                    String p_InfoStrPt = "初始化服务端Url动态字符串失败。";
+                    Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                    SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
+                    Toast.makeText( this, p_InfoStrPt, Toast.LENGTH_LONG ).show();
+                    break Out;
+                }
+                p_ErrInfoVstrPt = new Vstr();
+                if( p_ErrInfoVstrPt.Init( "" ) != 0 )
+                {
+                    String p_InfoStrPt = "初始化错误信息动态字符串失败。";
+                    Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                    SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
+                    break Out;
+                }
+
+                //解析服务端Url字符串。
+                if( p_SrvrUrlVstrPt.UrlParse( p_SrvrPrtclStrPt, null, null, p_SrvrNodeNameStrPt, p_SrvrNodeSrvcStrPt, null, null, null, null, p_ErrInfoVstrPt ) != 0 )
+                {
+                    String p_InfoStrPt = "解析服务端Url字符串失败。原因：" + p_ErrInfoVstrPt.GetStr();
+                    Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                    SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
+                    Toast.makeText( this, p_InfoStrPt, Toast.LENGTH_LONG ).show();
+                    break Out;
+                }
+                if( ( p_SrvrPrtclStrPt.m_Val.equals( "Tcp" ) == false ) && ( p_SrvrPrtclStrPt.m_Val.equals( "Audp" ) == false ) )
+                {
+                    String p_InfoStrPt = "服务端Url字符串的协议不正确。";
+                    Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+                    SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
+                    Toast.makeText( this, p_InfoStrPt, Toast.LENGTH_LONG ).show();
+                    break Out;
+                }
+                if( p_SrvrNodeSrvcStrPt.m_Val.equals( "" ) )
+                {
+                    p_SrvrNodeSrvcStrPt.m_Val = "12345";
+                }
+
                 Log.i( m_CurClsNameStrPt, "我的服务端线程初始化开始。" );
 
                 //创建我的服务端线程。
@@ -1434,13 +1468,20 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                 m_MySrvrThrdPt.m_IsAutoRqirExit = 2;
 
                 //设置是否打印Logcat日志、显示Toast。
-                m_MySrvrThrdPt.SetIsPrintLogcatShowToast(
-                        ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).isChecked() ) ? 1 : 0,
-                        ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).isChecked() ) ? 1 : 0,
-                        this );
+                m_MySrvrThrdPt.SetIsPrintLogcatShowToast( ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).isChecked() ) ? 1 : 0,
+                                                          ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).isChecked() ) ? 1 : 0,
+                                                          this );
 
                 //设置是否使用唤醒锁。
-                m_MySrvrThrdPt.SendSetIsUseWakeLockMsg( 0, ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseWakeLockCkBoxId ) ).isChecked() ) ? 1 : 0 );
+                m_MySrvrThrdPt.SendSetIsUseWakeLockMsg( 0,
+                                                        ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseWakeLockCkBoxId ) ).isChecked() ) ? 1 : 0 );
+
+                //设置服务端初始化。
+                m_MySrvrThrdPt.SendSrvrInitMsg( 1,
+                                                p_SrvrPrtclStrPt.m_Val.equals( "Tcp" ) ? 0 : 1,
+                                                p_SrvrNodeNameStrPt.m_Val,
+                                                p_SrvrNodeSrvcStrPt.m_Val,
+                                                Integer.parseInt( ( ( TextView ) m_SrvrStngLyotViewPt.findViewById( R.id.MaxCnctNumEdTxtId ) ).getText().toString() ), 2 );
 
                 //启动我的服务端线程。
                 m_MySrvrThrdPt.start();
@@ -1451,6 +1492,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
             p_Rslt = 0; //设置本函数执行成功。
         }
 
+        if( p_SrvrUrlVstrPt != null ) p_SrvrUrlVstrPt.Dstoy();
+        if( p_ErrInfoVstrPt != null ) p_ErrInfoVstrPt.Dstoy();
         if( p_Rslt != 0 ) //如果本函数执行失败。
         {
             MySrvrThrdDstoy();
@@ -1537,13 +1580,13 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                 }
 
                 //设置是否打印Logcat日志、显示Toast。
-                m_MyClntMediaPocsThrdPt.SetIsPrintLogcatShowToast(
-                        ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).isChecked() ) ? 1 : 0,
-                        ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).isChecked() ) ? 1 : 0,
-                        this );
+                m_MyClntMediaPocsThrdPt.SetIsPrintLogcatShowToast( ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).isChecked() ) ? 1 : 0,
+                                                                   ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsPrintLogcatShowToastCkBoxId ) ).isChecked() ) ? 1 : 0,
+                                                                   this );
 
                 //设置是否使用唤醒锁。
-                m_MyClntMediaPocsThrdPt.SetIsUseWakeLock( 0, ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseWakeLockCkBoxId ) ).isChecked() ) ? 1 : 0 );
+                m_MyClntMediaPocsThrdPt.SetIsUseWakeLock( 0,
+                                                          ( ( ( CheckBox ) m_StngLyotViewPt.findViewById( R.id.IsUseWakeLockCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
                 //启动我的网络媒体处理线程。
                 m_MyClntMediaPocsThrdPt.start();
@@ -1577,13 +1620,14 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
     public int TkbkInit()
     {
         int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+        int p_TkbkClntNum;
 
         Out:
         {
             Log.i( m_CurClsNameStrPt, "对讲初始化开始。" );
 
-            m_TkbkClntNum = m_ClntLstViewPt.getCheckedItemPosition();
-            if( ( m_TkbkClntNum != -1 ) && ( m_TkbkClntNum < m_ClntLstItemArrayLstPt.size() ) )
+            p_TkbkClntNum = m_ClntLstViewPt.getCheckedItemPosition();
+            if( ( p_TkbkClntNum != -1 ) && ( p_TkbkClntNum < m_ClntLstItemArrayLstPt.size() ) )
             {
                 if( m_MyClntMediaPocsThrdPt == null ) //如果我的客户端媒体处理线程还没有初始化。
                 {
@@ -1593,16 +1637,16 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
                     }
                 }
 
-                Map< String, String > p_ClntLstItemPt = m_ClntLstItemArrayLstPt.get( m_TkbkClntNum );
+                Map< String, String > p_ClntLstItemPt = m_ClntLstItemArrayLstPt.get( p_TkbkClntNum );
+                m_MyClntMediaPocsThrdPt.m_TkbkClntNum = p_TkbkClntNum;
                 m_MyClntMediaPocsThrdPt.SendTkbkClntCnctInitMsg( 1, p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1, p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ), p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) );
 
                 //设置本端对讲模式。
-                m_MyClntMediaPocsThrdPt.SendTkbkClntLclTkbkModeMsg(
-                        0,
-                        ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoInpt : 0 ) +
-                                ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoOtpt : 0 ) +
-                                ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoInpt : 0 ) +
-                                ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoOtpt : 0 ) );
+                m_MyClntMediaPocsThrdPt.SendTkbkClntLclTkbkModeMsg( 0,
+                                                                    ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoInpt : 0 ) +
+                                                                    ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoOtpt : 0 ) +
+                                                                    ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoInpt : 0 ) +
+                                                                    ( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoOtpt : 0 ) );
             }
 
             Log.i( m_CurClsNameStrPt, "对讲初始化结束。" );
@@ -1635,6 +1679,12 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 
         Out:
         {
+            if( ( m_MyClntMediaPocsThrdPt != null ) && ( m_MyClntMediaPocsThrdPt.m_BdctClntPt.m_IsInit != 0 ) ) //如果广播客户端已初始化。
+            {
+                p_Rslt = 0; //设置本函数执行成功。
+                break Out;
+            }
+
             Log.i( m_CurClsNameStrPt, "广播初始化开始。" );
 
             if( m_MyClntMediaPocsThrdPt == null ) //如果我的网络媒体处理线程还没有启动。
@@ -1646,12 +1696,15 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
             }
 
             //发送广播客户端初始化消息。
-            m_MyClntMediaPocsThrdPt.SendBdctClntInitMsg( 0 );
+            m_MyClntMediaPocsThrdPt.SendBdctClntInitMsg( 0, 0 );
 
             //发送广播客户端的连接初始化消息。
             for( Map< String, String > p_ClntLstItemPt : m_ClntLstItemArrayLstPt )
             {
-                m_MyClntMediaPocsThrdPt.SendBdctClntCnctInitMsg( 0, p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1, p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ), p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) ); //向广播媒体处理线程发送连接初始化消息。
+                m_MyClntMediaPocsThrdPt.SendBdctClntCnctInitMsg( 0,
+                                                                 p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1,
+                                                                 p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ),
+                                                                 p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) );
             }
 
             Log.i( m_CurClsNameStrPt, "广播初始化结束。" );
