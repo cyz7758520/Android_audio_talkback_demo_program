@@ -352,10 +352,9 @@ public class VdoOtpt //视频输出。
                                 //调用用户定义的写入视频输出帧函数。
                                 m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val = 0;
                                 m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val = 0;
-                                m_MediaPocsThrdPt.UserWriteVdoOtptFrm(
-                                        m_Idx,
-                                        m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt,
-                                        null, 0, null );
+                                m_MediaPocsThrdPt.UserWriteVdoOtptFrm( m_Idx,
+                                                                       m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt,
+                                                                       null, 0, null );
 
                                 if( ( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val > 0 ) && ( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val > 0 ) ) //如果本次写入了帧。
                                 {
@@ -367,28 +366,25 @@ public class VdoOtpt //视频输出。
                                 }
 
                                 //用户定义的获取视频输出帧函数。
-                                m_MediaPocsThrdPt.UserGetVdoOtptFrm(
-                                        m_Idx,
-                                        m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
-                                        null, 0 );
+                                m_MediaPocsThrdPt.UserGetVdoOtptFrm( m_Idx,
+                                                                     m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
+                                                                     null, 0 );
                                 break;
                             }
                             case 1: //如果要使用OpenH264解码器。
                             {
                                 //调用用户定义的写入视频输出帧函数。
                                 m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val = 0;
-                                m_MediaPocsThrdPt.UserWriteVdoOtptFrm(
-                                        m_Idx,
-                                        null, null, null,
-                                        m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt.length, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt );
+                                m_MediaPocsThrdPt.UserWriteVdoOtptFrm( m_Idx,
+                                                                       null, null, null,
+                                                                       m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt.length, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt );
 
                                 if( m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val > 0 ) //如果本次写入了帧。
                                 {
                                     //使用OpenH264解码器。
-                                    if( m_OpenH264DecdPt.m_Pt.Pocs(
-                                            m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val,
-                                            m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt.length, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt,
-                                            null ) == 0 )
+                                    if( m_OpenH264DecdPt.m_Pt.Pocs( m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val,
+                                                                    m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt.length, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt,
+                                                                    null ) == 0 )
                                     {
                                         if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：使用OpenH264解码器成功。Yu12格式原始帧宽度：" + m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val + "，高度：" + m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val + "。" );
                                         if( ( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val == 0 ) || ( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val == 0 ) ) break OutPocs; //如果未解码出Yu12格式帧，就把本次帧丢弃。
@@ -405,28 +401,25 @@ public class VdoOtpt //视频输出。
                                 }
 
                                 //用户定义的获取视频输出帧函数。
-                                m_MediaPocsThrdPt.UserGetVdoOtptFrm(
-                                        m_Idx,
-                                        m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
-                                        m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val );
+                                m_MediaPocsThrdPt.UserGetVdoOtptFrm( m_Idx,
+                                                                     m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
+                                                                     m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val );
                                 break;
                             }
                             case 2: //如果要使用系统自带H264解码器。
                             {
                                 //调用用户定义的写入视频输出帧函数。
                                 m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val = 0;
-                                m_MediaPocsThrdPt.UserWriteVdoOtptFrm(
-                                        m_Idx,
-                                        null, null, null,
-                                        m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt.length, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt );
+                                m_MediaPocsThrdPt.UserWriteVdoOtptFrm( m_Idx,
+                                                                       null, null, null,
+                                                                       m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt.length, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt );
 
                                 if( m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val != 0 ) //如果本次写入了帧。
                                 {
                                     //使用系统自带H264解码器。
-                                    if( m_SystemH264DecdPt.m_Pt.Pocs(
-                                            m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val,
-                                            m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt.length, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt,
-                                            40, null ) == 0 )
+                                    if( m_SystemH264DecdPt.m_Pt.Pocs( m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val,
+                                                                      m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt.length, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt,
+                                                                      40, null ) == 0 )
                                     {
                                         if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：使用系统自带H264解码器成功。Yu12格式原始帧宽度：" + m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val + "，高度：" + m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val + "。" );
                                         if( ( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val == 0 ) || ( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val == 0 ) ) break OutPocs; //如果未解码出Yu12格式帧，就把本次帧丢弃。
@@ -443,10 +436,9 @@ public class VdoOtpt //视频输出。
                                 }
 
                                 //用户定义的获取视频输出帧函数。
-                                m_MediaPocsThrdPt.UserGetVdoOtptFrm(
-                                        m_Idx,
-                                        m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
-                                        m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val );
+                                m_MediaPocsThrdPt.UserGetVdoOtptFrm( m_Idx,
+                                                                     m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
+                                                                     m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt, m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt.m_Val );
                                 break;
                             }
                         }
@@ -463,10 +455,9 @@ public class VdoOtpt //视频输出。
                         m_DvcPt.m_DspySurfaceViewPt.SetWidthToHeightRatio( ( float )m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val / m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val );
 
                         //显示帧。
-                        if( LibYUV.PictrDrawToSurface(
-                                m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, 0, LibYUV.PICTR_FMT_BT601F8_Yu12_I420, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
-                                m_DvcPt.m_DspySurfaceViewPt.getHolder().getSurface(),
-                                null ) != 0 )
+                        if( LibYUV.PictrDrawToSurface( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, 0, LibYUV.PICTR_FMT_BT601F8_Yu12_I420, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
+                                                       m_DvcPt.m_DspySurfaceViewPt.getHolder().getSurface(),
+                                                       null ) != 0 )
                         {
                             Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：绘制Yu12格式原始帧到显示SurfaceView失败，本次帧丢弃。" );
                             break OutPocs;

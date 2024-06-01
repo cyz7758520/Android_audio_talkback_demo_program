@@ -602,21 +602,20 @@ public class AdoInpt //存放音频输入。
             if( ( m_UseWhatNs == 1 ) || ( m_SpeexPrpocsPt.m_IsUseSpeexPrpocs != 0 ) )
             {
                 m_SpeexPrpocsPt.m_Pt = new HeavenTao.Ado.SpeexPrpocs();
-                if( m_SpeexPrpocsPt.m_Pt.Init(
-                        m_SmplRate,
-                        m_FrmLenUnit,
-                        ( m_UseWhatNs == 1 ) ? m_SpeexPrpocsNsPt.m_IsUseNs : 0,
-                        m_SpeexPrpocsNsPt.m_NoiseSupes,
-                        ( m_UseWhatNs == 1 ) ? m_SpeexPrpocsNsPt.m_IsUseDereverb : 0,
-                        ( m_SpeexPrpocsPt.m_IsUseSpeexPrpocs != 0 ) ? m_SpeexPrpocsPt.m_IsUseVad : 0,
-                        m_SpeexPrpocsPt.m_VadProbStart,
-                        m_SpeexPrpocsPt.m_VadProbCntu,
-                        ( m_SpeexPrpocsPt.m_IsUseSpeexPrpocs != 0 ) ? m_SpeexPrpocsPt.m_IsUseAgc : 0,
-                        m_SpeexPrpocsPt.m_AgcLevel,
-                        m_SpeexPrpocsPt.m_AgcIncrement,
-                        m_SpeexPrpocsPt.m_AgcDecrement,
-                        m_SpeexPrpocsPt.m_AgcMaxGain,
-                        m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+                if( m_SpeexPrpocsPt.m_Pt.Init( m_SmplRate,
+                                               m_FrmLenUnit,
+                                               ( m_UseWhatNs == 1 ) ? m_SpeexPrpocsNsPt.m_IsUseNs : 0,
+                                               m_SpeexPrpocsNsPt.m_NoiseSupes,
+                                               ( m_UseWhatNs == 1 ) ? m_SpeexPrpocsNsPt.m_IsUseDereverb : 0,
+                                               ( m_SpeexPrpocsPt.m_IsUseSpeexPrpocs != 0 ) ? m_SpeexPrpocsPt.m_IsUseVad : 0,
+                                               m_SpeexPrpocsPt.m_VadProbStart,
+                                               m_SpeexPrpocsPt.m_VadProbCntu,
+                                               ( m_SpeexPrpocsPt.m_IsUseSpeexPrpocs != 0 ) ? m_SpeexPrpocsPt.m_IsUseAgc : 0,
+                                               m_SpeexPrpocsPt.m_AgcLevel,
+                                               m_SpeexPrpocsPt.m_AgcIncrement,
+                                               m_SpeexPrpocsPt.m_AgcDecrement,
+                                               m_SpeexPrpocsPt.m_AgcMaxGain,
+                                               m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
                 {
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化Speex预处理器成功。" );
                 }
@@ -904,12 +903,11 @@ public class AdoInpt //存放音频输入。
                     if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
                     break Out;
                 }
-                m_DvcPt.m_Pt = new AudioRecord(
-                        ( m_IsUseSystemAecNsAgc != 0 ) ? ( ( android.os.Build.VERSION.SDK_INT >= 11 ) ? MediaRecorder.AudioSource.VOICE_COMMUNICATION : MediaRecorder.AudioSource.MIC ) : MediaRecorder.AudioSource.MIC,
-                        m_SmplRate,
-                        AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                        AudioFormat.ENCODING_PCM_16BIT,
-                        m_DvcPt.m_BufSzByt );
+                m_DvcPt.m_Pt = new AudioRecord( ( m_IsUseSystemAecNsAgc != 0 ) ? ( ( android.os.Build.VERSION.SDK_INT >= 11 ) ? MediaRecorder.AudioSource.VOICE_COMMUNICATION : MediaRecorder.AudioSource.MIC ) : MediaRecorder.AudioSource.MIC,
+                                                m_SmplRate,
+                                                AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                                                AudioFormat.ENCODING_PCM_16BIT,
+                                                m_DvcPt.m_BufSzByt );
                 if( m_DvcPt.m_Pt.getState() == AudioRecord.STATE_INITIALIZED )
                 {
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化设备成功。采样频率：" + m_SmplRate + "，缓冲区大小：" + m_DvcPt.m_BufSzByt + "。" );

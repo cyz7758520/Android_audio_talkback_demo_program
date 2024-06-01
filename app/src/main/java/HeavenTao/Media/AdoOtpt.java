@@ -495,13 +495,12 @@ public class AdoOtpt //音频输出。
             try
             {
                 m_DvcPt.m_BufSzByt = 2;
-                m_DvcPt.m_Pt = new AudioTrack(
-                        ( m_DvcPt.m_UseWhatStreamType == 0 ) ? AudioManager.STREAM_VOICE_CALL : AudioManager.STREAM_MUSIC,
-                        m_SmplRate,
-                        AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                        AudioFormat.ENCODING_PCM_16BIT,
-                        m_DvcPt.m_BufSzByt,
-                        AudioTrack.MODE_STREAM );
+                m_DvcPt.m_Pt = new AudioTrack( ( m_DvcPt.m_UseWhatStreamType == 0 ) ? AudioManager.STREAM_VOICE_CALL : AudioManager.STREAM_MUSIC,
+                                               m_SmplRate,
+                                               AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                                               AudioFormat.ENCODING_PCM_16BIT,
+                                               m_DvcPt.m_BufSzByt,
+                                               AudioTrack.MODE_STREAM );
                 if( m_DvcPt.m_Pt.getState() == AudioTrack.STATE_INITIALIZED )
                 {
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第一种方法初始化设备成功。采样频率：" + m_SmplRate + "，缓冲区大小：" + m_DvcPt.m_BufSzByt + "。" );
@@ -704,7 +703,7 @@ public class AdoOtpt //音频输出。
     {
         public void run()
         {
-            while( m_ThrdPt.m_ThrdIsStart == 0 ) SystemClock.sleep( 1 ); //等待线程开始。
+            while( ( m_ThrdPt.m_ThrdIsStart == 0 ) && ( m_ThrdPt.m_ExitFlag == 0 ) ) SystemClock.sleep( 1 ); //等待线程开始。这里判断退出标记是因为音频输入可能会初始化失败导致不会让线程开始。
 
             if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：开始准备音频输出。" );
 
@@ -757,25 +756,22 @@ public class AdoOtpt //音频输出。
                                         case 0: //如果要使用Pcm原始数据。
                                         {
                                             //调用用户定义的写入音频输出帧函数。
-                                            m_MediaPocsThrdPt.UserWriteAdoOtptFrm(
-                                                    p_StrmPt.m_Idx,
-                                                    m_ThrdPt.m_PcmSrcFrmPt, ( int ) m_FrmLenUnit,
-                                                    null, 0, null );
+                                            m_MediaPocsThrdPt.UserWriteAdoOtptFrm( p_StrmPt.m_Idx,
+                                                                                   m_ThrdPt.m_PcmSrcFrmPt, ( int ) m_FrmLenUnit,
+                                                                                   null, 0, null );
 
                                             //调用用户定义的获取音频输出帧函数。
-                                            m_MediaPocsThrdPt.UserGetAdoOtptFrm(
-                                                    p_StrmPt.m_Idx,
-                                                    m_ThrdPt.m_PcmSrcFrmPt, m_FrmLenUnit,
-                                                    null, 0 );
+                                            m_MediaPocsThrdPt.UserGetAdoOtptFrm( p_StrmPt.m_Idx,
+                                                                                 m_ThrdPt.m_PcmSrcFrmPt, m_FrmLenUnit,
+                                                                                 null, 0 );
                                             break;
                                         }
                                         case 1: //如果要使用Speex解码器。
                                         {
                                             //调用用户定义的写入音频输出帧函数。
-                                            m_MediaPocsThrdPt.UserWriteAdoOtptFrm(
-                                                    p_StrmPt.m_Idx,
-                                                    null, 0,
-                                                    m_ThrdPt.m_EncdSrcFrmPt, m_ThrdPt.m_EncdSrcFrmPt.length, m_ThrdPt.m_EncdSrcFrmLenBytPt );
+                                            m_MediaPocsThrdPt.UserWriteAdoOtptFrm( p_StrmPt.m_Idx,
+                                                                                   null, 0,
+                                                                                   m_ThrdPt.m_EncdSrcFrmPt, m_ThrdPt.m_EncdSrcFrmPt.length, m_ThrdPt.m_EncdSrcFrmLenBytPt );
 
                                             //使用Speex解码器。
                                             if( p_StrmPt.m_SpeexDecdPt.m_Pt.Pocs( m_ThrdPt.m_EncdSrcFrmPt, m_ThrdPt.m_EncdSrcFrmLenBytPt.m_Val, m_ThrdPt.m_PcmSrcFrmPt ) == 0 )
@@ -788,10 +784,9 @@ public class AdoOtpt //音频输出。
                                             }
 
                                             //调用用户定义的获取音频输出帧函数。
-                                            m_MediaPocsThrdPt.UserGetAdoOtptFrm(
-                                                    p_StrmPt.m_Idx,
-                                                    m_ThrdPt.m_PcmSrcFrmPt, m_FrmLenUnit,
-                                                    m_ThrdPt.m_EncdSrcFrmPt, m_ThrdPt.m_EncdSrcFrmLenBytPt.m_Val );
+                                            m_MediaPocsThrdPt.UserGetAdoOtptFrm( p_StrmPt.m_Idx,
+                                                                                 m_ThrdPt.m_PcmSrcFrmPt, m_FrmLenUnit,
+                                                                                 m_ThrdPt.m_EncdSrcFrmPt, m_ThrdPt.m_EncdSrcFrmLenBytPt.m_Val );
                                             break;
                                         }
                                         case 2: //如果要使用Opus解码器。
@@ -822,25 +817,22 @@ public class AdoOtpt //音频输出。
                                             case 0: //如果要使用Pcm原始数据。
                                             {
                                                 //调用用户定义的写入音频输出帧函数。
-                                                m_MediaPocsThrdPt.UserWriteAdoOtptFrm(
-                                                        p_StrmPt.m_Idx,
-                                                        m_ThrdPt.m_PcmSrcFrmPt, ( int ) m_FrmLenUnit,
-                                                        null, 0, null );
+                                                m_MediaPocsThrdPt.UserWriteAdoOtptFrm( p_StrmPt.m_Idx,
+                                                                                       m_ThrdPt.m_PcmSrcFrmPt, ( int ) m_FrmLenUnit,
+                                                                                       null, 0, null );
 
                                                 //调用用户定义的获取音频输出帧函数。
-                                                m_MediaPocsThrdPt.UserGetAdoOtptFrm(
-                                                        p_StrmPt.m_Idx,
-                                                        m_ThrdPt.m_PcmSrcFrmPt, m_FrmLenUnit,
-                                                        null, 0 );
+                                                m_MediaPocsThrdPt.UserGetAdoOtptFrm( p_StrmPt.m_Idx,
+                                                                                     m_ThrdPt.m_PcmSrcFrmPt, m_FrmLenUnit,
+                                                                                     null, 0 );
                                                 break;
                                             }
                                             case 1: //如果要使用Speex解码器。
                                             {
                                                 //调用用户定义的写入音频输出帧函数。
-                                                m_MediaPocsThrdPt.UserWriteAdoOtptFrm(
-                                                        p_StrmPt.m_Idx,
-                                                        null, 0,
-                                                        m_ThrdPt.m_EncdSrcFrmPt, m_ThrdPt.m_EncdSrcFrmPt.length, m_ThrdPt.m_EncdSrcFrmLenBytPt );
+                                                m_MediaPocsThrdPt.UserWriteAdoOtptFrm( p_StrmPt.m_Idx,
+                                                                                       null, 0,
+                                                                                       m_ThrdPt.m_EncdSrcFrmPt, m_ThrdPt.m_EncdSrcFrmPt.length, m_ThrdPt.m_EncdSrcFrmLenBytPt );
 
                                                 //使用Speex解码器。
                                                 if( p_StrmPt.m_SpeexDecdPt.m_Pt.Pocs( m_ThrdPt.m_EncdSrcFrmPt, m_ThrdPt.m_EncdSrcFrmLenBytPt.m_Val, m_ThrdPt.m_PcmSrcFrmPt ) == 0 )
@@ -853,10 +845,9 @@ public class AdoOtpt //音频输出。
                                                 }
 
                                                 //调用用户定义的获取音频输出帧函数。
-                                                m_MediaPocsThrdPt.UserGetAdoOtptFrm(
-                                                        p_StrmPt.m_Idx,
-                                                        m_ThrdPt.m_PcmSrcFrmPt, m_FrmLenUnit,
-                                                        m_ThrdPt.m_EncdSrcFrmPt, m_ThrdPt.m_EncdSrcFrmLenBytPt.m_Val );
+                                                m_MediaPocsThrdPt.UserGetAdoOtptFrm( p_StrmPt.m_Idx,
+                                                                                     m_ThrdPt.m_PcmSrcFrmPt, m_FrmLenUnit,
+                                                                                     m_ThrdPt.m_EncdSrcFrmPt, m_ThrdPt.m_EncdSrcFrmLenBytPt.m_Val );
                                                 break;
                                             }
                                             case 2: //如果要使用Opus解码器。

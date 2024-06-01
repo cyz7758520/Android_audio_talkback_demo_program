@@ -619,7 +619,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
                                                  byte VdoInptYu12RsltFrmPt[], int VdoInptYu12RsltFrmWidth, int VdoInptYu12RsltFrmHeight, long VdoInptYu12RsltFrmLenByt,
                                                  byte VdoInptEncdRsltFrmPt[], long VdoInptEncdRsltFrmLenByt )
     {
-        if( m_TkbkClntPt.m_CnctIsInit != 0 )
+        if( m_TkbkClntPt.m_CurCnctSts == CnctSts.Cnct )
         {
             m_TkbkClntPt.UserReadAdoVdoInptFrm( AdoInptPcmSrcFrmPt, AdoInptPcmRsltFrmPt, AdoInptPcmFrmLenUnit, AdoInptPcmRsltFrmVoiceActSts,
                                                 AdoInptEncdRsltFrmPt, AdoInptEncdRsltFrmLenByt, AdoInptEncdRsltFrmIsNeedTrans,

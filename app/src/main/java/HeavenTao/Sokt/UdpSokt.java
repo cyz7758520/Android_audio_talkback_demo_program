@@ -37,10 +37,10 @@ public class UdpSokt
     {
         if( m_UdpSoktPt == 0 )
         {
-            HTLong p_WebRtcNsPt = new HTLong();
-            if( UdpInit( p_WebRtcNsPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            HTLong p_UdpSoktPt = new HTLong();
+            if( UdpInit( p_UdpSoktPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
-                m_UdpSoktPt = p_WebRtcNsPt.m_Val;
+                m_UdpSoktPt = p_UdpSoktPt.m_Val;
                 return 0;
             }
             else

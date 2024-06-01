@@ -39,10 +39,10 @@ public class SystemH264Decd
                 return -1;
             }
 
-            HTLong p_WebRtcNsPt = new HTLong();
-            if( SystemH264DecdInit( p_WebRtcNsPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            HTLong p_SystemH264DecdPt = new HTLong();
+            if( SystemH264DecdInit( p_SystemH264DecdPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
-                m_SystemH264DecdPt = p_WebRtcNsPt.m_Val;
+                m_SystemH264DecdPt = p_SystemH264DecdPt.m_Val;
                 return 0;
             }
             else

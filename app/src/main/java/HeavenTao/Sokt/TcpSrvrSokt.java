@@ -31,10 +31,10 @@ public class TcpSrvrSokt
     {
         if( m_TcpSrvrSoktPt == 0 )
         {
-            HTLong p_WebRtcNsPt = new HTLong();
-            if( TcpSrvrInit( p_WebRtcNsPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, MaxWait, IsReuseAddr, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            HTLong p_TcpSrvrSoktPt = new HTLong();
+            if( TcpSrvrInit( p_TcpSrvrSoktPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, MaxWait, IsReuseAddr, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
-                m_TcpSrvrSoktPt = p_WebRtcNsPt.m_Val;
+                m_TcpSrvrSoktPt = p_TcpSrvrSoktPt.m_Val;
                 return 0;
             }
             else

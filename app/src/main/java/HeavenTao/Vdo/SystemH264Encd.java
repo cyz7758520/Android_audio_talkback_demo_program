@@ -40,10 +40,10 @@ public class SystemH264Encd
                 return -1;
             }
 
-            HTLong p_WebRtcNsPt = new HTLong();
-            if( SystemH264EncdInit( p_WebRtcNsPt, Yu12FrmWidth, Yu12FrmHeight, EncdBitrate, BitrateCtrlMode, MaxFrmRate, IDRFrmIntvlTimeSec, Complexity, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            HTLong p_SystemH264EncdPt = new HTLong();
+            if( SystemH264EncdInit( p_SystemH264EncdPt, Yu12FrmWidth, Yu12FrmHeight, EncdBitrate, BitrateCtrlMode, MaxFrmRate, IDRFrmIntvlTimeSec, Complexity, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
-                m_SystemH264EncdPt = p_WebRtcNsPt.m_Val;
+                m_SystemH264EncdPt = p_SystemH264EncdPt.m_Val;
                 return 0;
             }
             else

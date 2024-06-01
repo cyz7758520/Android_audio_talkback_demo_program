@@ -23,9 +23,11 @@ public class VdoInpt //视频输入。
     public int m_IsInit; //存放是否初始化视频输入，为0表示未初始化，为非0表示已初始化。
 
     public int m_MaxSmplRate; //存放最大采样频率，取值范围为[1,60]，实际帧率和图像的亮度有关，亮度较高时采样频率可以达到最大值，亮度较低时系统就自动降低采样频率来提升亮度。
-    public int m_FrmWidth; //存放屏幕旋转0度时，帧的宽度，单位为像素。
-    public int m_FrmHeight; //存放屏幕旋转0度时，帧的高度，单位为像素。
+    public int m_FrmWidth; //存放屏幕旋转0度时，帧的宽度，单位为像素，只能为偶数。
+    public int m_FrmHeight; //存放屏幕旋转0度时，帧的高度，单位为像素，只能为偶数。
     public long m_Yu12FrmLenByt; //存放Yu12格式帧的长度，单位为字节，为m_FrmWidth * m_FrmHeight * 3 / 2。
+    public int m_SrcFrmWidth; //存放屏幕旋转0度时，原始帧的宽度，单位为像素，只能为偶数，为0表示自动选择。
+    public int m_SrcFrmHeight; //存放屏幕旋转0度时，原始帧的高度，单位为像素，只能为偶数，为0表示自动选择。
     public int m_ScreenRotate; //存放屏幕旋转的角度，只能为0、90、180、270，0度表示竖屏，其他表示顺时针旋转。
 
     public int m_UseWhatEncd; //存放使用什么编码器，为0表示Yu12原始数据，为1表示OpenH264编码器，为2表示系统自带H264编码器。
@@ -212,6 +214,7 @@ public class VdoInpt //视频输入。
                 int p_CurNv21SrcFrmCropHeight; //存放本次Nv21格式原始帧裁剪区域的高度，单位像素。
                 int p_IsSetSelCur; //存放是否设置选择的为本次的，为0表示不设置，为非0表示要设置。
                 if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：目标的Nv21格式原始帧的大小：宽度：" + p_TgtNv21SrcFrmWidth + "，高度：" + p_TgtNv21SrcFrmHeight + "。" );
+                if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：指定的Nv21格式原始帧的大小：宽度：" + m_SrcFrmWidth + "，高度：" + m_SrcFrmHeight + "。" );
                 for( Camera.Size p_CurNv21SrcFrmSz : p_SupportedPrvwSizesListPt )
                 {
                     if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：设备支持的Nv21格式原始帧的大小：宽度：" + p_CurNv21SrcFrmSz.width + "，高度：" + p_CurNv21SrcFrmSz.height + "。" );
@@ -239,29 +242,39 @@ public class VdoInpt //视频输入。
                         p_CurNv21SrcFrmCropY -= p_CurNv21SrcFrmCropY % 2;
                     }
 
-                    //如果选择的帧裁剪区域不满足目标的（包括选择的帧裁剪区域为0），则只要本次的帧裁剪区域比选择的大，就设置选择的为本次的。
-                    //如果选择的帧裁剪区域满足目标的，就只要本次的帧裁剪区域满足目标的，且本次的帧裁剪区域比选择的小、或本次的帧裁剪区域相同但裁剪量比选择的小，就设置选择的为本次的。
+                    //如果本次的帧的大小符合原始帧的大小，就设置选择的为本次的。
+                    //如果要自动选择原始帧的大小，或选择的帧的大小不符合原始帧的大小，就判断本次的和目标的。
                     p_IsSetSelCur = 0;
-                    if( ( m_DvcPt.m_Nv21SrcFrmCropWidth < p_TgtNv21SrcFrmWidth ) && ( m_DvcPt.m_Nv21SrcFrmCropHeight < p_TgtNv21SrcFrmHeight ) )
+                    if( ( p_CurNv21SrcFrmSz.width == m_SrcFrmWidth ) && ( p_CurNv21SrcFrmSz.height == m_SrcFrmHeight ) )
                     {
-                        if( ( p_CurNv21SrcFrmCropWidth > m_DvcPt.m_Nv21SrcFrmCropWidth ) && ( p_CurNv21SrcFrmCropHeight > m_DvcPt.m_Nv21SrcFrmCropHeight ) )
-                        {
-                            p_IsSetSelCur = 1;
-                        }
+                        p_IsSetSelCur = 1;
                     }
-                    else
+                    else if( ( ( m_SrcFrmWidth == 0 ) && ( m_SrcFrmHeight == 0 ) ) ||
+                             ( m_DvcPt.m_Nv21SrcFrmWidth != m_SrcFrmWidth ) || ( m_DvcPt.m_Nv21SrcFrmHeight != m_SrcFrmHeight ) )
                     {
-                        if(
-                            ( ( p_CurNv21SrcFrmCropWidth >= p_TgtNv21SrcFrmWidth ) && ( p_CurNv21SrcFrmCropHeight >= p_TgtNv21SrcFrmHeight ) )
-                            &&
-                            (
-                                ( ( p_CurNv21SrcFrmCropWidth < m_DvcPt.m_Nv21SrcFrmCropWidth ) || ( p_CurNv21SrcFrmCropHeight < m_DvcPt.m_Nv21SrcFrmCropHeight ) )
-                                ||
-                                ( ( p_CurNv21SrcFrmCropWidth == m_DvcPt.m_Nv21SrcFrmCropWidth ) && ( p_CurNv21SrcFrmCropHeight == m_DvcPt.m_Nv21SrcFrmCropHeight ) && ( p_CurNv21SrcFrmCropX + p_CurNv21SrcFrmCropY < m_DvcPt.m_Nv21SrcFrmCropX + m_DvcPt.m_Nv21SrcFrmCropY ) )
-                            )
-                        )
+                        //如果选择的帧裁剪区域不满足目标的（包括选择的帧裁剪区域为0），则只要本次的帧裁剪区域比选择的大，就设置选择的为本次的。
+                        //如果选择的帧裁剪区域满足目标的，就只要本次的帧裁剪区域满足目标的，且本次的帧裁剪区域比选择的小、或本次的帧裁剪区域相同但裁剪量比选择的小，就设置选择的为本次的。
+                        if( ( m_DvcPt.m_Nv21SrcFrmCropWidth < p_TgtNv21SrcFrmWidth ) && ( m_DvcPt.m_Nv21SrcFrmCropHeight < p_TgtNv21SrcFrmHeight ) )
                         {
-                            p_IsSetSelCur = 1;
+                            if( ( p_CurNv21SrcFrmCropWidth > m_DvcPt.m_Nv21SrcFrmCropWidth ) && ( p_CurNv21SrcFrmCropHeight > m_DvcPt.m_Nv21SrcFrmCropHeight ) )
+                            {
+                                p_IsSetSelCur = 1;
+                            }
+                        }
+                        else
+                        {
+                            if(
+                                ( ( p_CurNv21SrcFrmCropWidth >= p_TgtNv21SrcFrmWidth ) && ( p_CurNv21SrcFrmCropHeight >= p_TgtNv21SrcFrmHeight ) )
+                                &&
+                                (
+                                    ( ( p_CurNv21SrcFrmCropWidth < m_DvcPt.m_Nv21SrcFrmCropWidth ) || ( p_CurNv21SrcFrmCropHeight < m_DvcPt.m_Nv21SrcFrmCropHeight ) )
+                                    ||
+                                    ( ( p_CurNv21SrcFrmCropWidth == m_DvcPt.m_Nv21SrcFrmCropWidth ) && ( p_CurNv21SrcFrmCropHeight == m_DvcPt.m_Nv21SrcFrmCropHeight ) && ( p_CurNv21SrcFrmCropX + p_CurNv21SrcFrmCropY < m_DvcPt.m_Nv21SrcFrmCropX + m_DvcPt.m_Nv21SrcFrmCropY ) )
+                                )
+                            )
+                            {
+                                p_IsSetSelCur = 1;
+                            }
                         }
                     }
                     if( p_IsSetSelCur != 0 ) //如果要设置选择的为本次的。
@@ -782,11 +795,10 @@ public class VdoInpt //视频输入。
                     //裁剪Nv21格式原始帧。
                     if( m_DvcPt.m_Nv21SrcFrmIsCrop != 0 )
                     {
-                        if( LibYUV.PictrCrop(
-                                m_ThrdPt.m_TmpFrm1Pt, LibYUV.PICTR_FMT_BT601F8_NV21, m_DvcPt.m_Nv21SrcFrmWidth, m_DvcPt.m_Nv21SrcFrmHeight,
-                                m_DvcPt.m_Nv21SrcFrmCropX, m_DvcPt.m_Nv21SrcFrmCropY, m_DvcPt.m_Nv21SrcFrmCropWidth, m_DvcPt.m_Nv21SrcFrmCropHeight,
-                                m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, m_ThrdPt.m_TmpFrmLenBytPt, null, null,
-                                null ) == 0 )
+                        if( LibYUV.PictrCrop( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PICTR_FMT_BT601F8_NV21, m_DvcPt.m_Nv21SrcFrmWidth, m_DvcPt.m_Nv21SrcFrmHeight,
+                                              m_DvcPt.m_Nv21SrcFrmCropX, m_DvcPt.m_Nv21SrcFrmCropY, m_DvcPt.m_Nv21SrcFrmCropWidth, m_DvcPt.m_Nv21SrcFrmCropHeight,
+                                              m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, m_ThrdPt.m_TmpFrmLenBytPt, null, null,
+                                              null ) == 0 )
                         {
                             if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：裁剪Nv21格式原始帧成功。" );
                             byte p_SwapFrmPt[] = m_ThrdPt.m_TmpFrm1Pt; m_ThrdPt.m_TmpFrm1Pt = m_ThrdPt.m_TmpFrm2Pt; m_ThrdPt.m_TmpFrm2Pt = p_SwapFrmPt; //交换临时帧的指针。
@@ -799,11 +811,10 @@ public class VdoInpt //视频输入。
                     }
 
                     //Nv21格式原始帧旋转为Yu12格式原始帧。
-                    if( LibYUV.PictrRotate(
-                            m_ThrdPt.m_TmpFrm1Pt, LibYUV.PICTR_FMT_BT601F8_NV21, m_DvcPt.m_Nv21SrcFrmCropWidth, m_DvcPt.m_Nv21SrcFrmCropHeight,
-                            m_DvcPt.m_Yu12SrcFrmRotate,
-                            m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, null, null,
-                            null ) == 0 )
+                    if( LibYUV.PictrRotate( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PICTR_FMT_BT601F8_NV21, m_DvcPt.m_Nv21SrcFrmCropWidth, m_DvcPt.m_Nv21SrcFrmCropHeight,
+                                            m_DvcPt.m_Yu12SrcFrmRotate,
+                                            m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, null, null,
+                                            null ) == 0 )
                     {
                         if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：Nv21格式原始帧旋转为Yu12格式原始帧成功。" );
                         byte p_SwapFrmPt[] = m_ThrdPt.m_TmpFrm1Pt; m_ThrdPt.m_TmpFrm1Pt = m_ThrdPt.m_TmpFrm2Pt; m_ThrdPt.m_TmpFrm2Pt = p_SwapFrmPt; //交换临时帧的指针。
@@ -817,11 +828,10 @@ public class VdoInpt //视频输入。
                     //缩放Yu12格式原始帧。
                     if( m_DvcPt.m_Yu12SrcFrmIsScale != 0 )
                     {
-                        if( LibYUV.PictrScale(
-                                m_ThrdPt.m_TmpFrm1Pt, LibYUV.PICTR_FMT_BT601F8_Yu12_I420, m_DvcPt.m_Yu12SrcFrmRotateWidth, m_DvcPt.m_Yu12SrcFrmRotateHeight,
-                                3,
-                                m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, m_ThrdPt.m_TmpFrmLenBytPt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight,
-                                null ) == 0 )
+                        if( LibYUV.PictrScale( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PICTR_FMT_BT601F8_Yu12_I420, m_DvcPt.m_Yu12SrcFrmRotateWidth, m_DvcPt.m_Yu12SrcFrmRotateHeight,
+                                               3,
+                                               m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, m_ThrdPt.m_TmpFrmLenBytPt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight,
+                                               null ) == 0 )
                         {
                             if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：缩放Yu12格式原始帧成功。" );
                             byte p_SwapFrmPt[] = m_ThrdPt.m_TmpFrm1Pt; m_ThrdPt.m_TmpFrm1Pt = m_ThrdPt.m_TmpFrm2Pt; m_ThrdPt.m_TmpFrm2Pt = p_SwapFrmPt; //交换临时帧的指针。
@@ -854,10 +864,9 @@ public class VdoInpt //视频输入。
                         }
                         case 1: //如果要使用OpenH264编码器。
                         {
-                            if( m_OpenH264EncdPt.m_Pt.Pocs(
-                                    m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight, m_ThrdPt.m_LastTickMsec,
-                                    m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt, m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt.length, m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt,
-                                    null ) == 0 )
+                            if( m_OpenH264EncdPt.m_Pt.Pocs( m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight, m_ThrdPt.m_LastTickMsec,
+                                                            m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt, m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt.length, m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt,
+                                                            null ) == 0 )
                             {
                                 if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：使用OpenH264编码器成功。H264格式结果帧的长度：" + m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt.m_Val + "，时间戳：" + m_ThrdPt.m_LastTickMsec + "，类型：" + ( m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt[4] & 0xff ) + "。" );
                             }
@@ -870,10 +879,9 @@ public class VdoInpt //视频输入。
                         }
                         case 2: //如果要使用系统自带H264编码器。
                         {
-                            if( m_SystemH264EncdPt.m_Pt.Pocs(
-                                    m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, m_ThrdPt.m_LastTickMsec,
-                                    m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt, ( long )m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt.length, m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt,
-                                    1000 / m_MaxSmplRate * 2 / 3, null ) == 0 )
+                            if( m_SystemH264EncdPt.m_Pt.Pocs( m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, m_ThrdPt.m_LastTickMsec,
+                                                              m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt, ( long ) m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt.length, m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt,
+                                                              1000 / m_MaxSmplRate * 2 / 3, null ) == 0 )
                             {
                                 if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：使用系统自带H264编码器成功。H264格式结果帧的长度：" + m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt.m_Val + "，时间戳：" + m_ThrdPt.m_LastTickMsec + "，类型：" + ( m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt[4] & 0xff ) + "。" );
                             }

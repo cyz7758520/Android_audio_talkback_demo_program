@@ -609,13 +609,14 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 
         if( m_MyClntMediaPocsThrdPt != null && m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_IsInit != 0 ) //如果我的网络媒体处理线程已经启动，且已初始化视频输入。
         {
-            m_MyClntMediaPocsThrdPt.SetVdoInpt(
-                    1,
-                    m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_MaxSmplRate,
-                    m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_FrmWidth,
-                    m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_FrmHeight,
-                    getWindowManager().getDefaultDisplay().getRotation() * 90,
-                    m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt );
+            m_MyClntMediaPocsThrdPt.SetVdoInpt( 1,
+                                                m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_MaxSmplRate,
+                                                m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_FrmWidth,
+                                                m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_FrmHeight,
+                                                0,
+                                                0,
+                                                getWindowManager().getDefaultDisplay().getRotation() * 90,
+                                                m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt );
         }
     }
 
@@ -626,11 +627,11 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 
         Out:
         {
-            if( m_MySrvrThrdPt == null ) //如果我的服务端线程还没有初始化。
+            if( m_MySrvrThrdPt == null ) //如果我的服务端线程未初始化。
             {
                 MySrvrThrdInit();
             }
-            else //如果对讲客户端端连接已初始化。
+            else //如果我的服务端线程已初始化。
             {
                 MySrvrThrdDstoy();
             }
@@ -878,17 +879,15 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
         if( m_MyClntMediaPocsThrdPt != null )
         {
             //设置音频输入是否绘制音频波形到Surface。
-            m_MyClntMediaPocsThrdPt.AdoInptSetIsDrawAdoWavfmToSurface(
-                    1,
-                    ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
-                    ( ( SurfaceView )findViewById( R.id.AdoInptWavfmSurfaceId ) ),
-                    ( ( SurfaceView )findViewById( R.id.AdoRsltWavfmSurfaceId ) ) );
+            m_MyClntMediaPocsThrdPt.AdoInptSetIsDrawAdoWavfmToSurface( 1,
+                                                                       ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
+                                                                       ( ( SurfaceView ) findViewById( R.id.AdoInptWavfmSurfaceId ) ),
+                                                                       ( ( SurfaceView ) findViewById( R.id.AdoRsltWavfmSurfaceId ) ) );
 
             //设置音频输出是否绘制音频波形到Surface。
-            m_MyClntMediaPocsThrdPt.AdoOtptSetIsDrawAdoWavfmToSurface(
-                    1,
-                    ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
-                    ( ( SurfaceView )findViewById( R.id.AdoOtptWavfmSurfaceId ) ) );
+            m_MyClntMediaPocsThrdPt.AdoOtptSetIsDrawAdoWavfmToSurface( 1,
+                                                                       ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
+                                                                       ( ( SurfaceView ) findViewById( R.id.AdoOtptWavfmSurfaceId ) ) );
         }
     }
 

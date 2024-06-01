@@ -35,10 +35,10 @@ public class TcpClntSokt
     {
         if( m_TcpClntSoktPt == 0 )
         {
-            HTLong p_WebRtcNsPt = new HTLong();
-            if( TcpClntInit( p_WebRtcNsPt, RmtLclNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, LclNodeNamePt, LclNodeSrvcPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            HTLong p_TcpClntSoktPt = new HTLong();
+            if( TcpClntInit( p_TcpClntSoktPt, RmtLclNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, LclNodeNamePt, LclNodeSrvcPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
-                m_TcpClntSoktPt = p_WebRtcNsPt.m_Val;
+                m_TcpClntSoktPt = p_TcpClntSoktPt.m_Val;
                 return 0;
             }
             else

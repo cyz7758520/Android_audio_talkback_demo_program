@@ -735,6 +735,8 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
                             ( ( ( Spinner ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).getSelectedItemPosition() == 1 ) ? 320 :
                                 ( ( ( Spinner ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).getSelectedItemPosition() == 2 ) ? 640 :
                                     ( ( ( Spinner ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.VdoFrmSzPrsetSpinnerId ) ).getSelectedItemPosition() == 3 ) ? 1280 : 0,
+                        0,
+                        0,
                         m_MainActPt.getWindowManager().getDefaultDisplay().getRotation() * 90,
                         m_MainActPt.SendVdoInptOtptViewInitMsg( "视频输入预览" + m_TkbkClntPt.m_MyTkbkIdx ) );
         }
@@ -749,6 +751,8 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
                             ( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate30RdBtnId ) ).isChecked() ) ? 30 : 0,
                             Integer.parseInt( ( ( TextView ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.VdoFrmSzOtherWidthEdTxtId ) ).getText().toString() ),
                             Integer.parseInt( ( ( TextView ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.VdoFrmSzOtherHeightEdTxtId ) ).getText().toString() ),
+                            0,
+                            0,
                             m_MainActPt.getWindowManager().getDefaultDisplay().getRotation() * 90,
                             m_MainActPt.SendVdoInptOtptViewInitMsg( "视频输入预览" + m_TkbkClntPt.m_MyTkbkIdx ) );
             }

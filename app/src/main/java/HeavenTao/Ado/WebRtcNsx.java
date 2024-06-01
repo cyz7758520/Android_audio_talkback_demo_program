@@ -31,10 +31,10 @@ public class WebRtcNsx
     {
         if( m_WebRtcNsxPt == 0 )
         {
-            HTLong p_WebRtcNsPt = new HTLong();
-            if( WebRtcNsxInit( p_WebRtcNsPt, SmplRate, FrmLenUnit, PolicyMode, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            HTLong p_WebRtcNsxPt = new HTLong();
+            if( WebRtcNsxInit( p_WebRtcNsxPt, SmplRate, FrmLenUnit, PolicyMode, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
-                m_WebRtcNsxPt = p_WebRtcNsPt.m_Val;
+                m_WebRtcNsxPt = p_WebRtcNsxPt.m_Val;
                 return 0;
             }
             else

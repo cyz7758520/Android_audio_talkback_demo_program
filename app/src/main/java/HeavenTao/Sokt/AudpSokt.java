@@ -42,10 +42,10 @@ public class AudpSokt
     {
         if( m_AudpSoktPt == 0 )
         {
-            HTLong p_WebRtcNsPt = new HTLong();
-            if( AudpInit( p_WebRtcNsPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, NewCnctMaxWaitCnt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+            HTLong p_AudpSoktPt = new HTLong();
+            if( AudpInit( p_AudpSoktPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, NewCnctMaxWaitCnt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
             {
-                m_AudpSoktPt = p_WebRtcNsPt.m_Val;
+                m_AudpSoktPt = p_AudpSoktPt.m_Val;
                 return 0;
             }
             else

@@ -154,11 +154,10 @@ public class AndrdAdoVdoTkbkStng
                 p_StngXMLElementPt.InsertEndChild( p_TmpXMLElement1Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "Effect" );
-                p_TmpXMLElement2Pt.SetText(
-                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectLowRdBtnId ) ).isChecked() ) ? "Low" :
-                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectMidRdBtnId ) ).isChecked() ) ? "Mid" :
-                                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectHighRdBtnId ) ).isChecked() ) ? "High" :
-                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectSuperRdBtnId ) ).isChecked() ) ? "Super" : "Premium" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectLowRdBtnId ) ).isChecked() ) ? "Low" :
+                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectMidRdBtnId ) ).isChecked() ) ? "Mid" :
+                                                    ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectHighRdBtnId ) ).isChecked() ) ? "High" :
+                                                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseEffectSuperRdBtnId ) ).isChecked() ) ? "Super" : "Premium" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "IsUseDebugInfo" );
@@ -190,16 +189,14 @@ public class AndrdAdoVdoTkbkStng
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "AdoSmplRate" );
-                p_TmpXMLElement2Pt.SetText(
-                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate8000RdBtnId ) ).isChecked() ) ? "8000" :
-                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate16000RdBtnId ) ).isChecked() ) ? "16000" :
-                                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate32000RdBtnId ) ).isChecked() ) ? "32000" : "48000" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate8000RdBtnId ) ).isChecked() ) ? "8000" :
+                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate16000RdBtnId ) ).isChecked() ) ? "16000" :
+                                                    ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate32000RdBtnId ) ).isChecked() ) ? "32000" : "48000" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "AdoFrmLen" );
-                p_TmpXMLElement2Pt.SetText(
-                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen10msRdBtnId ) ).isChecked() ) ? "10" :
-                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen20msRdBtnId ) ).isChecked() ) ? "20" : "30" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen10msRdBtnId ) ).isChecked() ) ? "10" :
+                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoFrmLen20msRdBtnId ) ).isChecked() ) ? "20" : "30" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "IsStartRecordingAfterRead" );
@@ -211,19 +208,17 @@ public class AndrdAdoVdoTkbkStng
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "UseWhatAec" );
-                p_TmpXMLElement2Pt.SetText(
-                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseNoAecRdBtnId ) ).isChecked() ) ? "NoAec" :
-                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexAecRdBtnId ) ).isChecked() ) ? "SpeexAec" :
-                                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecmRdBtnId ) ).isChecked() ) ? "WebRtcAecm" :
-                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecRdBtnId ) ).isChecked() ) ? "WebRtcAec" : "SpeexWebRtcAec" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseNoAecRdBtnId ) ).isChecked() ) ? "NoAec" :
+                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexAecRdBtnId ) ).isChecked() ) ? "SpeexAec" :
+                                                    ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecmRdBtnId ) ).isChecked() ) ? "WebRtcAecm" :
+                                                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecRdBtnId ) ).isChecked() ) ? "WebRtcAec" : "SpeexWebRtcAec" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "UseWhatNs" );
-                p_TmpXMLElement2Pt.SetText(
-                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseNoNsRdBtnId ) ).isChecked() ) ? "NoNs" :
-                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexPrpocsNsRdBtnId ) ).isChecked() ) ? "SpeexPrpocsNs" :
-                                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcNsxRdBtnId ) ).isChecked() ) ? "WebRtcNsx" :
-                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcNsRdBtnId ) ).isChecked() ) ? "WebRtcNs" : "RNNoise" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseNoNsRdBtnId ) ).isChecked() ) ? "NoNs" :
+                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexPrpocsNsRdBtnId ) ).isChecked() ) ? "SpeexPrpocsNs" :
+                                                    ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcNsxRdBtnId ) ).isChecked() ) ? "WebRtcNsx" :
+                                                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcNsRdBtnId ) ).isChecked() ) ? "WebRtcNs" : "RNNoise" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "IsUseSpeexPrpocs" );
@@ -231,9 +226,8 @@ public class AndrdAdoVdoTkbkStng
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "AdoUseWhatCodec" );
-                p_TmpXMLElement2Pt.SetText(
-                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UsePcmRdBtnId ) ).isChecked() ) ? "Pcm" :
-                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).isChecked() ) ? "SpeexCodec" : "OpusCodec" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UsePcmRdBtnId ) ).isChecked() ) ? "Pcm" :
+                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexCodecRdBtnId ) ).isChecked() ) ? "SpeexCodec" : "OpusCodec" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "IsSaveAdoInptOtptToWaveFile" );
@@ -241,15 +235,13 @@ public class AndrdAdoVdoTkbkStng
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "VdoSmplRate" );
-                p_TmpXMLElement2Pt.SetText(
-                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate12RdBtnId ) ).isChecked() ) ? "12" :
-                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).isChecked() ) ? "15" :
-                                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate24RdBtnId ) ).isChecked() ) ? "24" : "30" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate12RdBtnId ) ).isChecked() ) ? "12" :
+                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate15RdBtnId ) ).isChecked() ) ? "15" :
+                                                    ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoSmplRate24RdBtnId ) ).isChecked() ) ? "24" : "30" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "UseWhatVdoFrmSz" );
-                p_TmpXMLElement2Pt.SetText(
-                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).isChecked() ) ? "Prset" : "Other" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).isChecked() ) ? "Prset" : "Other" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "VdoFrmSzPrset" );
@@ -265,9 +257,8 @@ public class AndrdAdoVdoTkbkStng
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "VdoUseWhatCodec" );
-                p_TmpXMLElement2Pt.SetText(
-                        ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseYu12RdBtnId ) ).isChecked() ) ? "Yu12" :
-                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseOpenH264CodecRdBtnId ) ).isChecked() ) ? "OpenH264Codec" : "SystemH264Codec" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseYu12RdBtnId ) ).isChecked() ) ? "Yu12" :
+                                                ( ( ( RadioButton ) MainActPt.m_StngLyotViewPt.findViewById( R.id.UseOpenH264CodecRdBtnId ) ).isChecked() ) ? "OpenH264Codec" : "SystemH264Codec" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
             }
 
@@ -441,9 +432,8 @@ public class AndrdAdoVdoTkbkStng
                 p_StngXMLElementPt.InsertEndChild( p_TmpXMLElement1Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "WorkMode" );
-                p_TmpXMLElement2Pt.SetText(
-                        ( ( ( RadioButton ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRdBtnId ) ).isChecked() ) ? "SpeexAecWebRtcAecm" :
-                                ( ( ( RadioButton ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ) ? "WebRtcAecmWebRtcAec" : "SpeexAecWebRtcAecmWebRtcAec" );
+                p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRdBtnId ) ).isChecked() ) ? "SpeexAecWebRtcAecm" :
+                                                ( ( ( RadioButton ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ) ? "WebRtcAecmWebRtcAec" : "SpeexAecWebRtcAecmWebRtcAec" );
                 p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
                 p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "SpeexAecFilterLenMsec" );
@@ -2209,15 +2199,14 @@ public class AndrdAdoVdoTkbkStng
             //设置系统音量变化消息监听器。
             IntentFilter p_VolumeChangedActionIntentFilterPt = new IntentFilter();
             p_VolumeChangedActionIntentFilterPt.addAction( "android.media.VOLUME_CHANGED_ACTION" );
-            MainActPt.registerReceiver(
-                    new BroadcastReceiver()
-                    {
-                        @Override public void onReceive( Context context, Intent intent )
-                        {
-                            p_AdoOtptVolumePt.setProgress( p_AudioManagerPt.getStreamVolume( AudioManager.STREAM_VOICE_CALL ) );
-                        }
-                    },
-                    p_VolumeChangedActionIntentFilterPt );
+            MainActPt.registerReceiver( new BroadcastReceiver()
+                                        {
+                                            @Override public void onReceive( Context context, Intent intent )
+                                            {
+                                                p_AdoOtptVolumePt.setProgress( p_AudioManagerPt.getStreamVolume( AudioManager.STREAM_VOICE_CALL ) );
+                                            }
+                                        },
+                                        p_VolumeChangedActionIntentFilterPt );
         }
 
         //设置设置。
