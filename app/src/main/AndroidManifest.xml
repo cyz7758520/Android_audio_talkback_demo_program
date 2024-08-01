@@ -28,7 +28,7 @@
             android:name="com.example.andrd_ado_vdo_tkbk_demo.MainAct"
             android:label="@string/app_name"
             android:launchMode = "singleTask"
-            android:configChanges="orientation|screenSize"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

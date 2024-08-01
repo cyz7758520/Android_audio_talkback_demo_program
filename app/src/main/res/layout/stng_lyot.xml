@@ -1,891 +1,962 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin">
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:text="@string/app_name"
-            android:textAlignment="center"
-            android:textSize="20sp"
-            android:textStyle="normal|bold" />
-
-        <TextView
-            android:text="设置"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_horizontal"
-            android:textAlignment="center"
-            android:textStyle="normal|bold"
-            android:textSize="20sp"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:text=""
-            android:textAlignment="center"
-            android:textSize="20sp"
-            android:textStyle="normal|bold" />
-
-        <TextView
-            android:gravity="center_horizontal"
-            android:textAlignment="center"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textStyle="normal|bold"
-            android:textSize="20sp"
-            android:text="\n————    预设设置    ————\n" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:gravity="center_vertical"
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="match_parent"
-                android:text="效果等级：" />
-
-            <RadioGroup
-                android:orientation="horizontal"
-                android:layout_weight="9"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:text="低"
-                    android:id="@+id/UseEffectLowRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectLowRdBtn"/>
-
-                <RadioButton
-                    android:text="中"
-                    android:id="@+id/UseEffectMidRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectMidRdBtn"/>
-
-                <RadioButton
-                    android:text="高"
-                    android:id="@+id/UseEffectHighRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectHighRdBtn"/>
-
-                <RadioButton
-                    android:text="超"
-                    android:id="@+id/UseEffectSuperRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectSuperRdBtn"/>
-
-                <RadioButton
-                    android:text="特"
-                    android:id="@+id/UseEffectPremiumRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:onClick="OnClickUseEffectPremiumRdBtn"/>
-
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <CheckBox
-            android:id="@+id/IsUseDebugInfoCkBoxId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="使用调试信息"
-            android:onClick="OnClickIsUseDebugInfoRdBtn"/>
-
-        <TextView
-            android:gravity="center_horizontal"
-            android:textAlignment="center"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textStyle="normal|bold"
-            android:textSize="20sp"
-            android:text="\n————    一般设置    ————\n" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:gravity="center_vertical"
-                android:layout_weight="3"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="接收输出帧：" />
-
-            <RadioGroup
-                android:orientation="vertical"
-                android:layout_weight="7"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:id="@+id/UseCntnrRecvOtptFrmRdBtnId"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:text="容器" />
-
-                <RadioButton
-                    android:id="@+id/UseAjbRecvOtptFrmRdBtnId"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:text="自己设计的自适应抖动缓冲器" />
-
-            </RadioGroup>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_weight="2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content">
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:text="设置"
-                    android:enabled="false"
-                    android:visibility="invisible"/>
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:text="设置"
-                    android:onClick="OnClickAjbStngBtn" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <CheckBox
-            android:id="@+id/IsUseFrgndSrvcCkBoxId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="使用前台服务" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <CheckBox
-                android:id="@+id/IsSaveStsToTxtFileCkBoxId"
-                android:layout_weight="10"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="保存状态到Txt文件"/>
-
-            <Button
-                android:layout_weight="2"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:padding="0dp"
-                android:text="设置"
-                android:onClick="OnClickSaveStsToTxtFileStngBtn"/>
-
-        </LinearLayout>
-
-        <CheckBox
-            android:id="@+id/IsPrintLogcatShowToastCkBoxId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="打印Logcat日志，并显示Toast" />
-
-        <CheckBox
-            android:id="@+id/IsUseWakeLockCkBoxId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="使用唤醒锁" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <CheckBox
-                android:id="@+id/IsSaveAdoVdoInptOtptToAviFileCkBoxId"
-                android:layout_weight="10"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="保存音视频输入输出到Avi文件"/>
-
-            <Button
-                android:layout_weight="2"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:padding="0dp"
-                android:text="设置"
-                android:onClick="OnClickSaveAdoVdoInptOtptToAviFileStngBtn"/>
-
-        </LinearLayout>
-
-        <TextView
-            android:gravity="center_horizontal"
-            android:textAlignment="center"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textStyle="normal|bold"
-            android:textSize="20sp"
-            android:text="\n————    音频设置    ————\n" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:gravity="center_vertical"
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="match_parent"
-                android:text="采样频率：" />
-
-            <RadioGroup
-                android:orientation="horizontal"
-                android:layout_weight="9"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:text="8k"
-                    android:id="@+id/UseAdoSmplRate8000RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <RadioButton
-                    android:text="16k"
-                    android:id="@+id/UseAdoSmplRate16000RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <RadioButton
-                    android:text="32k"
-                    android:id="@+id/UseAdoSmplRate32000RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <RadioButton
-                    android:text="48k"
-                    android:id="@+id/UseAdoSmplRate48000RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:gravity="center_vertical"
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="match_parent"
-                android:text="帧的长度：" />
-
-            <RadioGroup
-                android:orientation="horizontal"
-                android:layout_weight="9"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:text="10ms"
-                    android:id="@+id/UseAdoFrmLen10msRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <RadioButton
-                    android:text="20ms"
-                    android:id="@+id/UseAdoFrmLen20msRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <RadioButton
-                    android:text="30ms"
-                    android:id="@+id/UseAdoFrmLen30msRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <CheckBox
-            android:id="@+id/IsStartRecordingAfterReadCkBoxId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="在调用read函数后才开始音频输入（有些设备在第一次调用read函数时才开始音频输入）"/>
-
-        <CheckBox
-            android:id="@+id/IsUseSystemAecNsAgcCkBoxId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="使用系统自带声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带）"/>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:text="声学回音消除器："
-                android:layout_weight="3"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"/>
-
-            <RadioGroup
-                android:orientation="vertical"
-                android:layout_weight="7"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:id="@+id/UseNoAecRdBtnId"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:text="不使用" />
-
-                <RadioButton
-                    android:id="@+id/UseSpeexAecRdBtnId"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:text="Speex声学回音消除器" />
-
-                <RadioButton
-                    android:id="@+id/UseWebRtcAecmRdBtnId"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:text="WebRtc定点版声学回音消除器" />
-
-                <RadioButton
-                    android:text="WebRtc浮点版声学回音消除器"
-                    android:id="@+id/UseWebRtcAecRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"/>
-
-                <RadioButton
-                    android:id="@+id/UseSpeexWebRtcAecRdBtnId"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:text="SpeexWebRtc三重声学回音消除器" />
-
-            </RadioGroup>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_weight="2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content">
-
-                <Button
-                    android:text="设置"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:enabled="false"
-                    android:visibility="invisible"/>
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:text="设置"
-                    android:onClick="OnClickSpeexAecStngBtn"/>
-
-                <Button
-                    android:text="设置"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:onClick="OnClickWebRtcAecmStngBtn"/>
-
-                <Button
-                    android:text="设置"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:onClick="OnClickWebRtcAecStngBtn"/>
-
-                <Button
-                    android:text="设置"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:onClick="OnClickSpeexWebRtcAecStngBtn"/>
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:text="噪音抑制器："
-                    android:gravity="center_vertical"
-                    android:layout_weight="3"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <RadioGroup
-                    android:orientation="vertical"
-                    android:layout_weight="7"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent">
-
-                    <RadioButton
-                        android:text="不使用"
-                        android:id="@+id/UseNoNsRdBtnId"
-                        android:layout_weight="1"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"/>
-
-                    <RadioButton
-                        android:id="@+id/UseSpeexPrpocsNsRdBtnId"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:text="Speex预处理器的噪音抑制" />
-
-                    <RadioButton
-                        android:text="WebRtc定点版噪音抑制器"
-                        android:id="@+id/UseWebRtcNsxRdBtnId"
-                        android:layout_weight="1"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"/>
-
-                    <RadioButton
-                        android:text="WebRtc浮点版噪音抑制器"
-                        android:id="@+id/UseWebRtcNsRdBtnId"
-                        android:layout_weight="1"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"/>
-
-                    <RadioButton
-                        android:id="@+id/UseRNNoiseRdBtnId"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:text="RNNoise噪音抑制器" />
-
-                </RadioGroup>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_weight="2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content">
-
-                <Button
-                    android:text="设置"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:enabled="false"
-                    android:visibility="invisible"/>
-
-                <Button
-                    android:text="设置"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:onClick="OnClickSpeexPrpocsNsStngBtn" />
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:text="设置"
-                    android:onClick="OnClickWebRtcNsxStngBtn"/>
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:text="设置"
-                    android:onClick="OnClickWebRtcNsStngBtn" />
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:text="设置"
-                    android:enabled="false"
-                    android:visibility="invisible"/>
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <CheckBox
-                android:id="@+id/IsUseSpeexPrpocsCkBoxId"
-                android:layout_weight="10"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="使用Speex预处理器"/>
-
-            <Button
-                android:layout_weight="2"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:padding="0dp"
-                android:text="设置"
-                android:onClick="OnClickSpeexPrpocsStngBtn"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:gravity="center_vertical"
-                android:layout_weight="3"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="编解码器：" />
-
-            <RadioGroup
-                android:orientation="vertical"
-                android:layout_weight="7"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:id="@+id/UsePcmRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:text="Pcm原始数据"/>
-
-                <RadioButton
-                    android:id="@+id/UseSpeexCodecRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:text="Speex编解码器"/>
-
-                <RadioButton
-                    android:id="@+id/UseOpusCodecRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:text="Opus编解码器"
-                    android:enabled="false"/>
-
-            </RadioGroup>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_weight="2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content">
-
-                <Button
-                    android:text="设置"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:enabled="false"
-                    android:visibility="invisible"/>
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:text="设置"
-                    android:onClick="OnClickSpeexCodecStngBtn" />
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:text="设置"
-                    android:onClick="OnClickOpusCodecStngBtn"
-                    android:enabled="false"/>
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <CheckBox
-                android:id="@+id/IsSaveAdoInptOtptToWaveFileCkBoxId"
-                android:layout_weight="10"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="保存音频输入输出到Wave文件"/>
-
-            <Button
-                android:layout_weight="2"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:padding="0dp"
-                android:text="设置"
-                android:onClick="OnClickSaveAdoInptOtptToWaveFileStngBtn"/>
-
-        </LinearLayout>
-
-        <TextView
-            android:gravity="center_horizontal"
-            android:textAlignment="center"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textStyle="normal|bold"
-            android:textSize="20sp"
-            android:text="\n————    视频设置    ————\n" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:gravity="center_vertical"
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="match_parent"
-                android:text="采样频率：" />
-
-            <RadioGroup
-                android:orientation="horizontal"
-                android:layout_weight="9"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:text="12"
-                    android:id="@+id/UseVdoSmplRate12RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <RadioButton
-                    android:text="15"
-                    android:id="@+id/UseVdoSmplRate15RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <RadioButton
-                    android:text="24"
-                    android:id="@+id/UseVdoSmplRate24RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <RadioButton
-                    android:text="30"
-                    android:id="@+id/UseVdoSmplRate30RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:gravity="center_vertical"
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="match_parent"
-                android:text="帧的大小：" />
-
-            <RadioGroup
-                android:orientation="horizontal"
-                android:layout_weight="9"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:id="@+id/UseVdoFrmSzPrsetRdBtnId"
-                    android:layout_weight="3"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent" />
-
-                <Spinner
-                    android:id="@+id/VdoFrmSzPrsetSpinnerId"
-                    android:layout_weight="12"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content" />
-
-                <RadioButton
-                    android:id="@+id/UseVdoFrmSzOtherRdBtnId"
-                    android:layout_weight="3"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"/>
-
-                <EditText
-                    android:id="@+id/VdoFrmSzOtherWidthEdTxtId"
-                    android:layout_weight="5"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:singleLine="true" />
-
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:text="×" />
-
-                <EditText
-                    android:id="@+id/VdoFrmSzOtherHeightEdTxtId"
-                    android:layout_weight="5"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:singleLine="true" />
-
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:gravity="center_vertical"
-                android:layout_weight="3"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:text="编解码器：" />
-
-            <RadioGroup
-                android:orientation="vertical"
-                android:layout_weight="7"
-                android:layout_width="0dp"
-                android:layout_height="match_parent">
-
-                <RadioButton
-                    android:id="@+id/UseYu12RdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:text="Yu12原始数据"/>
-
-                <RadioButton
-                    android:id="@+id/UseOpenH264CodecRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:text="OpenH264编解码器"/>
-
-                <RadioButton
-                    android:id="@+id/UseSystemH264CodecRdBtnId"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:text="系统自带H264编解码器"/>
-
-            </RadioGroup>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_weight="2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content">
-
-                <Button
-                    android:text="设置"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:enabled="false"
-                    android:visibility="invisible"/>
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:text="设置"
-                    android:onClick="OnClickOpenH264CodecStngBtn" />
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="0dp"
-                    android:text="设置"
-                    android:onClick="OnClickSystemH264CodecStngBtn" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="0dp"
-            android:text="确定"
-            android:onClick="OnClickStngOkBtn" />
-
-    </LinearLayout>
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:paddingBottom="@dimen/activity_vertical_margin"
+	android:paddingLeft="@dimen/activity_horizontal_margin"
+	android:paddingRight="@dimen/activity_horizontal_margin"
+	android:paddingTop="@dimen/activity_vertical_margin">
+
+	<LinearLayout
+		android:orientation="vertical"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:gravity="center_horizontal"
+			android:text="@string/app_name"
+			android:textAlignment="center"
+			android:textSize="20sp"
+			android:textStyle="normal|bold" />
+
+		<TextView
+			android:text="设置"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:gravity="center_horizontal"
+			android:textAlignment="center"
+			android:textStyle="normal|bold"
+			android:textSize="20sp"/>
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:gravity="center_horizontal"
+			android:text=""
+			android:textAlignment="center"
+			android:textSize="20sp"
+			android:textStyle="normal|bold" />
+
+		<TextView
+			android:gravity="center_horizontal"
+			android:textAlignment="center"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:textStyle="normal|bold"
+			android:textSize="20sp"
+			android:text="\n————    预设设置    ————\n" />
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<TextView
+				android:gravity="center_vertical"
+				android:layout_width="0dp"
+				android:layout_weight="3"
+				android:layout_height="match_parent"
+				android:text="效果等级：" />
+
+			<RadioGroup
+				android:orientation="horizontal"
+				android:layout_weight="9"
+				android:layout_width="0dp"
+				android:layout_height="match_parent">
+
+				<RadioButton
+					android:text="低"
+					android:id="@+id/UseEffectLowRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:onClick="OnClickUseEffectLowRdBtn"/>
+
+				<RadioButton
+					android:text="中"
+					android:id="@+id/UseEffectMidRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:onClick="OnClickUseEffectMidRdBtn"/>
+
+				<RadioButton
+					android:text="高"
+					android:id="@+id/UseEffectHighRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:onClick="OnClickUseEffectHighRdBtn"/>
+
+				<RadioButton
+					android:text="超"
+					android:id="@+id/UseEffectSuperRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:onClick="OnClickUseEffectSuperRdBtn"/>
+
+				<RadioButton
+					android:text="特"
+					android:id="@+id/UseEffectPremiumRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:onClick="OnClickUseEffectPremiumRdBtn"/>
+
+				<RadioButton
+					android:text="双讲"
+					android:id="@+id/UseEffectDblTalkRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:onClick="OnClickUseEffectDblTalkRdBtn"/>
+
+			</RadioGroup>
+
+		</LinearLayout>
+
+		<CheckBox
+			android:id="@+id/IsUseDebugInfoCkBoxId"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="使用调试信息"
+			android:onClick="OnClickIsUseDebugInfoRdBtn"/>
+
+		<TextView
+			android:gravity="center_horizontal"
+			android:textAlignment="center"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:textStyle="normal|bold"
+			android:textSize="20sp"
+			android:text="\n————    一般设置    ————\n" />
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<TextView
+				android:gravity="center_vertical"
+				android:layout_weight="3"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:text="接收输出帧：" />
+
+			<RadioGroup
+				android:orientation="vertical"
+				android:layout_weight="7"
+				android:layout_width="0dp"
+				android:layout_height="match_parent">
+
+				<RadioButton
+					android:id="@+id/UseCntnrRecvOtptFrmRdBtnId"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:layout_weight="1"
+					android:text="容器" />
+
+				<RadioButton
+					android:id="@+id/UseAjbRecvOtptFrmRdBtnId"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:layout_weight="1"
+					android:text="自己设计的自适应抖动缓冲器" />
+
+			</RadioGroup>
+
+			<LinearLayout
+				android:orientation="vertical"
+				android:layout_weight="2"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content">
+
+				<Button
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:text="设置"
+					android:enabled="false"
+					android:visibility="invisible"/>
+
+				<Button
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:text="设置"
+					android:onClick="OnClickAjbStngBtn" />
+
+			</LinearLayout>
+
+		</LinearLayout>
+
+		<CheckBox
+			android:id="@+id/IsUseFrgndSrvcCkBoxId"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="使用前台服务" />
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<CheckBox
+				android:id="@+id/IsSaveStsToTxtFileCkBoxId"
+				android:layout_weight="10"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:text="保存状态到Txt文件"/>
+
+			<Button
+				android:layout_weight="2"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:padding="0dp"
+				android:text="设置"
+				android:onClick="OnClickSaveStsToTxtFileStngBtn"/>
+
+		</LinearLayout>
+
+		<CheckBox
+			android:id="@+id/IsPrintLogcatShowToastCkBoxId"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="打印Logcat日志，并显示Toast" />
+
+		<CheckBox
+			android:id="@+id/IsUseWakeLockCkBoxId"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="使用唤醒锁" />
+
+		<CheckBox
+			android:id="@+id/IsTstNtwkDlyCkBoxId"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="测试网络延迟" />
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<CheckBox
+				android:id="@+id/IsSaveAdoVdoInptOtptToAviFileCkBoxId"
+				android:layout_weight="10"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:text="保存音视频输入输出到Avi文件"/>
+
+			<Button
+				android:layout_weight="2"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:padding="0dp"
+				android:text="设置"
+				android:onClick="OnClickSaveAdoVdoInptOtptToAviFileStngBtn"/>
+
+		</LinearLayout>
+
+		<TextView
+			android:gravity="center_horizontal"
+			android:textAlignment="center"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:textStyle="normal|bold"
+			android:textSize="20sp"
+			android:text="\n————    音频设置    ————\n" />
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<TextView
+				android:gravity="center_vertical"
+				android:layout_width="0dp"
+				android:layout_weight="3"
+				android:layout_height="match_parent"
+				android:text="采样频率：" />
+
+			<RadioGroup
+				android:orientation="horizontal"
+				android:layout_weight="9"
+				android:layout_width="0dp"
+				android:layout_height="match_parent">
+
+				<RadioButton
+					android:text="8k"
+					android:id="@+id/UseAdoSmplRate8000RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<RadioButton
+					android:text="16k"
+					android:id="@+id/UseAdoSmplRate16000RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<RadioButton
+					android:text="32k"
+					android:id="@+id/UseAdoSmplRate32000RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<RadioButton
+					android:text="48k"
+					android:id="@+id/UseAdoSmplRate48000RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+			</RadioGroup>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<TextView
+				android:gravity="center_vertical"
+				android:layout_width="0dp"
+				android:layout_weight="3"
+				android:layout_height="match_parent"
+				android:text="帧的长度：" />
+
+			<RadioGroup
+				android:orientation="horizontal"
+				android:layout_weight="9"
+				android:layout_width="0dp"
+				android:layout_height="match_parent">
+
+				<RadioButton
+					android:text="10ms"
+					android:id="@+id/UseAdoFrmLen10msRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<RadioButton
+					android:text="20ms"
+					android:id="@+id/UseAdoFrmLen20msRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<RadioButton
+					android:text="30ms"
+					android:id="@+id/UseAdoFrmLen30msRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+			</RadioGroup>
+
+		</LinearLayout>
+
+		<CheckBox
+			android:id="@+id/IsStartRecordingAfterReadCkBoxId"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="在调用read函数后才开始音频输入（有些设备在第一次调用read函数时才开始音频输入）"/>
+
+		<CheckBox
+			android:id="@+id/IsUseSystemAecNsAgcCkBoxId"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="使用系统自带声学回音消除器、噪音抑制器和自动增益控制器（系统不一定自带）"/>
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<TextView
+				android:text="声学回音消除器："
+				android:layout_weight="3"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:gravity="center_vertical"/>
+
+			<RadioGroup
+				android:orientation="vertical"
+				android:layout_weight="7"
+				android:layout_width="0dp"
+				android:layout_height="match_parent">
+
+				<RadioButton
+					android:id="@+id/UseNoAecRdBtnId"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:layout_weight="1"
+					android:text="不使用" />
+
+				<RadioButton
+					android:id="@+id/UseSpeexAecRdBtnId"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:layout_weight="1"
+					android:text="Speex声学回音消除器" />
+
+				<RadioButton
+					android:id="@+id/UseWebRtcAecmRdBtnId"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:layout_weight="1"
+					android:text="WebRtc定点版声学回音消除器" />
+
+				<RadioButton
+					android:text="WebRtc浮点版声学回音消除器"
+					android:id="@+id/UseWebRtcAecRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"/>
+
+				<RadioButton
+					android:id="@+id/UseSpeexWebRtcAecRdBtnId"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:layout_weight="1"
+					android:text="SpeexWebRtc三重声学回音消除器" />
+
+			</RadioGroup>
+
+			<LinearLayout
+				android:orientation="vertical"
+				android:layout_weight="2"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content">
+
+				<Button
+					android:text="设置"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:enabled="false"
+					android:visibility="invisible"/>
+
+				<Button
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:text="设置"
+					android:onClick="OnClickSpeexAecStngBtn"/>
+
+				<Button
+					android:text="设置"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:onClick="OnClickWebRtcAecmStngBtn"/>
+
+				<Button
+					android:text="设置"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:onClick="OnClickWebRtcAecStngBtn"/>
+
+				<Button
+					android:text="设置"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:onClick="OnClickSpeexWebRtcAecStngBtn"/>
+
+			</LinearLayout>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content">
+
+			<TextView
+				android:text="噪音抑制器："
+				android:gravity="center_vertical"
+				android:layout_weight="3"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"/>
+
+			<RadioGroup
+				android:orientation="vertical"
+				android:layout_weight="7"
+				android:layout_width="0dp"
+				android:layout_height="match_parent">
+
+				<RadioButton
+					android:text="不使用"
+					android:id="@+id/UseNoNsRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"/>
+
+				<RadioButton
+					android:id="@+id/UseSpeexPrpocsNsRdBtnId"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:layout_weight="1"
+					android:text="Speex预处理器的噪音抑制" />
+
+				<RadioButton
+					android:text="WebRtc定点版噪音抑制器"
+					android:id="@+id/UseWebRtcNsxRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"/>
+
+				<RadioButton
+					android:text="WebRtc浮点版噪音抑制器"
+					android:id="@+id/UseWebRtcNsRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"/>
+
+				<RadioButton
+					android:id="@+id/UseRNNoiseRdBtnId"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:layout_weight="1"
+					android:text="RNNoise噪音抑制器" />
+
+			</RadioGroup>
+
+			<LinearLayout
+				android:orientation="vertical"
+				android:layout_weight="2"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content">
+
+				<Button
+					android:text="设置"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:enabled="false"
+					android:visibility="invisible"/>
+
+				<Button
+					android:text="设置"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:onClick="OnClickSpeexPrpocsNsStngBtn" />
+
+				<Button
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:text="设置"
+					android:onClick="OnClickWebRtcNsxStngBtn"/>
+
+				<Button
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:text="设置"
+					android:onClick="OnClickWebRtcNsStngBtn" />
+
+				<Button
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:text="设置"
+					android:enabled="false"
+					android:visibility="invisible"/>
+
+			</LinearLayout>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<CheckBox
+				android:id="@+id/IsUseSpeexPrpocsCkBoxId"
+				android:layout_weight="10"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:text="使用Speex预处理器"/>
+
+			<Button
+				android:layout_weight="2"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:padding="0dp"
+				android:text="设置"
+				android:onClick="OnClickSpeexPrpocsStngBtn"/>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<TextView
+				android:gravity="center_vertical"
+				android:layout_weight="3"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:text="编解码器：" />
+
+			<RadioGroup
+				android:orientation="vertical"
+				android:layout_weight="7"
+				android:layout_width="0dp"
+				android:layout_height="match_parent">
+
+				<RadioButton
+					android:id="@+id/UsePcmRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:text="Pcm原始数据"/>
+
+				<RadioButton
+					android:id="@+id/UseSpeexCodecRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:text="Speex编解码器"/>
+
+				<RadioButton
+					android:id="@+id/UseOpusCodecRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:text="Opus编解码器"
+					android:enabled="false"/>
+
+			</RadioGroup>
+
+			<LinearLayout
+				android:orientation="vertical"
+				android:layout_weight="2"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content">
+
+				<Button
+					android:text="设置"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:enabled="false"
+					android:visibility="invisible"/>
+
+				<Button
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:text="设置"
+					android:onClick="OnClickSpeexCodecStngBtn" />
+
+				<Button
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:text="设置"
+					android:onClick="OnClickOpusCodecStngBtn"
+					android:enabled="false"/>
+
+			</LinearLayout>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<CheckBox
+				android:id="@+id/IsSaveAdoInptOtptToWaveFileCkBoxId"
+				android:layout_weight="10"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:text="保存音频输入输出到Wave文件"/>
+
+			<Button
+				android:layout_weight="2"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:padding="0dp"
+				android:text="设置"
+				android:onClick="OnClickSaveAdoInptOtptToWaveFileStngBtn"/>
+
+		</LinearLayout>
+
+		<TextView
+			android:gravity="center_horizontal"
+			android:textAlignment="center"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:textStyle="normal|bold"
+			android:textSize="20sp"
+			android:text="\n————    视频设置    ————\n" />
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<TextView
+				android:gravity="center_vertical"
+				android:layout_width="0dp"
+				android:layout_weight="3"
+				android:layout_height="match_parent"
+				android:text="采样频率：" />
+
+			<RadioGroup
+				android:orientation="horizontal"
+				android:layout_weight="9"
+				android:layout_width="0dp"
+				android:layout_height="match_parent">
+
+				<RadioButton
+					android:text="12"
+					android:id="@+id/UseVdoSmplRate12RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<RadioButton
+					android:text="15"
+					android:id="@+id/UseVdoSmplRate15RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<RadioButton
+					android:text="24"
+					android:id="@+id/UseVdoSmplRate24RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<RadioButton
+					android:text="30"
+					android:id="@+id/UseVdoSmplRate30RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+			</RadioGroup>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<TextView
+				android:gravity="center_vertical"
+				android:layout_width="0dp"
+				android:layout_weight="3"
+				android:layout_height="match_parent"
+				android:text="帧的大小：" />
+
+			<RadioGroup
+				android:orientation="horizontal"
+				android:layout_weight="9"
+				android:layout_width="0dp"
+				android:layout_height="match_parent">
+
+				<RadioButton
+					android:id="@+id/UseVdoFrmSzPrsetRdBtnId"
+					android:layout_weight="3"
+					android:layout_width="0dp"
+					android:layout_height="match_parent" />
+
+				<Spinner
+					android:id="@+id/VdoFrmSzPrsetSpinnerId"
+					android:layout_weight="12"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content" />
+
+				<RadioButton
+					android:id="@+id/UseVdoFrmSzOtherRdBtnId"
+					android:layout_weight="3"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<EditText
+					android:id="@+id/VdoFrmSzOtherWidthEdTxtId"
+					android:layout_weight="5"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:singleLine="true" />
+
+				<TextView
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:gravity="center_vertical"
+					android:text="×" />
+
+				<EditText
+					android:id="@+id/VdoFrmSzOtherHeightEdTxtId"
+					android:layout_weight="5"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:singleLine="true" />
+
+			</RadioGroup>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<TextView
+				android:gravity="center_vertical"
+				android:layout_width="0dp"
+				android:layout_weight="3"
+				android:layout_height="match_parent"
+				android:text="屏幕旋转角度：" />
+
+			<RadioGroup
+				android:orientation="horizontal"
+				android:layout_weight="9"
+				android:layout_width="0dp"
+				android:layout_height="match_parent">
+
+				<RadioButton
+					android:text="自动"
+					android:id="@+id/UseScreenRotateAutoRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<RadioButton
+					android:text="0"
+					android:id="@+id/UseScreenRotate0RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<RadioButton
+					android:text="90"
+					android:id="@+id/UseScreenRotate90RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<RadioButton
+					android:text="180"
+					android:id="@+id/UseScreenRotate180RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+				<RadioButton
+					android:text="270"
+					android:id="@+id/UseScreenRotate270RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"/>
+
+			</RadioGroup>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<TextView
+				android:gravity="center_vertical"
+				android:layout_weight="3"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:text="编解码器：" />
+
+			<RadioGroup
+				android:orientation="vertical"
+				android:layout_weight="7"
+				android:layout_width="0dp"
+				android:layout_height="match_parent">
+
+				<RadioButton
+					android:id="@+id/UseYu12RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:text="Yu12原始数据"/>
+
+				<RadioButton
+					android:id="@+id/UseOpenH264CodecRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:text="OpenH264编解码器"/>
+
+				<RadioButton
+					android:id="@+id/UseSystemH264CodecRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:text="系统自带H264编解码器"/>
+
+			</RadioGroup>
+
+			<LinearLayout
+				android:orientation="vertical"
+				android:layout_weight="2"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content">
+
+				<Button
+					android:text="设置"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:enabled="false"
+					android:visibility="invisible"/>
+
+				<Button
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:text="设置"
+					android:onClick="OnClickOpenH264CodecStngBtn" />
+
+				<Button
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:text="设置"
+					android:onClick="OnClickSystemH264CodecStngBtn" />
+
+			</LinearLayout>
+
+		</LinearLayout>
+
+		<Button
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:padding="0dp"
+			android:text="确定"
+			android:onClick="OnClickStngOkBtn" />
+
+	</LinearLayout>
 
 </ScrollView>

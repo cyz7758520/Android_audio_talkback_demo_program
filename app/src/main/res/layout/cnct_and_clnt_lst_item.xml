@@ -17,7 +17,7 @@
     <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="25"
+        android:layout_weight="24"
         android:padding="0dp"
         android:gravity="center_vertical"
         android:layout_gravity="center_vertical"
@@ -52,6 +52,16 @@
         android:gravity="center"
         android:layout_gravity="center_vertical"
         android:id="@+id/CnctAndClntLstItemTxt2TxtId"
+        />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="41dp"
+        android:layout_weight="5"
+        android:padding="0dp"
+        android:gravity="center"
+        android:layout_gravity="center_vertical"
+        android:id="@+id/CnctAndClntLstItemTxt3TxtId"
         />
 
 </LinearLayout>
