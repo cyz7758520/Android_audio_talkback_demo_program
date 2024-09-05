@@ -75,7 +75,7 @@
 					android:layout_weight="1"
 					android:layout_width="0dp"
 					android:layout_height="match_parent"
-					android:onClick="OnClickUseEffectLowRdBtn"/>
+					android:onClick="OnClickEffectAecTendRdBtn"/>
 
 				<RadioButton
 					android:text="中"
@@ -83,7 +83,7 @@
 					android:layout_weight="1"
 					android:layout_width="0dp"
 					android:layout_height="match_parent"
-					android:onClick="OnClickUseEffectMidRdBtn"/>
+					android:onClick="OnClickEffectAecTendRdBtn"/>
 
 				<RadioButton
 					android:text="高"
@@ -91,7 +91,7 @@
 					android:layout_weight="1"
 					android:layout_width="0dp"
 					android:layout_height="match_parent"
-					android:onClick="OnClickUseEffectHighRdBtn"/>
+					android:onClick="OnClickEffectAecTendRdBtn"/>
 
 				<RadioButton
 					android:text="超"
@@ -99,7 +99,7 @@
 					android:layout_weight="1"
 					android:layout_width="0dp"
 					android:layout_height="match_parent"
-					android:onClick="OnClickUseEffectSuperRdBtn"/>
+					android:onClick="OnClickEffectAecTendRdBtn"/>
 
 				<RadioButton
 					android:text="特"
@@ -107,15 +107,45 @@
 					android:layout_weight="1"
 					android:layout_width="0dp"
 					android:layout_height="match_parent"
-					android:onClick="OnClickUseEffectPremiumRdBtn"/>
+					android:onClick="OnClickEffectAecTendRdBtn"/>
+
+			</RadioGroup>
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" >
+
+			<TextView
+				android:gravity="center_vertical"
+				android:layout_width="0dp"
+				android:layout_weight="3"
+				android:layout_height="match_parent"
+				android:text="声学回音消除倾向：" />
+
+			<RadioGroup
+				android:orientation="horizontal"
+				android:layout_weight="9"
+				android:layout_width="0dp"
+				android:layout_height="match_parent">
 
 				<RadioButton
-					android:text="双讲"
-					android:id="@+id/UseEffectDblTalkRdBtnId"
+					android:text="消除彻底，双讲吃音"
+					android:id="@+id/UseAecTendEchoCnclRdBtnId"
 					android:layout_weight="1"
 					android:layout_width="0dp"
 					android:layout_height="match_parent"
-					android:onClick="OnClickUseEffectDblTalkRdBtn"/>
+					android:onClick="OnClickEffectAecTendRdBtn"/>
+
+				<RadioButton
+					android:text="双讲流畅，残余回音"
+					android:id="@+id/UseAecTendDblTalkRdBtnId"
+					android:layout_weight="1"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:onClick="OnClickEffectAecTendRdBtn"/>
 
 			</RadioGroup>
 
@@ -425,6 +455,13 @@
 					android:layout_height="0dp"/>
 
 				<RadioButton
+					android:text="WebRtc第三版声学回音消除器"
+					android:id="@+id/UseWebRtcAec3RdBtnId"
+					android:layout_weight="1"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"/>
+
+				<RadioButton
 					android:id="@+id/UseSpeexWebRtcAecRdBtnId"
 					android:layout_width="match_parent"
 					android:layout_height="0dp"
@@ -467,6 +504,13 @@
 					android:layout_height="match_parent"
 					android:padding="0dp"
 					android:onClick="OnClickWebRtcAecStngBtn"/>
+
+				<Button
+					android:text="设置"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:padding="0dp"
+					android:onClick="OnClickWebRtcAec3StngBtn"/>
 
 				<Button
 					android:text="设置"

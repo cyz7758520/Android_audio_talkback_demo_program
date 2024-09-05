@@ -22,12 +22,15 @@
 &emsp;&emsp;声学回音消除器效果对比：
 |名称|收敛时间|回音延迟不稳定|残余回音|远近端同时说话|同一房间对讲|运算量|
 |:---|:---|:---|:---|:---|:---|:---|
-|Speex声学回音消除器|有语音活动1~3秒|0~3秒自适应调节|回音延迟稳定时没有<br>回音延迟不稳定时有很大|近端语音被消除20%|会产生一定回音|一般|
-|WebRtc定点版声学回音消除器|0秒|延迟400ms以内0秒自适应调节<br>延后超过400ms将无法消除|回音延迟稳定时没有<br>回音延迟不稳定时偶尔有一丝丝，偶尔有很大|近端语音被完全消除|会产生较大回音|一般|
-|WebRtc浮点版声学回音消除器|有语音活动1秒|0秒自适应调节|回音延迟稳定时没有<br>回音延迟不稳定时偶尔有一丝丝|近端语音被消除50%|会产生较小回音|较大|
-|Speex声学回音消除器<br>+WebRtc定点版声学回音消除器|0秒|0~3秒自适应调节|回音延迟稳定时没有<br>回音延迟不稳定时有很大|近端语音被消除20%|会产生一定回音|一般|
-|WebRtc定点版声学回音消除器<br>+WebRtc浮点版声学回音消除器|0秒|0秒自适应调节|回音延迟稳定时没有<br>回音延迟不稳定时偶尔有一丝丝|近端语音被消除50%|会产生较小回音|较大|
-|Speex声学回音消除器<br>+WebRtc定点版声学回音消除器<br>+WebRtc浮点版声学回音消除器|0秒|0秒自适应调节|回音延迟稳定时没有<br>回音延迟不稳定时极低概率会有一丝丝|近端语音被消除50%|会产生很小回音|很大|
+|Speex声学回音消除器|有语音活动1~3秒|0~3秒自适应调节|回音延迟稳定时1%<br>回音延迟不稳定时50%|近端语音被消除20%|会产生一定回音|一般|
+|WebRtc定点版声学回音消除器|0秒|延迟400ms以内0秒自适应调节<br>延后超过400ms将无法消除|回音延迟稳定时1%<br>回音延迟不稳定时1%|近端语音被消除99%|会产生较大回音|一般|
+|WebRtc浮点版声学回音消除器|有语音活动1秒|0秒自适应调节|回音延迟稳定时1%<br>回音延迟不稳定时5%|近端语音被消除50%|会产生较小回音|较大|
+|WebRtc第三版声学回音消除器|有语音活动1秒|0秒自适应调节|回音延迟稳定时5%<br>回音延迟不稳定时10%|近端语音被消除30%|会产生较小回音|很大|
+|Speex声学回音消除器<br>+WebRtc定点版声学回音消除器|0秒|0~3秒自适应调节|回音延迟稳定时1%<br>回音延迟不稳定时50%|近端语音被消除20%|会产生一定回音|一般|
+|WebRtc定点版声学回音消除器<br>+WebRtc浮点版声学回音消除器|0秒|0秒自适应调节|回音延迟稳定时1%<br>回音延迟不稳定时5%|近端语音被消除50%|会产生较小回音|较大|
+|Speex声学回音消除器<br>+WebRtc定点版声学回音消除器<br>+WebRtc浮点版声学回音消除器|0秒|0秒自适应调节|回音延迟稳定时1%<br>回音延迟不稳定时1%~5%|近端语音被消除50%|会产生很小回音|很大|
+|WebRtc定点版声学回音消除器<br>+WebRtc第三版声学回音消除器|0秒|0秒自适应调节|回音延迟稳定时1%<br>回音延迟不稳定时10%|近端语音被消除30%|会产生较小回音|很大|
+|Speex声学回音消除器<br>+WebRtc定点版声学回音消除器<br>+WebRtc第三版声学回音消除器|0秒|0秒自适应调节|回音延迟稳定时1%<br>回音延迟不稳定时1%~10%|近端语音被消除30%|会产生很小回音|巨大|
 
 &emsp;&emsp;特别注意：以上是在不使用系统自带的声学回音消除器的效果，且不同设备或不同环境或不同时间效果都会不同，所以需要自己亲自测试。  
 
@@ -66,12 +69,13 @@
 
 &emsp;&emsp;**普通免费功能包括：WebRtc定点版声学回音消除器、Speex预处理器的噪音抑制、WebRtc定点版噪音抑制器、WebRtc浮点版噪音抑制器、Speex预处理器、Speex编解码器、Wave文件读取器、Wave文件写入器、音频波形器、本端TCP协议服务端套接字、本端TCP协议客户端套接字、本端UDP协议套接字。**  
 
-&emsp;&emsp;**高级收费功能包括：Speex声学回音消除器、WebRtc浮点版声学回音消除器、SpeexWebRtc三重声学回音消除器、RNNoise噪音抑制器、OpenH264编解码器、系统自带H264编解码器、自己设计的自适应抖动缓冲器、Avi文件写入器、本端高级UDP协议套接字。**  
+&emsp;&emsp;**高级收费功能包括：Speex声学回音消除器、WebRtc浮点版声学回音消除器、WebRtc第三版声学回音消除器、SpeexWebRtc三重声学回音消除器、RNNoise噪音抑制器、OpenH264编解码器、系统自带H264编解码器、自己设计的自适应抖动缓冲器、Avi文件写入器、本端高级UDP协议套接字。**  
 
 &emsp;&emsp;各个功能对应的文件如下：  
 &emsp;&emsp;* Speex声学回音消除器：libFunc.so、libSpeexDsp.so、SpeexAec.java。  
 &emsp;&emsp;* WebRtc定点版声学回音消除器：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcAecm.java。  
 &emsp;&emsp;* WebRtc浮点版声学回音消除器：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcAec.java。  
+&emsp;&emsp;* WebRtc第三版声学回音消除器：libFunc.so、libc++_shared.so、libWebRtc3.so、WebRtcAec3.java。  
 &emsp;&emsp;* SpeexWebRtc三重声学回音消除器：libFunc.so、libSpeexDsp.so、libc++_shared.so、libWebRtc.so、SpeexWebRtcAec.java。  
 &emsp;&emsp;* WebRtc定点版噪音抑制器：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcNsx.java。  
 &emsp;&emsp;* WebRtc浮点版噪音抑制器：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcNs.java。  
@@ -100,7 +104,7 @@
 &emsp;&emsp;保存音视频输入输出的AdoVdoInptOtpt.avi文件不能直接播放，需要使用FFmpeg命令转码后才能播放，建议用VLC播放器，转码命令为：ffmpeg -i AdoVdoInptOtpt.avi -filter_complex "[0:<zero-width space>a:1][0:<zero-width space>a:2]amix=inputs=2:duration=max[aout]" -map [aout] -map 0:v -acodec pcm_s16le -vcodec copy AdoVdoInptOtpt_Mix.avi -y。
 
 # 其他
-&emsp;&emsp;本软件采用了Speex的1.2.1版本、SpeexDsp的1.2.1版本、WebRtc的2019年7月份版本、OpenH264的2.4.1版本为基础，并进行了大量优化。  
+&emsp;&emsp;本软件采用了Speex的1.2.1版本、SpeexDsp的1.2.1版本、WebRtc的2019年7月份版本、WebRtc的2024年8月份版本、OpenH264的2.4.1版本为基础，并进行了大量优化。  
 &emsp;&emsp;讨论QQ群：511046632    欢迎大家参与测试和讨论！  
 &emsp;&emsp;本人QQ号：280604597    赤勇玄心行天道  
 &emsp;&emsp;本人微信：qq280604597    赤勇玄心行天道  
@@ -108,8 +112,10 @@
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://blog.csdn.net/cyz7758520?type=blog  
 &emsp;&emsp;Windows版源代码：https://github.com/cyz7758520/Windows_audio_talkback_demo_program  
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitee.com/chen_yi_ze/Windows_audio_talkback_demo_program  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitcode.com/cyz77585201/Windows_audio_talkback_demo_program  
 &emsp;&emsp;Android版源代码：https://github.com/cyz7758520/Android_audio_talkback_demo_program  
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitee.com/chen_yi_ze/Android_audio_talkback_demo_program  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;https://gitcode.com/cyz77585201/Android_audio_talkback_demo_program  
 
 # 版权
 &emsp;&emsp;Speex：https://gitlab.xiph.org/xiph/speex/-/blob/master/COPYING  

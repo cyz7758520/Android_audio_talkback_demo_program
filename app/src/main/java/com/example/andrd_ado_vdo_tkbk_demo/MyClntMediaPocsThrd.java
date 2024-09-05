@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import java.util.Map;
 
+import HeavenTao.Ado.SpeexWebRtcAec;
 import HeavenTao.Media.BdctClnt;
 import HeavenTao.Media.ClntMediaPocsThrd;
 import HeavenTao.Media.TkbkClnt;
@@ -585,9 +586,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 										   Float.parseFloat( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoMutpEdTxtId ) ).getText().toString() ),
 										   Float.parseFloat( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoCntuEdTxtId ) ).getText().toString() ),
 										   Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoSupesEdTxtId ) ).getText().toString() ),
-										   Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoSupesActEdTxtId ) ).getText().toString() ),
-										   ( ( ( CheckBox ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsSaveMemFileCkBoxId ) ).isChecked() ) ? 1 : 0,
-										   m_MainActPt.m_ExternalDirFullAbsPathStrPt + "/SpeexAecMem" );
+										   Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoSupesActEdTxtId ) ).getText().toString() ) );
 				}
 				catch( NumberFormatException e )
 				{
@@ -622,9 +621,21 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 											( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgstcModeCkBoxId ) ).isChecked() ) ? 1 : 0,
 											( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseExtdFilterModeCkBoxId ) ).isChecked() ) ? 1 : 0,
 											( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-											( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).isChecked() ) ? 1 : 0,
-											( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsSaveMemFileCkBoxId ) ).isChecked() ) ? 1 : 0,
-											m_MainActPt.m_ExternalDirFullAbsPathStrPt + "/WebRtcAecMem" );
+											( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).isChecked() ) ? 1 : 0 );
+				}
+				catch( NumberFormatException e )
+				{
+					Toast.makeText( m_MainActPt, "请输入数字", Toast.LENGTH_LONG ).show();
+				}
+			}
+
+			//设置音频输入是否使用WebRtc第三版声学回音消除器。
+			if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcAec3RdBtnId ) ).isChecked() )
+			{
+				try
+				{
+					AdoInptSetUseWebRtcAec3( 0,
+											Integer.parseInt( ( ( TextView ) m_MainActPt.m_WebRtcAec3StngLyotViewPt.findViewById( R.id.WebRtcAec3DelayEdTxtId ) ).getText().toString() ) );
 				}
 				catch( NumberFormatException e )
 				{
@@ -638,9 +649,11 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 				try
 				{
 					AdoInptSetUseSpeexWebRtcAec( 0,
-												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRdBtnId ) ).isChecked() ? 1 :
-												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? 2 :
-												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? 3 : 0,
+												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.SpeexAecWebRtcAecm :
+												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.WebRtcAecmWebRtcAec :
+												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.SpeexAecWebRtcAecmWebRtcAec :
+												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAec3RdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.WebRtcAecmWebRtcAec3 :
+												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAec3RdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.SpeexAecWebRtcAecmWebRtcAec3 : 0,
 												 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenMsecEdTxtId ) ).getText().toString() ),
 												 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCkBoxId ) ).isChecked() ) ? 1 : 0,
 												 Float.parseFloat( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMutpEdTxtId ) ).getText().toString() ),
@@ -656,6 +669,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 												 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCkBoxId ) ).isChecked() ) ? 1 : 0,
 												 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCkBoxId ) ).isChecked() ) ? 1 : 0,
 												 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).isChecked() ) ? 1 : 0,
+												 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAec3DelayEdTxtId ) ).getText().toString() ),
 												 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecIsUseSameRoomAecCkBoxId ) ).isChecked() ) ? 1 : 0,
 												 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).getText().toString() ) );
 				}

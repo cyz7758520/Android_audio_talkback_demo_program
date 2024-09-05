@@ -34,61 +34,62 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 		public static final int AdoInptSetUseSpeexAec = 3;
 		public static final int AdoInptSetUseWebRtcAecm = 4;
 		public static final int AdoInptSetUseWebRtcAec = 5;
-		public static final int AdoInptSetUseSpeexWebRtcAec = 6;
-		public static final int AdoInptSetUseNoNs = 7;
-		public static final int AdoInptSetUseSpeexPrpocsNs = 8;
-		public static final int AdoInptSetUseWebRtcNsx = 9;
-		public static final int AdoInptSetUseWebRtcNs = 10;
-		public static final int AdoInptSetUseRNNoise = 11;
-		public static final int AdoInptSetIsUseSpeexPrpocs = 12;
-		public static final int AdoInptSetUsePcm = 13;
-		public static final int AdoInptSetUseSpeexEncd = 14;
-		public static final int AdoInptSetUseOpusEncd = 15;
-		public static final int AdoInptSetIsSaveAdoToWaveFile = 16;
-		public static final int AdoInptSetIsDrawAdoWavfmToSurface = 17;
-		public static final int AdoInptSetIsMute = 18;
+		public static final int AdoInptSetUseWebRtcAec3 = 6;
+		public static final int AdoInptSetUseSpeexWebRtcAec = 7;
+		public static final int AdoInptSetUseNoNs = 8;
+		public static final int AdoInptSetUseSpeexPrpocsNs = 9;
+		public static final int AdoInptSetUseWebRtcNsx = 10;
+		public static final int AdoInptSetUseWebRtcNs = 11;
+		public static final int AdoInptSetUseRNNoise = 12;
+		public static final int AdoInptSetIsUseSpeexPrpocs = 13;
+		public static final int AdoInptSetUsePcm = 14;
+		public static final int AdoInptSetUseSpeexEncd = 15;
+		public static final int AdoInptSetUseOpusEncd = 16;
+		public static final int AdoInptSetIsSaveAdoToWaveFile = 17;
+		public static final int AdoInptSetIsDrawAdoWavfmToSurface = 18;
+		public static final int AdoInptSetIsMute = 19;
 
-		public static final int SetAdoOtpt = 19;
-		public static final int AdoOtptAddStrm = 20;
-		public static final int AdoOtptDelStrm = 21;
-		public static final int AdoOtptSetStrmUsePcm = 22;
-		public static final int AdoOtptSetStrmUseSpeexDecd = 23;
-		public static final int AdoOtptSetStrmUseOpusDecd = 24;
-		public static final int AdoOtptSetStrmIsUse = 25;
-		public static final int AdoOtptSetIsSaveAdoToWaveFile = 26;
-		public static final int AdoOtptSetIsDrawAdoWavfmToSurface = 27;
-		public static final int AdoOtptSetUseDvc = 28;
-		public static final int AdoOtptSetIsMute = 29;
+		public static final int SetAdoOtpt = 20;
+		public static final int AdoOtptAddStrm = 21;
+		public static final int AdoOtptDelStrm = 22;
+		public static final int AdoOtptSetStrmUsePcm = 23;
+		public static final int AdoOtptSetStrmUseSpeexDecd = 24;
+		public static final int AdoOtptSetStrmUseOpusDecd = 25;
+		public static final int AdoOtptSetStrmIsUse = 26;
+		public static final int AdoOtptSetIsSaveAdoToWaveFile = 27;
+		public static final int AdoOtptSetIsDrawAdoWavfmToSurface = 28;
+		public static final int AdoOtptSetUseDvc = 29;
+		public static final int AdoOtptSetIsMute = 30;
 
-		public static final int SetVdoInpt = 30;
-		public static final int VdoInptSetUseYu12 = 31;
-		public static final int VdoInptSetUseOpenH264Encd = 32;
-		public static final int VdoInptSetUseSystemH264Encd = 33;
-		public static final int VdoInptSetUseDvc = 34;
-		public static final int VdoInptSetIsBlack = 35;
+		public static final int SetVdoInpt = 31;
+		public static final int VdoInptSetUseYu12 = 32;
+		public static final int VdoInptSetUseOpenH264Encd = 33;
+		public static final int VdoInptSetUseSystemH264Encd = 34;
+		public static final int VdoInptSetUseDvc = 35;
+		public static final int VdoInptSetIsBlack = 36;
 
-		public static final int VdoOtptAddStrm = 36;
-		public static final int VdoOtptDelStrm = 37;
-		public static final int VdoOtptSetStrm = 38;
-		public static final int VdoOtptSetStrmUseYu12 = 39;
-		public static final int VdoOtptSetStrmUseOpenH264Decd = 40;
-		public static final int VdoOtptSetStrmUseSystemH264Decd = 41;
-		public static final int VdoOtptSetStrmIsBlack = 42;
-		public static final int VdoOtptSetStrmIsUse = 43;
+		public static final int VdoOtptAddStrm = 37;
+		public static final int VdoOtptDelStrm = 38;
+		public static final int VdoOtptSetStrm = 39;
+		public static final int VdoOtptSetStrmUseYu12 = 40;
+		public static final int VdoOtptSetStrmUseOpenH264Decd = 41;
+		public static final int VdoOtptSetStrmUseSystemH264Decd = 42;
+		public static final int VdoOtptSetStrmIsBlack = 43;
+		public static final int VdoOtptSetStrmIsUse = 44;
 
-		public static final int SetIsUseAdoVdoInptOtpt = 44;
+		public static final int SetIsUseAdoVdoInptOtpt = 45;
 
-		public static final int SetIsUseWakeLock = 45;
-		public static final int SetIsSaveAdoVdoInptOtptToAviFile = 46;
-		public static final int SaveStsToTxtFile = 47;
+		public static final int SetIsUseWakeLock = 46;
+		public static final int SetIsSaveAdoVdoInptOtptToAviFile = 47;
+		public static final int SaveStsToTxtFile = 48;
 
-		public static final int RqirExit = 48;
+		public static final int RqirExit = 49;
 
-		public static final int UserInit = 49;
-		public static final int UserDstoy = 50;
+		public static final int UserInit = 50;
+		public static final int UserDstoy = 51;
 
-		public static final int AdoVdoInptOtptInit = 51;
-		public static final int AdoVdoInptOtptDstoy = 52;
+		public static final int AdoVdoInptOtptInit = 52;
+		public static final int AdoVdoInptOtptDstoy = 53;
 
 		public static final int UserMsgMinVal = 100; //用户消息的最小值。
 	}
@@ -278,9 +279,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	}
 
 	//媒体处理线程的音频输入设置要使用Speex声学回音消除器。
-	public int AdoInptSetUseSpeexAec( int IsBlockWait, int FilterLenMsec, int IsUseRec, float EchoMutp, float EchoCntu, int EchoSupes, int EchoSupesAct, int IsSaveMemFile, String MemFileFullPathStrPt )
+	public int AdoInptSetUseSpeexAec( int IsBlockWait, int FilterLenMsec, int IsUseRec, float EchoMutp, float EchoCntu, int EchoSupes, int EchoSupesAct )
 	{
-		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoInptSetUseSpeexAec, FilterLenMsec, IsUseRec, EchoMutp, EchoCntu, EchoSupes, EchoSupesAct, IsSaveMemFile, MemFileFullPathStrPt );
+		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoInptSetUseSpeexAec, FilterLenMsec, IsUseRec, EchoMutp, EchoCntu, EchoSupes, EchoSupesAct );
 	}
 
 	//媒体处理线程的音频输入设置要使用WebRtc定点版声学回音消除器。
@@ -290,15 +291,21 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	}
 
 	//媒体处理线程的音频输入设置要使用WebRtc浮点版声学回音消除器。
-	public int AdoInptSetUseWebRtcAec( int IsBlockWait, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay, int IsSaveMemFile, String MemFileFullPathStrPt )
+	public int AdoInptSetUseWebRtcAec( int IsBlockWait, int EchoMode, int Delay, int IsUseDelayAgstcMode, int IsUseExtdFilterMode, int IsUseRefinedFilterAdaptAecMode, int IsUseAdaptAdjDelay )
 	{
-		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoInptSetUseWebRtcAec, EchoMode, Delay, IsUseDelayAgstcMode, IsUseExtdFilterMode, IsUseRefinedFilterAdaptAecMode, IsUseAdaptAdjDelay, IsSaveMemFile, MemFileFullPathStrPt );
+		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoInptSetUseWebRtcAec, EchoMode, Delay, IsUseDelayAgstcMode, IsUseExtdFilterMode, IsUseRefinedFilterAdaptAecMode, IsUseAdaptAdjDelay );
+	}
+
+	//媒体处理线程的音频输入设置要使用WebRtc第三版声学回音消除器。
+	public int AdoInptSetUseWebRtcAec3( int IsBlockWait, int Delay )
+	{
+		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoInptSetUseWebRtcAec3, Delay );
 	}
 
 	//媒体处理线程的音频输入设置要使用SpeexWebRtc三重声学回音消除器。
-	public int AdoInptSetUseSpeexWebRtcAec( int IsBlockWait, int WorkMode, int SpeexAecFilterLenMsec, int SpeexAecIsUseRec, float SpeexAecEchoMutp, float SpeexAecEchoCntu, int SpeexAecEchoSupes, int SpeexAecEchoSupesAct, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgstcMode, int WebRtcAecIsUseExtdFilterMode, int WebRtcAecIsUseRefinedFilterAdaptAecMode, int WebRtcAecIsUseAdaptAdjDelay, int IsUseSameRoomAec, int SameRoomEchoMinDelay )
+	public int AdoInptSetUseSpeexWebRtcAec( int IsBlockWait, int WorkMode, int SpeexAecFilterLenMsec, int SpeexAecIsUseRec, float SpeexAecEchoMutp, float SpeexAecEchoCntu, int SpeexAecEchoSupes, int SpeexAecEchoSupesAct, int WebRtcAecmIsUseCNGMode, int WebRtcAecmEchoMode, int WebRtcAecmDelay, int WebRtcAecEchoMode, int WebRtcAecDelay, int WebRtcAecIsUseDelayAgstcMode, int WebRtcAecIsUseExtdFilterMode, int WebRtcAecIsUseRefinedFilterAdaptAecMode, int WebRtcAecIsUseAdaptAdjDelay, int WebRtcAec3Delay, int IsUseSameRoomAec, int SameRoomEchoMinDelay )
 	{
-		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoInptSetUseSpeexWebRtcAec, WorkMode, SpeexAecFilterLenMsec, SpeexAecIsUseRec, SpeexAecEchoMutp, SpeexAecEchoCntu, SpeexAecEchoSupes, SpeexAecEchoSupesAct, WebRtcAecmIsUseCNGMode, WebRtcAecmEchoMode, WebRtcAecmDelay, WebRtcAecEchoMode, WebRtcAecDelay, WebRtcAecIsUseDelayAgstcMode, WebRtcAecIsUseExtdFilterMode, WebRtcAecIsUseRefinedFilterAdaptAecMode, WebRtcAecIsUseAdaptAdjDelay, IsUseSameRoomAec, SameRoomEchoMinDelay );
+		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoInptSetUseSpeexWebRtcAec, WorkMode, SpeexAecFilterLenMsec, SpeexAecIsUseRec, SpeexAecEchoMutp, SpeexAecEchoCntu, SpeexAecEchoSupes, SpeexAecEchoSupesAct, WebRtcAecmIsUseCNGMode, WebRtcAecmEchoMode, WebRtcAecmDelay, WebRtcAecEchoMode, WebRtcAecDelay, WebRtcAecIsUseDelayAgstcMode, WebRtcAecIsUseExtdFilterMode, WebRtcAecIsUseRefinedFilterAdaptAecMode, WebRtcAecIsUseAdaptAdjDelay, WebRtcAec3Delay, IsUseSameRoomAec, SameRoomEchoMinDelay );
 	}
 
 	//媒体处理线程的音频输入设置不使用噪音抑制器。
@@ -1219,8 +1226,6 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					m_AdoInptPt.m_SpeexAecPt.m_EchoCntu = ( Float ) MsgArgPt[ 3 ];
 					m_AdoInptPt.m_SpeexAecPt.m_EchoSupes = ( Integer ) MsgArgPt[ 4 ];
 					m_AdoInptPt.m_SpeexAecPt.m_EchoSupesAct = ( Integer ) MsgArgPt[ 5 ];
-					m_AdoInptPt.m_SpeexAecPt.m_IsSaveMemFile = ( Integer ) MsgArgPt[ 6 ];
-					m_AdoInptPt.m_SpeexAecPt.m_MemFileFullPathStrPt = ( String ) MsgArgPt[ 7 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1256,8 +1261,20 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					m_AdoInptPt.m_WebRtcAecPt.m_IsUseExtdFilterMode = ( Integer ) MsgArgPt[ 3 ];
 					m_AdoInptPt.m_WebRtcAecPt.m_IsUseRefinedFilterAdaptAecMode = ( Integer ) MsgArgPt[ 4 ];
 					m_AdoInptPt.m_WebRtcAecPt.m_IsUseAdaptAdjDelay = ( Integer ) MsgArgPt[ 5 ];
-					m_AdoInptPt.m_WebRtcAecPt.m_IsSaveMemFile = ( Integer ) MsgArgPt[ 6 ];
-					m_AdoInptPt.m_WebRtcAecPt.m_MemFileFullPathStrPt = ( String ) MsgArgPt[ 7 ];
+
+					if( m_AdoInptPt.m_IsInit != 0 )
+					{
+						if( m_AdoInptPt.AecInit() != 0 ) break Out;
+						m_AdoInptPt.SetIsCanUseAec();
+					}
+					break;
+				}
+				case ThrdMsgTyp.AdoInptSetUseWebRtcAec3:
+				{
+					if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.AecDstoy();
+
+					m_AdoInptPt.m_UseWhatAec = 4;
+					m_AdoInptPt.m_WebRtcAec3Pt.m_Delay = ( Integer ) MsgArgPt[ 0 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1270,7 +1287,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.AecDstoy();
 
-					m_AdoInptPt.m_UseWhatAec = 4;
+					m_AdoInptPt.m_UseWhatAec = 5;
 					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WorkMode = ( Integer ) MsgArgPt[ 0 ];
 					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecFilterLenMsec = ( Integer ) MsgArgPt[ 1 ];
 					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecIsUseRec = ( Integer ) MsgArgPt[ 2 ];
@@ -1287,6 +1304,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseExtdFilterMode = ( Integer ) MsgArgPt[ 13 ];
 					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode = ( Integer ) MsgArgPt[ 14 ];
 					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseAdaptAdjDelay = ( Integer ) MsgArgPt[ 15 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAec3Delay = ( Integer ) MsgArgPt[ 11 ];
 					m_AdoInptPt.m_SpeexWebRtcAecPt.m_IsUseSameRoomAec = ( Integer ) MsgArgPt[ 16 ];
 					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SameRoomEchoMinDelay = ( Integer ) MsgArgPt[ 17 ];
 
@@ -1780,8 +1798,6 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexAecPt.m_EchoCntu：" + m_AdoInptPt.m_SpeexAecPt.m_EchoCntu + "\n" );
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexAecPt.m_EchoSupes：" + m_AdoInptPt.m_SpeexAecPt.m_EchoSupes + "\n" );
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexAecPt.m_EchoSupesAct：" + m_AdoInptPt.m_SpeexAecPt.m_EchoSupesAct + "\n" );
-						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexAecPt.m_IsSaveMemFile：" + m_AdoInptPt.m_SpeexAecPt.m_IsSaveMemFile + "\n" );
-						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexAecPt.m_MemFileFullPathStrPt：" + m_AdoInptPt.m_SpeexAecPt.m_MemFileFullPathStrPt + "\n" );
 						p_StngFileWriterPt.write( "\n" );
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_WebRtcAecmPt.m_IsUseCNGMode：" + m_AdoInptPt.m_WebRtcAecmPt.m_IsUseCNGMode + "\n" );
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_WebRtcAecmPt.m_EchoMode：" + m_AdoInptPt.m_WebRtcAecmPt.m_EchoMode + "\n" );
@@ -1793,8 +1809,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_WebRtcAecPt.m_IsUseExtdFilterMode：" + m_AdoInptPt.m_WebRtcAecPt.m_IsUseExtdFilterMode + "\n" );
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_WebRtcAecPt.m_IsUseRefinedFilterAdaptAecMode：" + m_AdoInptPt.m_WebRtcAecPt.m_IsUseRefinedFilterAdaptAecMode + "\n" );
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_WebRtcAecPt.m_IsUseAdaptAdjDelay：" + m_AdoInptPt.m_WebRtcAecPt.m_IsUseAdaptAdjDelay + "\n" );
-						p_StngFileWriterPt.write( "m_AdoInptPt.m_WebRtcAecPt.m_IsSaveMemFile：" + m_AdoInptPt.m_WebRtcAecPt.m_IsSaveMemFile + "\n" );
-						p_StngFileWriterPt.write( "m_AdoInptPt.m_WebRtcAecPt.m_MemFileFullPathStrPt：" + m_AdoInptPt.m_WebRtcAecPt.m_MemFileFullPathStrPt + "\n" );
+						p_StngFileWriterPt.write( "\n" );
+						p_StngFileWriterPt.write( "m_AdoInptPt.m_WebRtcAec3Pt.m_Delay：" + m_AdoInptPt.m_WebRtcAec3Pt.m_Delay + "\n" );
 						p_StngFileWriterPt.write( "\n" );
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexWebRtcAecPt.m_WorkMode：" + m_AdoInptPt.m_SpeexWebRtcAecPt.m_WorkMode + "\n" );
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecFilterLenMsec：" + m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecFilterLenMsec + "\n" );
@@ -1812,6 +1828,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseExtdFilterMode：" + m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseExtdFilterMode + "\n" );
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode：" + m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode + "\n" );
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseAdaptAdjDelay：" + m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseAdaptAdjDelay + "\n" );
+						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAec3Delay：" + m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAec3Delay + "\n" );
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexWebRtcAecPt.m_IsUseSameRoomAec：" + m_AdoInptPt.m_SpeexWebRtcAecPt.m_IsUseSameRoomAec + "\n" );
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_SpeexWebRtcAecPt.m_SameRoomEchoMinDelay：" + m_AdoInptPt.m_SpeexWebRtcAecPt.m_SameRoomEchoMinDelay + "\n" );
 						p_StngFileWriterPt.write( "\n" );
@@ -2197,7 +2214,20 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 							}
 							break;
 						}
-						case 4: //如果要使用SpeexWebRtc三重声学回音消除器。
+						case 4: //如果要使用WebRtc第三版声学回音消除器。
+						{
+							if( m_AdoInptPt.m_WebRtcAec3Pt.m_Pt.Pocs( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmTmpFrmPt ) == 0 )
+							{
+								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用WebRtc第三版声学回音消除器成功。" );
+								short p_TmpPt[] = m_ThrdPt.m_AdoInptPcmRsltFrmPt;m_ThrdPt.m_AdoInptPcmRsltFrmPt = m_ThrdPt.m_AdoInptPcmTmpFrmPt;m_ThrdPt.m_AdoInptPcmTmpFrmPt = p_TmpPt; //交换音频输入Pcm格式结果帧和音频输入Pcm格式临时帧。
+							}
+							else
+							{
+								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用WebRtc第三版声学回音消除器失败。" );
+							}
+							break;
+						}
+						case 5: //如果要使用SpeexWebRtc三重声学回音消除器。
 						{
 							if( m_AdoInptPt.m_SpeexWebRtcAecPt.m_Pt.Pocs( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmTmpFrmPt ) == 0 )
 							{

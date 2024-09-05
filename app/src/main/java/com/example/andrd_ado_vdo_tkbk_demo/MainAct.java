@@ -69,6 +69,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 	View m_SpeexAecStngLyotViewPt; //存放Speex声学回音消除器设置布局视图的指针。
 	View m_WebRtcAecmStngLyotViewPt; //存放WebRtc定点版声学回音消除器设置布局视图的指针。
 	View m_WebRtcAecStngLyotViewPt; //存放WebRtc浮点版声学回音消除器设置布局视图的指针。
+	View m_WebRtcAec3StngLyotViewPt; //存放WebRtc第三版声学回音消除器设置布局视图的指针。
 	View m_SpeexWebRtcAecStngLyotViewPt; //存放SpeexWebRtc三重声学回音消除器设置布局视图的指针。
 	View m_SpeexPrpocsNsStngLyotViewPt; //存放Speex预处理器的噪音抑制设置布局视图的指针。
 	View m_WebRtcNsxStngLyotViewPt; //存放WebRtc定点版噪音抑制器设置布局视图的指针。
@@ -429,6 +430,12 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		Log.i( m_CurClsNameStrPt, "WebRtc浮点版声学回音消除器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
 		Log.i( m_CurClsNameStrPt, "WebRtc浮点版声学回音消除器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
 
+		WebRtcAec3.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
+		Log.i( m_CurClsNameStrPt, "WebRtc第三版声学回音消除器限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
+		Log.i( m_CurClsNameStrPt, "WebRtc第三版声学回音消除器当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
+		Log.i( m_CurClsNameStrPt, "WebRtc第三版声学回音消除器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+		Log.i( m_CurClsNameStrPt, "WebRtc第三版声学回音消除器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+
 		SpeexWebRtcAec.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
 		Log.i( m_CurClsNameStrPt, "SpeexWebRtc三重声学回音消除器限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
 		Log.i( m_CurClsNameStrPt, "SpeexWebRtc三重声学回音消除器当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
@@ -493,6 +500,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 			m_SpeexAecStngLyotViewPt = p_LyotInflater.inflate( R.layout.speex_aec_stng_lyot, null );
 			m_WebRtcAecmStngLyotViewPt = p_LyotInflater.inflate( R.layout.webrtc_aecm_stng_lyot, null );
 			m_WebRtcAecStngLyotViewPt = p_LyotInflater.inflate( R.layout.webrtc_aec_stng_lyot, null );
+			m_WebRtcAec3StngLyotViewPt = p_LyotInflater.inflate( R.layout.webrtc_aec3_stng_lyot, null );
 			m_SpeexWebRtcAecStngLyotViewPt = p_LyotInflater.inflate( R.layout.speex_webrtc_aec_stng_lyot, null );
 			m_SpeexPrpocsNsStngLyotViewPt = p_LyotInflater.inflate( R.layout.speex_prpocs_ns_stng_lyot, null );
 			m_WebRtcNsxStngLyotViewPt = p_LyotInflater.inflate( R.layout.webrtc_nsx_stng_lyot, null );
@@ -634,6 +642,10 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		else if( m_CurActivityLyotViewPt == m_WebRtcAecStngLyotViewPt )
 		{
 			OnClickWebRtcAecStngOkBtn( null );
+		}
+		else if( m_CurActivityLyotViewPt == m_WebRtcAec3StngLyotViewPt )
+		{
+			OnClickWebRtcAec3StngOkBtn( null );
 		}
 		else if( m_CurActivityLyotViewPt == m_SpeexWebRtcAecStngLyotViewPt )
 		{
@@ -1100,46 +1112,16 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		m_CurActivityLyotViewPt = m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt;
 	}
 
-	//效果等级：低。
-	public void OnClickUseEffectLowRdBtn( View ViewPt )
+	//效果等级和声学回音消除倾向单选按钮。
+	public void OnClickEffectAecTendRdBtn( View ViewPt )
 	{
-		AndrdAdoVdoTkbkStng.EffectLow( this );
-	}
-
-	//效果等级：中。
-	public void OnClickUseEffectMidRdBtn( View ViewPt )
-	{
-		AndrdAdoVdoTkbkStng.EffectMid( this );
-	}
-
-	//效果等级：高。
-	public void OnClickUseEffectHighRdBtn( View ViewPt )
-	{
-		AndrdAdoVdoTkbkStng.EffectHigh( this );
-	}
-
-	//效果等级：超。
-	public void OnClickUseEffectSuperRdBtn( View ViewPt )
-	{
-		AndrdAdoVdoTkbkStng.EffectSuper( this );
-	}
-
-	//效果等级：特。
-	public void OnClickUseEffectPremiumRdBtn( View ViewPt )
-	{
-		AndrdAdoVdoTkbkStng.EffectPremium( this );
-	}
-
-	//效果等级：双讲。
-	public void OnClickUseEffectDblTalkRdBtn( View ViewPt )
-	{
-		AndrdAdoVdoTkbkStng.EffectDblTalk( this );
+		AndrdAdoVdoTkbkStng.SetEffectAecTendStng( this );
 	}
 
 	//是否使用调试信息。
 	public void OnClickIsUseDebugInfoRdBtn( View ViewPt )
 	{
-		AndrdAdoVdoTkbkStng.IsUseDebugInfo( this, ( ( CheckBox ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseDebugInfoCkBoxId ) ).isChecked() ? 1 : 0 );
+		AndrdAdoVdoTkbkStng.SetDebugInfoStng( this );
 	}
 
 	//Speex声学回音消除器设置按钮。
@@ -1161,6 +1143,13 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 	{
 		setContentView( m_WebRtcAecStngLyotViewPt );
 		m_CurActivityLyotViewPt = m_WebRtcAecStngLyotViewPt;
+	}
+
+	//WebRtc第三版声学回音消除器设置按钮。
+	public void OnClickWebRtcAec3StngBtn( View ViewPt )
+	{
+		setContentView( m_WebRtcAec3StngLyotViewPt );
+		m_CurActivityLyotViewPt = m_WebRtcAec3StngLyotViewPt;
 	}
 
 	//SpeexWebRtc三重声学回音消除器设置按钮。
@@ -1281,28 +1270,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		m_CurActivityLyotViewPt = m_StngLyotViewPt;
 	}
 
-	//Speex声学回音消除器设置布局的删除内存块文件按钮。
-	public void OnClickSpeexAecDelMemFileBtn( View ViewPt )
-	{
-		String p_SpeexAecMemFileFullPathStrPt = m_ExternalDirFullAbsPathStrPt + "/SpeexAecMem";
-		File file = new File( p_SpeexAecMemFileFullPathStrPt );
-		if( file.exists() )
-		{
-			if( file.delete() )
-			{
-				Toast.makeText( this, "删除Speex声学回音消除器的内存块文件 " + p_SpeexAecMemFileFullPathStrPt + " 成功。", Toast.LENGTH_LONG ).show();
-			}
-			else
-			{
-				Toast.makeText( this, "删除Speex声学回音消除器的内存块文件 " + p_SpeexAecMemFileFullPathStrPt + " 失败。", Toast.LENGTH_LONG ).show();
-			}
-		}
-		else
-		{
-			Toast.makeText( this, "Speex声学回音消除器的内存块文件 " + p_SpeexAecMemFileFullPathStrPt + " 不存在。", Toast.LENGTH_LONG ).show();
-		}
-	}
-
 	//Speex声学回音消除器设置布局确定按钮。
 	public void OnClickSpeexAecStngOkBtn( View ViewPt )
 	{
@@ -1317,30 +1284,15 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		m_CurActivityLyotViewPt = m_StngLyotViewPt;
 	}
 
-	//WebRtc浮点版声学回音消除器设置布局的删除内存块文件按钮。
-	public void OnClickWebRtcAecDelMemFileBtn( View ViewPt )
-	{
-		String p_WebRtcAecMemFileFullPathStrPt = m_ExternalDirFullAbsPathStrPt + "/WebRtcAecMem";
-		File file = new File( p_WebRtcAecMemFileFullPathStrPt );
-		if( file.exists() )
-		{
-			if( file.delete() )
-			{
-				Toast.makeText( this, "删除WebRtc浮点版声学回音消除器的内存块文件 " + p_WebRtcAecMemFileFullPathStrPt + " 成功。", Toast.LENGTH_LONG ).show();
-			}
-			else
-			{
-				Toast.makeText( this, "删除WebRtc浮点版声学回音消除器的内存块文件 " + p_WebRtcAecMemFileFullPathStrPt + " 失败。", Toast.LENGTH_LONG ).show();
-			}
-		}
-		else
-		{
-			Toast.makeText( this, "WebRtc浮点版声学回音消除器的内存块文件 " + p_WebRtcAecMemFileFullPathStrPt + " 不存在。", Toast.LENGTH_LONG ).show();
-		}
-	}
-
 	//WebRtc浮点版声学回音消除器设置布局确定按钮。
 	public void OnClickWebRtcAecStngOkBtn( View ViewPt )
+	{
+		setContentView( m_StngLyotViewPt );
+		m_CurActivityLyotViewPt = m_StngLyotViewPt;
+	}
+
+	//WebRtc第三版声学回音消除器设置布局确定按钮。
+	public void OnClickWebRtcAec3StngOkBtn( View ViewPt )
 	{
 		setContentView( m_StngLyotViewPt );
 		m_CurActivityLyotViewPt = m_StngLyotViewPt;

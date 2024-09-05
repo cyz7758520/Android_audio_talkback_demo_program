@@ -63,6 +63,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
+            <RadioButton
+                android:text="WebRtc定点版声学回音消除器+WebRtc第三版声学回音消除器"
+                android:id="@+id/SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAec3RdBtnId"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <RadioButton
+                android:text="Speex声学回音消除器+WebRtc定点版声学回音消除器+WebRtc第三版声学回音消除器"
+                android:id="@+id/SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAec3RdBtnId"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
         </RadioGroup>
 
     </LinearLayout>
@@ -296,6 +310,27 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:text="WebRtc浮点版声学回音消除器使用自适应调节回音延迟" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
+                android:gravity="center_vertical"
+                android:text="WebRtc第三版声学回音消除器的回音延迟，单位为毫秒，取值区间为[-2147483648,2147483647]，为0表示自适应设置：" />
+
+            <EditText
+                android:id="@+id/SpeexWebRtcAecWebRtcAec3DelayEdTxtId"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:singleLine="true" />
+
+        </LinearLayout>
 
         <CheckBox
             android:id="@+id/SpeexWebRtcAecIsUseSameRoomAecCkBoxId"

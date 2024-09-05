@@ -94,28 +94,6 @@
             android:gravity="center_vertical"
             android:text="使用自适应调节回音延迟" />
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <CheckBox
-                android:id="@+id/WebRtcAecIsSaveMemFileCkBoxId"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="3"
-                android:text="保存WebRtc浮点版声学回音消除器内存块到WebRtcAecMem文件，以便缩短下一次初始化时收敛时间"/>
-
-            <Button
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:padding="0dp"
-                android:text="删除内存块文件"
-                android:onClick="OnClickWebRtcAecDelMemFileBtn" />
-
-        </LinearLayout>
-
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
