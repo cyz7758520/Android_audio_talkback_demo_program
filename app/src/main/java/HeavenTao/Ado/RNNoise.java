@@ -28,18 +28,18 @@ public class RNNoise
 	}
 
 	//RNNoise噪音抑制器获取应用程序限制信息。
-	public static int GetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
+	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
 	{
-		return RNNoiseGetAppLmtInfo( LmtAppNameStrPt, CurAppNameVstrPt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return RNNoiseGetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//创建并初始化RNNoise噪音抑制器。
-	public int Init( int SmplRate, long FrmLenUnit, Vstr ErrInfoVstrPt )
+	public int Init( byte LicnCodePt[], int SmplRate, long FrmLenUnit, Vstr ErrInfoVstrPt )
 	{
 		if( m_RNNoisePt == 0 )
 		{
 			HTLong p_RNNoisePt = new HTLong();
-			if( RNNoiseInit( p_RNNoisePt, SmplRate, FrmLenUnit, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( RNNoiseInit( LicnCodePt, p_RNNoisePt, SmplRate, FrmLenUnit, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_RNNoisePt = p_RNNoisePt.m_Val;
 				return 0;
@@ -83,10 +83,10 @@ public class RNNoise
 	}
 
 	//RNNoise噪音抑制器获取应用程序限制信息。
-	private static native int RNNoiseGetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
+	private static native int RNNoiseGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化RNNoise噪音抑制器。
-	private native int RNNoiseInit( HTLong RNNoisePt, int SmplRate, long FrmLenUnit, long ErrInfoVstrPt );
+	private native int RNNoiseInit( byte LicnCodePt[], HTLong RNNoisePt, int SmplRate, long FrmLenUnit, long ErrInfoVstrPt );
 
 	//用RNNoise噪音抑制器对单声道16位有符号整型Pcm格式帧进行RNNoise噪音抑制。
 	private native int RNNoisePocs( long RNNoisePt, short FrmPt[], short RsltFrmPt[] );

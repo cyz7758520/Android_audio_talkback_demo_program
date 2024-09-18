@@ -27,9 +27,9 @@ public class AudpSokt
 	}
 
 	//本端高级UDP协议套接字获取应用程序限制信息。
-	public static int GetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
+	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
 	{
-		return AudpGetAppLmtInfo( LmtAppNameStrPt, CurAppNameVstrPt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return AudpGetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	public static final int AudpCnctStsWait = 0; //连接状态：等待远端接受连接。
@@ -44,12 +44,12 @@ public class AudpSokt
 	}
 
 	//创建并初始化本端高级UDP协议套接字。
-	public int Init( int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, short NewCnctMaxWaitCnt, short TmotMsec, Vstr ErrInfoVstrPt )
+	public int Init( byte LicnCodePt[], int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, short NewCnctMaxWaitCnt, short TmotMsec, Vstr ErrInfoVstrPt )
 	{
 		if( m_AudpSoktPt == 0 )
 		{
 			HTLong p_AudpSoktPt = new HTLong();
-			if( AudpInit( p_AudpSoktPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, NewCnctMaxWaitCnt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( AudpInit( LicnCodePt, p_AudpSoktPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, NewCnctMaxWaitCnt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_AudpSoktPt = p_AudpSoktPt.m_Val;
 				return 0;
@@ -158,10 +158,10 @@ public class AudpSokt
 	}
 
 	//本端高级UDP协议套接字获取应用程序限制信息。
-	private static native int AudpGetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
+	private static native int AudpGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化本端高级UDP协议套接字。
-	private native int AudpInit( HTLong AudpSoktPt, int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, short NewCnctMaxWaitCnt, short TmotMsec, long ErrInfoVstrPt );
+	private native int AudpInit( byte LicnCodePt[], HTLong AudpSoktPt, int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, short NewCnctMaxWaitCnt, short TmotMsec, long ErrInfoVstrPt );
 
 	//用本端高级UDP协议套接字接受远端高级UDP协议套接字的连接。
 	private native int AudpAcpt( long AudpSoktPt, HTLong CnctIdxPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, short TmotMsec, long ErrInfoVstrPt );

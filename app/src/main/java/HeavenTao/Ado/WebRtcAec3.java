@@ -27,18 +27,18 @@ public class WebRtcAec3
 	}
 
 	//WebRtc第三版声学回音消除器获取应用程序限制信息。
-	public static int GetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
+	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
 	{
-		return WebRtcAec3GetAppLmtInfo( LmtAppNameStrPt, CurAppNameVstrPt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return WebRtcAec3GetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//创建并初始化WebRtc第三版声学回音消除器。
-	public int Init( int SmplRate, long FrmLenUnit, int Delay, Vstr ErrInfoVstrPt )
+	public int Init( byte LicnCodePt[], int SmplRate, long FrmLenUnit, int Delay, Vstr ErrInfoVstrPt )
 	{
 		if( m_WebRtcAec3Pt == 0 )
 		{
 			HTLong p_WebRtcAec3Pt = new HTLong();
-			if( WebRtcAec3Init( p_WebRtcAec3Pt, SmplRate, FrmLenUnit, Delay, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( WebRtcAec3Init( LicnCodePt, p_WebRtcAec3Pt, SmplRate, FrmLenUnit, Delay, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_WebRtcAec3Pt = p_WebRtcAec3Pt.m_Val;
 				return 0;
@@ -94,10 +94,10 @@ public class WebRtcAec3
 	}
 
 	//WebRtc第三版声学回音消除器获取应用程序限制信息。
-	private static native int WebRtcAec3GetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
+	private static native int WebRtcAec3GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化WebRtc第三版声学回音消除器。
-	private native int WebRtcAec3Init( HTLong WebRtcAec3Pt, int SmplRate, long FrmLenUnit, int Delay, long ErrInfoVstrPt );
+	private native int WebRtcAec3Init( byte LicnCodePt[], HTLong WebRtcAec3Pt, int SmplRate, long FrmLenUnit, int Delay, long ErrInfoVstrPt );
 
 	//设置WebRtc第三版声学回音消除器的回音延迟。
 	private native int WebRtcAec3SetDelay( long WebRtcAec3Pt, int Delay );

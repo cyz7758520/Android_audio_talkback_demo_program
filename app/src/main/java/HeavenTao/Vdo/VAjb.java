@@ -27,18 +27,18 @@ public class VAjb
 	}
 
 	//视频自适应抖动缓冲器获取应用程序限制信息。
-	public static int GetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
+	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
 	{
-		return VAjbGetAppLmtInfo( LmtAppNameStrPt, CurAppNameVstrPt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return VAjbGetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//创建并初始化视频自适应抖动缓冲器。
-	public int Init( int IsHaveTimeStamp, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, float AdaptSensitivity, Vstr ErrInfoVstrPt )
+	public int Init( byte LicnCodePt[], int IsHaveTimeStamp, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, float AdaptSensitivity, Vstr ErrInfoVstrPt )
 	{
 		if( m_VAjbPt == 0 )
 		{
 			HTLong p_VAjbPt = new HTLong();
-			if( VAjbInit( p_VAjbPt, IsHaveTimeStamp, MinNeedBufFrmCnt, MaxNeedBufFrmCnt, AdaptSensitivity, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( VAjbInit( LicnCodePt, p_VAjbPt, IsHaveTimeStamp, MinNeedBufFrmCnt, MaxNeedBufFrmCnt, AdaptSensitivity, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_VAjbPt = p_VAjbPt.m_Val;
 				return 0;
@@ -118,10 +118,10 @@ public class VAjb
 	}
 
 	//视频自适应抖动缓冲器获取应用程序限制信息。
-	private static native int VAjbGetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
+	private static native int VAjbGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化视频自适应抖动缓冲器。
-	private native int VAjbInit( HTLong VAjbPt, int IsHaveTimeStamp, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, float AdaptSensitivity, long ErrInfoVstrPt );
+	private native int VAjbInit( byte LicnCodePt[], HTLong VAjbPt, int IsHaveTimeStamp, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, float AdaptSensitivity, long ErrInfoVstrPt );
 
 	//放入字节型帧到视频自适应抖动缓冲器。
 	private native int VAjbPutByteFrm( long VAjbPt, long CurTime, int TimeStamp, byte ByteFrmPt[], long FrmStart, long FrmLenByt, int IsAutoLock, long ErrInfoVstrPt );

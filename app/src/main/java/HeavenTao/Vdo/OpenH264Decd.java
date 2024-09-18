@@ -26,18 +26,18 @@ public class OpenH264Decd
 	}
 
 	//OpenH264解码器获取应用程序限制信息。
-	public static int GetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
+	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
 	{
-		return OpenH264DecdGetAppLmtInfo( LmtAppNameStrPt, CurAppNameVstrPt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return OpenH264DecdGetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//创建并初始化OpenH264解码器。
-	public int Init( int DecdThrdNum, Vstr ErrInfoVstrPt )
+	public int Init( byte LicnCodePt[], int DecdThrdNum, Vstr ErrInfoVstrPt )
 	{
 		if( m_OpenH264DecdPt == 0 )
 		{
 			HTLong p_OpenH264DecdPt = new HTLong();
-			if( OpenH264DecdInit( p_OpenH264DecdPt, DecdThrdNum, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( OpenH264DecdInit( LicnCodePt, p_OpenH264DecdPt, DecdThrdNum, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_OpenH264DecdPt = p_OpenH264DecdPt.m_Val;
 				return 0;
@@ -86,10 +86,10 @@ public class OpenH264Decd
 	}
 
 	//OpenH264解码器获取应用程序限制信息。
-	private static native int OpenH264DecdGetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
+	private static native int OpenH264DecdGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化OpenH264解码器。
-	private native int OpenH264DecdInit( HTLong OpenH264DecdPt, int DecdThrdNum, long ErrInfoVstrPt );
+	private native int OpenH264DecdInit( byte LicnCodePt[], HTLong OpenH264DecdPt, int DecdThrdNum, long ErrInfoVstrPt );
 
 	//用OpenH264解码器对H264格式进行8位无符号整型Yu12格式帧解码。
 	private native int OpenH264DecdPocs( long OpenH264DecdPt,

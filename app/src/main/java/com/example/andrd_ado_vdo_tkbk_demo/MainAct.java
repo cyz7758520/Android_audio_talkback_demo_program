@@ -53,6 +53,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 {
 	String m_CurClsNameStrPt = this.getClass().getSimpleName(); //存放当前类名称字符串。
 
+	Vstr m_ErrInfoVstrPt; //存放错误信息动态字符串的指针。
 	View m_MainLyotViewPt; //存放主布局视图的指针。
 	Drawable m_PttBtnBackgroundPt; //存放一键即按即通按钮背景的指针。
 	Drawable m_PtbBtnBackgroundPt; //存放一键即按即广播按钮背景的指针。
@@ -406,77 +407,147 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		super.onCreate( savedInstanceState );
 		Log.i( m_CurClsNameStrPt, "onCreate" );
 
+		m_ErrInfoVstrPt = new Vstr();
+		if( m_ErrInfoVstrPt.Init( "" ) != 0 )
+		{
+			String p_InfoStrPt = "初始化错误信息动态字符串失败。";
+			Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+			SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
+		}
+
 		MediaPocsThrd.m_CtxPt = this;
-		HTString p_LmtAppNameStrPt = new HTString();
-		HTString p_CurAppNameStrPt = new HTString();
 		HTLong p_LmtTimeSecPt = new HTLong();
 		HTLong p_RmnTimeSecPt = new HTLong();
 
-		AudpSokt.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
-		Log.i( m_CurClsNameStrPt, "本端高级UDP协议套接字限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "本端高级UDP协议套接字当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "本端高级UDP协议套接字限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "本端高级UDP协议套接字剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		if( AudpSokt.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "本端高级UDP协议套接字限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "本端高级UDP协议套接字剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取本端高级UDP协议套接字的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
 
-		SpeexAec.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
-		Log.i( m_CurClsNameStrPt, "Speex声学回音消除器限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "Speex声学回音消除器当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "Speex声学回音消除器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "Speex声学回音消除器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		if( SpeexAec.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "Speex声学回音消除器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "Speex声学回音消除器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取Speex声学回音消除器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
 
-		WebRtcAec.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
-		Log.i( m_CurClsNameStrPt, "WebRtc浮点版声学回音消除器限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "WebRtc浮点版声学回音消除器当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "WebRtc浮点版声学回音消除器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "WebRtc浮点版声学回音消除器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		if( WebRtcAec.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "WebRtc浮点版声学回音消除器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "WebRtc浮点版声学回音消除器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取WebRtc浮点版声学回音消除器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
 
-		WebRtcAec3.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
-		Log.i( m_CurClsNameStrPt, "WebRtc第三版声学回音消除器限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "WebRtc第三版声学回音消除器当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "WebRtc第三版声学回音消除器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "WebRtc第三版声学回音消除器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		if( WebRtcAec3.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "WebRtc第三版声学回音消除器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "WebRtc第三版声学回音消除器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取WebRtc第三版声学回音消除器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
 
-		SpeexWebRtcAec.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
-		Log.i( m_CurClsNameStrPt, "SpeexWebRtc三重声学回音消除器限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "SpeexWebRtc三重声学回音消除器当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "SpeexWebRtc三重声学回音消除器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "SpeexWebRtc三重声学回音消除器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		if( SpeexWebRtcAec.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "SpeexWebRtc三重声学回音消除器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "SpeexWebRtc三重声学回音消除器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取SpeexWebRtc三重声学回音消除器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
 
-		RNNoise.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
-		Log.i( m_CurClsNameStrPt, "RNNoise噪音抑制器限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "RNNoise噪音抑制器当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "RNNoise噪音抑制器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "RNNoise噪音抑制器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		if( RNNoise.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "RNNoise噪音抑制器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "RNNoise噪音抑制器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取RNNoise噪音抑制器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
 
-		OpenH264Encd.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
-		Log.i( m_CurClsNameStrPt, "OpenH264编码器限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "OpenH264编码器当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "OpenH264编码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "OpenH264编码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		if( OpenH264Encd.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "OpenH264编码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "OpenH264编码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取OpenH264编码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
 
-		OpenH264Decd.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
-		Log.i( m_CurClsNameStrPt, "OpenH264解码器限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "OpenH264解码器当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "OpenH264解码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "OpenH264解码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		if( OpenH264Decd.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "OpenH264解码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "OpenH264解码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取OpenH264解码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
 
-		AAjb.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
-		Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		if( SystemH264Encd.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "系统自带H264编码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "系统自带H264编码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取系统自带H264编码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
 
-		VAjb.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
-		Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		if( SystemH264Decd.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "系统自带H264解码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "系统自带H264解码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取系统自带H264解码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
 
-		AviFileWriter.GetAppLmtInfo( p_LmtAppNameStrPt, p_CurAppNameStrPt, p_LmtTimeSecPt, p_RmnTimeSecPt, null );
-		Log.i( m_CurClsNameStrPt, "Avi文件写入器限制应用程序的名称：" + p_LmtAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "Avi文件写入器当前应用程序的名称：" + p_CurAppNameStrPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "Avi文件写入器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-		Log.i( m_CurClsNameStrPt, "Avi文件写入器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		if( AAjb.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "音频自适应抖动缓冲器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取音频自适应抖动缓冲器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
+
+		if( VAjb.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "视频自适应抖动缓冲器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取视频自适应抖动缓冲器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
+
+		if( AviFileWriter.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "Avi文件写入器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "Avi文件写入器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取Avi文件写入器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
 
 		//创建布局。
 		{
@@ -716,7 +787,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		{
 			if( m_MySrvrThrdPt == null ) //如果我的服务端线程未初始化。
 			{
-				m_MySrvrThrdPt = new MySrvrThrd( this );
+				m_MySrvrThrdPt = new MySrvrThrd( this, LicnCode.m_LicnCodePt );
 				if( m_MySrvrThrdPt.Init() != 0 ) m_MySrvrThrdPt = null;
 			}
 			else //如果我的服务端线程已初始化。
@@ -775,7 +846,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 	public void OnClickClntAddBtn( View ViewPt )
 	{
 		Vstr p_ClntSrvrUrlVstrPt = null;
-		Vstr p_ErrInfoVstrPt = null;
 		HTString p_SrvrPrtclStrPt = new HTString();
 		HTString p_SrvrNodeNameStrPt = new HTString();
 		HTString p_SrvrNodeSrvcStrPt = new HTString();
@@ -791,19 +861,11 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 				Toast.makeText( this, p_InfoStrPt, Toast.LENGTH_LONG ).show();
 				break Out;
 			}
-			p_ErrInfoVstrPt = new Vstr();
-			if( p_ErrInfoVstrPt.Init( "" ) != 0 )
-			{
-				String p_InfoStrPt = "初始化错误信息动态字符串失败。";
-				Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-				SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
-				break Out;
-			}
 
 			//解析服务端Url字符串。
-			if( p_ClntSrvrUrlVstrPt.UrlParse( p_SrvrPrtclStrPt, null, null, p_SrvrNodeNameStrPt, p_SrvrNodeSrvcStrPt, null, null, null, null, p_ErrInfoVstrPt ) != 0 )
+			if( p_ClntSrvrUrlVstrPt.UrlParse( p_SrvrPrtclStrPt, null, null, p_SrvrNodeNameStrPt, p_SrvrNodeSrvcStrPt, null, null, null, null, m_ErrInfoVstrPt ) != 0 )
 			{
-				String p_InfoStrPt = "解析客户端的服务端Url字符串失败。原因：" + p_ErrInfoVstrPt.GetStr();
+				String p_InfoStrPt = "解析客户端的服务端Url字符串失败。原因：" + m_ErrInfoVstrPt.GetStr();
 				Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 				SendMainActMsg( MainActMsgTyp.ShowLog, p_InfoStrPt );
 				Toast.makeText( this, p_InfoStrPt, Toast.LENGTH_LONG ).show();
@@ -826,7 +888,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		}
 
 		if( p_ClntSrvrUrlVstrPt != null ) p_ClntSrvrUrlVstrPt.Dstoy();
-		if( p_ErrInfoVstrPt != null ) p_ErrInfoVstrPt.Dstoy();
 	}
 
 	//客户端设置按钮。
@@ -845,7 +906,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		{
 			if( m_MyClntMediaPocsThrdPt == null ) //如果我的客户端媒体处理线程未初始化。
 			{
-				m_MyClntMediaPocsThrdPt = new MyClntMediaPocsThrd( this );
+				m_MyClntMediaPocsThrdPt = new MyClntMediaPocsThrd( this, LicnCode.m_LicnCodePt );
 			}
 
 			if( m_MyClntMediaPocsThrdPt.m_TkbkClntPt.m_CnctIsInit == 0 ) //如果对讲客户端连接未初始化。
@@ -1071,7 +1132,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 				{
 					if( m_MyClntMediaPocsThrdPt == null ) //如果我的客户端媒体处理线程未初始化。
 					{
-						m_MyClntMediaPocsThrdPt = new MyClntMediaPocsThrd( this );
+						m_MyClntMediaPocsThrdPt = new MyClntMediaPocsThrd( this, LicnCode.m_LicnCodePt );
 					}
 
 					m_MyClntMediaPocsThrdPt.BdctInit();

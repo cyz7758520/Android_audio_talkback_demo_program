@@ -152,7 +152,7 @@ public class AdoOtpt //音频输出。
 	}
 	WaveFileWriter m_WaveFileWriterPt = new WaveFileWriter();
 
-	class Dvc //存放设备。
+	public class Dvc //存放设备。
 	{
 		public AudioTrack m_Pt; //存放指针。
 		int m_BufSzByt; //存放缓冲区大小，单位为字节。
@@ -160,7 +160,7 @@ public class AdoOtpt //音频输出。
 		public int m_UseWhatStreamType; //存放使用什么流类型，为0表示通话类型，为非0表示媒体类型。
 		public int m_IsMute; //存放是否静音，为0表示有声音，为非0表示静音。
 	}
-	Dvc m_DvcPt = new Dvc();
+	public Dvc m_DvcPt = new Dvc();
 
 	public ConcurrentLinkedQueue< short[] > m_PcmSrcFrmCntnrPt; //存放Pcm格式原始帧容器的指针。
 	public ConcurrentLinkedQueue< short[] > m_PcmIdleFrmCntnrPt; //存放Pcm格式空闲帧容器的指针。

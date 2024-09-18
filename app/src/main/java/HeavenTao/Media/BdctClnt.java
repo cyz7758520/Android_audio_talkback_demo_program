@@ -555,7 +555,7 @@ public class BdctClnt //广播客户端。
 								if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt == null ) //如果未初始化本端高级Udp协议客户端套接字。
 								{
 									m_ClntMediaPocsThrdPt.m_AudpClntSoktPt = new AudpSokt();
-									if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.Init( p_RmtNodeAddrFamly, null, null, ( short )0, ( short )5000, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 ) //如果初始化本端高级Udp协议客户端套接字成功。
+									if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.Init( m_ClntMediaPocsThrdPt.m_LicnCodePt, p_RmtNodeAddrFamly, null, null, ( short )0, ( short )5000, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 ) //如果初始化本端高级Udp协议客户端套接字成功。
 									{
 										if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.SetSendBufSz( 1024 * 1024, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 )
 										{

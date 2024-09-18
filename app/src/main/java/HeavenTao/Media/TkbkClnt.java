@@ -362,7 +362,7 @@ public class TkbkClnt //对讲客户端。
 				{
 					//初始化音频自适应抖动缓冲器。
 					p_TkbkInfoTmpPt.m_AAjbPt = new HeavenTao.Ado.AAjb();
-					if( p_TkbkInfoTmpPt.m_AAjbPt.Init( m_ClntMediaPocsThrdPt.m_AdoOtptPt.m_SmplRate, m_ClntMediaPocsThrdPt.m_AdoOtptPt.m_FrmLenUnit, 1, 1, 0, m_AAjbParmPt.m_MinNeedBufFrmCnt, m_AAjbParmPt.m_MaxNeedBufFrmCnt, m_AAjbParmPt.m_MaxCntuLostFrmCnt, m_AAjbParmPt.m_AdaptSensitivity, ( m_XfrMode == 0 ) ? 0 : 1, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+					if( p_TkbkInfoTmpPt.m_AAjbPt.Init( m_ClntMediaPocsThrdPt.m_LicnCodePt, m_ClntMediaPocsThrdPt.m_AdoOtptPt.m_SmplRate, m_ClntMediaPocsThrdPt.m_AdoOtptPt.m_FrmLenUnit, 1, 1, 0, m_AAjbParmPt.m_MinNeedBufFrmCnt, m_AAjbParmPt.m_MaxNeedBufFrmCnt, m_AAjbParmPt.m_MaxCntuLostFrmCnt, m_AAjbParmPt.m_AdaptSensitivity, ( m_XfrMode == 0 ) ? 0 : 1, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：对讲客户端：对讲索引" + p_TkbkInfoTmpPt.m_TkbkIdx + "：初始化音频自适应抖动缓冲器成功。" );
 					}
@@ -376,7 +376,7 @@ public class TkbkClnt //对讲客户端。
 
 					//初始化视频自适应抖动缓冲器。
 					p_TkbkInfoTmpPt.m_VAjbPt = new HeavenTao.Vdo.VAjb();
-					if( p_TkbkInfoTmpPt.m_VAjbPt.Init( 1, m_VAjbParmPt.m_MinNeedBufFrmCnt, m_VAjbParmPt.m_MaxNeedBufFrmCnt, m_VAjbParmPt.m_AdaptSensitivity, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+					if( p_TkbkInfoTmpPt.m_VAjbPt.Init( m_ClntMediaPocsThrdPt.m_LicnCodePt, 1, m_VAjbParmPt.m_MinNeedBufFrmCnt, m_VAjbParmPt.m_MaxNeedBufFrmCnt, m_VAjbParmPt.m_AdaptSensitivity, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：对讲客户端：对讲索引" + p_TkbkInfoTmpPt.m_TkbkIdx + "：初始化视频自适应抖动缓冲器成功。" );
 					}
@@ -628,6 +628,7 @@ public class TkbkClnt //对讲客户端。
 									}
 
 									m_CurCnctSts = ClntMediaPocsThrd.CnctSts.Cnct; //设置当前连接状态为已连接。
+									m_TstNtwkDlyPt.m_IsRecvRplyPkt = 1; //设置已接收测试网络延迟应答包，这样可以立即开始发送。
 									m_ClntMediaPocsThrdPt.UserTkbkClntCnctSts( m_CurCnctSts ); //调用用户定义的对讲客户端连接状态函数。
 
 									String p_InfoStrPt = "客户端媒体处理线程：对讲客户端：初始化本端Tcp协议客户端套接字[" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_LclNodeAddrPt.m_Val + ":" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_LclNodePortPt.m_Val + "]，并连接远端Tcp协议服务端套接字[" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_RmtNodeAddrPt.m_Val + ":" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_RmtNodePortPt.m_Val + "]成功。";
@@ -671,7 +672,7 @@ public class TkbkClnt //对讲客户端。
 							if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt == null ) //如果未初始化本端高级Udp协议客户端套接字。
 							{
 								m_ClntMediaPocsThrdPt.m_AudpClntSoktPt = new AudpSokt();
-								if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.Init( p_RmtNodeAddrFamly, null, null, ( short )0, ( short )5000, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 ) //如果初始化本端高级Udp协议客户端套接字成功。
+								if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.Init( m_ClntMediaPocsThrdPt.m_LicnCodePt, p_RmtNodeAddrFamly, null, null, ( short )0, ( short )5000, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 ) //如果初始化本端高级Udp协议客户端套接字成功。
 								{
 									if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.SetSendBufSz( 1024 * 1024, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 )
 									{
@@ -758,6 +759,7 @@ public class TkbkClnt //对讲客户端。
 									}
 
 									m_CurCnctSts = ClntMediaPocsThrd.CnctSts.Cnct; //设置当前连接状态为已连接。
+									m_TstNtwkDlyPt.m_IsRecvRplyPkt = 1; //设置已接收测试网络延迟应答包，这样可以立即开始发送。
 									m_ClntMediaPocsThrdPt.UserTkbkClntCnctSts( m_CurCnctSts ); //调用用户定义的对讲客户端连接状态函数。
 
 									String p_InfoStrPt = "客户端媒体处理线程：对讲客户端：用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字[" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_RmtNodeAddrPt.m_Val + ":" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_RmtNodePortPt.m_Val + "]成功。";
@@ -1427,7 +1429,7 @@ public class TkbkClnt //对讲客户端。
 		byte p_VdoOtptFrmPt[] = null;
 		long p_VdoOtptFrmLen = 0;
 
-		p_TkbkInfoTmpPt = m_TkbkInfoCntnrPt.get( VdoOtptStrmIdx ); //这里不用加线程锁，因为媒体处理线程只会递增对讲信息容器的大小，且递增的时候只有一次赋值操作，且音频输出流索引不可能会越界。
+		p_TkbkInfoTmpPt = m_TkbkInfoCntnrPt.get( VdoOtptStrmIdx ); //这里不用加线程锁，因为媒体处理线程只会递增对讲信息容器的大小，且递增的时候只有一次赋值操作，且视频输出流索引不可能会越界。
 
 		//从容器或自适应抖动缓冲器取出视频输出帧。
 		switch( m_UseWhatRecvOtptFrm ) //使用什么接收输出帧。
@@ -1443,7 +1445,7 @@ public class TkbkClnt //对讲客户端。
 					{
 						if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "客户端媒体处理线程：对讲客户端：对讲索引" + VdoOtptStrmIdx + "：从接收视频输出帧容器取出有图像活动的视频输出帧。长度：" + p_VdoOtptFrmLen + "。" );
 					}
-					else //如果或视频输出帧为无图像活动。
+					else //如果视频输出帧为无图像活动。
 					{
 						if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "客户端媒体处理线程：对讲客户端：对讲索引" + VdoOtptStrmIdx + "：从接收视频输出帧容器取出无图像活动的视频输出帧。长度：" + p_VdoOtptFrmLen + "。" );
 					}

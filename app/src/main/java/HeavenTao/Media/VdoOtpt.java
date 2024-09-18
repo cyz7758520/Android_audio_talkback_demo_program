@@ -94,7 +94,7 @@ public class VdoOtpt //视频输出。
 					case 1: //如果要使用OpenH264解码器。
 					{
 						m_OpenH264DecdPt.m_Pt = new HeavenTao.Vdo.OpenH264Decd();
-						if( m_OpenH264DecdPt.m_Pt.Init( m_OpenH264DecdPt.m_DecdThrdNum, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+						if( m_OpenH264DecdPt.m_Pt.Init( m_MediaPocsThrdPt.m_LicnCodePt, m_OpenH264DecdPt.m_DecdThrdNum, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
 						{
 							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：初始化OpenH264解码器成功。" );
 						}
@@ -109,7 +109,7 @@ public class VdoOtpt //视频输出。
 					case 2: //如果要使用系统自带H264解码器。
 					{
 						m_SystemH264DecdPt.m_Pt = new HeavenTao.Vdo.SystemH264Decd();
-						if( m_SystemH264DecdPt.m_Pt.Init( null ) == 0 )
+						if( m_SystemH264DecdPt.m_Pt.Init( m_MediaPocsThrdPt.m_LicnCodePt, null ) == 0 )
 						{
 							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：初始化系统自带H264解码器成功。" );
 						}

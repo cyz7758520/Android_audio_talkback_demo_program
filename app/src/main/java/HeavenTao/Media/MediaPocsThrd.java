@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 import HeavenTao.Data.*;
 
@@ -123,6 +122,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 	public static Context m_CtxPt; //存放上下文的指针。
 
+	public static byte m_LicnCodePt[]; //存放授权码。
+
 	public int m_IsPrintLogcat; //存放是否打印Logcat日志，为非0表示要打印，为0表示不打印。
 	public int m_IsShowToast; //存放是否显示Toast，为非0表示要显示，为0表示不显示。
 	public Activity m_ShowToastActPt; //存放显示Toast界面的指针。
@@ -216,11 +217,13 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 											byte VdoOtptEncdSrcFrmPt[], long VdoOtptEncdSrcFrmLenByt );
 
 	//构造函数。
-	public MediaPocsThrd( Context CtxPt )
+	public MediaPocsThrd( Context CtxPt, byte LicnCodePt[] )
 	{
 		m_LastCallUserInitOrDstoy = 1; //设置上一次调用了用户定义的销毁函数。
 
 		m_CtxPt = CtxPt; //设置上下文的指针。
+
+		m_LicnCodePt = LicnCodePt; //设置授权码。
 
 		//初始化音频输入。
 		m_AdoInptPt.m_MediaPocsThrdPt = this;
@@ -804,7 +807,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				if( m_AdoVdoInptOtptAviFilePt.m_WriterPt == null )
 				{
 					m_AdoVdoInptOtptAviFilePt.m_WriterPt = new AviFileWriter();
-					if( m_AdoVdoInptOtptAviFilePt.m_WriterPt.Init( m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt, m_AdoVdoInptOtptAviFilePt.m_WrBufSzByt, m_AdoVdoInptOtptAviFilePt.m_MaxStrmNum, m_ErrInfoVstrPt ) == 0 )
+					if( m_AdoVdoInptOtptAviFilePt.m_WriterPt.Init( m_LicnCodePt, m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt, m_AdoVdoInptOtptAviFilePt.m_WrBufSzByt, m_AdoVdoInptOtptAviFilePt.m_MaxStrmNum, m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：初始化音视频输入输出Avi文件 " + m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt + " 的Avi文件写入器成功。" );
 					}

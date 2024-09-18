@@ -28,8 +28,14 @@ public class SystemH264Decd
 		Dstoy( null );
 	}
 
+	//系统自带H264解码器获取应用程序限制信息。
+	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
+	{
+		return SystemH264DecdGetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+	}
+
 	//创建并初始化系统自带H264解码器。
-	public int Init( Vstr ErrInfoVstrPt )
+	public int Init( byte LicnCodePt[], Vstr ErrInfoVstrPt )
 	{
 		if( m_SystemH264DecdPt == 0 )
 		{
@@ -40,7 +46,7 @@ public class SystemH264Decd
 			}
 
 			HTLong p_SystemH264DecdPt = new HTLong();
-			if( SystemH264DecdInit( p_SystemH264DecdPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( SystemH264DecdInit( LicnCodePt, p_SystemH264DecdPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_SystemH264DecdPt = p_SystemH264DecdPt.m_Val;
 				return 0;
@@ -83,8 +89,11 @@ public class SystemH264Decd
 		}
 	}
 
+	//系统自带H264解码器获取应用程序限制信息。
+	private static native int SystemH264DecdGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
+
 	//创建并初始化系统自带H264解码器。
-	private native int SystemH264DecdInit( HTLong SystemH264DecdPt, long ErrInfoVstrPt );
+	private native int SystemH264DecdInit( byte LicnCodePt[], HTLong SystemH264DecdPt, long ErrInfoVstrPt );
 
 	//用系统自带H264解码器对H264格式进行8位无符号整型Yu12格式帧解码。
 	private native int SystemH264DecdPocs( long SystemH264DecdPt, byte H264FrmPt[], long H264FrmLen, byte Yu12FrmPt[], long Yu12FrmSz, HTInt Yu12FrmWidth, HTInt Yu12FrmHeight, long TimeOutMsec, long ErrInfoVstrPt );

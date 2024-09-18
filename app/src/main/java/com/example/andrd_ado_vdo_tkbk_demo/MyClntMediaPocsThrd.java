@@ -22,9 +22,9 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	MainAct m_MainActPt; //存放主界面的指针。
 	public int m_TkbkClntNum; //存放对讲客户端的序号。
 
-	public MyClntMediaPocsThrd( MainAct MainActPt )
+	public MyClntMediaPocsThrd( MainAct MainActPt, byte LicnCodePt[] )
 	{
-		super( MainActPt );
+		super( MainActPt, LicnCodePt );
 
 		m_MainActPt = MainActPt;
 	}

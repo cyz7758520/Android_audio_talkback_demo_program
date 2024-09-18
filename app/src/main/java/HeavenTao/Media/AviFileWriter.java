@@ -26,18 +26,18 @@ public class AviFileWriter
 	}
 
 	//Avi文件写入器获取应用程序限制信息。
-	public static int GetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
+	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
 	{
-		return AviFileWriterGetAppLmtInfo( LmtAppNameStrPt, CurAppNameVstrPt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return AviFileWriterGetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//创建并初始化Avi文件写入器。
-	public int Init( String AviFileFullPathStrPt, long AviFileWrBufSzByt, int MaxStrmNum, Vstr ErrInfoVstrPt )
+	public int Init( byte LicnCodePt[], String AviFileFullPathStrPt, long AviFileWrBufSzByt, int MaxStrmNum, Vstr ErrInfoVstrPt )
 	{
 		if( m_AviFileWriterPt == 0 )
 		{
 			HTLong p_AviFileWriterPt = new HTLong();
-			if( AviFileWriterInit( p_AviFileWriterPt, AviFileFullPathStrPt, AviFileWrBufSzByt, MaxStrmNum, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( AviFileWriterInit( LicnCodePt, p_AviFileWriterPt, AviFileFullPathStrPt, AviFileWrBufSzByt, MaxStrmNum, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_AviFileWriterPt = p_AviFileWriterPt.m_Val;
 				return 0;
@@ -131,10 +131,10 @@ public class AviFileWriter
 	}
 
 	//Avi文件写入器获取应用程序限制信息。
-	private static native int AviFileWriterGetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
+	private static native int AviFileWriterGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化Avi文件写入器。
-	private native int AviFileWriterInit( HTLong AviFileWriterPt, String AviFileFullPathStrPt, long AviFileWrBufSzByt, int MaxStrmNum, long ErrInfoVstrPt );
+	private native int AviFileWriterInit( byte LicnCodePt[], HTLong AviFileWriterPt, String AviFileFullPathStrPt, long AviFileWrBufSzByt, int MaxStrmNum, long ErrInfoVstrPt );
 
 	//设置整个Avi文件时间线的起始时间戳。
 	private native int AviFileWriterSetStartTimeStamp( long AviFileWriterPt, long StartTimeStampMsec, long ErrInfoVstrPt );

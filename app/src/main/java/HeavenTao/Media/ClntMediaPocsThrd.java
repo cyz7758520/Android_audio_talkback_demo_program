@@ -166,9 +166,9 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	public abstract void UserBdctClntCnctSts( BdctClnt.CnctInfo CnctInfoPt, int CurCnctSts );
 
 	//构造函数。
-	public ClntMediaPocsThrd( Context CtxPt )
+	public ClntMediaPocsThrd( Context CtxPt, byte LicnCodePt[] )
 	{
-		super( CtxPt );
+		super( CtxPt, LicnCodePt );
 
 		//初始化对讲网络。
 		m_TkbkClntPt.m_ClntMediaPocsThrdPt = this; //设置网络媒体处理线程的指针。

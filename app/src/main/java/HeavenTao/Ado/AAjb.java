@@ -27,18 +27,18 @@ public class AAjb
 	}
 
 	//音频自适应抖动缓冲器获取应用程序限制信息。
-	public static int GetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
+	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
 	{
-		return AAjbGetAppLmtInfo( LmtAppNameStrPt, CurAppNameVstrPt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return AAjbGetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//创建并初始化音频自适应抖动缓冲器。
-	public int Init( int SmplRate, long FrmLenUnit, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, int IsDelObsltFrm, Vstr ErrInfoVstrPt )
+	public int Init( byte LicnCodePt[], int SmplRate, long FrmLenUnit, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, int IsDelObsltFrm, Vstr ErrInfoVstrPt )
 	{
 		if( m_AAjbPt == 0 )
 		{
 			HTLong p_AAjbPt = new HTLong();
-			if( AAjbInit( p_AAjbPt, SmplRate, FrmLenUnit, IsHaveTimeStamp, TimeStampStep, InactIsContPut, MinNeedBufFrmCnt, MaxNeedBufFrmCnt, MaxCntuLostFrmCnt, AdaptSensitivity, IsDelObsltFrm, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( AAjbInit( LicnCodePt, p_AAjbPt, SmplRate, FrmLenUnit, IsHaveTimeStamp, TimeStampStep, InactIsContPut, MinNeedBufFrmCnt, MaxNeedBufFrmCnt, MaxCntuLostFrmCnt, AdaptSensitivity, IsDelObsltFrm, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_AAjbPt = p_AAjbPt.m_Val;
 				return 0;
@@ -118,10 +118,10 @@ public class AAjb
 	}
 
 	//音频自适应抖动缓冲器获取应用程序限制信息。
-	private static native int AAjbGetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
+	private static native int AAjbGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化音频自适应抖动缓冲器。
-	private native int AAjbInit( HTLong AAjbPt, int SmplRate, long FrmLenUnit, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, int IsDelObsltFrm, long ErrInfoVstrPt );
+	private native int AAjbInit( byte LicnCodePt[], HTLong AAjbPt, int SmplRate, long FrmLenUnit, int IsHaveTimeStamp, int TimeStampStep, int InactIsContPut, int MinNeedBufFrmCnt, int MaxNeedBufFrmCnt, int MaxCntuLostFrmCnt, float AdaptSensitivity, int IsDelObsltFrm, long ErrInfoVstrPt );
 
 	//放入字节型帧到音频自适应抖动缓冲器。
 	private native int AAjbPutByteFrm( long AAjbPt, int TimeStamp, byte ByteFrmPt[], long FrmStart, long FrmStartLenByt, int IsAutoLock, long ErrInfoVstrPt );

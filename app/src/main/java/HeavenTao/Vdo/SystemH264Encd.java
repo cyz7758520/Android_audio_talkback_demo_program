@@ -29,8 +29,14 @@ public class SystemH264Encd
 		Dstoy( null );
 	}
 
+	//系统自带H264编码器获取应用程序限制信息。
+	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
+	{
+		return SystemH264EncdGetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+	}
+
 	//创建并初始化系统自带H264编码器。
-	public int Init( int Yu12FrmWidth, int Yu12FrmHeight, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlTimeSec, int Complexity, Vstr ErrInfoVstrPt )
+	public int Init( byte LicnCodePt[], int Yu12FrmWidth, int Yu12FrmHeight, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlTimeSec, int Complexity, Vstr ErrInfoVstrPt )
 	{
 		if( m_SystemH264EncdPt == 0 )
 		{
@@ -41,7 +47,7 @@ public class SystemH264Encd
 			}
 
 			HTLong p_SystemH264EncdPt = new HTLong();
-			if( SystemH264EncdInit( p_SystemH264EncdPt, Yu12FrmWidth, Yu12FrmHeight, EncdBitrate, BitrateCtrlMode, MaxFrmRate, IDRFrmIntvlTimeSec, Complexity, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( SystemH264EncdInit( LicnCodePt, p_SystemH264EncdPt, Yu12FrmWidth, Yu12FrmHeight, EncdBitrate, BitrateCtrlMode, MaxFrmRate, IDRFrmIntvlTimeSec, Complexity, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_SystemH264EncdPt = p_SystemH264EncdPt.m_Val;
 				return 0;
@@ -84,8 +90,11 @@ public class SystemH264Encd
 		}
 	}
 
+	//系统自带H264编码器获取应用程序限制信息。
+	private static native int SystemH264EncdGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
+
 	//创建并初始化系统自带H264编码器。
-	private native int SystemH264EncdInit( HTLong SystemH264EncdPt, int Yu12FrmWidth, int Yu12FrmHeight, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlTimeSec, int Cmplxt, long ErrInfoVstrPt );
+	private native int SystemH264EncdInit( byte LicnCodePt[], HTLong SystemH264EncdPt, int Yu12FrmWidth, int Yu12FrmHeight, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlTimeSec, int Cmplxt, long ErrInfoVstrPt );
 
 	//用系统自带H264编码器对8位无符号整型Yu12格式帧进行H264格式编码。
 	private native int SystemH264EncdPocs( long SystemH264EncdPt, byte Yu12FrmPt[], long Yu12FrmTimeStampMsec, byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt, long TimeOutMsec, long ErrInfoVstrPt );

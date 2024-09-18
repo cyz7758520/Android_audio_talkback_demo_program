@@ -16,9 +16,9 @@ public class MySrvrThrd extends SrvrThrd
 
 	MainAct m_MainActPt; //存放主界面的指针。
 
-	MySrvrThrd( MainAct MainActPt )
+	MySrvrThrd( MainAct MainActPt, byte LicnCodePt[] )
 	{
-		super( MainActPt );
+		super( MainActPt, LicnCodePt );
 
 		MediaPocsThrd.m_CtxPt = MainActPt;
 

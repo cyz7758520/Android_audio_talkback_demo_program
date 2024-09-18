@@ -26,18 +26,18 @@ public class OpenH264Encd
 	}
 
 	//OpenH264编码器获取应用程序限制信息。
-	public static int GetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
+	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
 	{
-		return OpenH264EncdGetAppLmtInfo( LmtAppNameStrPt, CurAppNameVstrPt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return OpenH264EncdGetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//创建并初始化OpenH264编码器。
-	public int Init( int EncdPictrWidth, int EncdPictrHeight, int VdoType, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlFrmCnt, int Complexity, Vstr ErrInfoVstrPt )
+	public int Init( byte LicnCodePt[], int EncdPictrWidth, int EncdPictrHeight, int VdoType, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlFrmCnt, int Complexity, Vstr ErrInfoVstrPt )
 	{
 		if( m_OpenH264EncdPt == 0 )
 		{
 			HTLong p_OpenH264EncdPt = new HTLong();
-			if( OpenH264EncdInit( p_OpenH264EncdPt, EncdPictrWidth, EncdPictrHeight, VdoType, EncdBitrate, BitrateCtrlMode, MaxFrmRate, IDRFrmIntvlFrmCnt, Complexity, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( OpenH264EncdInit( LicnCodePt, p_OpenH264EncdPt, EncdPictrWidth, EncdPictrHeight, VdoType, EncdBitrate, BitrateCtrlMode, MaxFrmRate, IDRFrmIntvlFrmCnt, Complexity, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_OpenH264EncdPt = p_OpenH264EncdPt.m_Val;
 				return 0;
@@ -98,10 +98,10 @@ public class OpenH264Encd
 	}
 
 	//OpenH264编码器获取应用程序限制信息。
-	private static native int OpenH264EncdGetAppLmtInfo( HTString LmtAppNameStrPt, HTString CurAppNameVstrPt, HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
+	private static native int OpenH264EncdGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化OpenH264编码器。
-	private native int OpenH264EncdInit( HTLong OpenH264EncdPt, int EncdPictrWidth, int EncdPictrHeight, int VdoType, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlFrmCnt, int Cmplxt, long ErrInfoVstrPt );
+	private native int OpenH264EncdInit( byte LicnCodePt[], HTLong OpenH264EncdPt, int EncdPictrWidth, int EncdPictrHeight, int VdoType, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlFrmCnt, int Cmplxt, long ErrInfoVstrPt );
 
 	//设置OpenH264编码器的编码后比特率。
 	private native int OpenH264EncdSetEncdBitrate( long OpenH264EncdPt, int EncdBitrate, long ErrInfoVstrPt );

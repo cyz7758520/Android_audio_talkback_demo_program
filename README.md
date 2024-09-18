@@ -76,7 +76,7 @@
 &emsp;&emsp;* WebRtc定点版声学回音消除器：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcAecm.java。  
 &emsp;&emsp;* WebRtc浮点版声学回音消除器：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcAec.java。  
 &emsp;&emsp;* WebRtc第三版声学回音消除器：libFunc.so、libc++_shared.so、libWebRtc3.so、WebRtcAec3.java。  
-&emsp;&emsp;* SpeexWebRtc三重声学回音消除器：libFunc.so、libSpeexDsp.so、libc++_shared.so、libWebRtc.so、SpeexWebRtcAec.java。  
+&emsp;&emsp;* SpeexWebRtc三重声学回音消除器：libFunc.so、libSpeexDsp.so、libc++_shared.so、libWebRtc.so、libWebRtc3.so、libSpeexWebRtcAec.so、SpeexWebRtcAec.java。  
 &emsp;&emsp;* WebRtc定点版噪音抑制器：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcNsx.java。  
 &emsp;&emsp;* WebRtc浮点版噪音抑制器：libFunc.so、libc++_shared.so、libWebRtc.so、WebRtcNs.java。  
 &emsp;&emsp;* RNNoise噪音抑制器：libFunc.so、libc++_shared.so、libWebRtc.so、libRNNoise.so、RNNoise.java。  

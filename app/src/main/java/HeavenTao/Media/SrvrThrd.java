@@ -95,6 +95,8 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 	public static Context m_CtxPt; //存放上下文的指针。
 
+	public static byte m_LicnCodePt[]; //存放授权码。
+
 	public int m_IsPrintLogcat; //存放是否打印Logcat日志，为非0表示要打印，为0表示不打印。
 	public int m_IsShowToast; //存放是否显示Toast，为非0表示要显示，为0表示不显示。
 	public Activity m_ShowToastActPt; //存放显示Toast界面的指针。
@@ -200,9 +202,11 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 	public abstract void UserCnctTstNtwkDly( CnctInfo CnctInfoPt, long NtwkDlyMsec );
 
 	//构造函数。
-	public SrvrThrd( Context CtxPt )
+	public SrvrThrd( Context CtxPt, byte LicnCodePt[] )
 	{
 		m_CtxPt = CtxPt; //设置上下文的指针。
+
+		m_LicnCodePt = LicnCodePt; //设置授权码。
 
 		m_CnctInfoCurMaxNum = -1; //设置连接信息的当前最大序号。
 
@@ -369,7 +373,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 			{
 				m_AudpSrvrSoktPt = new AudpSokt();
 
-				if( m_AudpSrvrSoktPt.Init( p_LclNodeAddrFamly, LclNodeNameStrPt, LclNodeSrvcStrPt, ( short )1, ( short )5000, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端高级Udp协议服务端套接字成功。
+				if( m_AudpSrvrSoktPt.Init( m_LicnCodePt, p_LclNodeAddrFamly, LclNodeNameStrPt, LclNodeSrvcStrPt, ( short )1, ( short )5000, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端高级Udp协议服务端套接字成功。
 				{
 					if( m_AudpSrvrSoktPt.SetSendBufSz( 1024 * 1024, m_ErrInfoVstrPt ) != 0 )
 					{

@@ -483,7 +483,7 @@ public class VdoInpt //视频输入。
 				case 1: //如果要使用OpenH264编码器。
 				{
 					m_OpenH264EncdPt.m_Pt = new HeavenTao.Vdo.OpenH264Encd();
-					if( m_OpenH264EncdPt.m_Pt.Init( m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight, m_OpenH264EncdPt.m_VdoType, m_OpenH264EncdPt.m_EncdBitrate, m_OpenH264EncdPt.m_BitrateCtrlMode, m_MaxSmplRate, m_OpenH264EncdPt.m_IDRFrmIntvl, m_OpenH264EncdPt.m_Cmplxt, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+					if( m_OpenH264EncdPt.m_Pt.Init( m_MediaPocsThrdPt.m_LicnCodePt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight, m_OpenH264EncdPt.m_VdoType, m_OpenH264EncdPt.m_EncdBitrate, m_OpenH264EncdPt.m_BitrateCtrlMode, m_MaxSmplRate, m_OpenH264EncdPt.m_IDRFrmIntvl, m_OpenH264EncdPt.m_Cmplxt, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化OpenH264编码器成功。" );
 					}
@@ -498,7 +498,7 @@ public class VdoInpt //视频输入。
 				case 2: //如果要使用系统自带H264编码器。
 				{
 					m_SystemH264EncdPt.m_Pt = new HeavenTao.Vdo.SystemH264Encd();
-					if( m_SystemH264EncdPt.m_Pt.Init( m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight, m_SystemH264EncdPt.m_EncdBitrate, m_SystemH264EncdPt.m_BitrateCtrlMode, m_MaxSmplRate, m_SystemH264EncdPt.m_IDRFrmIntvlTimeSec, m_SystemH264EncdPt.m_Cmplxt, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+					if( m_SystemH264EncdPt.m_Pt.Init( m_MediaPocsThrdPt.m_LicnCodePt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight, m_SystemH264EncdPt.m_EncdBitrate, m_SystemH264EncdPt.m_BitrateCtrlMode, m_MaxSmplRate, m_SystemH264EncdPt.m_IDRFrmIntvlTimeSec, m_SystemH264EncdPt.m_Cmplxt, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化系统自带H264编码器成功。" );
 					}
