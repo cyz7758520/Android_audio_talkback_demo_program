@@ -19,7 +19,7 @@ import HeavenTao.Media.VdoOtpt;
 
 public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 {
-	MainAct m_MainActPt; //存放主界面的指针。
+	public MainAct m_MainActPt; //存放主界面的指针。
 	public int m_TkbkClntNum; //存放对讲客户端的序号。
 
 	public MyClntMediaPocsThrd( MainAct MainActPt, byte LicnCodePt[] )
@@ -390,14 +390,14 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 
 			try
 			{
-				m_MainActPt.m_MyClntMediaPocsThrdPt.SetIsSaveAdoVdoInptOtptToAviFile( 0,
-																					  p_FullPathStrPt,
-																					  Integer.parseInt( ( ( TextView ) m_MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileWrBufSzBytEdTxtId ) ).getText().toString() ),
-																					  Integer.parseInt( ( ( TextView ) m_MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileMaxStrmNumEdTxtId ) ).getText().toString() ),
-																					  ( ( ( CheckBox ) m_MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileIsSaveAdoInptCkBoxId ) ).isChecked() ) ? 1 : 0,
-																					  ( ( ( CheckBox ) m_MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileIsSaveAdoOtptCkBoxId ) ).isChecked() ) ? 1 : 0,
-																					  ( ( ( CheckBox ) m_MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileIsSaveVdoInptCkBoxId ) ).isChecked() ) ? 1 : 0,
-																					  ( ( ( CheckBox ) m_MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileIsSaveVdoOtptCkBoxId ) ).isChecked() ) ? 1 : 0 );
+				SetIsSaveAdoVdoInptOtptToAviFile( 0,
+												  p_FullPathStrPt,
+												  Integer.parseInt( ( ( TextView ) m_MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileWrBufSzBytEdTxtId ) ).getText().toString() ),
+												  Integer.parseInt( ( ( TextView ) m_MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileMaxStrmNumEdTxtId ) ).getText().toString() ),
+												  ( ( ( CheckBox ) m_MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileIsSaveAdoInptCkBoxId ) ).isChecked() ) ? 1 : 0,
+												  ( ( ( CheckBox ) m_MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileIsSaveAdoOtptCkBoxId ) ).isChecked() ) ? 1 : 0,
+												  ( ( ( CheckBox ) m_MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileIsSaveVdoInptCkBoxId ) ).isChecked() ) ? 1 : 0,
+												  ( ( ( CheckBox ) m_MainActPt.m_SaveAdoVdoInptOtptToAviFileStngLyotViewPt.findViewById( R.id.SaveAdoVdoInptOtptToAviFileIsSaveVdoOtptCkBoxId ) ).isChecked() ) ? 1 : 0 );
 			}
 			catch( NumberFormatException e )
 			{
@@ -413,7 +413,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 			p_FullPathStrPt = ( ( EditText ) m_MainActPt.m_SaveStsToTxtFileStngLyotViewPt.findViewById( R.id.SaveStsToTxtFileFullPathEdTxtId ) ).getText().toString();
 			if( p_FullPathStrPt.charAt( 0 ) != '/' ) p_FullPathStrPt = m_MainActPt.m_ExternalDirFullAbsPathStrPt + "/" + p_FullPathStrPt;
 
-			m_MainActPt.m_MyClntMediaPocsThrdPt.SaveStsToTxtFile( 0, p_FullPathStrPt );
+			SaveStsToTxtFile( 0, p_FullPathStrPt );
 		}
 	}
 
@@ -545,9 +545,33 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		}
 	}
 
+	//用户定义的设备改变函数。
+	@Override public void UserDvcChg( AdoInptOtptDvcInfo AdoInptOtptDvcInfoPt, VdoInptDvcInfo VdoInptDvcInfoPt )
+	{
+		if( AdoInptOtptDvcInfoPt != null )
+		{
+			AdoInptOtptDvcInfo p_AdoInptOtptDvcInfoPt = new AdoInptOtptDvcInfo();
+			p_AdoInptOtptDvcInfoPt.m_NameStrPt = AdoInptOtptDvcInfoPt.m_NameStrPt;
+			p_AdoInptOtptDvcInfoPt.m_AdoInptDvcInfoPt = AdoInptOtptDvcInfoPt.m_AdoInptDvcInfoPt;
+			p_AdoInptOtptDvcInfoPt.m_AdoOtptDvcInfoPt = AdoInptOtptDvcInfoPt.m_AdoOtptDvcInfoPt;
+			m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.AdoInptOtptDvcChg, p_AdoInptOtptDvcInfoPt );
+		}
+
+		if( VdoInptDvcInfoPt != null )
+		{
+			VdoInptDvcInfo p_VdoInptDvcInfoPt = new VdoInptDvcInfo();
+			p_VdoInptDvcInfoPt.m_DvcTyp = VdoInptDvcInfoPt.m_DvcTyp;
+			p_VdoInptDvcInfoPt.m_CameraId = VdoInptDvcInfoPt.m_CameraId;
+			m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.VdoInptDvcChg, p_VdoInptDvcInfoPt );
+		}
+	}
+
 	//设置要使用音频输入。
 	void SetToUseAdoInpt()
 	{
+		//设置音频输入输出使用的设备。
+		SetAdoInptOtptUseDvc( 0, m_MainActPt.SendGetAdoInptOtptDvcInfoMsg(), 0 );
+
 		//设置音频输入。
 		SetAdoInpt( 0,
 					( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate8000RdBtnId ) ).isChecked() ) ? 8000 :
@@ -837,6 +861,9 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	//设置要使用音频输出。
 	void SetToUseAdoOtpt()
 	{
+		//设置音频输入输出使用的设备。
+		SetAdoInptOtptUseDvc( 0, m_MainActPt.SendGetAdoInptOtptDvcInfoMsg(), 0 );
+
 		//设置音频输出。
 		SetAdoOtpt( 0,
 					( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseAdoSmplRate8000RdBtnId ) ).isChecked() ) ? 8000 :
@@ -873,11 +900,6 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		AdoOtptSetIsDrawAdoWavfmToSurface( 0,
 										   ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
 										   ( ( SurfaceView ) m_MainActPt.findViewById( R.id.AdoOtptWavfmSurfaceId ) ) );
-
-		//设置音频输出使用的设备。
-		AdoOtptSetUseDvc( 0,
-						  ( ( ( RadioButton ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseSpeakerRdBtnId ) ).isChecked() ) ? 0 : 1,
-						  0 );
 
 		//设置音频输出是否静音。
 		AdoOtptSetIsMute( 0,

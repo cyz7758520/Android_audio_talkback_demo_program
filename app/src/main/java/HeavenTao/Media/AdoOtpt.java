@@ -1,11 +1,14 @@
 package HeavenTao.Media;
 
 import android.content.Context;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.os.Build;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.util.ArrayList;
@@ -20,8 +23,8 @@ public class AdoOtpt //音频输出。
 {
 	MediaPocsThrd m_MediaPocsThrdPt; //存放媒体处理线程的指针。
 
-	public int m_IsUse; //存放是否使用音频输入，为0表示不使用，为非0表示要使用。
-	public int m_IsInit; //存放是否初始化音频输入，为0表示未初始化，为非0表示已初始化。
+	public int m_IsUse; //存放是否使用音频输出，为0表示不使用，为非0表示要使用。
+	public int m_IsInit; //存放是否初始化音频输出，为0表示未初始化，为非0表示已初始化。
 
 	public int m_SmplRate; //存放采样频率，取值只能为8000、16000、32000、48000。
 	public long m_FrmLenMsec; //存放帧的长度，单位为毫秒，取值只能为10毫秒的倍数。
@@ -156,7 +159,6 @@ public class AdoOtpt //音频输出。
 	{
 		public AudioTrack m_Pt; //存放指针。
 		int m_BufSzByt; //存放缓冲区大小，单位为字节。
-		public int m_UseWhatDvc; //存放使用什么设备，为0表示扬声器，为非0表示听筒。
 		public int m_UseWhatStreamType; //存放使用什么流类型，为0表示通话类型，为非0表示媒体类型。
 		public int m_IsMute; //存放是否静音，为0表示有声音，为非0表示静音。
 	}
@@ -392,6 +394,7 @@ public class AdoOtpt //音频输出。
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：初始化原始波形器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
 					break Out;
 				}
+				m_WavfmPt.m_SrcSurfacePt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置预览Surface视图的类型。老机型上必须要用。
 			}
 
 			p_Rslt = 0; //设置本函数执行成功。
@@ -481,48 +484,26 @@ public class AdoOtpt //音频输出。
 
 		Out:
 		{
-			//设置使用什么设备。
-			if( m_DvcPt.m_UseWhatDvc == 0 ) //如果要使用扬声器。
+			//初始化设备。
 			{
-				( ( AudioManager )MediaPocsThrd.m_CtxPt.getSystemService( Context.AUDIO_SERVICE ) ).setSpeakerphoneOn( true ); //打开扬声器。
-			}
-			else //如果要使用听筒。
-			{
-				( ( AudioManager )MediaPocsThrd.m_CtxPt.getSystemService( Context.AUDIO_SERVICE ) ).setSpeakerphoneOn( false ); //关闭扬声器。
-			}
+				//打开蓝牙Sco协议。每次初始化设备都要打开，因为切换设备后可能会关闭。
+				( ( AudioManager ) MediaPocsThrd.m_CtxPt.getSystemService( Context.AUDIO_SERVICE ) ).setBluetoothScoOn( true );
+				( ( AudioManager ) MediaPocsThrd.m_CtxPt.getSystemService( Context.AUDIO_SERVICE ) ).startBluetoothSco();
 
-			//用第一种方法创建并初始化设备。
-			try
-			{
-				m_DvcPt.m_BufSzByt = 2;
-				m_DvcPt.m_Pt = new AudioTrack( ( m_DvcPt.m_UseWhatStreamType == 0 ) ? AudioManager.STREAM_VOICE_CALL : AudioManager.STREAM_MUSIC,
-											   m_SmplRate,
-											   AudioFormat.CHANNEL_CONFIGURATION_MONO,
-											   AudioFormat.ENCODING_PCM_16BIT,
-											   m_DvcPt.m_BufSzByt,
-											   AudioTrack.MODE_STREAM );
-				if( m_DvcPt.m_Pt.getState() == AudioTrack.STATE_INITIALIZED )
+				//设置默认的设备。必须要在初始化设备前设置，否则可能会失效。
+				if( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.AdoInptOtptDvcInfo.DvcTyp.DftSpeaker ) //如果要使用默认扬声器。
 				{
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第一种方法初始化设备成功。采样频率：" + m_SmplRate + "，缓冲区大小：" + m_DvcPt.m_BufSzByt + "。" );
+					( ( AudioManager )MediaPocsThrd.m_CtxPt.getSystemService( Context.AUDIO_SERVICE ) ).setSpeakerphoneOn( true ); //打开扬声器。
 				}
-				else
+				else if( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.AdoInptOtptDvcInfo.DvcTyp.DftEarpiece ) //如果要使用默认听筒。
 				{
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第一种方法初始化设备失败。" );
-					m_DvcPt.m_Pt.release();
-					m_DvcPt.m_Pt = null;
+					( ( AudioManager )MediaPocsThrd.m_CtxPt.getSystemService( Context.AUDIO_SERVICE ) ).setSpeakerphoneOn( false ); //关闭扬声器。
 				}
-			}
-			catch( IllegalArgumentException e )
-			{
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第一种方法初始化设备失败。原因：" + e.getMessage() );
-			}
 
-			//用第二种方法初始化设备。
-			if( m_DvcPt.m_Pt == null )
-			{
+				//用第一种方法创建并初始化设备。
 				try
 				{
-					m_DvcPt.m_BufSzByt = AudioTrack.getMinBufferSize( m_SmplRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT );
+					m_DvcPt.m_BufSzByt = 2;
 					m_DvcPt.m_Pt = new AudioTrack( ( m_DvcPt.m_UseWhatStreamType == 0 ) ? AudioManager.STREAM_VOICE_CALL : AudioManager.STREAM_MUSIC,
 												   m_SmplRate,
 												   AudioFormat.CHANNEL_CONFIGURATION_MONO,
@@ -531,18 +512,101 @@ public class AdoOtpt //音频输出。
 												   AudioTrack.MODE_STREAM );
 					if( m_DvcPt.m_Pt.getState() == AudioTrack.STATE_INITIALIZED )
 					{
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第二种方法初始化设备成功。采样频率：" + m_SmplRate + "，缓冲区大小：" + m_DvcPt.m_BufSzByt + "。" );
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第一种方法初始化设备成功。采样频率：" + m_SmplRate + "，缓冲区大小：" + m_DvcPt.m_BufSzByt + "。" );
 					}
 					else
 					{
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第二种方法初始化设备失败。" );
-						break Out;
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第一种方法初始化设备失败。" );
+						m_DvcPt.m_Pt.release();
+						m_DvcPt.m_Pt = null;
 					}
 				}
 				catch( IllegalArgumentException e )
 				{
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第二种方法初始化设备失败。原因：" + e.getMessage() );
-					break Out;
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第一种方法初始化设备失败。原因：" + e.getMessage() );
+				}
+
+				//用第二种方法初始化设备。
+				if( m_DvcPt.m_Pt == null )
+				{
+					try
+					{
+						m_DvcPt.m_BufSzByt = AudioTrack.getMinBufferSize( m_SmplRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT );
+						m_DvcPt.m_Pt = new AudioTrack( ( m_DvcPt.m_UseWhatStreamType == 0 ) ? AudioManager.STREAM_VOICE_CALL : AudioManager.STREAM_MUSIC,
+													   m_SmplRate,
+													   AudioFormat.CHANNEL_CONFIGURATION_MONO,
+													   AudioFormat.ENCODING_PCM_16BIT,
+													   m_DvcPt.m_BufSzByt,
+													   AudioTrack.MODE_STREAM );
+						if( m_DvcPt.m_Pt.getState() == AudioTrack.STATE_INITIALIZED )
+						{
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第二种方法初始化设备成功。采样频率：" + m_SmplRate + "，缓冲区大小：" + m_DvcPt.m_BufSzByt + "。" );
+						}
+						else
+						{
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第二种方法初始化设备失败。" );
+							break Out;
+						}
+					}
+					catch( IllegalArgumentException e )
+					{
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：用第二种方法初始化设备失败。原因：" + e.getMessage() );
+						break Out;
+					}
+				}
+
+				//设置音频输出使用的设备。
+				if( android.os.Build.VERSION.SDK_INT >= 23 )
+				{
+					if( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.AdoInptOtptDvcInfo.DvcTyp.DftSpeaker ) || //如果要使用默认扬声器或默认听筒。
+						( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.AdoInptOtptDvcInfo.DvcTyp.DftEarpiece ) )
+					{
+						m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt = m_DvcPt.m_Pt.getRoutedDevice(); //获取音频输出当前路由的设备。
+					}
+					else if( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt != null ) //如果要使用指定的。
+					{
+						if( !m_DvcPt.m_Pt.setPreferredDevice( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt ) ) //如果设置音频输出使用的设备失败。
+						{
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：设置音频输出使用的设备失败。" );
+							m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
+							p_Rslt = 0; //这里返回成功是为了防止媒体处理线程报错退出。
+							break Out;
+						}
+					}
+
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )
+					{
+						AudioDeviceInfo p_AdoOtptPreferredDevice = m_DvcPt.m_Pt.getPreferredDevice();
+						AudioDeviceInfo p_AdoOtptRoutedDevice = m_DvcPt.m_Pt.getRoutedDevice();
+
+						Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：设置音频输出使用的设备[" + m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_NameStrPt + "]成功。" +
+																"指定设备：" + ( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt != null ) ? ( MediaPocsThrd.GetAdoDvcInfoTypeName( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getType() ) + m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getProductName() ) : "空" ) + "。" +
+																"首选设备：" + ( ( p_AdoOtptPreferredDevice != null ) ? ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoOtptPreferredDevice.getType() ) + p_AdoOtptPreferredDevice.getProductName() ) : "空" ) + "。" +
+																"路由设备：" + ( ( p_AdoOtptRoutedDevice != null ) ? ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoOtptRoutedDevice.getType() ) + p_AdoOtptRoutedDevice.getProductName() ) : "空" ) + "。" );
+
+						if( p_AdoOtptPreferredDevice == null )
+						{
+							Log.w( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：音频输出的首选设备为空。" );
+						}
+						else if( p_AdoOtptPreferredDevice.getId() != m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getId() )
+						{
+							Log.w( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：音频输出的首选设备与指定设备不一致。" );
+						}
+						else if( p_AdoOtptRoutedDevice == null )
+						{
+							Log.w( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：音频输出的路由设备为空。" );
+						}
+						else if( p_AdoOtptRoutedDevice.getId() != m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getId() )
+						{
+							Log.w( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：音频输出的路由设备与指定设备不一致。" );
+						}
+					}
+				}
+
+				//发送音频输入输出设备改变线程消息。
+				if( ( m_MediaPocsThrdPt.m_AdoInptPt.m_IsUse == 0 ) || ( m_MediaPocsThrdPt.m_AdoInptPt.m_IsInit != 0 ) ) //如果不使用音频输入，或音频输入已初始化，才发送消息，避免重复发送。
+				{
+					m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcChg );
 				}
 			}
 
@@ -710,6 +774,35 @@ public class AdoOtpt //音频输出。
 			//音频输出循环开始。
 			while( true )
 			{
+				if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M )
+				{
+					AudioDeviceInfo p_AdoOtptRoutedDevice = m_DvcPt.m_Pt.getRoutedDevice();
+					/*Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：当前音频输出使用的设备[" + m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_NameStrPt + "]。" +
+															"指定设备：" + ( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt != null ) ? ( MediaPocsThrd.GetAdoDvcInfoTypeName( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getType() ) + m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getProductName() ) : "空" ) + "。" +
+															"路由设备：" + ( ( p_AdoOtptRoutedDevice != null ) ? ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoOtptRoutedDevice.getType() ) + p_AdoOtptRoutedDevice.getProductName() ) : "空" ) + "。" );*/
+					if( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.AdoInptOtptDvcInfo.DvcTyp.DftSpeaker ) || //如果要使用默认扬声器或默认听筒。
+						( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.AdoInptOtptDvcInfo.DvcTyp.DftEarpiece ) )
+					{
+						if( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt == null ) //如果音频输出指定的设备信息为空。
+						{
+							if( p_AdoOtptRoutedDevice != null ) //如果音频输出路由的设备信息不为空。
+							{
+								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：音频输出的指定设备改为[" + ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoOtptRoutedDevice.getType() ) + p_AdoOtptRoutedDevice.getProductName() ) + "]。" );
+								m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt = p_AdoOtptRoutedDevice;
+							}
+						}
+						else //如果音频输出指定的设备信息不为空。
+						{
+							if( ( p_AdoOtptRoutedDevice != null ) && ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getId() != p_AdoOtptRoutedDevice.getId() ) ) //如果音频输出指定的设备与路由的设备不一致。
+							{
+								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：音频输出的指定设备[" + ( MediaPocsThrd.GetAdoDvcInfoTypeName( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getType() ) + m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getProductName() ) + "]与路由设备[" + ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoOtptRoutedDevice.getType() ) + p_AdoOtptRoutedDevice.getProductName() ) + "]不一致，重新初始化设备。" );
+								m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
+								break; //这里要退出线程，防止多次发送线程消息。
+							}
+						}
+					}
+				}
+
 				OutPocs:
 				{
 					//获取一个Pcm格式空闲帧。

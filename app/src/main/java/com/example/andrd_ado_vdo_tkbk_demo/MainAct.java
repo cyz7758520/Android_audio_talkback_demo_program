@@ -7,6 +7,8 @@ import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
@@ -23,6 +25,8 @@ import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -63,6 +67,10 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 	View m_ClntStngLyotViewPt; //存放客户端设置布局视图的指针。
 	ListView m_ClntLstViewPt; //存放客户端列表视图的指针。
 	ArrayList< Map< String, String > > m_ClntLstItemArrayLstPt; //存放客户端列表项目数组列表的指针。
+	Spinner m_AdoInptOtptDvcSpinnerPt; //存放音频输入输出设备下拉框的指针。
+	ArrayList< MediaPocsThrd.AdoInptOtptDvcInfo > m_AdoInptOtptDvcInfoLstPt; //存放音频输入输出设备信息列表的指针。
+	ArrayList< String > m_AdoInptOtptDvcSpinnerItemArrayLst; //存放音频输入输出设备下拉框项目数组列表的指针。
+	MediaPocsThrd.AdoInptOtptDvcInfo m_AdoInptOtptUseDvcInfoPt; //存放音频输入输出使用的设备信息的指针。
 	View m_StngLyotViewPt; //存放设置布局视图的指针。
 	View m_AjbStngLyotViewPt; //存放音频自适应抖动缓冲器设置布局视图的指针。
 	View m_SaveStsToTxtFileStngLyotViewPt; //存放保存状态到Txt文件设置布局视图的指针。
@@ -114,9 +122,14 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		public static final int ClntLstDelItem                 = 15; //客户端列表删除项目。
 		public static final int ClntLstModifyItem              = 16; //客户端列表修改项目。
 
-		public static final int VdoInptOtptViewInit            = 17; //视频输入输出视图初始化。
-		public static final int VdoInptOtptViewDstoy           = 18; //视频输入输出视图销毁。
-		public static final int VdoInptOtptViewSetTitle        = 19; //视频输入输出视图设置标题。
+		public static final int GetAdoInptOtptDvcInfo          = 17; //获取音频输入输出设备信息。
+
+		public static final int VdoInptOtptViewInit            = 18; //视频输入输出视图初始化。
+		public static final int VdoInptOtptViewDstoy           = 19; //视频输入输出视图销毁。
+		public static final int VdoInptOtptViewSetTitle        = 20; //视频输入输出视图设置标题。
+
+		public static final int AdoInptOtptDvcChg              = 21; //音频输入输出设备改变。
+		public static final int VdoInptDvcChg                  = 22; //视频输入设备改变。
 	}
 
 	//主界面消息处理。
@@ -270,6 +283,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 						}
 					}
 					m_MainActPt.m_MyClntMediaPocsThrdPt = null;
+					m_AdoInptOtptUseDvcInfoPt = null;
+					UpdateAdoInptOtptDvcSpinner(); //更新音频输入输出设备下拉框。
 					break;
 				}
 				case MainActMsgTyp.TkbkClntCnctInit:
@@ -372,6 +387,11 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 					( ( SimpleAdapter ) m_ClntLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知客户端列表视图数据集被改变。
 					break;
 				}
+				case MainActMsgTyp.GetAdoInptOtptDvcInfo:
+				{
+					( ( HTObject )( ( Object[] ) MessagePt.obj )[ 0 ] ).m_Val = m_AdoInptOtptDvcInfoLstPt.get( m_AdoInptOtptDvcSpinnerPt.getSelectedItemPosition() );
+					break;
+				}
 				case MainActMsgTyp.VdoInptOtptViewInit:
 				{
 					( ( HTObject )( ( Object[] ) MessagePt.obj )[ 1 ] ).m_Val = VdoInptOtptViewInit( ( String ) ( ( Object[] ) MessagePt.obj )[ 0 ] );
@@ -385,6 +405,19 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 				case MainActMsgTyp.VdoInptOtptViewSetTitle:
 				{
 					VdoInptOtptViewSetTitle( ( HTSurfaceView ) ( ( Object[] ) MessagePt.obj )[ 0 ], ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
+					break;
+				}
+				case MainActMsgTyp.AdoInptOtptDvcChg:
+				{
+					m_AdoInptOtptUseDvcInfoPt = ( MediaPocsThrd.AdoInptOtptDvcInfo )( ( Object[] ) MessagePt.obj )[ 0 ]; //设置音频输入输出使用的设备信息的指针。
+					UpdateAdoInptOtptDvcSpinner(); //更新音频输入输出设备下拉框。
+					break;
+				}
+				case MainActMsgTyp.VdoInptDvcChg:
+				{
+					MediaPocsThrd.VdoInptDvcInfo p_VdoInptUseDvcInfoPt = ( MediaPocsThrd.VdoInptDvcInfo )( ( Object[] ) MessagePt.obj )[ 0 ]; //设置视频输入使用的设备信息的指针。
+					if( p_VdoInptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.VdoInptDvcInfo.DvcTyp.FrontCamera ) ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseFrontCamereRdBtnId ) ).setChecked( true );
+					else ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseBackCamereRdBtnId ) ).setChecked( true );
 					break;
 				}
 			}
@@ -563,7 +596,44 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 			m_ClntLstViewPt = m_MainLyotViewPt.findViewById( R.id.ClntLstId );
 			m_ClntLstItemArrayLstPt = new ArrayList< Map< String, String > >();
 			m_ClntLstViewPt.setAdapter( new SimpleAdapter( this, m_ClntLstItemArrayLstPt, R.layout.cnct_and_clnt_lst_item, new String[]{ "CnctAndClntLstItemPrtclTxtId", "CnctAndClntLstItemRmtNodeNameTxtId", "CnctAndClntLstItemRmtNodeSrvcTxtId", "CnctAndClntLstItemTxt1TxtId", "CnctAndClntLstItemTxt2TxtId", "CnctAndClntLstItemTxt3TxtId" }, new int[]{ R.id.CnctAndClntLstItemPrtclTxtId, R.id.CnctAndClntLstItemRmtNodeNameTxtId, R.id.CnctAndClntLstItemRmtNodeSrvcTxtId, R.id.CnctAndClntLstItemTxt1TxtId, R.id.CnctAndClntLstItemTxt2TxtId, R.id.CnctAndClntLstItemTxt3TxtId } ) );
+			m_AdoInptOtptDvcSpinnerPt = ( ( Spinner ) m_MainLyotViewPt.findViewById( R.id.AdoInptOtptDvcSpinnerId ) );
+			m_AdoInptOtptDvcSpinnerItemArrayLst = new ArrayList< String >();
+			m_AdoInptOtptDvcSpinnerPt.setAdapter( new ArrayAdapter< String >( MainAct.this, android.R.layout.simple_spinner_dropdown_item, m_AdoInptOtptDvcSpinnerItemArrayLst ) );
+			m_AdoInptOtptDvcSpinnerPt.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() //设置音频输入输出设备下拉框的选择监听器。
+			{
+				@Override
+				public void onItemSelected( AdapterView< ? > parent, View view, int position, long id )
+				{
+					if( m_MyClntMediaPocsThrdPt != null ) //如果是因为用户手动选择触发的。
+					{
+						m_MyClntMediaPocsThrdPt.SetAdoInptOtptUseDvc( 1, m_AdoInptOtptDvcInfoLstPt.get( position ), 0 );
+					}
+				}
 
+				@Override
+				public void onNothingSelected( AdapterView< ? > parent )
+				{
+
+				}
+			} );
+			UpdateAdoInptOtptDvcSpinner(); //更新音频输入输出设备下拉框。
+			if( android.os.Build.VERSION.SDK_INT >= 23 ) //注册音频输入输出设备修改回调。
+			{
+				android.media.AudioDeviceCallback p_AdoInptOtptDvcChgCallbackPt = new android.media.AudioDeviceCallback()
+				{
+					public void onAudioDevicesAdded( AudioDeviceInfo[] addedDevices )
+					{
+						UpdateAdoInptOtptDvcSpinner(); //更新音频输入输出设备下拉框。
+					}
+
+					public void onAudioDevicesRemoved( AudioDeviceInfo[] removedDevices )
+					{
+						UpdateAdoInptOtptDvcSpinner(); //更新音频输入输出设备下拉框。
+					}
+				};
+
+				( ( AudioManager ) getSystemService( Context.AUDIO_SERVICE ) ).registerAudioDeviceCallback( p_AdoInptOtptDvcChgCallbackPt, null );
+			}
 			m_StngLyotViewPt = p_LyotInflater.inflate( R.layout.stng_lyot, null );
 			m_AjbStngLyotViewPt = p_LyotInflater.inflate( R.layout.ajb_stng_lyot, null );
 			m_SaveStsToTxtFileStngLyotViewPt = p_LyotInflater.inflate( R.layout.save_sts_to_txt_file_stng_lyot, null );
@@ -949,24 +1019,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 																( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoInpt : 0 ) +
 																( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoOtpt : 0 ) );
 
-		}
-	}
-
-	//使用扬声器单选按钮。
-	public void onClickUseSpeakerRdBtn( View ViewPt )
-	{
-		if( m_MyClntMediaPocsThrdPt != null )
-		{
-			m_MyClntMediaPocsThrdPt.AdoOtptSetUseDvc( 1, 0, 0 );
-		}
-	}
-
-	//使用听筒或耳机单选按钮。
-	public void onClickUseHeadsetRdBtn( View ViewPt )
-	{
-		if( m_MyClntMediaPocsThrdPt != null )
-		{
-			m_MyClntMediaPocsThrdPt.AdoOtptSetUseDvc( 1, 1, 0 );
 		}
 	}
 
@@ -1427,6 +1479,77 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 	{
 		setContentView( m_StngLyotViewPt );
 		m_CurActivityLyotViewPt = m_StngLyotViewPt;
+	}
+
+	//更新音频输入输出设备下拉框。
+	public void UpdateAdoInptOtptDvcSpinner()
+	{
+		MediaPocsThrd.AdoInptOtptDvcInfo p_CurSelAdoInptOtptDvcInfoPt = null; //存放当前选择的音频输入输出设备信息。
+
+		if( m_AdoInptOtptDvcSpinnerPt.getSelectedItemPosition() != AdapterView.INVALID_POSITION ) p_CurSelAdoInptOtptDvcInfoPt = m_AdoInptOtptDvcInfoLstPt.get( m_AdoInptOtptDvcSpinnerPt.getSelectedItemPosition() ); //设置当前选择的音频输入输出设备信息。
+
+		m_AdoInptOtptDvcInfoLstPt = MediaPocsThrd.GetAllAdoInptOtptDvcInfo(); //更新音频输入输出设备信息列表。
+
+		//更新音频输入输出设备下拉框项目数组列表。
+		m_AdoInptOtptDvcSpinnerItemArrayLst.clear();
+		for( MediaPocsThrd.AdoInptOtptDvcInfo m_AdoInptOtptDvcInfoPt : m_AdoInptOtptDvcInfoLstPt )
+		{
+			m_AdoInptOtptDvcSpinnerItemArrayLst.add( m_AdoInptOtptDvcInfoPt.m_NameStrPt );
+		}
+		if( android.os.Build.VERSION.SDK_INT >= 23 )
+		{
+			if( m_AdoInptOtptUseDvcInfoPt != null )
+			{
+				if( m_AdoInptOtptUseDvcInfoPt.m_NameStrPt.equals( "默认扬声器" ) ) //如果要使用默认扬声器。
+				{
+					if( m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt != null ) m_AdoInptOtptDvcSpinnerItemArrayLst.set( 0, "默认扬声器：" + MediaPocsThrd.GetAdoDvcInfoTypeName( m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getType() ) + m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getProductName() );
+					else if( m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt != null ) m_AdoInptOtptDvcSpinnerItemArrayLst.set( 0, "默认扬声器：" + MediaPocsThrd.GetAdoDvcInfoTypeName( m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getType() ) + m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getProductName() );
+					else m_AdoInptOtptDvcSpinnerItemArrayLst.set( 0, "默认扬声器" );
+					m_AdoInptOtptDvcSpinnerItemArrayLst.set( 1, "默认听筒" );
+				}
+				else if( m_AdoInptOtptUseDvcInfoPt.m_NameStrPt.equals( "默认听筒" ) ) //如果要使用默认听筒。
+				{
+					m_AdoInptOtptDvcSpinnerItemArrayLst.set( 0, "默认扬声器" );
+					if( m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt != null ) m_AdoInptOtptDvcSpinnerItemArrayLst.set( 1, "默认听筒：" + MediaPocsThrd.GetAdoDvcInfoTypeName( m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getType() ) + m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getProductName() );
+					else if( m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt != null ) m_AdoInptOtptDvcSpinnerItemArrayLst.set( 1, "默认听筒：" + MediaPocsThrd.GetAdoDvcInfoTypeName( m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getType() ) + m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getProductName() );
+					else m_AdoInptOtptDvcSpinnerItemArrayLst.set( 1, "默认听筒" );
+				}
+				else //如果要使用指定的设备。
+				{
+
+				}
+			}
+		}
+		( ( ArrayAdapter< String > ) m_AdoInptOtptDvcSpinnerPt.getAdapter() ).notifyDataSetChanged();
+
+		//继续选择之前选择的音频输入输出设备。
+		if( p_CurSelAdoInptOtptDvcInfoPt != null )
+		{
+			OutFindAdoInptOtptDvcInfo:
+			{
+				for( int i = 0; i < m_AdoInptOtptDvcInfoLstPt.size(); i++ ) //查找要使用的设备。
+				{
+					if( m_AdoInptOtptDvcInfoLstPt.get( i ).m_NameStrPt.equals( p_CurSelAdoInptOtptDvcInfoPt.m_NameStrPt ) )
+					{
+						m_AdoInptOtptDvcSpinnerPt.setSelection( i );
+						break OutFindAdoInptOtptDvcInfo;
+					}
+				}
+				m_AdoInptOtptDvcSpinnerPt.setSelection( 0 ); //如果没有找到就使用默认扬声器。
+			}
+		}
+	}
+
+	//发送视频输入输出视图初始化消息。
+	public MediaPocsThrd.AdoInptOtptDvcInfo SendGetAdoInptOtptDvcInfoMsg()
+	{
+		Message p_MessagePt = new Message();
+		HTObject p_HTObjectPt = new HTObject();
+		p_MessagePt.what = MainActMsgTyp.GetAdoInptOtptDvcInfo;
+		p_MessagePt.obj = new Object[]{ p_HTObjectPt };
+		m_MainActHandlerPt.sendMessage( p_MessagePt );
+		while( p_HTObjectPt.m_Val == null ) SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
+		return ( MediaPocsThrd.AdoInptOtptDvcInfo ) p_HTObjectPt.m_Val;
 	}
 
 	//视频输入输出视图初始化。

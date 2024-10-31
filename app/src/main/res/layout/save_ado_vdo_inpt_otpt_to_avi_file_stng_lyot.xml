@@ -72,7 +72,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="最大流数量："
+                android:text="最大流数量，取值区间为[1,100]："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"

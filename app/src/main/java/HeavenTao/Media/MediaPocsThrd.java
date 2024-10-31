@@ -4,6 +4,9 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.AudioDeviceCallback;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
@@ -27,37 +30,38 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 	public class ThrdMsgTyp
 	{
-		public static final int SetAdoInpt = 0;
-		public static final int AdoInptSetIsUseSystemAecNsAgc = 1;
-		public static final int AdoInptSetUseNoAec = 2;
-		public static final int AdoInptSetUseSpeexAec = 3;
-		public static final int AdoInptSetUseWebRtcAecm = 4;
-		public static final int AdoInptSetUseWebRtcAec = 5;
-		public static final int AdoInptSetUseWebRtcAec3 = 6;
-		public static final int AdoInptSetUseSpeexWebRtcAec = 7;
-		public static final int AdoInptSetUseNoNs = 8;
-		public static final int AdoInptSetUseSpeexPrpocsNs = 9;
-		public static final int AdoInptSetUseWebRtcNsx = 10;
-		public static final int AdoInptSetUseWebRtcNs = 11;
-		public static final int AdoInptSetUseRNNoise = 12;
-		public static final int AdoInptSetIsUseSpeexPrpocs = 13;
-		public static final int AdoInptSetUsePcm = 14;
-		public static final int AdoInptSetUseSpeexEncd = 15;
-		public static final int AdoInptSetUseOpusEncd = 16;
-		public static final int AdoInptSetIsSaveAdoToWaveFile = 17;
-		public static final int AdoInptSetIsDrawAdoWavfmToSurface = 18;
-		public static final int AdoInptSetIsMute = 19;
+		public static final int SetAdoInptOtptUseDvc = 0;
 
-		public static final int SetAdoOtpt = 20;
-		public static final int AdoOtptAddStrm = 21;
-		public static final int AdoOtptDelStrm = 22;
-		public static final int AdoOtptSetStrmUsePcm = 23;
-		public static final int AdoOtptSetStrmUseSpeexDecd = 24;
-		public static final int AdoOtptSetStrmUseOpusDecd = 25;
-		public static final int AdoOtptSetStrmIsUse = 26;
-		public static final int AdoOtptSetIsSaveAdoToWaveFile = 27;
-		public static final int AdoOtptSetIsDrawAdoWavfmToSurface = 28;
-		public static final int AdoOtptSetUseDvc = 29;
+		public static final int SetAdoInpt = 1;
+		public static final int AdoInptSetIsUseSystemAecNsAgc = 2;
+		public static final int AdoInptSetUseNoAec = 3;
+		public static final int AdoInptSetUseSpeexAec = 4;
+		public static final int AdoInptSetUseWebRtcAecm = 5;
+		public static final int AdoInptSetUseWebRtcAec = 6;
+		public static final int AdoInptSetUseWebRtcAec3 = 7;
+		public static final int AdoInptSetUseSpeexWebRtcAec = 8;
+		public static final int AdoInptSetUseNoNs = 9;
+		public static final int AdoInptSetUseSpeexPrpocsNs = 10;
+		public static final int AdoInptSetUseWebRtcNsx = 11;
+		public static final int AdoInptSetUseWebRtcNs = 12;
+		public static final int AdoInptSetUseRNNoise = 13;
+		public static final int AdoInptSetIsUseSpeexPrpocs = 14;
+		public static final int AdoInptSetUsePcm = 15;
+		public static final int AdoInptSetUseSpeexEncd = 16;
+		public static final int AdoInptSetUseOpusEncd = 17;
+		public static final int AdoInptSetIsSaveAdoToWaveFile = 18;
+		public static final int AdoInptSetIsDrawAdoWavfmToSurface = 19;
+		public static final int AdoInptSetIsMute = 20;
+
+		public static final int SetAdoOtpt = 21;
+		public static final int AdoOtptAddStrm = 22;
+		public static final int AdoOtptDelStrm = 23;
+		public static final int AdoOtptSetStrmUsePcm = 24;
+		public static final int AdoOtptSetStrmUseSpeexDecd = 25;
+		public static final int AdoOtptSetStrmUseOpusDecd = 26;
+		public static final int AdoOtptSetStrmIsUse = 27;
+		public static final int AdoOtptSetIsSaveAdoToWaveFile = 28;
+		public static final int AdoOtptSetIsDrawAdoWavfmToSurface = 29;
 		public static final int AdoOtptSetIsMute = 30;
 
 		public static final int SetVdoInpt = 31;
@@ -89,6 +93,11 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 		public static final int AdoVdoInptOtptInit = 52;
 		public static final int AdoVdoInptOtptDstoy = 53;
+
+		public static final int ThrdMsgTypAdoInptOtptDvcChg = 54;
+		public static final int ThrdMsgTypAdoInptOtptDvcClos = 55;
+		public static final int ThrdMsgTypVdoInptDvcChg = 56;
+		public static final int ThrdMsgTypVdoInptDvcClos = 57;
 
 		public static final int UserMsgMinVal = 100; //用户消息的最小值。
 	}
@@ -132,12 +141,39 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	PowerManager.WakeLock m_ProximityScreenOffWakeLockPt; //存放接近息屏唤醒锁的指针。
 	PowerManager.WakeLock m_FullWakeLockPt; //存放屏幕键盘全亮唤醒锁的指针。
 
+	public static class AdoInptOtptDvcInfo //音频输入输出设备信息。
+	{
+		public int m_DvcTyp; //存放设备类型。
+		public class DvcTyp
+		{
+			public static final int DftSpeaker = 0; //默认扬声器。
+			public static final int DftEarpiece = 1; //默认听筒。
+			public static final int Other = 2; //其他。
+		}
+		public String m_NameStrPt;
+		public AudioDeviceInfo m_AdoInptDvcInfoPt;
+		public AudioDeviceInfo m_AdoOtptDvcInfoPt;
+	}
+	public AdoInptOtptDvcInfo m_AdoInptOtptUseDvcInfoPt; //存放音频输入输出使用的设备信息的指针。
+
+	public static class VdoInptDvcInfo //视频输入设备信息。
+	{
+		public int m_DvcTyp; //存放设备类型。
+		public class DvcTyp
+		{
+			public static final int FrontCamera = 0; //前置摄像头。
+			public static final int BackCamera = 1; //后置摄像头。
+		}
+		public int m_CameraId;
+	}
+	public VdoInptDvcInfo m_VdoInptUseDvcInfoPt; //存放视频输入使用的设备信息的指针。
+
 	class AdoVdoInptOtptAviFile //存放音视频输入输出Avi文件。
 	{
 		AviFileWriter m_WriterPt; //存放写入器的指针。
 		String m_FullPathStrPt; //存放完整路径字符串的指针。
 		long m_WrBufSzByt; //存放写入缓冲区的大小，单位为字节。
-		int m_MaxStrmNum; //存放最大流数量。
+		int m_MaxStrmNum; //存放最大流数量，取值区间为[1,100]。
 		int m_IsSaveAdoInpt; //存放是否保存音频输入，为非0表示要保存，为0表示不保存。
 		int m_IsSaveAdoOtpt; //存放是否保存音频输出，为非0表示要保存，为0表示不保存。
 		int m_IsSaveVdoInpt; //存放是否保存视频输入，为非0表示要保存，为0表示不保存。
@@ -151,6 +187,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 		HashMap< Integer, Integer > m_VdoOtptEncdSrcStrmIdxMapPt; //存放视频输出已编码格式原始流的索引映射的指针。
 	}
 	AdoVdoInptOtptAviFile m_AdoVdoInptOtptAviFilePt = new AdoVdoInptOtptAviFile();
+
+	public AudioDeviceCallback m_AdoInptOtptDvcChgCallbackPt; //存放音频输入输出设备修改回调的指针。
 
 	public AdoInpt m_AdoInptPt = new AdoInpt(); //存放音频输入的指针。
 	public AdoOtpt m_AdoOtptPt = new AdoOtpt(); //存放音频输出的指针。
@@ -189,6 +227,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	//用户定义的消息函数。
 	public abstract int UserMsg( int MsgTyp, Object MsgArgPt[] );
 
+	//用户定义的设备改变函数。
+	public abstract void UserDvcChg( AdoInptOtptDvcInfo AdoInptOtptDvcInfoPt, VdoInptDvcInfo VdoInptDvcInfoPt );
+
 	//用户定义的读取音视频输入帧函数。
 	public abstract void UserReadAdoVdoInptFrm( short AdoInptPcmSrcFrmPt[], short AdoInptPcmRsltFrmPt[], long AdoInptPcmFrmLenUnit, int AdoInptPcmRsltFrmVoiceActSts,
 												byte AdoInptEncdRsltFrmPt[], long AdoInptEncdRsltFrmLenByt, int AdoInptEncdRsltFrmIsNeedTrans,
@@ -225,6 +266,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 		m_LicnCodePt = LicnCodePt; //设置授权码。
 
+		m_AdoInptOtptUseDvcInfoPt = GetAllAdoInptOtptDvcInfo().get( 0 ); //设置音频输入输出使用的设备信息的指针。
+
 		//初始化音频输入。
 		m_AdoInptPt.m_MediaPocsThrdPt = this;
 		SetAdoInpt( 0, 8000, 20, 0 );
@@ -255,6 +298,215 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 			m_ErrInfoVstrPt.Dstoy();
 			m_ErrInfoVstrPt = null;
 		}
+	}
+
+	//获取音频设备信息类型名称。
+	public static String GetAdoDvcInfoTypeName( int AdoDvcInfoType )
+	{
+		switch( AdoDvcInfoType )
+		{
+			case AudioDeviceInfo.TYPE_UNKNOWN: return "未知";
+			case AudioDeviceInfo.TYPE_BUILTIN_EARPIECE: return "内置听筒";
+			case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER: return "内置扬声器";
+			case AudioDeviceInfo.TYPE_WIRED_HEADSET: return "有线带麦耳机";
+			case AudioDeviceInfo.TYPE_WIRED_HEADPHONES: return "有线无麦耳机";
+			case AudioDeviceInfo.TYPE_BLUETOOTH_SCO: return "Sco蓝牙";
+			case AudioDeviceInfo.TYPE_BLUETOOTH_A2DP: return "A2dp蓝牙";
+			case AudioDeviceInfo.TYPE_HDMI: return "HDMI通道";
+			case AudioDeviceInfo.TYPE_HDMI_ARC: return "HDMI音频回传通道";
+			case AudioDeviceInfo.TYPE_USB_DEVICE: return "USB设备";
+			case AudioDeviceInfo.TYPE_DOCK: return "扩展坞";
+			case AudioDeviceInfo.TYPE_FM: return "FM收音";
+			case AudioDeviceInfo.TYPE_BUILTIN_MIC: return "内置麦克风";
+			case AudioDeviceInfo.TYPE_FM_TUNER: return "FM调谐器";
+			case AudioDeviceInfo.TYPE_TV_TUNER: return "TV调谐器";
+			case AudioDeviceInfo.TYPE_TELEPHONY: return "电话";
+			case AudioDeviceInfo.TYPE_USB_HEADSET: return "USB带麦耳机";
+			case AudioDeviceInfo.TYPE_REMOTE_SUBMIX: return "远程设备";
+			case AudioDeviceInfo.TYPE_BLE_HEADSET: return "低功耗蓝牙带麦耳机";
+			case AudioDeviceInfo.TYPE_HDMI_EARC: return "HDMI增强型音频回传通道";
+			case AudioDeviceInfo.TYPE_BLE_SPEAKER: return "低功耗蓝牙扬声器";
+			case AudioDeviceInfo.TYPE_BLE_BROADCAST: return "低功耗蓝牙广播";
+			default: return "无效";
+		}
+	}
+
+	//获取全部音频输入输出设备信息。
+	public static ArrayList< AdoInptOtptDvcInfo > GetAllAdoInptOtptDvcInfo()
+	{
+		ArrayList< AdoInptOtptDvcInfo > p_AdoInptOtptDvcInfoArrPt = new ArrayList<>();
+		AdoInptOtptDvcInfo p_AdoInptOtptDvcInfoPt;
+
+		//添加默认扬声器。
+		p_AdoInptOtptDvcInfoPt = new AdoInptOtptDvcInfo();
+		p_AdoInptOtptDvcInfoPt.m_DvcTyp = AdoInptOtptDvcInfo.DvcTyp.DftSpeaker;
+		p_AdoInptOtptDvcInfoPt.m_NameStrPt = "默认扬声器";
+		p_AdoInptOtptDvcInfoArrPt.add( p_AdoInptOtptDvcInfoPt );
+
+		//添加默认听筒。
+		p_AdoInptOtptDvcInfoPt = new AdoInptOtptDvcInfo();
+		p_AdoInptOtptDvcInfoPt.m_DvcTyp = AdoInptOtptDvcInfo.DvcTyp.DftEarpiece;
+		p_AdoInptOtptDvcInfoPt.m_NameStrPt = "默认听筒";
+		p_AdoInptOtptDvcInfoArrPt.add( p_AdoInptOtptDvcInfoPt );
+
+		//添加指定的音频输入输出设备。
+		if( android.os.Build.VERSION.SDK_INT >= 23 )
+		{
+			AudioDeviceInfo[] p_AdoInptDvcInfoArrPt = ( ( AudioManager ) MediaPocsThrd.m_CtxPt.getSystemService( Context.AUDIO_SERVICE ) ).getDevices( AudioManager.GET_DEVICES_INPUTS ); //获取全部音频输入设备信息。
+			AudioDeviceInfo[] p_AdoOtptDvcInfoArrPt = ( ( AudioManager ) MediaPocsThrd.m_CtxPt.getSystemService( Context.AUDIO_SERVICE ) ).getDevices( AudioManager.GET_DEVICES_OUTPUTS ); //获取全部音频输出设备信息。
+			AudioDeviceInfo p_BottomBuiltinMicDvcInfoPt = null; //存放底部内置麦克风设备。
+
+			//设置底部内置麦克风设备，并删除背部麦克风。
+			for( int i = 0; i < p_AdoInptDvcInfoArrPt.length; i++ )
+			{
+				if( ( p_AdoInptDvcInfoArrPt[ i ] != null ) && ( p_AdoInptDvcInfoArrPt[ i ].getType() == AudioDeviceInfo.TYPE_BUILTIN_MIC ) )
+				{
+					if( android.os.Build.VERSION.SDK_INT >= 28 )
+					{
+						if( p_AdoInptDvcInfoArrPt[ i ].getAddress().equals( "bottom" ) )
+						{
+							p_BottomBuiltinMicDvcInfoPt = p_AdoInptDvcInfoArrPt[ i ];
+							p_AdoInptDvcInfoArrPt[ i ] = null;
+						}
+						else if( p_AdoInptDvcInfoArrPt[ i ].getAddress().equals( "back" ) )
+						{
+							p_AdoInptDvcInfoArrPt[ i ] = null;
+						}
+					}
+					else
+					{
+						if( p_BottomBuiltinMicDvcInfoPt == null )
+						{
+							p_BottomBuiltinMicDvcInfoPt = p_AdoInptDvcInfoArrPt[ i ];
+							p_AdoInptDvcInfoArrPt[ i ] = null;
+						}
+						else
+						{
+							p_AdoInptDvcInfoArrPt[ i ] = null;
+						}
+					}
+				}
+			}
+
+			//查找合适的音频输出设备，并查找配对的音频输入设备。
+			for( int i = 0; i < p_AdoOtptDvcInfoArrPt.length; i++ )
+			{
+				if( p_AdoOtptDvcInfoArrPt[ i ] != null )
+				{
+					switch( p_AdoOtptDvcInfoArrPt[ i ].getType() )
+					{
+						//case AudioDeviceInfo.TYPE_UNKNOWN:
+						case AudioDeviceInfo.TYPE_BUILTIN_EARPIECE: //内置听筒和内置扬声器与底部内置麦克风配对。
+						case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER:
+						{
+							p_AdoInptOtptDvcInfoPt = new AdoInptOtptDvcInfo();
+							p_AdoInptOtptDvcInfoPt.m_DvcTyp = AdoInptOtptDvcInfo.DvcTyp.Other;
+							p_AdoInptOtptDvcInfoPt.m_NameStrPt = GetAdoDvcInfoTypeName( p_AdoOtptDvcInfoArrPt[ i ].getType() ) + p_AdoOtptDvcInfoArrPt[ i ].getProductName();
+							p_AdoInptOtptDvcInfoPt.m_AdoOtptDvcInfoPt = p_AdoOtptDvcInfoArrPt[ i ];
+							p_AdoInptOtptDvcInfoPt.m_AdoInptDvcInfoPt = p_BottomBuiltinMicDvcInfoPt;
+							p_AdoInptOtptDvcInfoArrPt.add( p_AdoInptOtptDvcInfoPt );
+							break;
+						}
+						case AudioDeviceInfo.TYPE_WIRED_HEADSET:
+						case AudioDeviceInfo.TYPE_WIRED_HEADPHONES:
+						case AudioDeviceInfo.TYPE_BLUETOOTH_SCO:
+						//case AudioDeviceInfo.TYPE_BLUETOOTH_A2DP:
+						case AudioDeviceInfo.TYPE_HDMI:
+						//case AudioDeviceInfo.TYPE_HDMI_ARC:
+						case AudioDeviceInfo.TYPE_USB_DEVICE:
+						//case AudioDeviceInfo.TYPE_DOCK:
+						//case AudioDeviceInfo.TYPE_FM:
+						//case AudioDeviceInfo.TYPE_BUILTIN_MIC:
+						//case AudioDeviceInfo.TYPE_FM_TUNER:
+						//case AudioDeviceInfo.TYPE_TV_TUNER:
+						//case AudioDeviceInfo.TYPE_TELEPHONY:
+						case AudioDeviceInfo.TYPE_USB_HEADSET:
+						//case AudioDeviceInfo.TYPE_REMOTE_SUBMIX:
+						case AudioDeviceInfo.TYPE_BLE_HEADSET:
+						//case AudioDeviceInfo.TYPE_HDMI_EARC:
+						case AudioDeviceInfo.TYPE_BLE_SPEAKER:
+						case AudioDeviceInfo.TYPE_BLE_BROADCAST:
+						{
+							p_AdoInptOtptDvcInfoPt = new AdoInptOtptDvcInfo();
+							p_AdoInptOtptDvcInfoPt.m_DvcTyp = AdoInptOtptDvcInfo.DvcTyp.Other;
+							p_AdoInptOtptDvcInfoPt.m_NameStrPt = GetAdoDvcInfoTypeName( p_AdoOtptDvcInfoArrPt[ i ].getType() ) + p_AdoOtptDvcInfoArrPt[ i ].getProductName();
+							p_AdoInptOtptDvcInfoPt.m_AdoOtptDvcInfoPt = p_AdoOtptDvcInfoArrPt[ i ];
+							for( int j = 0; j < p_AdoInptDvcInfoArrPt.length; j++ )
+							{
+								if( ( p_AdoInptDvcInfoArrPt[ j ] != null ) && ( p_AdoInptDvcInfoArrPt[ j ].getType() == p_AdoOtptDvcInfoArrPt[ i ].getType() ) )
+								{
+									if( p_AdoInptDvcInfoArrPt[ j ].getProductName().equals( p_AdoOtptDvcInfoArrPt[ i ].getProductName() ) )
+									{
+										p_AdoInptOtptDvcInfoPt.m_AdoInptDvcInfoPt = p_AdoInptDvcInfoArrPt[ j ];
+										p_AdoInptDvcInfoArrPt[ j ] = null;
+										break;
+									}
+								}
+							}
+							p_AdoInptOtptDvcInfoArrPt.add( p_AdoInptOtptDvcInfoPt );
+							break;
+						}
+					}
+					p_AdoOtptDvcInfoArrPt[ i ] = null;
+				}
+			}
+
+			//查找剩余合适的音频输入设备。
+			for( int i = 0; i < p_AdoInptDvcInfoArrPt.length; i++ )
+			{
+				if( p_AdoInptDvcInfoArrPt[ i ] != null )
+				{
+					switch( p_AdoInptDvcInfoArrPt[ i ].getType() )
+					{
+						//case AudioDeviceInfo.TYPE_UNKNOWN:
+						//case AudioDeviceInfo.TYPE_BUILTIN_EARPIECE:
+						//case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER:
+						case AudioDeviceInfo.TYPE_WIRED_HEADSET:
+						//case AudioDeviceInfo.TYPE_WIRED_HEADPHONES:
+						case AudioDeviceInfo.TYPE_BLUETOOTH_SCO:
+						//case AudioDeviceInfo.TYPE_BLUETOOTH_A2DP:
+						//case AudioDeviceInfo.TYPE_HDMI:
+						case AudioDeviceInfo.TYPE_HDMI_ARC:
+						case AudioDeviceInfo.TYPE_USB_DEVICE:
+						//case AudioDeviceInfo.TYPE_DOCK:
+						//case AudioDeviceInfo.TYPE_FM:
+						//case AudioDeviceInfo.TYPE_BUILTIN_MIC:
+						//case AudioDeviceInfo.TYPE_FM_TUNER:
+						//case AudioDeviceInfo.TYPE_TV_TUNER:
+						//case AudioDeviceInfo.TYPE_TELEPHONY:
+						case AudioDeviceInfo.TYPE_USB_HEADSET:
+						//case AudioDeviceInfo.TYPE_REMOTE_SUBMIX:
+						case AudioDeviceInfo.TYPE_BLE_HEADSET:
+						case AudioDeviceInfo.TYPE_HDMI_EARC:
+						case AudioDeviceInfo.TYPE_BLE_SPEAKER:
+						case AudioDeviceInfo.TYPE_BLE_BROADCAST:
+						{
+							p_AdoInptOtptDvcInfoPt = new AdoInptOtptDvcInfo();
+							p_AdoInptOtptDvcInfoPt.m_DvcTyp = AdoInptOtptDvcInfo.DvcTyp.Other;
+							p_AdoInptOtptDvcInfoPt.m_NameStrPt = GetAdoDvcInfoTypeName( p_AdoInptDvcInfoArrPt[ i ].getType() ) + p_AdoInptDvcInfoArrPt[ i ].getProductName();
+							p_AdoInptOtptDvcInfoPt.m_AdoInptDvcInfoPt = p_AdoInptDvcInfoArrPt[ i ];
+							p_AdoInptOtptDvcInfoArrPt.add( p_AdoInptOtptDvcInfoPt );
+							break;
+						}
+					}
+					p_AdoInptDvcInfoArrPt[ i ] = null;
+				}
+			}
+		}
+
+		if( p_AdoInptOtptDvcInfoArrPt.isEmpty() ) return null;
+		else return p_AdoInptOtptDvcInfoArrPt;
+	}
+
+	//媒体处理线程的设置音频输入输出使用的设备。
+	public int SetAdoInptOtptUseDvc( int IsBlockWait, AdoInptOtptDvcInfo AdoInptOtptUseDvcInfoPt, int AdoOtptUseVoiceCallOrMusic )
+	{
+		if( AdoInptOtptUseDvcInfoPt == null )
+		{
+			return -1;
+		}
+
+		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.SetAdoInptOtptUseDvc, AdoInptOtptUseDvcInfoPt, AdoOtptUseVoiceCallOrMusic );
 	}
 
 	//媒体处理线程的设置音频输入。
@@ -443,17 +695,6 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoOtptSetIsSaveAdoToWaveFile, IsSave, SrcFullPathStrPt, WrBufSzByt );
 	}
 
-	//媒体处理线程的音频输出设置使用的设备。
-	public int AdoOtptSetUseDvc( int IsBlockWait, int UseSpeakerOrEarpiece, int UseVoiceCallOrMusic )
-	{
-		if( ( UseSpeakerOrEarpiece != 0 ) && ( UseVoiceCallOrMusic != 0 ) ) //如果要使用听筒，则不能使用媒体类型音频输出流。
-		{
-			return -1;
-		}
-
-		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.AdoOtptSetUseDvc, UseSpeakerOrEarpiece, UseVoiceCallOrMusic );
-	}
-
 	//媒体处理线程的音频输出设置是否静音。
 	public int AdoOtptSetIsMute( int IsBlockWait, int IsMute )
 	{
@@ -608,7 +849,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	{
 		if( IsInitWakeLock != 0 ) //如果要初始化唤醒锁。
 		{
-			if( ( m_AdoOtptPt.m_IsUse != 0 ) && ( m_AdoOtptPt.m_DvcPt.m_UseWhatDvc != 0 ) ) //如果要使用音频输出，且要使用听筒音频输出设备，就要使用接近息屏唤醒锁。
+			if( ( m_AdoOtptPt.m_IsUse != 0 ) && ( m_AdoInptOtptUseDvcInfoPt.m_NameStrPt.equals( "默认听筒" ) || m_AdoInptOtptUseDvcInfoPt.m_NameStrPt.startsWith( "内置听筒" ) ) ) //如果要使用音频输出，且要使用听筒音频输出设备，就要使用接近息屏唤醒锁。
 			{
 				if( m_ProximityScreenOffWakeLockPt == null ) //如果接近息屏唤醒锁还没有初始化。
 				{
@@ -792,6 +1033,74 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	public int SendUserMsg( int IsBlockWait, int MsgTyp, Object... MsgArgPt )
 	{
 		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.UserMsgMinVal + MsgTyp, MsgArgPt );
+	}
+
+	//音频输入输出设备修改回调初始化。
+	private int AdoInptOtptDvcChgCallbackInit()
+	{
+		int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
+
+		Out:
+		{
+			if( android.os.Build.VERSION.SDK_INT >= 23 )
+			{
+				if( m_AdoInptOtptDvcChgCallbackPt == null )
+				{
+					m_AdoInptOtptDvcChgCallbackPt = new android.media.AudioDeviceCallback()
+					{
+						int m_IsFirstCallback = 1;
+
+						public void onAudioDevicesAdded( AudioDeviceInfo[] addedDevices )
+						{
+							if( m_IsFirstCallback == 0 )
+							{
+								m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
+							}
+							else
+							{
+								m_IsFirstCallback = 0;
+							}
+						}
+
+						public void onAudioDevicesRemoved( AudioDeviceInfo[] removedDevices )
+						{
+							if( m_IsFirstCallback == 0 )
+							{
+								m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
+							}
+							else
+							{
+								m_IsFirstCallback = 0;
+							}
+						}
+					};
+					( ( AudioManager ) MediaPocsThrd.m_CtxPt.getSystemService( Context.AUDIO_SERVICE ) ).registerAudioDeviceCallback( m_AdoInptOtptDvcChgCallbackPt, null );
+					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：初始化音频输入输出设备修改回调成功。" );
+				}
+			}
+
+			p_Rslt = 0; //设置本函数执行成功。
+		}
+
+		if( p_Rslt != 0 ) //如果本函数执行失败。
+		{
+
+		}
+		return p_Rslt;
+	}
+
+	//音频输入输出设备修改回调销毁。
+	private void AdoInptOtptDvcChgCallbackDstoy()
+	{
+		if( android.os.Build.VERSION.SDK_INT >= 23 )
+		{
+			if( m_AdoInptOtptDvcChgCallbackPt != null )
+			{
+				( ( AudioManager ) MediaPocsThrd.m_CtxPt.getSystemService( Context.AUDIO_SERVICE ) ).unregisterAudioDeviceCallback( m_AdoInptOtptDvcChgCallbackPt );
+				m_AdoInptOtptDvcChgCallbackPt = null;
+				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：销毁音频输入输出设备修改回调成功。" );
+			}
+		}
 	}
 
 	//媒体处理线程的音视频输入输出Avi文件写入器初始化。
@@ -1154,6 +1463,35 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 		{
 			switch( MsgTyp )
 			{
+				case ThrdMsgTyp.SetAdoInptOtptUseDvc:
+				{
+					if( m_AdoOtptPt.m_IsInit != 0 )
+					{
+						if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.DvcAndThrdDstoy();
+						m_AdoOtptPt.DvcAndThrdDstoy();
+					}
+
+					m_AdoInptOtptUseDvcInfoPt = ( AdoInptOtptDvcInfo ) MsgArgPt[ 0 ];
+					m_AdoOtptPt.m_DvcPt.m_UseWhatStreamType = ( Integer ) MsgArgPt[ 1 ];
+					WakeLockInitOrDstoy( m_IsUseWakeLock ); //重新初始化唤醒锁。
+
+					if( m_AdoOtptPt.m_IsInit != 0 )
+					{
+						if( m_AdoOtptPt.DvcAndThrdInit() != 0 ) break Out;
+						m_AdoVdoInptOtptAviFilePt.m_AdoOtptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输出流时间戳要重置。
+						if( m_AdoInptPt.m_IsInit != 0 )
+						{
+							if( m_AdoInptPt.DvcAndThrdInit() != 0 ) break Out;
+							m_AdoVdoInptOtptAviFilePt.m_AdoInptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输入流时间戳要重置。
+						}
+						else
+						{
+							m_AdoOtptPt.m_DvcPt.m_Pt.play(); //让音频输出设备开始播放。
+							m_AdoOtptPt.m_ThrdPt.m_ThrdIsStart = 1; //设置音频输出线程已开始。
+						}
+					}
+					break;
+				}
 				case ThrdMsgTyp.SetAdoInpt:
 				{
 					if( m_AdoInptPt.m_IsInit != 0 )
@@ -1574,35 +1912,6 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoOtptPt.m_IsInit != 0 ) if( m_AdoOtptPt.WavfmInit() != 0 ) break Out;
 					break;
 				}
-				case ThrdMsgTyp.AdoOtptSetUseDvc:
-				{
-					if( m_AdoOtptPt.m_IsInit != 0 )
-					{
-						if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.DvcAndThrdDstoy();
-						m_AdoOtptPt.DvcAndThrdDstoy();
-					}
-
-					m_AdoOtptPt.m_DvcPt.m_UseWhatDvc = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoOtptPt.m_DvcPt.m_UseWhatStreamType = ( Integer ) MsgArgPt[ 1 ];
-					WakeLockInitOrDstoy( m_IsUseWakeLock ); //重新初始化唤醒锁。
-
-					if( m_AdoOtptPt.m_IsInit != 0 )
-					{
-						if( m_AdoOtptPt.DvcAndThrdInit() != 0 ) break Out;
-						m_AdoVdoInptOtptAviFilePt.m_AdoOtptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输出流时间戳要重置。
-						if( m_AdoInptPt.m_IsInit != 0 )
-						{
-							if( m_AdoInptPt.DvcAndThrdInit() != 0 ) break Out;
-							m_AdoVdoInptOtptAviFilePt.m_AdoInptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输入流时间戳要重置。
-						}
-						else
-						{
-							m_AdoOtptPt.m_DvcPt.m_Pt.play(); //让音频输出设备开始播放。
-							m_AdoOtptPt.m_ThrdPt.m_ThrdIsStart = 1; //设置音频输出线程已开始。
-						}
-					}
-					break;
-				}
 				case ThrdMsgTyp.AdoOtptSetIsMute:
 				{
 					m_AdoOtptPt.m_DvcPt.m_IsMute = ( Integer ) MsgArgPt[ 0 ];
@@ -1740,7 +2049,10 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				}
 				case ThrdMsgTyp.SetIsSaveAdoVdoInptOtptToAviFile:
 				{
-					//AdoVdoInptOtptAviFileWriterDstoy(); //这里不用销毁。
+					if( ( ( m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt != null ) && ( !m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt.equals( ( String ) MsgArgPt[ 0 ] ) ) ) || //当完整路径字符串或写入缓冲区的大小或最大流数量有修改时，才销毁。
+						( m_AdoVdoInptOtptAviFilePt.m_WrBufSzByt != ( Long ) MsgArgPt[ 1 ] ) ||
+						( m_AdoVdoInptOtptAviFilePt.m_MaxStrmNum != ( Integer ) MsgArgPt[ 2 ] ) )
+						AdoVdoInptOtptAviFileWriterDstoy();
 
 					m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt = ( String )MsgArgPt[ 0 ];
 					m_AdoVdoInptOtptAviFilePt.m_WrBufSzByt = ( Long )MsgArgPt[ 1 ];
@@ -1780,6 +2092,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						p_StngFileWriterPt.write( "m_AdoVdoInptOtptAviFilePt.m_IsSaveAdoOtpt：" + m_AdoVdoInptOtptAviFilePt.m_IsSaveAdoOtpt + "\n" );
 						p_StngFileWriterPt.write( "m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoInpt：" + m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoInpt + "\n" );
 						p_StngFileWriterPt.write( "m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoOtpt：" + m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoOtpt + "\n" );
+						p_StngFileWriterPt.write( "\n" );
+
+						p_StngFileWriterPt.write( "m_AdoInptOtptUseDvcInfoPt.m_NameStrPt：" + m_AdoInptOtptUseDvcInfoPt.m_NameStrPt + "\n" );
 						p_StngFileWriterPt.write( "\n" );
 
 						p_StngFileWriterPt.write( "m_AdoInptPt.m_IsUse：" + m_AdoInptPt.m_IsUse + "\n" );
@@ -1905,7 +2220,6 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						p_StngFileWriterPt.write( "m_AdoOtptPt.m_WaveFileWriterPt.m_WaveFileWrBufSzByt：" + m_AdoOtptPt.m_WaveFileWriterPt.m_WrBufSzByt + "\n" );
 						p_StngFileWriterPt.write( "\n" );
 						p_StngFileWriterPt.write( "m_AdoOtptPt.m_DvcPt.m_BufSzByt：" + m_AdoOtptPt.m_DvcPt.m_BufSzByt + "\n" );
-						p_StngFileWriterPt.write( "m_AdoOtptPt.m_DvcPt.m_UseWhatDvc：" + m_AdoOtptPt.m_DvcPt.m_UseWhatDvc + "\n" );
 						p_StngFileWriterPt.write( "m_AdoOtptPt.m_DvcPt.m_UseWhatAdoOtptStreamType：" + m_AdoOtptPt.m_DvcPt.m_UseWhatStreamType + "\n" );
 						p_StngFileWriterPt.write( "m_AdoOtptPt.m_DvcPt.m_AdoOtptIsMute：" + m_AdoOtptPt.m_DvcPt.m_IsMute + "\n" );
 						p_StngFileWriterPt.write( "\n" );
@@ -2042,6 +2356,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数，就初始化音视频输入输出、音视频输入输出Avi文件写入器。
 					{
+						if( AdoInptOtptDvcChgCallbackInit() != 0 ) break Out;
 						if( AdoVdoInptOtptInit() != 0 ) break Out;
 						if( AdoVdoInptOtptAviFileWriterInit() != 0 ) break Out;
 					}
@@ -2051,6 +2366,44 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					AdoVdoInptOtptAviFileWriterDstoy();
 					AdoVdoInptOtptDstoy();
+					AdoInptOtptDvcChgCallbackDstoy();
+					break;
+				}
+				case ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcChg:
+				{
+					UserDvcChg( m_AdoInptOtptUseDvcInfoPt, null );
+					break;
+				}
+				case ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos:
+				{
+					ArrayList< AdoInptOtptDvcInfo > p_AdoInptOtptDvcInfoLstPt = MediaPocsThrd.GetAllAdoInptOtptDvcInfo();
+
+					OutFindAdoInptOtptDvcInfo:
+					{
+						//查找当前使用的音频输入输出设备信息。
+						for( int i = 0; i < p_AdoInptOtptDvcInfoLstPt.size(); i++ )
+						{
+							if( p_AdoInptOtptDvcInfoLstPt.get( i ).m_NameStrPt.equals( m_AdoInptOtptUseDvcInfoPt.m_NameStrPt ) )
+							{
+								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：音频输入输出设备[" + m_AdoInptOtptUseDvcInfoPt.m_NameStrPt + "]已经关闭，切换到音频输入输出设备[" + p_AdoInptOtptDvcInfoLstPt.get( i ).m_NameStrPt + "]。" );
+								m_ThrdMsgQueuePt.SendMsg( 1, 0, ThrdMsgTyp.SetAdoInptOtptUseDvc, p_AdoInptOtptDvcInfoLstPt.get( i ), m_AdoOtptPt.m_DvcPt.m_UseWhatStreamType );
+								break OutFindAdoInptOtptDvcInfo;
+							}
+						}
+
+						//如果没有找到，就使用默认扬声器。
+						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：音频输入输出设备[" + m_AdoInptOtptUseDvcInfoPt.m_NameStrPt + "]已经关闭，切换到音频输入输出设备[" + p_AdoInptOtptDvcInfoLstPt.get( 0 ).m_NameStrPt + "]。" );
+						m_ThrdMsgQueuePt.SendMsg( 1, 0, ThrdMsgTyp.SetAdoInptOtptUseDvc, p_AdoInptOtptDvcInfoLstPt.get( 0 ), m_AdoOtptPt.m_DvcPt.m_UseWhatStreamType );
+					}
+
+					break;
+				}
+				case ThrdMsgTyp.ThrdMsgTypVdoInptDvcChg:
+				{
+					m_VdoInptUseDvcInfoPt = new VdoInptDvcInfo();
+					m_VdoInptUseDvcInfoPt.m_DvcTyp = m_VdoInptPt.m_DvcPt.m_UseWhatDvc;
+					m_VdoInptUseDvcInfoPt.m_CameraId = ( int )MsgArgPt[ 0 ];
+					UserDvcChg( null, m_VdoInptUseDvcInfoPt );
 					break;
 				}
 				default: //用户消息。

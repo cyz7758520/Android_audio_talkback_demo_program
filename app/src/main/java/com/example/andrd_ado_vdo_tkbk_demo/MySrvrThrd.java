@@ -14,7 +14,7 @@ public class MySrvrThrd extends SrvrThrd
 {
 	public static String m_CurClsNameStrPt = "MySrvrThrd"; //存放当前类名称字符串。
 
-	MainAct m_MainActPt; //存放主界面的指针。
+	public MainAct m_MainActPt; //存放主界面的指针。
 
 	MySrvrThrd( MainAct MainActPt, byte LicnCodePt[] )
 	{

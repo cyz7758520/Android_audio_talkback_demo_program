@@ -41,7 +41,7 @@ public class SystemH264Decd
 		{
 			if( android.os.Build.VERSION.SDK_INT < 21 )
 			{
-				ErrInfoVstrPt.Cpy( "当前系统不自带H264编码器。" );
+				if( ErrInfoVstrPt != null ) ErrInfoVstrPt.Cpy( "当前系统不自带H264编码器。" );
 				return -1;
 			}
 

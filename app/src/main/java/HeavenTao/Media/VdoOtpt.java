@@ -459,7 +459,7 @@ public class VdoOtpt //视频输出。
 													   m_DvcPt.m_DspySurfaceViewPt.getHolder().getSurface(),
 													   null ) != 0 )
 						{
-							Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：绘制Yu12格式原始帧到显示SurfaceView失败，本次帧丢弃。" );
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：绘制Yu12格式原始帧到显示SurfaceView失败，本次帧丢弃。" );
 							break OutPocs;
 						}
 

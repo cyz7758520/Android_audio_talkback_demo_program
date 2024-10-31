@@ -91,8 +91,8 @@ public class AndrdAdoVdoTkbkStng
 				p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? "1" : "0" );
 				p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
-				p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "AdoOtptDvc" );
-				p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseSpeakerRdBtnId ) ).isChecked() ) ? "Speaker" : "Headset" );
+				p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "AdoInptOtptDvc" );
+				p_TmpXMLElement2Pt.SetText( MainActPt.m_AdoInptOtptDvcInfoLstPt.get( MainActPt.m_AdoInptOtptDvcSpinnerPt.getSelectedItemPosition() ).m_NameStrPt );
 				p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
 				p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "VdoInptDvc" );
@@ -851,16 +851,20 @@ public class AndrdAdoVdoTkbkStng
 										( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).setChecked( true );
 									}
 								}
-								else if( p_HTString1Pt.m_Val.equals( "AdoOtptDvc" ) )
+								else if( p_HTString1Pt.m_Val.equals( "AdoInptOtptDvc" ) )
 								{
 									p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
-									if( p_HTString1Pt.m_Val.equals( "Speaker" ) )
+									OutFindAdoInptOtptDvcInfo:
 									{
-										( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseSpeakerRdBtnId ) ).setChecked( true );
-									}
-									else
-									{
-										( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseHeadsetRdBtnId ) ).setChecked( true );
+										for( int i = 0; i < MainActPt.m_AdoInptOtptDvcInfoLstPt.size(); i++ ) //查找要使用的设备。
+										{
+											if( MainActPt.m_AdoInptOtptDvcInfoLstPt.get( i ).m_NameStrPt.equals( p_HTString1Pt.m_Val ) )
+											{
+												MainActPt.m_AdoInptOtptDvcSpinnerPt.setSelection( i );
+												break OutFindAdoInptOtptDvcInfo;
+											}
+										}
+										MainActPt.m_AdoInptOtptDvcSpinnerPt.setSelection( 0 ); //如果没有找到就使用默认扬声器。
 									}
 								}
 								else if( p_HTString1Pt.m_Val.equals( "VdoInptDvc" ) )
@@ -2244,7 +2248,7 @@ public class AndrdAdoVdoTkbkStng
 		( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.VdoOtptIsBlackCkBoxId ) ).setChecked( false );
 
 		//设置音频输出设备、视频输入设备。
-		( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseSpeakerRdBtnId ) ).performClick();
+		( ( Spinner ) MainActPt.m_MainLyotViewPt.findViewById( R.id.AdoInptOtptDvcSpinnerId ) ).setSelection( 0 );
 		( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseFrontCamereRdBtnId ) ).performClick();
 
 		//设置是否绘制音频波形到Surface。

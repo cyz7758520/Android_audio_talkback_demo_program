@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="版本：2024年09月18日"
+                android:text="版本：2024年10月31日"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="normal|bold" />
@@ -338,35 +338,17 @@
                 android:layout_height="wrap_content" >
 
                 <TextView
-                    android:text="音频输出设备:"
+                    android:text="音频输入输出设备:"
                     android:layout_width="0dp"
                     android:layout_weight="3"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical" />
 
-                <RadioGroup
-                    android:orientation="horizontal"
-                    android:layout_weight="8"
+                <Spinner
+                    android:id="@+id/AdoInptOtptDvcSpinnerId"
+                    android:layout_height="match_parent"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent" >
-
-                    <RadioButton
-                        android:text="扬声器"
-                        android:id="@+id/UseSpeakerRdBtnId"
-                        android:layout_weight="1"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:onClick="onClickUseSpeakerRdBtn" />
-
-                    <RadioButton
-                        android:text="听筒或耳机"
-                        android:id="@+id/UseHeadsetRdBtnId"
-                        android:layout_weight="1"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:onClick="onClickUseHeadsetRdBtn" />
-
-                </RadioGroup>
+                    android:layout_weight="8" />
 
             </LinearLayout>
 

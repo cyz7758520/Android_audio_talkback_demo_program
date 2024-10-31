@@ -165,6 +165,9 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	//用户定义的广播客户端连接状态函数。
 	public abstract void UserBdctClntCnctSts( BdctClnt.CnctInfo CnctInfoPt, int CurCnctSts );
 
+	//用户定义的设备改变函数。
+	public abstract void UserDvcChg( AdoInptOtptDvcInfo AdoInptOtptDvcInfoPt, VdoInptDvcInfo VdoInptDvcInfoPt );
+
 	//构造函数。
 	public ClntMediaPocsThrd( Context CtxPt, byte LicnCodePt[] )
 	{

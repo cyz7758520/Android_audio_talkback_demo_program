@@ -469,6 +469,9 @@ public class VdoInpt //视频输入。
 					break Out;
 				}
 
+				//发送视频输入设备改变线程消息。
+				m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypVdoInptDvcChg, p_CameraId );
+
 				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化设备成功。" );
 			}
 
