@@ -98,14 +98,14 @@ public class MySrvrThrd extends SrvrThrd
 										( ( ( CheckBox ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.IsTstNtwkDlyCkBoxId ) ).isChecked() ) ? 1 : 0,
 										1000 );
 
-				//设置服务端初始化。
+				//服务端初始化。
 				SendSrvrInitMsg( 1,
 								 p_SrvrPrtclStrPt.m_Val.equals( "Tcp" ) ? 0 : 1,
 								 p_SrvrNodeNameStrPt.m_Val,
 								 p_SrvrNodeSrvcStrPt.m_Val,
 								 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SrvrStngLyotViewPt.findViewById( R.id.MaxCnctNumEdTxtId ) ).getText().toString() ), 2 );
 
-				//启动我的服务端线程。
+				//我的服务端线程启动。
 				start();
 
 				Log.i( m_CurClsNameStrPt, "我的服务端线程初始化结束。" );
@@ -131,16 +131,28 @@ public class MySrvrThrd extends SrvrThrd
 		Log.i( m_CurClsNameStrPt, "请求并等待我的服务端线程退出结束。" );
 	}
 
-	//用户定义的服务端线程初始化函数。
-	@Override public void UserSrvrThrdInit()
+	//用户定义的初始化函数。
+	@Override public void UserInit()
 	{
 		m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.MySrvrThrdInit );
 	}
 
-	//用户定义的服务端线程销毁函数。
-	@Override public void UserSrvrThrdDstoy()
+	//用户定义的销毁函数。
+	@Override public void UserDstoy()
 	{
 		m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.MySrvrThrdDstoy );
+	}
+
+	//用户定义的销毁函数。
+	@Override public void UserPocs()
+	{
+
+	}
+
+	//用户定义的消息函数。
+	@Override public int UserMsg( int MsgTyp, Object[] MsgArgPt )
+	{
+		return 0;
 	}
 
 	//用户定义的显示日志函数。
@@ -159,12 +171,6 @@ public class MySrvrThrd extends SrvrThrd
 	@Override public void UserVibrate()
 	{
 		m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.Vibrate );
-	}
-
-	//用户定义的消息函数。
-	@Override public int UserMsg( int MsgTyp, Object[] MsgArgPt )
-	{
-		return 0;
 	}
 
 	//用户定义的服务端初始化函数。

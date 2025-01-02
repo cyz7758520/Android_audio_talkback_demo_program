@@ -267,13 +267,13 @@ public class VdoInpt //视频输入。
 						else
 						{
 							if(
-									( ( p_CurNv21SrcFrmCropWidth >= p_TgtNv21SrcFrmWidth ) && ( p_CurNv21SrcFrmCropHeight >= p_TgtNv21SrcFrmHeight ) )
-									&&
-									(
-											( ( p_CurNv21SrcFrmCropWidth < m_DvcPt.m_Nv21SrcFrmCropWidth ) || ( p_CurNv21SrcFrmCropHeight < m_DvcPt.m_Nv21SrcFrmCropHeight ) )
-											||
-											( ( p_CurNv21SrcFrmCropWidth == m_DvcPt.m_Nv21SrcFrmCropWidth ) && ( p_CurNv21SrcFrmCropHeight == m_DvcPt.m_Nv21SrcFrmCropHeight ) && ( p_CurNv21SrcFrmCropX + p_CurNv21SrcFrmCropY < m_DvcPt.m_Nv21SrcFrmCropX + m_DvcPt.m_Nv21SrcFrmCropY ) )
-									)
+								( ( p_CurNv21SrcFrmCropWidth >= p_TgtNv21SrcFrmWidth ) && ( p_CurNv21SrcFrmCropHeight >= p_TgtNv21SrcFrmHeight ) )
+								&&
+								(
+									( ( p_CurNv21SrcFrmCropWidth < m_DvcPt.m_Nv21SrcFrmCropWidth ) || ( p_CurNv21SrcFrmCropHeight < m_DvcPt.m_Nv21SrcFrmCropHeight ) )
+									||
+									( ( p_CurNv21SrcFrmCropWidth == m_DvcPt.m_Nv21SrcFrmCropWidth ) && ( p_CurNv21SrcFrmCropHeight == m_DvcPt.m_Nv21SrcFrmCropHeight ) && ( p_CurNv21SrcFrmCropX + p_CurNv21SrcFrmCropY < m_DvcPt.m_Nv21SrcFrmCropX + m_DvcPt.m_Nv21SrcFrmCropY ) )
+								)
 							)
 							{
 								p_IsSetSelCur = 1;

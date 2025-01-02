@@ -934,16 +934,16 @@ public class AdoInpt //音频输入。
 				//设置音频输入使用的设备。
 				if( android.os.Build.VERSION.SDK_INT >= 23 )
 				{
-					if( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.AdoInptOtptDvcInfo.DvcTyp.DftSpeaker ) || //如果要使用默认扬声器或默认听筒。
+					/*if( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.AdoInptOtptDvcInfo.DvcTyp.DftSpeaker ) || //如果要使用默认扬声器或默认听筒。这里不获取音频输入当前路由的设备，因为未开启音频输入时获取的可能会在开启音频输入后变化，导致误认为设备不一致而重新初始化设备。
 						( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.AdoInptOtptDvcInfo.DvcTyp.DftEarpiece ) )
 					{
 						m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt = m_DvcPt.m_Pt.getRoutedDevice(); //获取音频输入当前路由的设备。
 					}
-					else if( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt != null ) //如果要使用指定设备。
+					else */if( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt != null ) //如果要使用指定设备。
 					{
 						if( !m_DvcPt.m_Pt.setPreferredDevice( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt ) ) //如果设置音频输入使用的设备失败。
 						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：设置音频输入使用的设备失败。" );
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：设置音频输入使用的设备失败，发送音频输入输出设备关闭线程消息。" );
 							m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
 							p_Rslt = 0; //这里返回成功是为了防止媒体处理线程报错退出。
 							break Out;
@@ -980,8 +980,10 @@ public class AdoInpt //音频输入。
 				}
 
 				//发送音频输入输出设备改变线程消息。
-				if( ( m_MediaPocsThrdPt.m_AdoOtptPt.m_IsUse == 0 ) || ( m_MediaPocsThrdPt.m_AdoOtptPt.m_IsInit != 0 ) ) //如果不使用音频输出，或音频输出已初始化，才发送消息，避免重复发送。
+				if( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt != null ) && //如果要使用指定设备，且不使用音频输出，或音频输出已初始化，才发送消息，避免重复发送。
+					( ( m_MediaPocsThrdPt.m_AdoOtptPt.m_IsUse == 0 ) || ( m_MediaPocsThrdPt.m_AdoOtptPt.m_IsInit != 0 ) ) )
 				{
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：发送音频输入输出设备改变线程消息。" );
 					m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcChg );
 				}
 			}
@@ -1264,15 +1266,16 @@ public class AdoInpt //音频输入。
 						{
 							if( p_AdoInptRoutedDevice != null ) //如果音频输入路由的设备信息不为空。
 							{
-								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：音频输入的指定设备改为[" + ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoInptRoutedDevice.getType() ) + p_AdoInptRoutedDevice.getProductName() ) + "]。" );
+								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：音频输入的指定设备改为[" + ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoInptRoutedDevice.getType() ) + p_AdoInptRoutedDevice.getProductName() ) + "]，发送音频输入输出设备改变线程消息。" );
 								m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt = p_AdoInptRoutedDevice;
+								m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcChg ); //补发音频输入输出设备改变线程消息。
 							}
 						}
 						else //如果音频输入指定的设备信息不为空。
 						{
 							if( ( p_AdoInptRoutedDevice != null ) && ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getId() != p_AdoInptRoutedDevice.getId() ) ) //如果音频输入指定的设备与路由的设备不一致。
 							{
-								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：音频输入的指定设备[" + ( MediaPocsThrd.GetAdoDvcInfoTypeName( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getType() ) + m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getProductName() ) + "]与路由设备[" + ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoInptRoutedDevice.getType() ) + p_AdoInptRoutedDevice.getProductName() ) + "]不一致，重新初始化设备。" );
+								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：音频输入的指定设备[" + ( MediaPocsThrd.GetAdoDvcInfoTypeName( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getType() ) + m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getProductName() ) + "]与路由设备[" + ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoInptRoutedDevice.getType() ) + p_AdoInptRoutedDevice.getProductName() ) + "]不一致，发送音频输入输出设备关闭线程消息。" );
 								m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
 								break; //这里要退出线程，防止多次发送线程消息。
 							}

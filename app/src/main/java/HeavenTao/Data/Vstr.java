@@ -69,15 +69,33 @@ public class Vstr
 	}
 
 	//设置动态字符串的大小。
-	public int SetSz( long StrSz )
+	public int SetSz( long VstrSzChr )
 	{
-		return VstrSetSz( m_VstrPt, StrSz );
+		return VstrSetSz( m_VstrPt, VstrSzChr );
+	}
+
+	//获取动态字符串的字符串指针。
+	public int GetStrPt( HTLong VstrStrPtPt )
+	{
+		return VstrGetStrPt( m_VstrPt, VstrStrPtPt );
+	}
+
+	//获取动态字符串的字符集。
+	public int GetChrSet( HTInt VstrChrSetPt )
+	{
+		return VstrGetChrSet( m_VstrPt, VstrChrSetPt );
 	}
 
 	//获取动态字符串的大小。
-	public int GetSz( HTLong StrSzPt )
+	public int GetSz( HTLong VstrSzChrPt )
 	{
-		return VstrGetSz( m_VstrPt, StrSzPt );
+		return VstrGetSz( m_VstrPt, VstrSzChrPt );
+	}
+
+	//获取动态字符串的长度。
+	public int GetLen( HTLong VstrLenChrPt )
+	{
+		return VstrGetLen( m_VstrPt, VstrLenChrPt );
 	}
 
 	//获取动态字符串的大小。
@@ -115,6 +133,8 @@ public class Vstr
 
 	//创建并初始化动态字符串。
 	private native int VstrInit( HTLong VstrPt, String SrcStrPt );
+	//销毁动态字符串。
+	private native int VstrDstoy( long VstrPt );
 
 	//复制字符串到动态字符串。
 	private native int VstrCpy( long VstrPt, String SrcStrPt );
@@ -127,19 +147,21 @@ public class Vstr
 
 	//清空动态字符串。
 	private native int VstrSetEmpty( long VstrPt );
-
 	//设置动态字符串的大小。
 	private native int VstrSetSz( long VstrPt, long VstrSzChr );
 
+	//获取动态字符串的字符串指针。
+	private native int VstrGetStrPt( long VstrPt, HTLong VstrStrPtPt );
+	//获取动态字符串的字符集。
+	private native int VstrGetChrSet( long VstrPt, HTInt VstrChrSetPt );
 	//获取动态字符串的大小。
 	private native int VstrGetSz( long VstrPt, HTLong VstrSzChrPt );
+	//获取动态字符串的长度。
+	private native int VstrGetLen( long VstrPt, HTLong VstrLenChrPt );
 
 	//动态字符串解析为Url。
 	private native int VstrUrlParse( long VstrPt, HTString PrtclVstrPt, HTString UsernameVstrPt, HTString PasswordVstrPt, HTString HostnameVstrPt, HTString PortVstrPt, HTString PathVstrPt, HTString ParametersVstrPt, HTString QueryVstrPt, HTString FragmentVstrPt, long ErrInfoVstrPt );
 
 	//获取动态字符串。
 	private native String VstrGetStr( long VstrPt );
-
-	//销毁动态字符串。
-	private native int VstrDstoy( long VstrPt );
 }

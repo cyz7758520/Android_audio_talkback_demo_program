@@ -36,9 +36,9 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 
 		Out:
 		{
-			if( isAlive() == false ) //如果我的网络媒体处理线程未启动。
+			if( isAlive() == false ) //如果我的客户端媒体处理线程未启动。
 			{
-				Log.i( m_CurClsNameStrPt, "我的网络媒体处理线程初始化开始。" );
+				Log.i( m_CurClsNameStrPt, "我的客户端媒体处理线程初始化开始。" );
 
 				//设置网络。
 				{
@@ -101,10 +101,10 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 				SetIsUseWakeLock( 0,
 								  ( ( ( CheckBox ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseWakeLockCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
-				//启动我的网络媒体处理线程。
+				//我的客户端媒体处理线程启动。
 				start();
 
-				Log.i( m_CurClsNameStrPt, "我的网络媒体处理线程初始化结束。" );
+				Log.i( m_CurClsNameStrPt, "我的客户端媒体处理线程初始化结束。" );
 			}
 
 			p_Rslt = 0; //设置本函数执行成功。
@@ -138,7 +138,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 			p_TkbkClntNum = m_MainActPt.m_ClntLstViewPt.getCheckedItemPosition();
 			if( ( p_TkbkClntNum != -1 ) && ( p_TkbkClntNum < m_MainActPt.m_ClntLstItemArrayLstPt.size() ) )
 			{
-				if( isAlive() == false ) //如果我的网络媒体处理线程未启动。
+				if( isAlive() == false ) //如果我的客户端媒体处理线程未启动。
 				{
 					if( Init() != 0 ) //如果我的客户端媒体处理线程初始化失败。
 					{
@@ -199,9 +199,9 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 
 			Log.i( m_CurClsNameStrPt, "广播初始化开始。" );
 
-			if( isAlive() == false ) //如果我的网络媒体处理线程未启动。
+			if( isAlive() == false ) //如果我的客户端媒体处理线程未启动。
 			{
-				if( Init() != 0 ) //如果我的网络媒体处理线程初始化失败。
+				if( Init() != 0 ) //如果我的客户端媒体处理线程初始化失败。
 				{
 					break Out;
 				}
@@ -239,6 +239,51 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		Log.i( m_CurClsNameStrPt, "结束请求并等待广播销毁。" );
 	}
 
+	//用户定义的初始化函数。
+	@Override public void _UserInit()
+	{
+		m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.MyClntMediaPocsThrdInit );
+	}
+
+	//用户定义的销毁函数。
+	@Override public void _UserDstoy()
+	{
+		m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.MyClntMediaPocsThrdDstoy );
+	}
+
+	//用户定义的处理函数。
+	@Override public void _UserPocs()
+	{
+
+	}
+
+	//用户定义的消息函数。
+	@Override public int _UserMsg( int MsgTyp, Object MsgArgPt[] )
+	{
+		return 0;
+	}
+
+	//用户定义的设备改变函数。
+	@Override public void _UserDvcChg( AdoInptOtptDvcInfo AdoInptOtptDvcInfoPt, VdoInptDvcInfo VdoInptDvcInfoPt )
+	{
+		if( AdoInptOtptDvcInfoPt != null )
+		{
+			AdoInptOtptDvcInfo p_AdoInptOtptDvcInfoPt = new AdoInptOtptDvcInfo();
+			p_AdoInptOtptDvcInfoPt.m_NameStrPt = AdoInptOtptDvcInfoPt.m_NameStrPt;
+			p_AdoInptOtptDvcInfoPt.m_AdoInptDvcInfoPt = AdoInptOtptDvcInfoPt.m_AdoInptDvcInfoPt;
+			p_AdoInptOtptDvcInfoPt.m_AdoOtptDvcInfoPt = AdoInptOtptDvcInfoPt.m_AdoOtptDvcInfoPt;
+			m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.AdoInptOtptDvcChg, p_AdoInptOtptDvcInfoPt );
+		}
+
+		if( VdoInptDvcInfoPt != null )
+		{
+			VdoInptDvcInfo p_VdoInptDvcInfoPt = new VdoInptDvcInfo();
+			p_VdoInptDvcInfoPt.m_DvcTyp = VdoInptDvcInfoPt.m_DvcTyp;
+			p_VdoInptDvcInfoPt.m_CameraId = VdoInptDvcInfoPt.m_CameraId;
+			m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.VdoInptDvcChg, p_VdoInptDvcInfoPt );
+		}
+	}
+
 	//用户定义的显示日志函数。
 	@Override public void UserShowLog( String InfoStrPt )
 	{
@@ -255,18 +300,6 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	@Override public void UserVibrate()
 	{
 		m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.Vibrate );
-	}
-
-	//用户定义的客户端媒体处理线程初始化函数。
-	@Override public void UserClntMediaPocsThrdInit()
-	{
-		m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.MyClntMediaPocsThrdInit );
-	}
-
-	//用户定义的客户端媒体处理线程销毁函数。
-	@Override public void UserClntMediaPocsThrdDstoy()
-	{
-		m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.MyClntMediaPocsThrdDstoy );
 	}
 
 	//用户定义的对讲客户端连接初始化函数。
@@ -426,17 +459,8 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	//用户定义的对讲客户端对讲信息销毁函数。
 	@Override public void UserTkbkClntTkbkInfoDstoy( TkbkClnt.TkbkInfo TkbkInfoPt )
 	{
-		AdoOtptDelStrm( 1, 0, TkbkInfoPt.m_TkbkIdx ); //删除流操作需要立即执行，因为要防止中途出现其他消息导致重复删除流。
-
-		for( VdoOtpt.Strm p_StrmPt : m_VdoOtptPt.m_StrmCntnrPt )
-		{
-			if( p_StrmPt.m_Idx == TkbkInfoPt.m_TkbkIdx )
-			{
-				m_MainActPt.SendVdoInptOtptViewDstoyMsg( p_StrmPt.m_DvcPt.m_DspySurfaceViewPt );
-				break;
-			}
-		}
-		VdoOtptDelStrm( 1, 0, TkbkInfoPt.m_TkbkIdx ); //删除流操作需要立即执行，因为要防止中途出现其他消息导致重复删除流。
+		SetNotUseAdoOtptStrm( TkbkInfoPt.m_TkbkIdx ); //删除流操作需要立即执行，因为要防止中途出现其他消息导致重复删除流。
+		SetNotUseVdoOtptStrm( TkbkInfoPt.m_TkbkIdx ); //删除流操作需要立即执行，因为要防止中途出现其他消息导致重复删除流。
 	}
 
 	//用户定义的对讲客户端对讲信息远端对讲模式函数。
@@ -545,27 +569,6 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		}
 	}
 
-	//用户定义的设备改变函数。
-	@Override public void UserDvcChg( AdoInptOtptDvcInfo AdoInptOtptDvcInfoPt, VdoInptDvcInfo VdoInptDvcInfoPt )
-	{
-		if( AdoInptOtptDvcInfoPt != null )
-		{
-			AdoInptOtptDvcInfo p_AdoInptOtptDvcInfoPt = new AdoInptOtptDvcInfo();
-			p_AdoInptOtptDvcInfoPt.m_NameStrPt = AdoInptOtptDvcInfoPt.m_NameStrPt;
-			p_AdoInptOtptDvcInfoPt.m_AdoInptDvcInfoPt = AdoInptOtptDvcInfoPt.m_AdoInptDvcInfoPt;
-			p_AdoInptOtptDvcInfoPt.m_AdoOtptDvcInfoPt = AdoInptOtptDvcInfoPt.m_AdoOtptDvcInfoPt;
-			m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.AdoInptOtptDvcChg, p_AdoInptOtptDvcInfoPt );
-		}
-
-		if( VdoInptDvcInfoPt != null )
-		{
-			VdoInptDvcInfo p_VdoInptDvcInfoPt = new VdoInptDvcInfo();
-			p_VdoInptDvcInfoPt.m_DvcTyp = VdoInptDvcInfoPt.m_DvcTyp;
-			p_VdoInptDvcInfoPt.m_CameraId = VdoInptDvcInfoPt.m_CameraId;
-			m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.VdoInptDvcChg, p_VdoInptDvcInfoPt );
-		}
-	}
-
 	//设置要使用音频输入。
 	void SetToUseAdoInpt()
 	{
@@ -587,120 +590,113 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		AdoInptSetIsUseSystemAecNsAgc( 0,
 									   ( ( ( CheckBox ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseSystemAecNsAgcCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
-		if( m_TkbkClntPt.m_XfrMode == 0 ) //如果传输模式为实时半双工（一键通）。
+		//设置音频输入是否不使用声学回音消除器。
+		if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseNoAecRdBtnId ) ).isChecked() )
 		{
 			AdoInptSetUseNoAec( 0 );
 		}
-		else //如果传输模式为实时全双工。
+
+		//设置音频输入是否使用Speex声学回音消除器。
+		if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexAecRdBtnId ) ).isChecked() )
 		{
-			//设置音频输入是否不使用声学回音消除器。
-			if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseNoAecRdBtnId ) ).isChecked() )
+			try
 			{
-				AdoInptSetUseNoAec( 0 );
+				AdoInptSetUseSpeexAec( 0,
+									   Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenMsecEdTxtId ) ).getText().toString() ),
+									   ( ( ( CheckBox ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsUseRecCkBoxId ) ).isChecked() ) ? 1 : 0,
+									   Float.parseFloat( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoMutpEdTxtId ) ).getText().toString() ),
+									   Float.parseFloat( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoCntuEdTxtId ) ).getText().toString() ),
+									   Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoSupesEdTxtId ) ).getText().toString() ),
+									   Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoSupesActEdTxtId ) ).getText().toString() ) );
 			}
-
-			//设置音频输入是否使用Speex声学回音消除器。
-			if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexAecRdBtnId ) ).isChecked() )
+			catch( NumberFormatException e )
 			{
-				try
-				{
-					AdoInptSetUseSpeexAec( 0,
-										   Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecFilterLenMsecEdTxtId ) ).getText().toString() ),
-										   ( ( ( CheckBox ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecIsUseRecCkBoxId ) ).isChecked() ) ? 1 : 0,
-										   Float.parseFloat( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoMutpEdTxtId ) ).getText().toString() ),
-										   Float.parseFloat( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoCntuEdTxtId ) ).getText().toString() ),
-										   Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoSupesEdTxtId ) ).getText().toString() ),
-										   Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexAecStngLyotViewPt.findViewById( R.id.SpeexAecEchoSupesActEdTxtId ) ).getText().toString() ) );
-				}
-				catch( NumberFormatException e )
-				{
-					Toast.makeText( m_MainActPt, "请输入数字", Toast.LENGTH_LONG ).show();
-				}
+				Toast.makeText( m_MainActPt, "请输入数字", Toast.LENGTH_LONG ).show();
 			}
+		}
 
-			//设置音频输入是否使用WebRtc定点版声学回音消除器。
-			if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecmRdBtnId ) ).isChecked() )
+		//设置音频输入是否使用WebRtc定点版声学回音消除器。
+		if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecmRdBtnId ) ).isChecked() )
+		{
+			try
 			{
-				try
-				{
-					AdoInptSetUseWebRtcAecm( 0,
-											 ( ( ( CheckBox ) m_MainActPt.m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmIsUseCNGModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-											 Integer.parseInt( ( ( TextView ) m_MainActPt.m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmEchoModeEdTxtId ) ).getText().toString() ),
-											 Integer.parseInt( ( ( TextView ) m_MainActPt.m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmDelayEdTxtId ) ).getText().toString() ) );
-				}
-				catch( NumberFormatException e )
-				{
-					Toast.makeText( m_MainActPt, "请输入数字", Toast.LENGTH_LONG ).show();
-				}
+				AdoInptSetUseWebRtcAecm( 0,
+										 ( ( ( CheckBox ) m_MainActPt.m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmIsUseCNGModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+										 Integer.parseInt( ( ( TextView ) m_MainActPt.m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmEchoModeEdTxtId ) ).getText().toString() ),
+										 Integer.parseInt( ( ( TextView ) m_MainActPt.m_WebRtcAecmStngLyotViewPt.findViewById( R.id.WebRtcAecmDelayEdTxtId ) ).getText().toString() ) );
 			}
-
-			//设置音频输入是否使用WebRtc浮点版声学回音消除器。
-			if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecRdBtnId ) ).isChecked() )
+			catch( NumberFormatException e )
 			{
-				try
-				{
-					AdoInptSetUseWebRtcAec( 0,
-											Integer.parseInt( ( ( TextView ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecEchoModeEdTxtId ) ).getText().toString() ),
-											Integer.parseInt( ( ( TextView ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecDelayEdTxtId ) ).getText().toString() ),
-											( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgstcModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-											( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseExtdFilterModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-											( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-											( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).isChecked() ) ? 1 : 0 );
-				}
-				catch( NumberFormatException e )
-				{
-					Toast.makeText( m_MainActPt, "请输入数字", Toast.LENGTH_LONG ).show();
-				}
+				Toast.makeText( m_MainActPt, "请输入数字", Toast.LENGTH_LONG ).show();
 			}
+		}
 
-			//设置音频输入是否使用WebRtc第三版声学回音消除器。
-			if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcAec3RdBtnId ) ).isChecked() )
+		//设置音频输入是否使用WebRtc浮点版声学回音消除器。
+		if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcAecRdBtnId ) ).isChecked() )
+		{
+			try
 			{
-				try
-				{
-					AdoInptSetUseWebRtcAec3( 0,
-											Integer.parseInt( ( ( TextView ) m_MainActPt.m_WebRtcAec3StngLyotViewPt.findViewById( R.id.WebRtcAec3DelayEdTxtId ) ).getText().toString() ) );
-				}
-				catch( NumberFormatException e )
-				{
-					Toast.makeText( m_MainActPt, "请输入数字", Toast.LENGTH_LONG ).show();
-				}
+				AdoInptSetUseWebRtcAec( 0,
+										Integer.parseInt( ( ( TextView ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecEchoModeEdTxtId ) ).getText().toString() ),
+										Integer.parseInt( ( ( TextView ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecDelayEdTxtId ) ).getText().toString() ),
+										( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseDelayAgstcModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+										( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseExtdFilterModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+										( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseRefinedFilterAdaptAecModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+										( ( ( CheckBox ) m_MainActPt.m_WebRtcAecStngLyotViewPt.findViewById( R.id.WebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).isChecked() ) ? 1 : 0 );
 			}
-
-			//设置音频输入是否使用SpeexWebRtc三重声学回音消除器。
-			if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexWebRtcAecRdBtnId ) ).isChecked() )
+			catch( NumberFormatException e )
 			{
-				try
-				{
-					AdoInptSetUseSpeexWebRtcAec( 0,
-												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.SpeexAecWebRtcAecm :
-												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.WebRtcAecmWebRtcAec :
-												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.SpeexAecWebRtcAecmWebRtcAec :
-												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAec3RdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.WebRtcAecmWebRtcAec3 :
-												 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAec3RdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.SpeexAecWebRtcAecmWebRtcAec3 : 0,
-												 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenMsecEdTxtId ) ).getText().toString() ),
-												 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCkBoxId ) ).isChecked() ) ? 1 : 0,
-												 Float.parseFloat( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMutpEdTxtId ) ).getText().toString() ),
-												 Float.parseFloat( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoCntuEdTxtId ) ).getText().toString() ),
-												 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesEdTxtId ) ).getText().toString() ),
-												 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesActEdTxtId ) ).getText().toString() ),
-												 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmIsUseCNGModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-												 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmEchoModeEdTxtId ) ).getText().toString() ),
-												 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmDelayEdTxtId ) ).getText().toString() ),
-												 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecEchoModeEdTxtId ) ).getText().toString() ),
-												 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecDelayEdTxtId ) ).getText().toString() ),
-												 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseDelayAgstcModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-												 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-												 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCkBoxId ) ).isChecked() ) ? 1 : 0,
-												 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).isChecked() ) ? 1 : 0,
-												 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAec3DelayEdTxtId ) ).getText().toString() ),
-												 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecIsUseSameRoomAecCkBoxId ) ).isChecked() ) ? 1 : 0,
-												 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).getText().toString() ) );
-				}
-				catch( NumberFormatException e )
-				{
-					Toast.makeText( m_MainActPt, "请输入数字", Toast.LENGTH_LONG ).show();
-				}
+				Toast.makeText( m_MainActPt, "请输入数字", Toast.LENGTH_LONG ).show();
+			}
+		}
+
+		//设置音频输入是否使用WebRtc第三版声学回音消除器。
+		if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseWebRtcAec3RdBtnId ) ).isChecked() )
+		{
+			try
+			{
+				AdoInptSetUseWebRtcAec3( 0,
+										Integer.parseInt( ( ( TextView ) m_MainActPt.m_WebRtcAec3StngLyotViewPt.findViewById( R.id.WebRtcAec3DelayEdTxtId ) ).getText().toString() ) );
+			}
+			catch( NumberFormatException e )
+			{
+				Toast.makeText( m_MainActPt, "请输入数字", Toast.LENGTH_LONG ).show();
+			}
+		}
+
+		//设置音频输入是否使用SpeexWebRtc三重声学回音消除器。
+		if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseSpeexWebRtcAecRdBtnId ) ).isChecked() )
+		{
+			try
+			{
+				AdoInptSetUseSpeexWebRtcAec( 0,
+											 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmRdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.SpeexAecWebRtcAecm :
+											 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.WebRtcAecmWebRtcAec :
+											 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAecRdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.SpeexAecWebRtcAecmWebRtcAec :
+											 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeWebRtcAecmWebRtcAec3RdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.WebRtcAecmWebRtcAec3 :
+											 ( ( RadioButton ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWorkModeSpeexAecWebRtcAecmWebRtcAec3RdBtnId ) ).isChecked() ? SpeexWebRtcAec.WorkMode.SpeexAecWebRtcAecmWebRtcAec3 : 0,
+											 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecFilterLenMsecEdTxtId ) ).getText().toString() ),
+											 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecIsUseRecCkBoxId ) ).isChecked() ) ? 1 : 0,
+											 Float.parseFloat( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoMutpEdTxtId ) ).getText().toString() ),
+											 Float.parseFloat( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoCntuEdTxtId ) ).getText().toString() ),
+											 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesEdTxtId ) ).getText().toString() ),
+											 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSpeexAecEchoSupesActEdTxtId ) ).getText().toString() ),
+											 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmIsUseCNGModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+											 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmEchoModeEdTxtId ) ).getText().toString() ),
+											 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecmDelayEdTxtId ) ).getText().toString() ),
+											 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecEchoModeEdTxtId ) ).getText().toString() ),
+											 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecDelayEdTxtId ) ).getText().toString() ),
+											 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseDelayAgstcModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+											 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseExtdFilterModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+											 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseRefinedFilterAdaptAecModeCkBoxId ) ).isChecked() ) ? 1 : 0,
+											 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).isChecked() ) ? 1 : 0,
+											 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAec3DelayEdTxtId ) ).getText().toString() ),
+											 ( ( ( CheckBox ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecIsUseSameRoomAecCkBoxId ) ).isChecked() ) ? 1 : 0,
+											 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).getText().toString() ) );
+			}
+			catch( NumberFormatException e )
+			{
+				Toast.makeText( m_MainActPt, "请输入数字", Toast.LENGTH_LONG ).show();
 			}
 		}
 

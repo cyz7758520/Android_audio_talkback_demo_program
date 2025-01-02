@@ -91,7 +91,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	}
 	Thrd m_ThrdPt = new Thrd(); //存放线程。
 
-	public class UserMsgTyp //用户消息。
+	public class ThrdMsgTyp //线程消息。
 	{
 		public static final int TkbkClntSetIsTstNtwkDly  = 0; //对讲客户端设置是否测试网络延迟。
 		public static final int TkbkClntCnctInit         = 1; //对讲客户端的连接初始化。
@@ -104,9 +104,26 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 		public static final int BdctClntDstoy            = 7; //广播客户端销毁。
 		public static final int BdctClntCnctInit         = 8; //广播客户端的连接初始化。
 		public static final int BdctClntCnctDstoy        = 9; //广播客户端的连接销毁。
+
+		public static final int UserMsgMinVal  = 100; //用户消息的最小值。
 	}
 
 	//用户定义的相关回调函数。
+
+	//用户定义的初始化函数。
+	public abstract void _UserInit();
+
+	//用户定义的销毁函数。
+	public abstract void _UserDstoy();
+
+	//用户定义的处理函数。
+	public abstract void _UserPocs();
+
+	//用户定义的消息函数。
+	public abstract int _UserMsg( int MsgTyp, Object MsgArgPt[] );
+
+	//用户定义的设备改变函数。
+	public abstract void _UserDvcChg( AdoInptOtptDvcInfo AdoInptOtptDvcInfoPt, VdoInptDvcInfo VdoInptDvcInfoPt );
 
 	//用户定义的显示日志函数。
 	public abstract void UserShowLog( String InfoStrPt );
@@ -116,12 +133,6 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 
 	//用户定义的振动函数。
 	public abstract void UserVibrate();
-
-	//用户定义的客户端媒体处理线程初始化函数。
-	public abstract void UserClntMediaPocsThrdInit();
-
-	//用户定义的客户端媒体处理线程销毁函数。
-	public abstract void UserClntMediaPocsThrdDstoy();
 
 	//用户定义的对讲客户端连接初始化函数。
 	public abstract void UserTkbkClntCnctInit( int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt );
@@ -165,9 +176,6 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	//用户定义的广播客户端连接状态函数。
 	public abstract void UserBdctClntCnctSts( BdctClnt.CnctInfo CnctInfoPt, int CurCnctSts );
 
-	//用户定义的设备改变函数。
-	public abstract void UserDvcChg( AdoInptOtptDvcInfo AdoInptOtptDvcInfoPt, VdoInptDvcInfo VdoInptDvcInfoPt );
-
 	//构造函数。
 	public ClntMediaPocsThrd( Context CtxPt, byte LicnCodePt[] )
 	{
@@ -188,61 +196,67 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	//发送对讲客户端设置是否测试网络延迟消息。
 	public int SendTkbkClntSetIsTstNtwkDlyMsg( int IsBlockWait, int IsTstNtwkDly, long SendIntvlMsec )
 	{
-		return SendUserMsg( IsBlockWait, UserMsgTyp.TkbkClntSetIsTstNtwkDly, IsTstNtwkDly, SendIntvlMsec );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntSetIsTstNtwkDly, IsTstNtwkDly, SendIntvlMsec );
 	}
 
 	//发送对讲客户端的连接初始化消息。
 	public int SendTkbkClntCnctInitMsg( int IsBlockWait, int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
 	{
-		return SendUserMsg( IsBlockWait, UserMsgTyp.TkbkClntCnctInit, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntCnctInit, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt );
 	}
 
 	//发送对讲客户端的连接销毁消息。
 	public int SendTkbkClntCnctDstoyMsg( int IsBlockWait )
 	{
-		return SendUserMsg( IsBlockWait, UserMsgTyp.TkbkClntCnctDstoy );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntCnctDstoy );
 	}
 
 	//发送对讲客户端的本端对讲模式消息。
 	public int SendTkbkClntLclTkbkModeMsg( int IsBlockWait, int LclTkbkMode )
 	{
-		return SendUserMsg( IsBlockWait, UserMsgTyp.TkbkClntLclTkbkMode, LclTkbkMode );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntLclTkbkMode, LclTkbkMode );
 	}
 
 	//发送对讲客户端的一键即按即通按钮按下消息。
 	public int SendTkbkClntPttBtnDownMsg( int IsBlockWait )
 	{
-		return SendUserMsg( IsBlockWait, UserMsgTyp.TkbkClntPttBtnDown );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntPttBtnDown );
 	}
 
 	//发送对讲客户端的一键即按即通按钮弹起消息。
 	public int SendTkbkClntPttBtnUpMsg( int IsBlockWait )
 	{
-		return SendUserMsg( IsBlockWait, UserMsgTyp.TkbkClntPttBtnUp );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntPttBtnUp );
 	}
 
 	//发送广播客户端初始化消息。
 	public int SendBdctClntInitMsg( int IsBlockWait, int CnctNumIsDecr )
 	{
-		return SendUserMsg( IsBlockWait, UserMsgTyp.BdctClntInit, CnctNumIsDecr );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.BdctClntInit, CnctNumIsDecr );
 	}
 
 	//发送广播客户端销毁消息。
 	public int SendBdctClntDstoyMsg( int IsBlockWait )
 	{
-		return SendUserMsg( IsBlockWait, UserMsgTyp.BdctClntDstoy );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.BdctClntDstoy );
 	}
 
 	//发送广播客户端的连接初始化消息。
 	public int SendBdctClntCnctInitMsg( int IsBlockWait, int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
 	{
-		return SendUserMsg( IsBlockWait, UserMsgTyp.BdctClntCnctInit, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.BdctClntCnctInit, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt );
 	}
 
 	//发送广播客户端的连接销毁消息。
 	public int SendBdctClntCnctDstoyMsg( int IsBlockWait, int CnctNum )
 	{
-		return SendUserMsg( IsBlockWait, UserMsgTyp.BdctClntCnctDstoy, CnctNum );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.BdctClntCnctDstoy, CnctNum );
+	}
+
+	//发送用户消息到客户端媒体处理线程。
+	public int SendUserMsg( int IsBlockWait, int MsgTyp, Object... MsgArgPt )
+	{
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.UserMsgMinVal + MsgTyp, MsgArgPt );
 	}
 
 	//判断是否自动请求退出。
@@ -387,13 +401,13 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	}
 
 	//用户定义的初始化函数。
-	@Override public int UserInit()
+	@Override public void UserInit()
 	{
 		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
 		Out:
 		{
-			UserClntMediaPocsThrdInit(); //调用用户定义的客户端媒体处理线程初始化函数。
+			_UserInit(); //调用用户定义的初始化函数。
 
 			p_Rslt = 0; //设置本函数执行成功。
 		}
@@ -402,27 +416,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 		{
 
 		}
-		return p_Rslt;
-	}
-
-	//用户定义的处理函数。
-	@Override public int UserPocs()
-	{
-		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
-
-		Out:
-		{
-			m_TkbkClntPt.CnctPocs();
-			m_BdctClntPt.CnctPocs();
-
-			p_Rslt = 0; //设置本函数执行成功。
-		}
-
-		if( p_Rslt != 0 ) //如果本函数执行失败。
-		{
-
-		}
-		return p_Rslt;
+		return;
 	}
 
 	//用户定义的销毁函数。
@@ -446,8 +440,30 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 				UserShowLog( p_InfoStrPt );
 			}
 
-			UserClntMediaPocsThrdDstoy(); //调用用户定义的客户端媒体处理线程销毁函数。
+			_UserDstoy(); //调用用户定义的销毁函数。
 			UserVibrate(); //调用用户定义的振动函数。
+
+			p_Rslt = 0; //设置本函数执行成功。
+		}
+
+		if( p_Rslt != 0 ) //如果本函数执行失败。
+		{
+
+		}
+		return;
+	}
+
+	//用户定义的处理函数。
+	@Override public void UserPocs()
+	{
+		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+
+		Out:
+		{
+			m_TkbkClntPt.CnctPocs();
+			m_BdctClntPt.CnctPocs();
+
+			_UserPocs(); //调用用户定义的处理函数。
 
 			p_Rslt = 0; //设置本函数执行成功。
 		}
@@ -463,12 +479,13 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	@Override public int UserMsg( int MsgTyp, Object MsgArgPt[] )
 	{
 		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+		int p_TmpInt32;
 
 		Out:
 		{
 			switch( MsgTyp )
 			{
-				case UserMsgTyp.TkbkClntSetIsTstNtwkDly:
+				case ThrdMsgTyp.TkbkClntSetIsTstNtwkDly:
 				{
 					m_TkbkClntPt.m_TstNtwkDlyPt.m_IsTstNtwkDly = ( int ) MsgArgPt[ 0 ]; //设置是否测试网络延迟。
 					m_TkbkClntPt.m_TstNtwkDlyPt.m_SendIntvlMsec = ( long ) MsgArgPt[ 1 ]; //设置测试网络延迟包的发送间隔。
@@ -480,7 +497,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 					}
 					break;
 				}
-				case UserMsgTyp.TkbkClntCnctInit:
+				case ThrdMsgTyp.TkbkClntCnctInit:
 				{
 					int p_IsTcpOrAudpPrtcl = ( int ) MsgArgPt[ 0 ];
 					String p_RmtNodeNameStrPt = ( String ) MsgArgPt[ 1 ];
@@ -509,12 +526,12 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 					}
 					break;
 				}
-				case UserMsgTyp.TkbkClntCnctDstoy:
+				case ThrdMsgTyp.TkbkClntCnctDstoy:
 				{
 					m_TkbkClntPt.CnctInfoDstoy();
 					break;
 				}
-				case UserMsgTyp.TkbkClntLclTkbkMode:
+				case ThrdMsgTyp.TkbkClntLclTkbkMode:
 				{
 					int p_LclTkbkMode = ( Integer ) MsgArgPt[ 0 ]; //设置本端对讲模式。
 					int p_OldLclTkbkMode = m_TkbkClntPt.m_LclTkbkMode; //设置旧本端对讲模式。
@@ -526,32 +543,32 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 					SetTkbkMode( 1, 2 ); //只设置要使用的对讲模式。
 					break;
 				}
-				case UserMsgTyp.TkbkClntPttBtnDown:
+				case ThrdMsgTyp.TkbkClntPttBtnDown:
 				{
 					m_TkbkClntPt.m_PttBtnIsDown = 1; //设置一键即按即通按钮为按下。
 					SetTkbkMode( 1, 0 ); //设置对讲模式。
 					UserVibrate(); //调用用户定义的振动函数。
 					break;
 				}
-				case UserMsgTyp.TkbkClntPttBtnUp:
+				case ThrdMsgTyp.TkbkClntPttBtnUp:
 				{
 					m_TkbkClntPt.m_PttBtnIsDown = 0; //设置一键即按即通按钮为弹起。
 					SetTkbkMode( 1, 0 ); //设置对讲模式。
 					break;
 				}
-				case UserMsgTyp.BdctClntInit:
+				case ThrdMsgTyp.BdctClntInit:
 				{
 					m_BdctClntPt.Init( ( Integer ) MsgArgPt[ 0 ] );
 					SetTkbkMode( 1, 0 ); //设置对讲模式。
 					break;
 				}
-				case UserMsgTyp.BdctClntDstoy:
+				case ThrdMsgTyp.BdctClntDstoy:
 				{
 					m_BdctClntPt.Dstoy();
 					SetTkbkMode( 1, 0 ); //设置对讲模式。
 					break;
 				}
-				case UserMsgTyp.BdctClntCnctInit:
+				case ThrdMsgTyp.BdctClntCnctInit:
 				{
 					int p_IsTcpOrAudpPrtcl = ( int ) MsgArgPt[ 0 ];
 					String p_RmtNodeNameStrPt = ( String ) MsgArgPt[ 1 ];
@@ -588,7 +605,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 					}
 					break;
 				}
-				case UserMsgTyp.BdctClntCnctDstoy:
+				case ThrdMsgTyp.BdctClntCnctDstoy:
 				{
 					int p_CnctNum = ( int ) MsgArgPt[ 0 ];
 					BdctClnt.CnctInfo p_BdctClntCnctInfoTmpPt = null;
@@ -627,6 +644,20 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 					}
 					break;
 				}
+				default: //用户消息。
+				{
+					p_TmpInt32 = _UserMsg( MsgTyp - ThrdMsgTyp.UserMsgMinVal, MsgArgPt );
+					if( p_TmpInt32 == 0 )
+					{
+						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "客户端媒体处理线程：调用用户定义的消息函数成功。返回值：" + p_TmpInt32 );
+					}
+					else
+					{
+						if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "客户端媒体处理线程：调用用户定义的消息函数失败。返回值：" + p_TmpInt32 );
+						break Out;
+					}
+					break;
+				}
 			}
 
 			p_Rslt = 0; //设置本函数执行成功。
@@ -637,6 +668,25 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 
 		}
 		return p_Rslt;
+	}
+
+	//用户定义的设备改变函数。
+	@Override public void UserDvcChg( AdoInptOtptDvcInfo AdoInptOtptDvcInfoPt, VdoInptDvcInfo VdoInptDvcInfoPt )
+	{
+		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+
+		Out:
+		{
+			_UserDvcChg( AdoInptOtptDvcInfoPt, VdoInptDvcInfoPt ); //调用用户定义的设备改变函数。
+
+			p_Rslt = 0; //设置本函数执行成功。
+		}
+
+		if( p_Rslt != 0 ) //如果本函数执行失败。
+		{
+
+		}
+		return;
 	}
 
 	//用户定义的读取音视频输入帧函数。

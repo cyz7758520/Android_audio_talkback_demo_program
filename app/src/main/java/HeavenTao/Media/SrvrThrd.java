@@ -162,6 +162,18 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 	//用户定义的相关回调函数。
 
+	//用户定义的初始化函数。
+	public abstract void UserInit();
+
+	//用户定义的销毁函数。
+	public abstract void UserDstoy();
+
+	//用户定义的处理函数。
+	public abstract void UserPocs();
+
+	//用户定义的消息函数。
+	public abstract int UserMsg( int MsgTyp, Object MsgArgPt[] );
+
 	//用户定义的显示日志函数。
 	public abstract void UserShowLog( String InfoStrPt );
 
@@ -170,15 +182,6 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 	//用户定义的振动函数。
 	public abstract void UserVibrate();
-
-	//用户定义的消息函数。
-	public abstract int UserMsg( int MsgTyp, Object MsgArgPt[] );
-
-	//用户定义的服务端线程初始化函数。
-	public abstract void UserSrvrThrdInit();
-
-	//用户定义的服务端线程销毁函数。
-	public abstract void UserSrvrThrdDstoy();
 
 	//用户定义的服务端初始化函数。
 	public abstract void UserSrvrInit();
@@ -793,6 +796,12 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 		Out:
 		{
+			//调用用户定义的处理函数。
+			{
+				UserPocs();
+				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：调用用户定义的处理函数成功。" );
+			}
+
 			//用本端Tcp协议服务端套接字接受远端Tcp协议客户端套接字的连接。
 			if( m_TcpSrvrSoktPt != null )
 			{
@@ -1348,7 +1357,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 		if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：本地代码的指令集名称（CPU类型+ ABI约定）：" + android.os.Build.CPU_ABI + "，设备型号：" + android.os.Build.MODEL + "。" );
 
-		UserSrvrThrdInit(); //调用用户定义的服务端线程初始化函数。
+		UserInit(); //调用用户定义的初始化函数。
 
 		//媒体处理循环开始。
 		while( true )
@@ -1365,7 +1374,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 			SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
 		} //媒体处理循环结束。
 
-		UserSrvrThrdDstoy(); //调用用户定义的服务端线程销毁函数。
+		UserDstoy(); //调用用户定义的销毁函数。
 
 		WakeLockInitOrDstoy( 0 ); //销毁唤醒锁。
 

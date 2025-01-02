@@ -117,16 +117,6 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	}
 	public int m_RunFlag; //存放本线程运行标记。
 
-	class ExitCode //退出码。
-	{
-		public static final int Normal = 0; //正常退出。
-		public static final int UserInit = 1; //调用用户定义的初始化函数失败。
-		public static final int AdoVdoInptOtptInit = 2; //音视频输入输出初始化失败。
-		public static final int ThrdMsgPocs = 3; //线程消息处理失败。
-		public static final int AdoVdoInptOtptPocs = 4; //音视频输入输出处理失败。
-	}
-	public int m_ExitCode; //存放退出码。
-
 	public int m_LastCallUserInitOrDstoy; //存放上一次调用了用户定义的初始化函数或销毁函数，为0表示初始化函数，为1表示销毁函数。
 
 	public static Context m_CtxPt; //存放上下文的指针。
@@ -216,13 +206,13 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	//用户定义的相关回调函数。
 
 	//用户定义的初始化函数。
-	public abstract int UserInit();
-
-	//用户定义的处理函数。
-	public abstract int UserPocs();
+	public abstract void UserInit();
 
 	//用户定义的销毁函数。
 	public abstract void UserDstoy();
+
+	//用户定义的处理函数。
+	public abstract void UserPocs();
 
 	//用户定义的消息函数。
 	public abstract int UserMsg( int MsgTyp, Object MsgArgPt[] );
@@ -1054,6 +1044,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						{
 							if( m_IsFirstCallback == 0 )
 							{
+								if( m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：检测到音频设备添加，发送音频输入输出设备关闭线程消息。" ); //因为音频设备改变都会导致音频服务卡顿，从而导致音频输入输出帧不同步，所以音频设备需要重新初始化。
 								m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
 							}
 							else
@@ -1066,6 +1057,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						{
 							if( m_IsFirstCallback == 0 )
 							{
+								if( m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：检测到音频设备删除，发送音频输入输出设备关闭线程消息。" ); //因为音频设备改变都会导致音频服务卡顿，从而导致音频输入输出帧不同步，所以音频设备需要重新初始化。
 								m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
 							}
 							else
@@ -2331,18 +2323,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				}
 				case ThrdMsgTyp.UserInit:
 				{
-					m_ExitCode = ExitCode.Normal; //清空退出码。
 					m_LastCallUserInitOrDstoy = 0; //设置上一次调用了用户定义的初始化函数。
-					p_TmpInt32 = UserInit(); //调用用户定义的初始化函数。
-					if( p_TmpInt32 == 0 )
-					{
-						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：调用用户定义的初始化函数成功。返回值：" + p_TmpInt32 );
-					}
-					else
-					{
-						if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：调用用户定义的初始化函数失败。返回值：" + p_TmpInt32 );
-						break Out;
-					}
+					UserInit(); //调用用户定义的初始化函数。
+					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：调用用户定义的初始化函数成功。" );
 					break;
 				}
 				case ThrdMsgTyp.UserDstoy:
@@ -2427,13 +2410,6 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 		if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
-			if( MsgTyp == ThrdMsgTyp.UserInit )
-				m_ExitCode = ExitCode.UserInit; //设置退出码为调用用户定义的初始化函数失败。
-			else if( MsgTyp == ThrdMsgTyp.AdoVdoInptOtptInit )
-				m_ExitCode = ExitCode.AdoVdoInptOtptInit; //设置退出码为音视频输入输出初始化失败。
-			else
-				m_ExitCode = ExitCode.ThrdMsgPocs; //设置退出码为线程消息处理失败。
-
 			if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数，就执行销毁。
 			{
 				//执行顺序：媒体销毁，用户销毁。
@@ -2445,7 +2421,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	}
 
 	//媒体处理线程的音视频输入输出帧处理。
-	private int AdoVdoInptOtptFrmPocs()
+	private void AdoVdoInptOtptFrmPocs()
 	{
 		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		int p_TmpInt321;
@@ -2459,25 +2435,12 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 			//调用用户定义的处理函数。
 			{
-				p_TmpInt321 = UserPocs();
-				if( p_TmpInt321 == 0 )
+				UserPocs();
+				if( m_IsPrintLogcat != 0 )
 				{
-					if( m_IsPrintLogcat != 0 )
-					{
-						p_NowTickMsec = SystemClock.uptimeMillis();
-						Log.i( m_CurClsNameStrPt, "媒体处理线程：调用用户定义的处理函数成功。返回值：" + p_TmpInt321 + "。耗时 " + ( p_NowTickMsec - p_LastTickMsec ) + " 毫秒。" );
-						p_LastTickMsec = SystemClock.uptimeMillis();
-					}
-				}
-				else
-				{
-					if( m_IsPrintLogcat != 0 )
-					{
-						p_NowTickMsec = SystemClock.uptimeMillis();
-						Log.e( m_CurClsNameStrPt, "媒体处理线程：调用用户定义的处理函数失败。返回值：" + p_TmpInt321 + "。耗时 " + ( p_NowTickMsec - p_LastTickMsec ) + " 毫秒。" );
-						p_LastTickMsec = SystemClock.uptimeMillis();
-					}
-					break Out;
+					p_NowTickMsec = SystemClock.uptimeMillis();
+					Log.i( m_CurClsNameStrPt, "媒体处理线程：调用用户定义的处理函数成功。耗时 " + ( p_NowTickMsec - p_LastTickMsec ) + " 毫秒。" );
+					p_LastTickMsec = SystemClock.uptimeMillis();
 				}
 			}
 
@@ -3057,16 +3020,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 		if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
-			m_ExitCode = ExitCode.AdoVdoInptOtptPocs; //设置退出码为音视频输入输出处理失败。
 
-			if( m_LastCallUserInitOrDstoy == 0 ) //如果上一次调用了用户定义的初始化函数，就执行销毁。
-			{
-				//执行顺序：媒体销毁，用户销毁。
-				m_ThrdMsgQueuePt.SendMsg( 1, 0, ThrdMsgTyp.AdoVdoInptOtptDstoy );
-				m_ThrdMsgQueuePt.SendMsg( 1, 0, ThrdMsgTyp.UserDstoy );
-			}
 		}
-		return p_Rslt;
+		return;
 	}
 
 	//媒体处理线程的主函数。

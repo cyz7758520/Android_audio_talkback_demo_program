@@ -35,7 +35,7 @@
 &emsp;&emsp;特别注意：以上是在不使用系统自带的声学回音消除器的效果，且不同设备或不同环境或不同时间效果都会不同，所以需要自己亲自测试。  
 
 # 准备
-&emsp;&emsp;准备两至多个安装了Android 2.3及以上系统的设备（已适配到Android 13.0），设备之间可以相互通信（可以用Ping工具测试，建议设备都在同一局域网内，外网设备访问内网设备可能需要做内网穿透），所有设备都安装相同版本的本软件。  
+&emsp;&emsp;准备两至多个安装了Android 2.3及以上系统的设备（已适配到Android 15.0），设备之间可以相互通信（可以用Ping工具测试，建议设备都在同一局域网内，外网设备访问内网设备可能需要做内网穿透），所有设备都安装相同版本的本软件。  
 
 # 开始
 &emsp;&emsp;1、在一个设备上直接点击服务端的创建按钮。  
@@ -57,9 +57,9 @@
 &emsp;&emsp;如果需要在自己的软件中使用本软件的音视频功能，需要以下几个步骤：  
 &emsp;&emsp;1、在AndroidManifest.xml文件中添加android.permission.RECORD_AUDIO、android.permission.MODIFY_AUDIO_SETTINGS、android.permission.CAMERA权限。  
 &emsp;&emsp;2、将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中。  
-&emsp;&emsp;3、如果自己的软件已有传输协议：继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserPocs、UserDstoy、UserMsg、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetAdoOtptFrm、UserWriteVdoOtptFrm、UserGetVdoOtptFrm这些回调成员函数。  
-&emsp;&emsp;&emsp;&emsp;如果自己的软件没有传输协议：继承HeavenTao.Media.SrvrThrd服务端线程类，实现UserShowLog、UserShowToast、UserVibrate、UserMsg、UserSrvrThrdInit、UserSrvrThrdDstoy、UserSrvrInit、UserSrvrDstoy、UserCnctInit、UserCnctDstoy、UserCnctSts、UserCnctRmtTkbkMode这些回调成员函数。  
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;继承HeavenTao.Media.ClntMediaPocsThrd客户端媒体处理线程类，实现UserShowLog、UserShowToast、UserVibrate、UserClntMediaPocsThrdInit、UserClntMediaPocsThrdDstoy、UserTkbkClntCnctInit、UserTkbkClntCnctDstoy、UserTkbkClntCnctSts、UserTkbkClntMyTkbkIdx、UserTkbkClntLclTkbkMode、UserTkbkClntTkbkInfoInit、UserTkbkClntTkbkInfoDstoy、UserTkbkClntTkbkInfoRmtTkbkMode、UserBdctClntInit、UserBdctClntDstoy这些回调成员函数。  
+&emsp;&emsp;3、如果自己的软件已有传输协议：继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserDstoy、UserPocs、UserMsg、UserDvcChg、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetAdoOtptFrm、UserWriteVdoOtptFrm、UserGetVdoOtptFrm这些回调成员函数。  
+&emsp;&emsp;&emsp;&emsp;如果自己的软件没有传输协议：继承HeavenTao.Media.SrvrThrd服务端线程类，实现UserInit、UserDstoy、UserPocs、UserMsg、UserShowLog、UserShowToast、UserVibrate、UserSrvrInit、UserSrvrDstoy、UserCnctInit、UserCnctDstoy、UserCnctSts、UserCnctRmtTkbkMode、UserCnctTstNtwkDly这些回调成员函数。  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;继承HeavenTao.Media.ClntMediaPocsThrd客户端媒体处理线程类，实现UserInit、UserDstoy、UserPocs、UserMsg、UserDvcChg、UserShowLog、UserShowToast、UserVibrate、UserTkbkClntCnctInit、UserTkbkClntCnctDstoy、UserTkbkClntCnctSts、UserTkbkClntMyTkbkIdx、UserTkbkClntLclTkbkMode、UserTkbkClntTkbkInfoInit、UserTkbkClntTkbkInfoDstoy、UserTkbkClntTkbkInfoRmtTkbkMode、UserTkbkClntTstNtwkDly、UserBdctClntInit、UserBdctClntDstoy、UserBdctClntCnctInit、UserBdctClntCnctDstoy、UserBdctClntCnctSts这些回调成员函数。  
 &emsp;&emsp;&emsp;&emsp;如果要在JNI层处理音视频帧，则可以将这些回调成员函数继承为native函数，然后在JNI层实现即可。  
 &emsp;&emsp;4、new这个继承的类，然后调用类的相关设置成员函数，最后调用start()成员函数启动该线程即可。  
 &emsp;&emsp;5、当需要线程退出时，调用线程类的RqirExit()成员函数即可。  
@@ -104,7 +104,7 @@
 &emsp;&emsp;保存音视频输入输出的AdoVdoInptOtpt.avi文件不能直接播放，需要使用FFmpeg命令转码后才能播放，建议用VLC播放器，转码命令为：ffmpeg -i AdoVdoInptOtpt.avi -filter_complex "[0:<zero-width space>a:1][0:<zero-width space>a:2]amix=inputs=2:duration=max[aout]" -map [aout] -map 0:v -acodec pcm_s16le -vcodec copy AdoVdoInptOtpt_Mix.avi -y。
 
 # 其他
-&emsp;&emsp;本软件采用了Speex的1.2.1版本、SpeexDsp的1.2.1版本、WebRtc的2019年7月份版本、WebRtc的2024年8月份版本、OpenH264的2.4.1版本为基础，并进行了大量优化。  
+&emsp;&emsp;本软件采用了Speex的1.2.1版本、SpeexDsp的1.2.1版本、WebRtc的2019年7月份版本、WebRtc的2024年8月份版本、OpenH264的2.5.0版本为基础，并进行了大量优化。  
 &emsp;&emsp;讨论QQ群：511046632    欢迎大家参与测试和讨论！  
 &emsp;&emsp;本人QQ号：280604597    赤勇玄心行天道  
 &emsp;&emsp;本人微信：qq280604597    赤勇玄心行天道  
@@ -134,24 +134,23 @@ ___
 函数名称：UserInit  
 功能说明：用户定义的初始化函数，在本线程刚启动时回调一次。  
 参数说明：无。  
-返回说明：0：成功。  
-&emsp;&emsp;&emsp;&emsp;&emsp;非0：失败。  
-___
-函数名称：UserPocs  
-功能说明：用户定义的处理函数，在本线程运行时每隔1毫秒就回调一次。  
-参数说明：无。  
-返回说明：0：成功。  
-&emsp;&emsp;&emsp;&emsp;&emsp;非0：失败。  
+返回说明：无。  
 ___
 函数名称：UserDstoy  
 功能说明：用户定义的销毁函数，在本线程退出时回调一次。  
 参数说明：无。  
 返回说明：无。  
 ___
+函数名称：UserPocs  
+功能说明：用户定义的处理函数，在本线程运行时每隔1毫秒就回调一次。  
+参数说明：无。  
+返回说明：无。  
+___
 函数名称：UserMsg  
 功能说明：用户定义的消息函数，在接收用户消息时回调一次。  
-参数说明：MsgArgPt：\[输入\]，存放消息参数的动态参数的指针。如果没有消息参数，则本参数为null。  
-返回说明：无。  
+参数说明：MsgTyp：\[输入\]，存放消息类型。  
+&emsp;&emsp;&emsp;&emsp;&emsp;MsgArgPt：\[输入\]，存放消息参数的动态参数的指针。如果没有消息参数，则本参数为null。  
+返回说明：本次消息处理结果。  
 ___
 函数名称：UserDvcChg  
 功能说明：用户定义的设备改变函数，在音频输入输出设备、视频输入设备改变时回调一次。  
@@ -178,8 +177,7 @@ ___
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoInptYu12RsltFrmLenByt：\[输入\]，存放视频输入Yu12格式结果帧的长度，单位为字节。如果不使用视频输入，或本次没有读取到视频输入帧，则本参数无意义。  
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoInptEncdRsltFrmPt：\[输入\]，存放视频输入已编码格式结果帧的指针。如果不使用视频输入，或本次没有读取到视频输入帧，或视频输入编码器要使用Yu12原始数据，则本参数为为null。  
 &emsp;&emsp;&emsp;&emsp;&emsp;VdoInptEncdRsltFrmLenByt：\[输入\]，存放视频输入已编码格式结果帧的长度，单位为字节。如果不使用视频输入，或本次没有读取到视频输入帧，或视频输入编码器要使用Yu12原始数据，则本参数无意义。  
-返回说明：0：成功。  
-&emsp;&emsp;&emsp;&emsp;&emsp;非0：失败。  
+返回说明：无。  
 ___
 函数名称：UserWriteAdoOtptFrm  
 功能说明：用户定义的写入音频输出帧函数，在需要写入一个音频输出帧时回调一次。如果不使用音频输出，则本函数不会被回调。注意：本函数不是在媒体处理线程中执行的，而是在音频输出线程中执行的，所以本函数应尽量在一瞬间完成执行，否则会导致音频输入输出帧不同步，从而导致声学回音消除失败。  
@@ -223,6 +221,27 @@ ___
 ___
 ### SrvrThrd服务端线程类的回调成员函数
 ___
+函数名称：UserInit  
+功能说明：用户定义的初始化函数，在本线程刚启动时回调一次。  
+参数说明：无。  
+返回说明：无。  
+___
+函数名称：UserDstoy  
+功能说明：用户定义的销毁函数，在本线程退出时回调一次。  
+参数说明：无。  
+返回说明：无。  
+___
+函数名称：UserPocs  
+功能说明：用户定义的处理函数，在本线程运行时每隔1毫秒就回调一次。  
+参数说明：无。  
+返回说明：无。  
+___
+函数名称：UserMsg  
+功能说明：用户定义的消息函数，在接收用户消息时回调一次。  
+参数说明：MsgTyp：\[输入\]，存放消息类型。  
+&emsp;&emsp;&emsp;&emsp;&emsp;MsgArgPt：\[输入\]，存放消息参数数组的指针。如果没有消息参数，则本参数为null。  
+返回说明：本次消息处理结果。  
+___
 函数名称：UserShowLog  
 功能说明：用户定义的显示日志函数。  
 ___
@@ -231,15 +250,6 @@ ___
 ___
 函数名称：UserVibrate  
 功能说明：用户定义的振动函数。  
-___
-函数名称：UserMsg  
-功能说明：用户定义的消息函数。  
-___
-函数名称：UserSrvrThrdInit  
-功能说明：用户定义的服务端线程初始化函数。  
-___
-函数名称：UserSrvrThrdDstoy  
-功能说明：用户定义的服务端线程销毁函数。  
 ___
 函数名称：UserSrvrInit  
 功能说明：用户定义的服务端初始化函数。  
@@ -259,7 +269,37 @@ ___
 函数名称：UserCnctRmtTkbkMode  
 功能说明：用户定义的连接远端对讲模式函数。  
 ___
+函数名称：UserCnctTstNtwkDly  
+功能说明：用户定义的连接测试网络延迟函数。  
+___
 ### ClntMediaPocsThrd客户端媒体处理线程类的回调成员函数
+___
+函数名称：UserInit  
+功能说明：用户定义的初始化函数，在本线程刚启动时回调一次。  
+参数说明：无。  
+返回说明：无。  
+___
+函数名称：UserDstoy  
+功能说明：用户定义的销毁函数，在本线程退出时回调一次。  
+参数说明：无。  
+返回说明：无。  
+___
+函数名称：UserPocs  
+功能说明：用户定义的处理函数，在本线程运行时每隔1毫秒就回调一次。  
+参数说明：无。  
+返回说明：无。  
+___
+函数名称：UserMsg  
+功能说明：用户定义的消息函数，在接收用户消息时回调一次。  
+参数说明：MsgTyp：\[输入\]，存放消息类型。  
+&emsp;&emsp;&emsp;&emsp;&emsp;MsgArgPt：\[输入\]，存放消息参数数组的指针。如果没有消息参数，则本参数为null。  
+返回说明：本次消息处理结果。  
+___
+函数名称：UserDvcChg  
+功能说明：用户定义的设备改变函数，在音频输入输出设备、视频输入设备改变时回调一次。  
+参数说明：AdoInptOtptDvcInfoPt：\[输入\]，存放音频输入输出设备信息指针。如果音频输入输出设备没有改变，则本参数为null。  
+&emsp;&emsp;&emsp;&emsp;&emsp;VdoInptDvcInfoPt：\[输入\]，存放视频输入设备信息的指针。如果视频输入设备没有改变，则本参数为null。  
+返回说明：无。  
 ___
 函数名称：UserShowLog  
 功能说明：用户定义的显示日志函数。  
@@ -269,12 +309,6 @@ ___
 ___
 函数名称：UserVibrate  
 功能说明：用户定义的振动函数。  
-___
-函数名称：UserClntMediaPocsThrdInit  
-功能说明：用户定义的客户端媒体处理线程初始化函数。  
-___
-函数名称：UserClntMediaPocsThrdDstoy  
-功能说明：用户定义的客户端媒体处理线程销毁函数。  
 ___
 函数名称：UserTkbkClntCnctInit  
 功能说明：用户定义的对讲客户端连接初始化函数。  
@@ -300,6 +334,9 @@ ___
 函数名称：UserTkbkClntTkbkInfoRmtTkbkMode  
 功能说明：用户定义的对讲客户端对讲信息远端对讲模式函数。  
 ___
+函数名称：UserTkbkClntTstNtwkDly  
+功能说明：用户定义的对讲客户端测试网络延迟函数。  
+___
 函数名称：UserBdctClntInit  
 功能说明：用户定义的广播客户端初始化函数。  
 ___
@@ -315,7 +352,3 @@ ___
 函数名称：UserBdctClntCnctSts  
 功能说明：用户定义的广播客户端连接状态函数。  
 ___
-函数名称：UserDvcChg  
-功能说明：用户定义的设备改变函数。  
-___
-
