@@ -120,7 +120,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	public abstract void _UserPocs();
 
 	//用户定义的消息函数。
-	public abstract int _UserMsg( int MsgTyp, Object MsgArgPt[] );
+	public abstract int _UserMsg( int MsgTyp, Object MsgParmPt[] );
 
 	//用户定义的设备改变函数。
 	public abstract void _UserDvcChg( AdoInptOtptDvcInfo AdoInptOtptDvcInfoPt, VdoInptDvcInfo VdoInptDvcInfoPt );
@@ -189,8 +189,10 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 		//初始化广播网络。
 		m_BdctClntPt.m_ClntMediaPocsThrdPt = this; //设置客户端媒体处理线程的指针。
 		m_BdctClntPt.m_CnctInfoCurMaxNum = -1; //设置连接信息的当前最大序号。
+		m_BdctClntPt.m_LclTkbkMode = TkbkMode.None; //设置本端对讲模式为挂起。
 		m_BdctClntPt.m_LastSendAdoInptFrmIsAct = 0; //设置最后发送的一个音频输入帧为无语音活动。
-		m_BdctClntPt.m_LastSendAdoInptFrmTimeStamp = 0 - 1; //设置最后一个发送音频输入帧的时间戳为0的前一个，因为第一次发送音频输入帧时会递增一个步进。
+		m_BdctClntPt.m_LastSendAdoInptFrmTimeStamp = 0 - 1; //设置最后发送音频输入帧的时间戳为0的前一个，因为第一次发送音频输入帧时会递增一个步进。
+		m_BdctClntPt.m_LastSendVdoInptFrmTimeStamp = 0 - 1; //设置最后发送视频输入帧的时间戳为0的前一个，因为第一次发送视频输入帧时会递增一个步进。
 	}
 
 	//发送对讲客户端设置是否测试网络延迟消息。
@@ -230,9 +232,9 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	}
 
 	//发送广播客户端初始化消息。
-	public int SendBdctClntInitMsg( int IsBlockWait, int CnctNumIsDecr )
+	public int SendBdctClntInitMsg( int IsBlockWait, int CnctNumIsDecr, int LclTkbkMode )
 	{
-		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.BdctClntInit, CnctNumIsDecr );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.BdctClntInit, CnctNumIsDecr, LclTkbkMode );
 	}
 
 	//发送广播客户端销毁消息。
@@ -254,9 +256,9 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	}
 
 	//发送用户消息到客户端媒体处理线程。
-	public int SendUserMsg( int IsBlockWait, int MsgTyp, Object... MsgArgPt )
+	public int SendUserMsg( int IsBlockWait, int MsgTyp, Object... MsgParmPt )
 	{
-		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.UserMsgMinVal + MsgTyp, MsgArgPt );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.UserMsgMinVal + MsgTyp, MsgParmPt );
 	}
 
 	//判断是否自动请求退出。
@@ -369,7 +371,11 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 				if( ( p_RealTkbkMode & TkbkMode.VdoOtpt ) != 0 ) p_IsUseVdoOtpt = 1;
 			}
 
-			if( m_BdctClntPt.m_IsInit != 0 ) p_IsUseAdoInpt = 1; //如果广播客户端已初始化，就要使用音频输入。
+			if( m_BdctClntPt.m_IsInit != 0 ) //如果广播客户端已初始化。
+			{
+				if( ( m_BdctClntPt.m_LclTkbkMode & TkbkMode.AdoInpt ) != 0 ) p_IsUseAdoInpt = 1;
+				if( ( m_BdctClntPt.m_LclTkbkMode & TkbkMode.VdoInpt ) != 0 ) p_IsUseVdoInpt = 1;
+			}
 
 			//设置是否使用音视频输入输出。
 			if( SetMode == 0 ) //如果同时设置不使用和要使用。
@@ -476,7 +482,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	}
 
 	//用户定义的消息函数。
-	@Override public int UserMsg( int MsgTyp, Object MsgArgPt[] )
+	@Override public int UserMsg( int MsgTyp, Object MsgParmPt[] )
 	{
 		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		int p_TmpInt32;
@@ -487,8 +493,8 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 			{
 				case ThrdMsgTyp.TkbkClntSetIsTstNtwkDly:
 				{
-					m_TkbkClntPt.m_TstNtwkDlyPt.m_IsTstNtwkDly = ( int ) MsgArgPt[ 0 ]; //设置是否测试网络延迟。
-					m_TkbkClntPt.m_TstNtwkDlyPt.m_SendIntvlMsec = ( long ) MsgArgPt[ 1 ]; //设置测试网络延迟包的发送间隔。
+					m_TkbkClntPt.m_TstNtwkDlyPt.m_IsTstNtwkDly = ( int ) MsgParmPt[ 0 ]; //设置是否测试网络延迟。
+					m_TkbkClntPt.m_TstNtwkDlyPt.m_SendIntvlMsec = ( long ) MsgParmPt[ 1 ]; //设置测试网络延迟包的发送间隔。
 
 					if( m_TkbkClntPt.m_TstNtwkDlyPt.m_IsTstNtwkDly != 0 )
 					{
@@ -499,9 +505,9 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 				}
 				case ThrdMsgTyp.TkbkClntCnctInit:
 				{
-					int p_IsTcpOrAudpPrtcl = ( int ) MsgArgPt[ 0 ];
-					String p_RmtNodeNameStrPt = ( String ) MsgArgPt[ 1 ];
-					String p_RmtNodeSrvcStrPt = ( String ) MsgArgPt[ 2 ];
+					int p_IsTcpOrAudpPrtcl = ( int ) MsgParmPt[ 0 ];
+					String p_RmtNodeNameStrPt = ( String ) MsgParmPt[ 1 ];
+					String p_RmtNodeSrvcStrPt = ( String ) MsgParmPt[ 2 ];
 
 					OutTkbkClntCnctInit:
 					{
@@ -533,11 +539,11 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 				}
 				case ThrdMsgTyp.TkbkClntLclTkbkMode:
 				{
-					int p_LclTkbkMode = ( Integer ) MsgArgPt[ 0 ]; //设置本端对讲模式。
+					int p_LclTkbkMode = ( Integer ) MsgParmPt[ 0 ]; //设置本端对讲模式。
 					int p_OldLclTkbkMode = m_TkbkClntPt.m_LclTkbkMode; //设置旧本端对讲模式。
 
 					if( p_LclTkbkMode != TkbkMode.NoChg ) m_TkbkClntPt.m_LclTkbkMode = p_LclTkbkMode; //设置本端对讲模式。
-					SetTkbkMode( 1, 1 ); //只设置不使用的对讲模式。
+					SetTkbkMode( 1, 1 ); //只设置不使用的对讲模式。因为在调用用户定义的对讲客户端本端对讲模式函数时，可能会对不使用的做一些销毁工作，并对要使用的做一些初始化工作，所以先只设置不使用的。
 					UserTkbkClntLclTkbkMode( p_OldLclTkbkMode, m_TkbkClntPt.m_LclTkbkMode ); //调用用户定义的对讲客户端本端对讲模式函数。
 					if( m_TkbkClntPt.m_CurCnctSts == CnctSts.Cnct ) m_TkbkClntPt.CnctSendTkbkModePkt( m_TkbkClntPt.m_LclTkbkMode ); //发送对讲模式包。
 					SetTkbkMode( 1, 2 ); //只设置要使用的对讲模式。
@@ -558,21 +564,33 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 				}
 				case ThrdMsgTyp.BdctClntInit:
 				{
-					m_BdctClntPt.Init( ( Integer ) MsgArgPt[ 0 ] );
-					SetTkbkMode( 1, 0 ); //设置对讲模式。
+					int p_CnctNumIsDecr = ( int ) MsgParmPt[ 0 ];
+					int p_LclTkbkMode = ( int ) MsgParmPt[ 1 ];
+
+					OutBdctClntInit:
+					{
+						if( m_BdctClntPt.m_IsInit != 0 )
+						{
+							String p_InfoStrPt = "客户端媒体处理线程：广播客户端：已初始化广播客户端，请先销毁再初始化。";
+							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
+							UserShowLog( p_InfoStrPt );
+							break OutBdctClntInit;
+						}
+
+						if( m_BdctClntPt.Init( p_CnctNumIsDecr, p_LclTkbkMode ) != 0 ) break Out;
+					}
 					break;
 				}
 				case ThrdMsgTyp.BdctClntDstoy:
 				{
 					m_BdctClntPt.Dstoy();
-					SetTkbkMode( 1, 0 ); //设置对讲模式。
 					break;
 				}
 				case ThrdMsgTyp.BdctClntCnctInit:
 				{
-					int p_IsTcpOrAudpPrtcl = ( int ) MsgArgPt[ 0 ];
-					String p_RmtNodeNameStrPt = ( String ) MsgArgPt[ 1 ];
-					String p_RmtNodeSrvcStrPt = ( String ) MsgArgPt[ 2 ];
+					int p_IsTcpOrAudpPrtcl = ( int ) MsgParmPt[ 0 ];
+					String p_RmtNodeNameStrPt = ( String ) MsgParmPt[ 1 ];
+					String p_RmtNodeSrvcStrPt = ( String ) MsgParmPt[ 2 ];
 					BdctClnt.CnctInfo p_BdctClntCnctInfoTmpPt;
 
 					OutBdctClntCnctInit:
@@ -607,7 +625,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 				}
 				case ThrdMsgTyp.BdctClntCnctDstoy:
 				{
-					int p_CnctNum = ( int ) MsgArgPt[ 0 ];
+					int p_CnctNum = ( int ) MsgParmPt[ 0 ];
 					BdctClnt.CnctInfo p_BdctClntCnctInfoTmpPt = null;
 
 					OutBdctClntCnctDstoy:
@@ -646,7 +664,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 				}
 				default: //用户消息。
 				{
-					p_TmpInt32 = _UserMsg( MsgTyp - ThrdMsgTyp.UserMsgMinVal, MsgArgPt );
+					p_TmpInt32 = _UserMsg( MsgTyp - ThrdMsgTyp.UserMsgMinVal, MsgParmPt );
 					if( p_TmpInt32 == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "客户端媒体处理线程：调用用户定义的消息函数成功。返回值：" + p_TmpInt32 );
@@ -705,7 +723,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 												VdoInptEncdRsltFrmPt, VdoInptEncdRsltFrmLenByt );
 		}
 
-		if( ( AdoInptPcmSrcFrmPt != null ) && ( m_BdctClntPt.m_IsInit != 0 ) )
+		if( m_BdctClntPt.m_IsInit != 0 )
 		{
 			m_BdctClntPt.UserReadAdoVdoInptFrm( AdoInptPcmSrcFrmPt, AdoInptPcmRsltFrmPt, AdoInptPcmFrmLenUnit, AdoInptPcmRsltFrmVoiceActSts,
 												AdoInptEncdRsltFrmPt, AdoInptEncdRsltFrmLenByt, AdoInptEncdRsltFrmIsNeedTrans,

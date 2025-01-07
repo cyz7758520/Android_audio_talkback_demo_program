@@ -115,6 +115,14 @@ public class AndrdAdoVdoTkbkStng
 				p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.VdoOtptIsBlackCkBoxId ) ).isChecked() ) ? "1" : "0" );
 				p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
+				p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "UseAdoInptBdctTkbkMode" );
+				p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptBdctTkbkModeCkBoxId ) ).isChecked() ) ? "1" : "0" );
+				p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
+
+				p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "UseVdoInptBdctTkbkMode" );
+				p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptBdctTkbkModeCkBoxId ) ).isChecked() ) ? "1" : "0" );
+				p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
+
 				p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "IsDrawAdoWavfm" ); //这里不加"ToSurface"是为了与Windows端的"ToWnd"保持一致。
 				p_TmpXMLElement2Pt.SetText( ( ( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? "1" : "0" );
 				p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
@@ -925,6 +933,30 @@ public class AndrdAdoVdoTkbkStng
 									else
 									{
 										( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.VdoOtptIsBlackCkBoxId ) ).setChecked( true );
+									}
+								}
+								else if( p_HTString1Pt.m_Val.equals( "UseAdoInptBdctTkbkMode" ) )
+								{
+									p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
+									if( p_HTString1Pt.m_Val.equals( "0" ) )
+									{
+										( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptBdctTkbkModeCkBoxId ) ).setChecked( false );
+									}
+									else
+									{
+										( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptBdctTkbkModeCkBoxId ) ).setChecked( true );
+									}
+								}
+								else if( p_HTString1Pt.m_Val.equals( "UseVdoInptBdctTkbkMode" ) )
+								{
+									p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
+									if( p_HTString1Pt.m_Val.equals( "0" ) )
+									{
+										( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptBdctTkbkModeCkBoxId ) ).setChecked( false );
+									}
+									else
+									{
+										( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptBdctTkbkModeCkBoxId ) ).setChecked( true );
 									}
 								}
 								else if( p_HTString1Pt.m_Val.equals( "IsDrawAdoWavfm" ) )
@@ -2235,7 +2267,7 @@ public class AndrdAdoVdoTkbkStng
 		{
 		}
 
-		//设置使用什么对讲模式。
+		//设置对讲模式。
 		( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).setChecked( true );
 		( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).setChecked( true );
 		( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).setChecked( false );
@@ -2247,9 +2279,13 @@ public class AndrdAdoVdoTkbkStng
 		( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.VdoInptIsBlackCkBoxId ) ).setChecked( false );
 		( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.VdoOtptIsBlackCkBoxId ) ).setChecked( false );
 
-		//设置音频输出设备、视频输入设备。
+		//设置音频输入输出设备、视频输入设备。
 		( ( Spinner ) MainActPt.m_MainLyotViewPt.findViewById( R.id.AdoInptOtptDvcSpinnerId ) ).setSelection( 0 );
 		( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseFrontCamereRdBtnId ) ).performClick();
+
+		//设置广播对讲模式。
+		( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptBdctTkbkModeCkBoxId ) ).setChecked( true );
+		( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptBdctTkbkModeCkBoxId ) ).setChecked( false );
 
 		//设置是否绘制音频波形到Surface。
 		( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).setChecked( false );

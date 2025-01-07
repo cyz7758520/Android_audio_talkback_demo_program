@@ -16,7 +16,7 @@ public abstract class MsgQueue //消息队列。
 	public final Thread m_MsgPocsThrdPt; //消息处理线程的指针。
 
 	//用户定义的消息处理回调函数。
-	public abstract int UserMsgPocs( int MsgTyp, Object[] MsgArgPt );
+	public abstract int UserMsgPocs( int MsgTyp, Object[] MsgParmPt );
 
 	//构造函数。
 	public MsgQueue( Thread MsgPocsThrdPt )
@@ -48,7 +48,7 @@ public abstract class MsgQueue //消息队列。
 	}
 
 	//发送消息。
-	public int SendMsg( int IsBlockWait, int AddFirstOrLast, int MsgTyp, Object... MsgArgPt )
+	public int SendMsg( int IsBlockWait, int AddFirstOrLast, int MsgTyp, Object... MsgParmPt )
 	{
 		int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
 
@@ -59,7 +59,7 @@ public abstract class MsgQueue //消息队列。
 			//放入消息到消息容器。
 			p_MsgPt.m_MsgPocsRslt = -99999;
 			p_MsgPt.m_MsgTyp = MsgTyp;
-			p_MsgPt.m_MsgArgCntnrPt = MsgArgPt;
+			p_MsgPt.m_MsgArgCntnrPt = MsgParmPt;
 			if( AddFirstOrLast == 0 ) m_MsgCntnrPt.addFirst( p_MsgPt ); //添加消息到消息容器第一个。这里忽略报错“Call requires API level 21 (current min is 14): java.util.concurrent.ConcurrentLinkedDeque#addFirst”。
 			else m_MsgCntnrPt.addLast( p_MsgPt ); //添加消息到消息容器最后一个。这里忽略报错“Call requires API level 21 (current min is 14): java.util.concurrent.ConcurrentLinkedDeque#addLast”。
 

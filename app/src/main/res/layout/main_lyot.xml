@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="版本：2025年01月02日"
+                android:text="版本：2025年01月07日"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="normal|bold" />
@@ -417,10 +417,27 @@
                 android:layout_height="wrap_content" >
 
                 <TextView
-                    android:layout_weight="1"
+                    android:text="广播对讲模式:"
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical" />
+
+                <CheckBox
+                    android:text="音频输入"
+                    android:id="@+id/UseAdoInptBdctTkbkModeCkBoxId"
+                    android:layout_weight="2"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:text="" />
+                    android:padding="0dp" />
+
+                <CheckBox
+                    android:text="视频输入"
+                    android:id="@+id/UseVdoInptBdctTkbkModeCkBoxId"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:padding="0dp" />
 
                 <Button
                     android:id="@+id/PtbBtnId"
@@ -429,12 +446,6 @@
                     android:layout_weight="4"
                     android:padding="0dp"
                     android:text="一键即按即广播" />
-
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:text="" />
 
             </LinearLayout>
 

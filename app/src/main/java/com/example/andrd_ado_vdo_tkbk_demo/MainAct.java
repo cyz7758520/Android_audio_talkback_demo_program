@@ -430,11 +430,11 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 	MainActHandler m_MainActHandlerPt; //存放主界面消息处理的指针。
 
 	//发送主界面消息到主界面线程。
-	public void SendMainActMsg( int MainActMsgTyp, Object... MsgArgPt )
+	public void SendMainActMsg( int MainActMsgTyp, Object... MsgParmPt )
 	{
 		Message p_MessagePt = new Message();
 		p_MessagePt.what = MainActMsgTyp;
-		p_MessagePt.obj = MsgArgPt;
+		p_MessagePt.obj = MsgParmPt;
 		m_MainActHandlerPt.sendMessage( p_MessagePt );
 	}
 

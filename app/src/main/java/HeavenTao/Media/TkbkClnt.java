@@ -1135,7 +1135,7 @@ public class TkbkClnt //对讲客户端。
 		int p_TmpInt32 = 0;
 
 		//发送音频输入帧。
-		if( AdoInptPcmSrcFrmPt != null ) //如果有音频输入Pcm格式原始帧。
+		if( ( ( m_LclTkbkMode & ClntMediaPocsThrd.TkbkMode.AdoInpt ) != 0 ) && ( AdoInptPcmSrcFrmPt != null ) ) //如果本端对讲模式有音频输入，且有音频输入Pcm格式原始帧。
 		{
 			if( AdoInptEncdRsltFrmPt == null ) //如果没有音频输入已编码格式结果帧。
 			{
@@ -1230,7 +1230,7 @@ public class TkbkClnt //对讲客户端。
 		}
 
 		//发送视频输入帧。
-		if( VdoInptYu12RsltFrmPt != null ) //如果有视频输入Yu12格式结果帧。
+		if( ( ( m_LclTkbkMode & ClntMediaPocsThrd.TkbkMode.VdoInpt ) != 0 ) && ( VdoInptYu12RsltFrmPt != null ) ) //如果本端对讲模式有视频输入，且有视频输入Yu12格式结果帧。
 		{
 			if( VdoInptEncdRsltFrmPt == null ) //如果没有视频输入已编码格式结果帧。
 			{

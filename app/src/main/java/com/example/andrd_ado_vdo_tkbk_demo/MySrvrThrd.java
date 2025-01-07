@@ -150,7 +150,7 @@ public class MySrvrThrd extends SrvrThrd
 	}
 
 	//用户定义的消息函数。
-	@Override public int UserMsg( int MsgTyp, Object[] MsgArgPt )
+	@Override public int UserMsg( int MsgTyp, Object[] MsgParmPt )
 	{
 		return 0;
 	}

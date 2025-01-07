@@ -103,9 +103,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	}
 	public final MsgQueue m_ThrdMsgQueuePt = new MsgQueue( this ) //存放线程消息队列的指针。
 	{
-		@Override public int UserMsgPocs( int MsgTyp, Object[] MsgArgPt )
+		@Override public int UserMsgPocs( int MsgTyp, Object[] MsgParmPt )
 		{
-			return ThrdMsgPocs( MsgTyp, MsgArgPt );
+			return ThrdMsgPocs( MsgTyp, MsgParmPt );
 		}
 	};
 
@@ -215,7 +215,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	public abstract void UserPocs();
 
 	//用户定义的消息函数。
-	public abstract int UserMsg( int MsgTyp, Object MsgArgPt[] );
+	public abstract int UserMsg( int MsgTyp, Object MsgParmPt[] );
 
 	//用户定义的设备改变函数。
 	public abstract void UserDvcChg( AdoInptOtptDvcInfo AdoInptOtptDvcInfoPt, VdoInptDvcInfo VdoInptDvcInfoPt );
@@ -1020,9 +1020,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	}
 
 	//发送用户消息到媒体处理线程。
-	public int SendUserMsg( int IsBlockWait, int MsgTyp, Object... MsgArgPt )
+	public int SendUserMsg( int IsBlockWait, int MsgTyp, Object... MsgParmPt )
 	{
-		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.UserMsgMinVal + MsgTyp, MsgArgPt );
+		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.UserMsgMinVal + MsgTyp, MsgParmPt );
 	}
 
 	//音频输入输出设备修改回调初始化。
@@ -1446,7 +1446,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	}
 
 	//媒体处理线程的线程消息处理。
-	private int ThrdMsgPocs( int MsgTyp, Object[] MsgArgPt )
+	private int ThrdMsgPocs( int MsgTyp, Object[] MsgParmPt )
 	{
 		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		int p_TmpInt32;
@@ -1463,8 +1463,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						m_AdoOtptPt.DvcAndThrdDstoy();
 					}
 
-					m_AdoInptOtptUseDvcInfoPt = ( AdoInptOtptDvcInfo ) MsgArgPt[ 0 ];
-					m_AdoOtptPt.m_DvcPt.m_UseWhatStreamType = ( Integer ) MsgArgPt[ 1 ];
+					m_AdoInptOtptUseDvcInfoPt = ( AdoInptOtptDvcInfo ) MsgParmPt[ 0 ];
+					m_AdoOtptPt.m_DvcPt.m_UseWhatStreamType = ( Integer ) MsgParmPt[ 1 ];
 					WakeLockInitOrDstoy( m_IsUseWakeLock ); //重新初始化唤醒锁。
 
 					if( m_AdoOtptPt.m_IsInit != 0 )
@@ -1492,12 +1492,12 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						if( m_AdoOtptPt.m_IsInit != 0 ) m_AdoOtptPt.DvcAndThrdDstoy();
 					}
 
-					m_AdoInptPt.m_SmplRate = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoInptPt.m_FrmLenMsec = ( Long ) MsgArgPt[ 1 ];
+					m_AdoInptPt.m_SmplRate = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoInptPt.m_FrmLenMsec = ( Long ) MsgParmPt[ 1 ];
 					m_AdoInptPt.m_FrmLenUnit = m_AdoInptPt.m_FrmLenMsec * m_AdoInptPt.m_SmplRate / 1000;
 					m_AdoInptPt.m_FrmLenData = m_AdoInptPt.m_FrmLenUnit * 1;
 					m_AdoInptPt.m_FrmLenByt = m_AdoInptPt.m_FrmLenData * 2;
-					m_AdoInptPt.m_IsStartRecordingAfterRead = ( Integer ) MsgArgPt[ 2 ];
+					m_AdoInptPt.m_IsStartRecordingAfterRead = ( Integer ) MsgParmPt[ 2 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1521,7 +1521,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						if( m_AdoOtptPt.m_IsInit != 0 ) m_AdoOtptPt.DvcAndThrdDstoy();
 					}
 
-					m_AdoInptPt.m_IsUseSystemAecNsAgc = ( Integer ) MsgArgPt[ 0 ];
+					m_AdoInptPt.m_IsUseSystemAecNsAgc = ( Integer ) MsgParmPt[ 0 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1553,12 +1553,12 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.AecDstoy();
 
 					m_AdoInptPt.m_UseWhatAec = 1;
-					m_AdoInptPt.m_SpeexAecPt.m_FilterLenMsec = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoInptPt.m_SpeexAecPt.m_IsUseRec = ( Integer ) MsgArgPt[ 1 ];
-					m_AdoInptPt.m_SpeexAecPt.m_EchoMutp = ( Float ) MsgArgPt[ 2 ];
-					m_AdoInptPt.m_SpeexAecPt.m_EchoCntu = ( Float ) MsgArgPt[ 3 ];
-					m_AdoInptPt.m_SpeexAecPt.m_EchoSupes = ( Integer ) MsgArgPt[ 4 ];
-					m_AdoInptPt.m_SpeexAecPt.m_EchoSupesAct = ( Integer ) MsgArgPt[ 5 ];
+					m_AdoInptPt.m_SpeexAecPt.m_FilterLenMsec = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoInptPt.m_SpeexAecPt.m_IsUseRec = ( Integer ) MsgParmPt[ 1 ];
+					m_AdoInptPt.m_SpeexAecPt.m_EchoMutp = ( Float ) MsgParmPt[ 2 ];
+					m_AdoInptPt.m_SpeexAecPt.m_EchoCntu = ( Float ) MsgParmPt[ 3 ];
+					m_AdoInptPt.m_SpeexAecPt.m_EchoSupes = ( Integer ) MsgParmPt[ 4 ];
+					m_AdoInptPt.m_SpeexAecPt.m_EchoSupesAct = ( Integer ) MsgParmPt[ 5 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1572,9 +1572,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.AecDstoy();
 
 					m_AdoInptPt.m_UseWhatAec = 2;
-					m_AdoInptPt.m_WebRtcAecmPt.m_IsUseCNGMode = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoInptPt.m_WebRtcAecmPt.m_EchoMode = ( Integer ) MsgArgPt[ 1 ];
-					m_AdoInptPt.m_WebRtcAecmPt.m_Delay = ( Integer ) MsgArgPt[ 2 ];
+					m_AdoInptPt.m_WebRtcAecmPt.m_IsUseCNGMode = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoInptPt.m_WebRtcAecmPt.m_EchoMode = ( Integer ) MsgParmPt[ 1 ];
+					m_AdoInptPt.m_WebRtcAecmPt.m_Delay = ( Integer ) MsgParmPt[ 2 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1588,12 +1588,12 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.AecDstoy();
 
 					m_AdoInptPt.m_UseWhatAec = 3;
-					m_AdoInptPt.m_WebRtcAecPt.m_EchoMode = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoInptPt.m_WebRtcAecPt.m_Delay = ( Integer ) MsgArgPt[ 1 ];
-					m_AdoInptPt.m_WebRtcAecPt.m_IsUseDelayAgstcMode = ( Integer ) MsgArgPt[ 2 ];
-					m_AdoInptPt.m_WebRtcAecPt.m_IsUseExtdFilterMode = ( Integer ) MsgArgPt[ 3 ];
-					m_AdoInptPt.m_WebRtcAecPt.m_IsUseRefinedFilterAdaptAecMode = ( Integer ) MsgArgPt[ 4 ];
-					m_AdoInptPt.m_WebRtcAecPt.m_IsUseAdaptAdjDelay = ( Integer ) MsgArgPt[ 5 ];
+					m_AdoInptPt.m_WebRtcAecPt.m_EchoMode = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoInptPt.m_WebRtcAecPt.m_Delay = ( Integer ) MsgParmPt[ 1 ];
+					m_AdoInptPt.m_WebRtcAecPt.m_IsUseDelayAgstcMode = ( Integer ) MsgParmPt[ 2 ];
+					m_AdoInptPt.m_WebRtcAecPt.m_IsUseExtdFilterMode = ( Integer ) MsgParmPt[ 3 ];
+					m_AdoInptPt.m_WebRtcAecPt.m_IsUseRefinedFilterAdaptAecMode = ( Integer ) MsgParmPt[ 4 ];
+					m_AdoInptPt.m_WebRtcAecPt.m_IsUseAdaptAdjDelay = ( Integer ) MsgParmPt[ 5 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1607,7 +1607,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.AecDstoy();
 
 					m_AdoInptPt.m_UseWhatAec = 4;
-					m_AdoInptPt.m_WebRtcAec3Pt.m_Delay = ( Integer ) MsgArgPt[ 0 ];
+					m_AdoInptPt.m_WebRtcAec3Pt.m_Delay = ( Integer ) MsgParmPt[ 0 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1621,25 +1621,25 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.AecDstoy();
 
 					m_AdoInptPt.m_UseWhatAec = 5;
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WorkMode = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecFilterLenMsec = ( Integer ) MsgArgPt[ 1 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecIsUseRec = ( Integer ) MsgArgPt[ 2 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoMutp = ( Float ) MsgArgPt[ 3 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoCntu = ( Float ) MsgArgPt[ 4 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoSupes = ( Integer ) MsgArgPt[ 5 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoSupesAct = ( Integer ) MsgArgPt[ 6 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecmIsUseCNGMode = ( Integer ) MsgArgPt[ 7 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecmEchoMode = ( Integer ) MsgArgPt[ 8 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecmDelay = ( Integer ) MsgArgPt[ 9 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecEchoMode = ( Integer ) MsgArgPt[ 10 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecDelay = ( Integer ) MsgArgPt[ 11 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseDelayAgstcMode = ( Integer ) MsgArgPt[ 12 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseExtdFilterMode = ( Integer ) MsgArgPt[ 13 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode = ( Integer ) MsgArgPt[ 14 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseAdaptAdjDelay = ( Integer ) MsgArgPt[ 15 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAec3Delay = ( Integer ) MsgArgPt[ 11 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_IsUseSameRoomAec = ( Integer ) MsgArgPt[ 16 ];
-					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SameRoomEchoMinDelay = ( Integer ) MsgArgPt[ 17 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WorkMode = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecFilterLenMsec = ( Integer ) MsgParmPt[ 1 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecIsUseRec = ( Integer ) MsgParmPt[ 2 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoMutp = ( Float ) MsgParmPt[ 3 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoCntu = ( Float ) MsgParmPt[ 4 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoSupes = ( Integer ) MsgParmPt[ 5 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SpeexAecEchoSupesAct = ( Integer ) MsgParmPt[ 6 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecmIsUseCNGMode = ( Integer ) MsgParmPt[ 7 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecmEchoMode = ( Integer ) MsgParmPt[ 8 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecmDelay = ( Integer ) MsgParmPt[ 9 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecEchoMode = ( Integer ) MsgParmPt[ 10 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecDelay = ( Integer ) MsgParmPt[ 11 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseDelayAgstcMode = ( Integer ) MsgParmPt[ 12 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseExtdFilterMode = ( Integer ) MsgParmPt[ 13 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseRefinedFilterAdaptAecMode = ( Integer ) MsgParmPt[ 14 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAecIsUseAdaptAdjDelay = ( Integer ) MsgParmPt[ 15 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_WebRtcAec3Delay = ( Integer ) MsgParmPt[ 11 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_IsUseSameRoomAec = ( Integer ) MsgParmPt[ 16 ];
+					m_AdoInptPt.m_SpeexWebRtcAecPt.m_SameRoomEchoMinDelay = ( Integer ) MsgParmPt[ 17 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1674,9 +1674,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					}
 
 					m_AdoInptPt.m_UseWhatNs = 1;
-					m_AdoInptPt.m_SpeexPrpocsNsPt.m_IsUseNs = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoInptPt.m_SpeexPrpocsNsPt.m_NoiseSupes = ( Integer ) MsgArgPt[ 1 ];
-					m_AdoInptPt.m_SpeexPrpocsNsPt.m_IsUseDereverb = ( Integer ) MsgArgPt[ 2 ];
+					m_AdoInptPt.m_SpeexPrpocsNsPt.m_IsUseNs = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoInptPt.m_SpeexPrpocsNsPt.m_NoiseSupes = ( Integer ) MsgParmPt[ 1 ];
+					m_AdoInptPt.m_SpeexPrpocsNsPt.m_IsUseDereverb = ( Integer ) MsgParmPt[ 2 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1694,7 +1694,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					}
 
 					m_AdoInptPt.m_UseWhatNs = 2;
-					m_AdoInptPt.m_WebRtcNsxPt.m_PolicyMode = ( Integer ) MsgArgPt[ 0 ];
+					m_AdoInptPt.m_WebRtcNsxPt.m_PolicyMode = ( Integer ) MsgParmPt[ 0 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1712,7 +1712,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					}
 
 					m_AdoInptPt.m_UseWhatNs = 3;
-					m_AdoInptPt.m_WebRtcNsPt.m_PolicyMode = ( Integer ) MsgArgPt[ 0 ];
+					m_AdoInptPt.m_WebRtcNsPt.m_PolicyMode = ( Integer ) MsgParmPt[ 0 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1742,15 +1742,15 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.SpeexPrpocsDstoy();
 
-					m_AdoInptPt.m_SpeexPrpocsPt.m_IsUseSpeexPrpocs = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoInptPt.m_SpeexPrpocsPt.m_IsUseVad = ( Integer ) MsgArgPt[ 1 ];
-					m_AdoInptPt.m_SpeexPrpocsPt.m_VadProbStart = ( Integer ) MsgArgPt[ 2 ];
-					m_AdoInptPt.m_SpeexPrpocsPt.m_VadProbCntu = ( Integer ) MsgArgPt[ 3 ];
-					m_AdoInptPt.m_SpeexPrpocsPt.m_IsUseAgc = ( Integer ) MsgArgPt[ 4 ];
-					m_AdoInptPt.m_SpeexPrpocsPt.m_AgcLevel = ( Integer ) MsgArgPt[ 5 ];
-					m_AdoInptPt.m_SpeexPrpocsPt.m_AgcIncrement = ( Integer ) MsgArgPt[ 6 ];
-					m_AdoInptPt.m_SpeexPrpocsPt.m_AgcDecrement = ( Integer ) MsgArgPt[ 7 ];
-					m_AdoInptPt.m_SpeexPrpocsPt.m_AgcMaxGain = ( Integer ) MsgArgPt[ 8 ];
+					m_AdoInptPt.m_SpeexPrpocsPt.m_IsUseSpeexPrpocs = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoInptPt.m_SpeexPrpocsPt.m_IsUseVad = ( Integer ) MsgParmPt[ 1 ];
+					m_AdoInptPt.m_SpeexPrpocsPt.m_VadProbStart = ( Integer ) MsgParmPt[ 2 ];
+					m_AdoInptPt.m_SpeexPrpocsPt.m_VadProbCntu = ( Integer ) MsgParmPt[ 3 ];
+					m_AdoInptPt.m_SpeexPrpocsPt.m_IsUseAgc = ( Integer ) MsgParmPt[ 4 ];
+					m_AdoInptPt.m_SpeexPrpocsPt.m_AgcLevel = ( Integer ) MsgParmPt[ 5 ];
+					m_AdoInptPt.m_SpeexPrpocsPt.m_AgcIncrement = ( Integer ) MsgParmPt[ 6 ];
+					m_AdoInptPt.m_SpeexPrpocsPt.m_AgcDecrement = ( Integer ) MsgParmPt[ 7 ];
+					m_AdoInptPt.m_SpeexPrpocsPt.m_AgcMaxGain = ( Integer ) MsgParmPt[ 8 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
@@ -1774,10 +1774,10 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.EncdDstoy();
 
 					m_AdoInptPt.m_UseWhatEncd = 1;
-					m_AdoInptPt.m_SpeexEncdPt.m_UseCbrOrVbr = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoInptPt.m_SpeexEncdPt.m_Qualt = ( Integer ) MsgArgPt[ 1 ];
-					m_AdoInptPt.m_SpeexEncdPt.m_Cmplxt = ( Integer ) MsgArgPt[ 2 ];
-					m_AdoInptPt.m_SpeexEncdPt.m_PlcExptLossRate = ( Integer ) MsgArgPt[ 3 ];
+					m_AdoInptPt.m_SpeexEncdPt.m_UseCbrOrVbr = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoInptPt.m_SpeexEncdPt.m_Qualt = ( Integer ) MsgParmPt[ 1 ];
+					m_AdoInptPt.m_SpeexEncdPt.m_Cmplxt = ( Integer ) MsgParmPt[ 2 ];
+					m_AdoInptPt.m_SpeexEncdPt.m_PlcExptLossRate = ( Integer ) MsgParmPt[ 3 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 ) if( m_AdoInptPt.EncdInit() != 0 ) break Out;
 					MediaPocsThrdTmpVarInit();
@@ -1797,10 +1797,10 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.WaveFileWriterDstoy();
 
-					m_AdoInptPt.m_WaveFileWriterPt.m_IsSave = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoInptPt.m_WaveFileWriterPt.m_SrcFullPathStrPt = ( String ) MsgArgPt[ 1 ];
-					m_AdoInptPt.m_WaveFileWriterPt.m_RsltFullPathStrPt = ( String ) MsgArgPt[ 2 ];
-					m_AdoInptPt.m_WaveFileWriterPt.m_WrBufSzByt = ( long ) MsgArgPt[ 3 ];
+					m_AdoInptPt.m_WaveFileWriterPt.m_IsSave = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoInptPt.m_WaveFileWriterPt.m_SrcFullPathStrPt = ( String ) MsgParmPt[ 1 ];
+					m_AdoInptPt.m_WaveFileWriterPt.m_RsltFullPathStrPt = ( String ) MsgParmPt[ 2 ];
+					m_AdoInptPt.m_WaveFileWriterPt.m_WrBufSzByt = ( long ) MsgParmPt[ 3 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 ) if( m_AdoInptPt.WaveFileWriterInit() != 0 ) break Out;
 					break;
@@ -1809,16 +1809,16 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					if( m_AdoInptPt.m_IsInit != 0 ) m_AdoInptPt.WavfmDstoy();
 
-					m_AdoInptPt.m_WavfmPt.m_IsDraw = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoInptPt.m_WavfmPt.m_SrcSurfacePt = ( SurfaceView ) MsgArgPt[ 1 ];
-					m_AdoInptPt.m_WavfmPt.m_RsltSurfacePt = ( SurfaceView ) MsgArgPt[ 2 ];
+					m_AdoInptPt.m_WavfmPt.m_IsDraw = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoInptPt.m_WavfmPt.m_SrcSurfacePt = ( SurfaceView ) MsgParmPt[ 1 ];
+					m_AdoInptPt.m_WavfmPt.m_RsltSurfacePt = ( SurfaceView ) MsgParmPt[ 2 ];
 
 					if( m_AdoInptPt.m_IsInit != 0 ) if( m_AdoInptPt.WavfmInit() != 0 ) break Out;
 					break;
 				}
 				case ThrdMsgTyp.AdoInptSetIsMute:
 				{
-					m_AdoInptPt.m_DvcPt.m_IsMute = ( Integer ) MsgArgPt[ 0 ];
+					m_AdoInptPt.m_DvcPt.m_IsMute = ( Integer ) MsgParmPt[ 0 ];
 					break;
 				}
 				case ThrdMsgTyp.SetAdoOtpt:
@@ -1829,8 +1829,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						m_AdoOtptPt.Dstoy();
 					}
 
-					m_AdoOtptPt.m_SmplRate = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoOtptPt.m_FrmLenMsec = ( Long ) MsgArgPt[ 1 ];
+					m_AdoOtptPt.m_SmplRate = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoOtptPt.m_FrmLenMsec = ( Long ) MsgParmPt[ 1 ];
 					m_AdoOtptPt.m_FrmLenUnit = m_AdoOtptPt.m_FrmLenMsec * m_AdoOtptPt.m_SmplRate / 1000;
 					m_AdoOtptPt.m_FrmLenData = m_AdoOtptPt.m_FrmLenUnit * 1;
 					m_AdoOtptPt.m_FrmLenByt = m_AdoOtptPt.m_FrmLenData * 2;
@@ -1855,41 +1855,41 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				}
 				case ThrdMsgTyp.AdoOtptAddStrm:
 				{
-					m_AdoOtptPt.AddStrm( ( Integer ) MsgArgPt[ 0 ] );
+					m_AdoOtptPt.AddStrm( ( Integer ) MsgParmPt[ 0 ] );
 					break;
 				}
 				case ThrdMsgTyp.AdoOtptDelStrm:
 				{
-					m_AdoOtptPt.DelStrm( ( Integer ) MsgArgPt[ 0 ] );
+					m_AdoOtptPt.DelStrm( ( Integer ) MsgParmPt[ 0 ] );
 					break;
 				}
 				case ThrdMsgTyp.AdoOtptSetStrmUsePcm:
 				{
-					m_AdoOtptPt.SetStrmUsePcm( ( Integer ) MsgArgPt[ 0 ] );
+					m_AdoOtptPt.SetStrmUsePcm( ( Integer ) MsgParmPt[ 0 ] );
 					break;
 				}
 				case ThrdMsgTyp.AdoOtptSetStrmUseSpeexDecd:
 				{
-					m_AdoOtptPt.SetStrmUseSpeexDecd( ( Integer ) MsgArgPt[ 0 ], ( Integer ) MsgArgPt[ 1 ] );
+					m_AdoOtptPt.SetStrmUseSpeexDecd( ( Integer ) MsgParmPt[ 0 ], ( Integer ) MsgParmPt[ 1 ] );
 					break;
 				}
 				case ThrdMsgTyp.AdoOtptSetStrmUseOpusDecd:
 				{
-					m_AdoOtptPt.SetStrmUseOpusDecd( ( Integer ) MsgArgPt[ 0 ] );
+					m_AdoOtptPt.SetStrmUseOpusDecd( ( Integer ) MsgParmPt[ 0 ] );
 					break;
 				}
 				case ThrdMsgTyp.AdoOtptSetStrmIsUse:
 				{
-					m_AdoOtptPt.SetStrmIsUse( ( Integer ) MsgArgPt[ 0 ], ( Integer ) MsgArgPt[ 1 ] );
+					m_AdoOtptPt.SetStrmIsUse( ( Integer ) MsgParmPt[ 0 ], ( Integer ) MsgParmPt[ 1 ] );
 					break;
 				}
 				case ThrdMsgTyp.AdoOtptSetIsSaveAdoToWaveFile:
 				{
 					if( m_AdoOtptPt.m_IsInit != 0 ) m_AdoOtptPt.WaveFileWriterDstoy();
 
-					m_AdoOtptPt.m_WaveFileWriterPt.m_IsSave = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoOtptPt.m_WaveFileWriterPt.m_SrcFullPathStrPt = ( String ) MsgArgPt[ 1 ];
-					m_AdoOtptPt.m_WaveFileWriterPt.m_WrBufSzByt = ( long ) MsgArgPt[ 2 ];
+					m_AdoOtptPt.m_WaveFileWriterPt.m_IsSave = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoOtptPt.m_WaveFileWriterPt.m_SrcFullPathStrPt = ( String ) MsgParmPt[ 1 ];
+					m_AdoOtptPt.m_WaveFileWriterPt.m_WrBufSzByt = ( long ) MsgParmPt[ 2 ];
 
 					if( m_AdoOtptPt.m_IsInit != 0 ) if( m_AdoOtptPt.WaveFileWriterInit() != 0 ) break Out;
 					break;
@@ -1898,29 +1898,29 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					if( m_AdoOtptPt.m_IsInit != 0 ) m_AdoOtptPt.WavfmDstoy();
 
-					m_AdoOtptPt.m_WavfmPt.m_IsDraw = ( Integer ) MsgArgPt[ 0 ];
-					m_AdoOtptPt.m_WavfmPt.m_SrcSurfacePt = ( SurfaceView ) MsgArgPt[ 1 ];
+					m_AdoOtptPt.m_WavfmPt.m_IsDraw = ( Integer ) MsgParmPt[ 0 ];
+					m_AdoOtptPt.m_WavfmPt.m_SrcSurfacePt = ( SurfaceView ) MsgParmPt[ 1 ];
 
 					if( m_AdoOtptPt.m_IsInit != 0 ) if( m_AdoOtptPt.WavfmInit() != 0 ) break Out;
 					break;
 				}
 				case ThrdMsgTyp.AdoOtptSetIsMute:
 				{
-					m_AdoOtptPt.m_DvcPt.m_IsMute = ( Integer ) MsgArgPt[ 0 ];
+					m_AdoOtptPt.m_DvcPt.m_IsMute = ( Integer ) MsgParmPt[ 0 ];
 					break;
 				}
 				case ThrdMsgTyp.SetVdoInpt:
 				{
 					if( m_VdoInptPt.m_IsInit != 0 ) m_VdoInptPt.Dstoy();
 
-					m_VdoInptPt.m_MaxSmplRate = ( Integer ) MsgArgPt[ 0 ];
-					m_VdoInptPt.m_FrmWidth = ( Integer ) MsgArgPt[ 1 ];
-					m_VdoInptPt.m_FrmHeight = ( Integer ) MsgArgPt[ 2 ];
-					m_VdoInptPt.m_SrcFrmWidth = ( Integer ) MsgArgPt[ 3 ];
-					m_VdoInptPt.m_SrcFrmHeight = ( Integer ) MsgArgPt[ 4 ];
+					m_VdoInptPt.m_MaxSmplRate = ( Integer ) MsgParmPt[ 0 ];
+					m_VdoInptPt.m_FrmWidth = ( Integer ) MsgParmPt[ 1 ];
+					m_VdoInptPt.m_FrmHeight = ( Integer ) MsgParmPt[ 2 ];
+					m_VdoInptPt.m_SrcFrmWidth = ( Integer ) MsgParmPt[ 3 ];
+					m_VdoInptPt.m_SrcFrmHeight = ( Integer ) MsgParmPt[ 4 ];
 					m_VdoInptPt.m_Yu12FrmLenByt = m_VdoInptPt.m_FrmWidth * m_VdoInptPt.m_FrmHeight * 3 / 2;
-					m_VdoInptPt.m_ScreenRotate = ( Integer ) MsgArgPt[ 5 ];
-					m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt = ( HTSurfaceView ) MsgArgPt[ 6 ];
+					m_VdoInptPt.m_ScreenRotate = ( Integer ) MsgParmPt[ 5 ];
+					m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt = ( HTSurfaceView ) MsgParmPt[ 6 ];
 
 					if( m_VdoInptPt.m_IsInit != 0 ) if( m_VdoInptPt.Init() != 0 ) break Out;
 					break;
@@ -1939,11 +1939,11 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_VdoInptPt.m_IsInit != 0 ) m_VdoInptPt.Dstoy();
 
 					m_VdoInptPt.m_UseWhatEncd = 1;
-					m_VdoInptPt.m_OpenH264EncdPt.m_VdoType = ( Integer ) MsgArgPt[ 0 ];
-					m_VdoInptPt.m_OpenH264EncdPt.m_EncdBitrate = ( Integer ) MsgArgPt[ 1 ];
-					m_VdoInptPt.m_OpenH264EncdPt.m_BitrateCtrlMode = ( Integer ) MsgArgPt[ 2 ];
-					m_VdoInptPt.m_OpenH264EncdPt.m_IDRFrmIntvl = ( Integer ) MsgArgPt[ 3 ];
-					m_VdoInptPt.m_OpenH264EncdPt.m_Cmplxt = ( Integer ) MsgArgPt[ 4 ];
+					m_VdoInptPt.m_OpenH264EncdPt.m_VdoType = ( Integer ) MsgParmPt[ 0 ];
+					m_VdoInptPt.m_OpenH264EncdPt.m_EncdBitrate = ( Integer ) MsgParmPt[ 1 ];
+					m_VdoInptPt.m_OpenH264EncdPt.m_BitrateCtrlMode = ( Integer ) MsgParmPt[ 2 ];
+					m_VdoInptPt.m_OpenH264EncdPt.m_IDRFrmIntvl = ( Integer ) MsgParmPt[ 3 ];
+					m_VdoInptPt.m_OpenH264EncdPt.m_Cmplxt = ( Integer ) MsgParmPt[ 4 ];
 
 					if( m_VdoInptPt.m_IsInit != 0 ) if( m_VdoInptPt.Init() != 0 ) break Out;
 					break;
@@ -1953,10 +1953,10 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_VdoInptPt.m_IsInit != 0 ) m_VdoInptPt.Dstoy();
 
 					m_VdoInptPt.m_UseWhatEncd = 2;
-					m_VdoInptPt.m_SystemH264EncdPt.m_EncdBitrate = ( Integer ) MsgArgPt[ 0 ];
-					m_VdoInptPt.m_SystemH264EncdPt.m_BitrateCtrlMode = ( Integer ) MsgArgPt[ 1 ];
-					m_VdoInptPt.m_SystemH264EncdPt.m_IDRFrmIntvlTimeSec = ( Integer ) MsgArgPt[ 2 ];
-					m_VdoInptPt.m_SystemH264EncdPt.m_Cmplxt = ( Integer ) MsgArgPt[ 3 ];
+					m_VdoInptPt.m_SystemH264EncdPt.m_EncdBitrate = ( Integer ) MsgParmPt[ 0 ];
+					m_VdoInptPt.m_SystemH264EncdPt.m_BitrateCtrlMode = ( Integer ) MsgParmPt[ 1 ];
+					m_VdoInptPt.m_SystemH264EncdPt.m_IDRFrmIntvlTimeSec = ( Integer ) MsgParmPt[ 2 ];
+					m_VdoInptPt.m_SystemH264EncdPt.m_Cmplxt = ( Integer ) MsgParmPt[ 3 ];
 
 					if( m_VdoInptPt.m_IsInit != 0 ) if( m_VdoInptPt.Init() != 0 ) break Out;
 					break;
@@ -1965,64 +1965,64 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					if( m_VdoInptPt.m_IsInit != 0 ) m_VdoInptPt.Dstoy();
 
-					m_VdoInptPt.m_DvcPt.m_UseWhatDvc = ( Integer ) MsgArgPt[ 0 ];
-					m_VdoInptPt.m_DvcPt.m_FrontCameraId = ( Integer ) MsgArgPt[ 1 ];
-					m_VdoInptPt.m_DvcPt.m_BackCameraId = ( Integer ) MsgArgPt[ 2 ];
+					m_VdoInptPt.m_DvcPt.m_UseWhatDvc = ( Integer ) MsgParmPt[ 0 ];
+					m_VdoInptPt.m_DvcPt.m_FrontCameraId = ( Integer ) MsgParmPt[ 1 ];
+					m_VdoInptPt.m_DvcPt.m_BackCameraId = ( Integer ) MsgParmPt[ 2 ];
 
 					if( m_VdoInptPt.m_IsInit != 0 ) if( m_VdoInptPt.Init() != 0 ) break Out;
 					break;
 				}
 				case ThrdMsgTyp.VdoInptSetIsBlack:
 				{
-					m_VdoInptPt.m_DvcPt.m_IsBlack = ( Integer ) MsgArgPt[ 0 ];
+					m_VdoInptPt.m_DvcPt.m_IsBlack = ( Integer ) MsgParmPt[ 0 ];
 					break;
 				}
 				case ThrdMsgTyp.VdoOtptAddStrm:
 				{
-					m_VdoOtptPt.AddStrm( ( Integer ) MsgArgPt[ 0 ] );
+					m_VdoOtptPt.AddStrm( ( Integer ) MsgParmPt[ 0 ] );
 					break;
 				}
 				case ThrdMsgTyp.VdoOtptDelStrm:
 				{
-					m_VdoOtptPt.DelStrm( ( Integer ) MsgArgPt[ 0 ] );
+					m_VdoOtptPt.DelStrm( ( Integer ) MsgParmPt[ 0 ] );
 					break;
 				}
 				case ThrdMsgTyp.VdoOtptSetStrm:
 				{
-					m_VdoOtptPt.SetStrm( ( Integer ) MsgArgPt[ 0 ], ( HTSurfaceView ) MsgArgPt[ 1 ] );
+					m_VdoOtptPt.SetStrm( ( Integer ) MsgParmPt[ 0 ], ( HTSurfaceView ) MsgParmPt[ 1 ] );
 					break;
 				}
 				case ThrdMsgTyp.VdoOtptSetStrmUseYu12:
 				{
-					m_VdoOtptPt.SetStrmUseYu12( ( Integer ) MsgArgPt[ 0 ] );
+					m_VdoOtptPt.SetStrmUseYu12( ( Integer ) MsgParmPt[ 0 ] );
 					break;
 				}
 				case ThrdMsgTyp.VdoOtptSetStrmUseOpenH264Decd:
 				{
-					m_VdoOtptPt.SetStrmUseOpenH264Decd( ( Integer ) MsgArgPt[ 0 ], ( Integer ) MsgArgPt[ 1 ] );
+					m_VdoOtptPt.SetStrmUseOpenH264Decd( ( Integer ) MsgParmPt[ 0 ], ( Integer ) MsgParmPt[ 1 ] );
 					break;
 				}
 				case ThrdMsgTyp.VdoOtptSetStrmUseSystemH264Decd:
 				{
-					m_VdoOtptPt.SetStrmUseSystemH264Decd( ( Integer ) MsgArgPt[ 0 ] );
+					m_VdoOtptPt.SetStrmUseSystemH264Decd( ( Integer ) MsgParmPt[ 0 ] );
 					break;
 				}
 				case ThrdMsgTyp.VdoOtptSetStrmIsBlack:
 				{
-					m_VdoOtptPt.SetStrmIsBlack( ( Integer ) MsgArgPt[ 0 ], ( Integer ) MsgArgPt[ 1 ] );
+					m_VdoOtptPt.SetStrmIsBlack( ( Integer ) MsgParmPt[ 0 ], ( Integer ) MsgParmPt[ 1 ] );
 					break;
 				}
 				case ThrdMsgTyp.VdoOtptSetStrmIsUse:
 				{
-					m_VdoOtptPt.SetStrmIsUse( ( Integer ) MsgArgPt[ 0 ], ( Integer ) MsgArgPt[ 1 ] );
+					m_VdoOtptPt.SetStrmIsUse( ( Integer ) MsgParmPt[ 0 ], ( Integer ) MsgParmPt[ 1 ] );
 					break;
 				}
 				case ThrdMsgTyp.SetIsUseAdoVdoInptOtpt:
 				{
-					int p_IsUseAdoInpt = ( Integer ) MsgArgPt[ 0 ];
-					int p_IsUseAdoOtpt = ( Integer ) MsgArgPt[ 1 ];
-					int p_IsUseVdoInpt = ( Integer ) MsgArgPt[ 2 ];
-					int p_IsUseVdoOtpt = ( Integer ) MsgArgPt[ 3 ];
+					int p_IsUseAdoInpt = ( Integer ) MsgParmPt[ 0 ];
+					int p_IsUseAdoOtpt = ( Integer ) MsgParmPt[ 1 ];
+					int p_IsUseVdoInpt = ( Integer ) MsgParmPt[ 2 ];
+					int p_IsUseVdoOtpt = ( Integer ) MsgParmPt[ 3 ];
 
 					if( p_IsUseAdoInpt >= 0 ) m_AdoInptPt.m_IsUse = p_IsUseAdoInpt;
 					if( p_IsUseAdoOtpt >= 0 ) m_AdoOtptPt.m_IsUse = p_IsUseAdoOtpt;
@@ -2035,31 +2035,31 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				}
 				case ThrdMsgTyp.SetIsUseWakeLock:
 				{
-					m_IsUseWakeLock = ( Integer ) MsgArgPt[ 0 ];
+					m_IsUseWakeLock = ( Integer ) MsgParmPt[ 0 ];
 					WakeLockInitOrDstoy( m_IsUseWakeLock ); //重新初始化唤醒锁。
 					break;
 				}
 				case ThrdMsgTyp.SetIsSaveAdoVdoInptOtptToAviFile:
 				{
-					if( ( ( m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt != null ) && ( !m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt.equals( ( String ) MsgArgPt[ 0 ] ) ) ) || //当完整路径字符串或写入缓冲区的大小或最大流数量有修改时，才销毁。
-						( m_AdoVdoInptOtptAviFilePt.m_WrBufSzByt != ( Long ) MsgArgPt[ 1 ] ) ||
-						( m_AdoVdoInptOtptAviFilePt.m_MaxStrmNum != ( Integer ) MsgArgPt[ 2 ] ) )
+					if( ( ( m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt != null ) && ( !m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt.equals( ( String ) MsgParmPt[ 0 ] ) ) ) || //当完整路径字符串或写入缓冲区的大小或最大流数量有修改时，才销毁。
+						( m_AdoVdoInptOtptAviFilePt.m_WrBufSzByt != ( Long ) MsgParmPt[ 1 ] ) ||
+						( m_AdoVdoInptOtptAviFilePt.m_MaxStrmNum != ( Integer ) MsgParmPt[ 2 ] ) )
 						AdoVdoInptOtptAviFileWriterDstoy();
 
-					m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt = ( String )MsgArgPt[ 0 ];
-					m_AdoVdoInptOtptAviFilePt.m_WrBufSzByt = ( Long )MsgArgPt[ 1 ];
-					m_AdoVdoInptOtptAviFilePt.m_MaxStrmNum = ( Integer )MsgArgPt[ 2 ];
-					m_AdoVdoInptOtptAviFilePt.m_IsSaveAdoInpt = ( Integer ) MsgArgPt[ 3 ];
-					m_AdoVdoInptOtptAviFilePt.m_IsSaveAdoOtpt = ( Integer ) MsgArgPt[ 4 ];
-					m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoInpt = ( Integer ) MsgArgPt[ 5 ];
-					m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoOtpt = ( Integer ) MsgArgPt[ 6 ];
+					m_AdoVdoInptOtptAviFilePt.m_FullPathStrPt = ( String )MsgParmPt[ 0 ];
+					m_AdoVdoInptOtptAviFilePt.m_WrBufSzByt = ( Long )MsgParmPt[ 1 ];
+					m_AdoVdoInptOtptAviFilePt.m_MaxStrmNum = ( Integer )MsgParmPt[ 2 ];
+					m_AdoVdoInptOtptAviFilePt.m_IsSaveAdoInpt = ( Integer ) MsgParmPt[ 3 ];
+					m_AdoVdoInptOtptAviFilePt.m_IsSaveAdoOtpt = ( Integer ) MsgParmPt[ 4 ];
+					m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoInpt = ( Integer ) MsgParmPt[ 5 ];
+					m_AdoVdoInptOtptAviFilePt.m_IsSaveVdoOtpt = ( Integer ) MsgParmPt[ 6 ];
 
 					if( m_LastCallUserInitOrDstoy == 0 ) if( AdoVdoInptOtptAviFileWriterInit() != 0 ) break Out;
 					break;
 				}
 				case ThrdMsgTyp.SaveStsToTxtFile:
 				{
-					String p_StngFileFullPathStrPt = ( String ) MsgArgPt[ 0 ];
+					String p_StngFileFullPathStrPt = ( String ) MsgParmPt[ 0 ];
 					File p_StngFilePt = new File( p_StngFileFullPathStrPt );
 
 					try
@@ -2273,7 +2273,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				}
 				case ThrdMsgTyp.RqirExit:
 				{
-					switch( ( Integer ) MsgArgPt[ 0 ] )
+					switch( ( Integer ) MsgParmPt[ 0 ] )
 					{
 						case 1: //为请求退出。
 						{
@@ -2385,13 +2385,13 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					m_VdoInptUseDvcInfoPt = new VdoInptDvcInfo();
 					m_VdoInptUseDvcInfoPt.m_DvcTyp = m_VdoInptPt.m_DvcPt.m_UseWhatDvc;
-					m_VdoInptUseDvcInfoPt.m_CameraId = ( int )MsgArgPt[ 0 ];
+					m_VdoInptUseDvcInfoPt.m_CameraId = ( int )MsgParmPt[ 0 ];
 					UserDvcChg( null, m_VdoInptUseDvcInfoPt );
 					break;
 				}
 				default: //用户消息。
 				{
-					p_TmpInt32 = UserMsg( MsgTyp - ThrdMsgTyp.UserMsgMinVal, MsgArgPt );
+					p_TmpInt32 = UserMsg( MsgTyp - ThrdMsgTyp.UserMsgMinVal, MsgParmPt );
 					if( p_TmpInt32 == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：调用用户定义的消息函数成功。返回值：" + p_TmpInt32 );

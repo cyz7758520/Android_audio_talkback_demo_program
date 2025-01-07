@@ -11,7 +11,7 @@ android {
 		minSdkVersion 14
 		targetSdk 34
 		versionCode 1
-		versionName "2025.01.02"
+		versionName "2025.01.07"
 		testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 	}
 	buildTypes {

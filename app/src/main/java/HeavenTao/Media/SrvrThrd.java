@@ -34,9 +34,9 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 	}
 	public final MsgQueue m_ThrdMsgQueuePt = new MsgQueue( this ) //存放线程消息队列的指针。
 	{
-		@Override public int UserMsgPocs( int MsgTyp, Object[] MsgArgPt )
+		@Override public int UserMsgPocs( int MsgTyp, Object[] MsgParmPt )
 		{
-			return ThrdMsgPocs( MsgTyp, MsgArgPt );
+			return ThrdMsgPocs( MsgTyp, MsgParmPt );
 		}
 	};
 
@@ -172,7 +172,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 	public abstract void UserPocs();
 
 	//用户定义的消息函数。
-	public abstract int UserMsg( int MsgTyp, Object MsgArgPt[] );
+	public abstract int UserMsg( int MsgTyp, Object MsgParmPt[] );
 
 	//用户定义的显示日志函数。
 	public abstract void UserShowLog( String InfoStrPt );
@@ -288,9 +288,9 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 	}
 
 	//发送用户消息。
-	public int SendUserMsg( int IsBlockWait, int MsgTyp, Object... MsgArgPt )
+	public int SendUserMsg( int IsBlockWait, int MsgTyp, Object... MsgParmPt )
 	{
-		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.UserMsgMinVal + MsgTyp, MsgArgPt );
+		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.UserMsgMinVal + MsgTyp, MsgParmPt );
 	}
 
 	//发送服务端初始化消息。
@@ -1236,7 +1236,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 	}
 
 	//线程消息处理。
-	private int ThrdMsgPocs( int MsgTyp, Object[] MsgArgPt )
+	private int ThrdMsgPocs( int MsgTyp, Object[] MsgParmPt )
 	{
 		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		int p_TmpInt32;
@@ -1248,14 +1248,14 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 			{
 				case ThrdMsgTyp.SetIsUseWakeLock:
 				{
-					m_IsUseWakeLock = ( Integer ) MsgArgPt[ 0 ];
+					m_IsUseWakeLock = ( Integer ) MsgParmPt[ 0 ];
 					WakeLockInitOrDstoy( m_IsUseWakeLock ); //重新初始化唤醒锁。
 					break;
 				}
 				case ThrdMsgTyp.SetIsTstNtwkDly:
 				{
-					m_TstNtwkDlyPt.m_IsTstNtwkDly = ( int ) MsgArgPt[ 0 ]; //设置是否测试网络延迟。
-					m_TstNtwkDlyPt.m_SendIntvlMsec = ( long ) MsgArgPt[ 1 ]; //设置测试网络延迟包的发送间隔。
+					m_TstNtwkDlyPt.m_IsTstNtwkDly = ( int ) MsgParmPt[ 0 ]; //设置是否测试网络延迟。
+					m_TstNtwkDlyPt.m_SendIntvlMsec = ( long ) MsgParmPt[ 1 ]; //设置测试网络延迟包的发送间隔。
 
 					for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
 					{
@@ -1271,7 +1271,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 				}
 				case ThrdMsgTyp.SrvrInit:
 				{
-					p_Rslt = SrvrInit( ( Integer ) MsgArgPt[ 0 ], ( String ) MsgArgPt[ 1 ], ( String ) MsgArgPt[ 2 ], ( Integer ) MsgArgPt[ 3 ], ( Integer ) MsgArgPt[ 4 ] );
+					p_Rslt = SrvrInit( ( Integer ) MsgParmPt[ 0 ], ( String ) MsgParmPt[ 1 ], ( String ) MsgParmPt[ 2 ], ( Integer ) MsgParmPt[ 3 ], ( Integer ) MsgParmPt[ 4 ] );
 					break Out;
 				}
 				case ThrdMsgTyp.SrvrDstoy:
@@ -1281,7 +1281,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 				}
 				case ThrdMsgTyp.CnctDstoy:
 				{
-					int p_CnctNum = ( int ) MsgArgPt[ 0 ];
+					int p_CnctNum = ( int ) MsgParmPt[ 0 ];
 
 					OutCnctDstoy:
 					{
@@ -1326,7 +1326,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 				}
 				default: //用户消息。
 				{
-					p_TmpInt32 = UserMsg( MsgTyp - ThrdMsgTyp.UserMsgMinVal, MsgArgPt );
+					p_TmpInt32 = UserMsg( MsgTyp - ThrdMsgTyp.UserMsgMinVal, MsgParmPt );
 					if( p_TmpInt32 == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：调用用户定义的消息函数成功。返回值：" + p_TmpInt32 );

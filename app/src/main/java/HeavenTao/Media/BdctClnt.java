@@ -39,13 +39,15 @@ public class BdctClnt //广播客户端。
 	ArrayList< CnctInfo > m_CnctInfoCntnrPt = new ArrayList<>(); //存放连接信息容器的指针。
 	public int m_CnctInfoCurMaxNum; //存放连接信息的当前最大序号。
 
-	int m_LastSendAdoInptFrmIsAct; //存放最后发送的音频输入帧有无语音活动，为1表示有语音活动，为0表示无语音活动。
-	int m_LastSendAdoInptFrmTimeStamp; //存放最后发送音频输入帧的时间戳。
+	public int m_LclTkbkMode; //存放本端对讲模式。
+	public int m_LastSendAdoInptFrmIsAct; //存放最后发送的音频输入帧有无语音活动，为1表示有语音活动，为0表示无语音活动。
+	public int m_LastSendAdoInptFrmTimeStamp; //存放最后发送音频输入帧的时间戳。
+	public int m_LastSendVdoInptFrmTimeStamp; //存放最后发送视频输入帧的时间戳。
 
 	int m_IsVibrate; //存放广播客户端是否已振动，用于提醒用户在第一次连接成功后可以开始广播，为1表示已振动，为0表示未振动。
 
 	//广播客户端初始化。
-	public int Init( int CnctNumIsDecr )
+	public int Init( int CnctNumIsDecr, int LclTkbkMode )
 	{
 		int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
 
@@ -53,9 +55,12 @@ public class BdctClnt //广播客户端。
 		{
 			m_IsInit = 1; //设置已初始化广播客户端。
 			m_CnctNumIsDecr = CnctNumIsDecr; //设置连接序号是否递减。
+			m_LclTkbkMode = LclTkbkMode | ( ClntMediaPocsThrd.TkbkMode.AdoInpt & ClntMediaPocsThrd.TkbkMode.VdoInpt ); //设置本端对讲模式。
 			m_IsVibrate = 0; //设置广播客户端未已振动。
 
 			m_ClntMediaPocsThrdPt.UserBdctClntInit(); //调用用户定义的广播客户端初始化函数。
+
+			m_ClntMediaPocsThrdPt.SetTkbkMode( 1, 0 ); //设置对讲模式。
 
 			p_Rslt = 0; //设置本函数执行成功。
 		}
@@ -90,9 +95,9 @@ public class BdctClnt //广播客户端。
 
 			m_CnctInfoCurMaxNum = -1; //设置连接信息的当前最大序号。
 
-			m_ClntMediaPocsThrdPt.UserBdctClntDstoy(); //调用用户定义的广播客户端销毁函数。
+			m_ClntMediaPocsThrdPt.SetTkbkMode( 1, 0 ); //设置对讲模式。
 
-			m_ClntMediaPocsThrdPt.SetTkbkMode( 0, 0 ); //设置对讲模式。
+			m_ClntMediaPocsThrdPt.UserBdctClntDstoy(); //调用用户定义的广播客户端销毁函数。
 
 			m_ClntMediaPocsThrdPt.IsAutoRqirExit(); //判断是否自动请求退出。在没有广播连接时需要这一步判断。
 
@@ -101,7 +106,7 @@ public class BdctClnt //广播客户端。
 
 		if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
-			Dstoy();
+
 		}
 		return p_Rslt;
 	}
@@ -351,8 +356,8 @@ public class BdctClnt //广播客户端。
 		return p_Rslt;
 	}
 
-	//所有连接发送音频数据包。
-	public void AllCnctSendAdoPkt( byte PktPt[], long PktLenByt, int Times, int IsRlab )
+	//所有连接发送音频视频数据包。
+	public void AllCnctSendAdoVdoPkt( byte PktPt[], long PktLenByt, int Times, int IsRlab )
 	{
 		int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
 		CnctInfo p_CnctInfoTmpPt;
@@ -706,7 +711,7 @@ public class BdctClnt //广播客户端。
 											if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：接收我的对讲索引包。对讲索引：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] + "。" );
 
 											p_CnctInfoTmpPt.m_MyTkbkIdx = m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ]; //设置我的对讲索引。
-											CnctInfoSendTkbkModePkt( p_CnctInfoTmpPt, ClntMediaPocsThrd.TkbkMode.AdoInpt ); //发送对讲模式包。
+											CnctInfoSendTkbkModePkt( p_CnctInfoTmpPt, m_LclTkbkMode ); //发送对讲模式包。
 											m_ClntMediaPocsThrdPt.SetTkbkMode( 0, 0 ); //设置对讲模式。
 										}
 										else
@@ -839,7 +844,7 @@ public class BdctClnt //广播客户端。
 		int p_TmpInt32 = 0;
 
 		//发送音频输入帧。
-		if( AdoInptPcmSrcFrmPt != null ) //如果有音频输入Pcm格式原始帧。
+		if( ( ( m_LclTkbkMode & ClntMediaPocsThrd.TkbkMode.AdoInpt ) != 0 ) && ( AdoInptPcmSrcFrmPt != null ) ) //如果本端对讲模式有音频输入，且有音频输入Pcm格式原始帧。
 		{
 			if( AdoInptEncdRsltFrmPt == null ) //如果没有音频输入已编码格式结果帧。
 			{
@@ -882,7 +887,7 @@ public class BdctClnt //广播客户端。
 				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 4 ] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
 				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 5 ] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
 
-				AllCnctSendAdoPkt( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt, p_PktLenByt, 1, 0 );
+				AllCnctSendAdoVdoPkt( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt, p_PktLenByt, 1, 0 );
 				if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：发送有语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "。总长度：" + p_PktLenByt + "。" );
 
 				m_LastSendAdoInptFrmIsAct = 1; //设置最后发送的音频输入帧有语音活动。
@@ -901,7 +906,7 @@ public class BdctClnt //广播客户端。
 					m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 4 ] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
 					m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 5 ] = ( byte ) ( ( m_LastSendAdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
 
-					AllCnctSendAdoPkt( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt, p_PktLenByt, 1, 0 );
+					AllCnctSendAdoVdoPkt( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt, p_PktLenByt, 1, 0 );
 					if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：发送无语音活动的音频输入帧包成功。音频输入帧时间戳：" + m_LastSendAdoInptFrmTimeStamp + "。总长度：" + p_PktLenByt + "。" );
 
 					m_LastSendAdoInptFrmIsAct = 0; //设置最后发送的音频输入帧无语音活动。
@@ -910,6 +915,59 @@ public class BdctClnt //广播客户端。
 				{
 					if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：本次音频输入帧为无语音活动，且最后发送的音频输入帧为无语音活动，无需发送。" );
 				}
+			}
+		}
+
+		//发送视频输入帧。
+		if( ( ( m_LclTkbkMode & ClntMediaPocsThrd.TkbkMode.VdoInpt ) != 0 ) && ( VdoInptYu12RsltFrmPt != null ) ) //如果本端对讲模式有视频输入，且有视频输入Yu12格式结果帧。
+		{
+			if( VdoInptEncdRsltFrmPt == null ) //如果没有视频输入已编码格式结果帧。
+			{
+				//设置视频输入帧宽度。
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 6 ] = ( byte ) ( VdoInptYu12RsltFrmWidth & 0xFF );
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 7 ] = ( byte ) ( ( VdoInptYu12RsltFrmWidth & 0xFF00 ) >> 8 );
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 8 ] = ( byte ) ( ( VdoInptYu12RsltFrmWidth & 0xFF0000 ) >> 16 );
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 9 ] = ( byte ) ( ( VdoInptYu12RsltFrmWidth & 0xFF000000 ) >> 24 );
+				//设置视频输入帧高度。
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 10 ] = ( byte ) ( VdoInptYu12RsltFrmHeight & 0xFF );
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 11 ] = ( byte ) ( ( VdoInptYu12RsltFrmHeight & 0xFF00 ) >> 8 );
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 12 ] = ( byte ) ( ( VdoInptYu12RsltFrmHeight & 0xFF0000 ) >> 16 );
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 13 ] = ( byte ) ( ( VdoInptYu12RsltFrmHeight & 0xFF000000 ) >> 24 );
+
+				System.arraycopy( VdoInptYu12RsltFrmPt, 0, m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt, 1 + 1 + 4 + 4 + 4, VdoInptYu12RsltFrmPt.length ); //设置视频输入帧。
+				p_PktLenByt = 1 + 1 + 4 + 4 + 4 + VdoInptYu12RsltFrmPt.length; //数据包长度 = 数据包类型 + 对讲索引 + 视频输入帧时间戳 + 视频输入帧宽度 + 视频输入帧高度 + 视频输入Yu12格式结果帧。
+			}
+			else //如果有视频输入已编码格式结果帧。
+			{
+				if( VdoInptEncdRsltFrmLenByt != 0 ) //如果本次视频输入帧为有图像活动。
+				{
+					System.arraycopy( VdoInptEncdRsltFrmPt, 0, m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt, 1 + 1 + 4, ( int ) VdoInptEncdRsltFrmLenByt ); //设置视频输入帧。
+					p_PktLenByt = 1 + 1 + 4 + ( int ) VdoInptEncdRsltFrmLenByt; //数据包长度 = 数据包类型 + 对讲索引 + 视频输入帧时间戳 + 视频输入已编码格式结果帧。
+				}
+				else
+				{
+					p_PktLenByt = 1 + 1 + 4; //数据包长度 = 数据包类型 + 对讲索引 + 视频输入帧时间戳。
+				}
+			}
+
+			if( p_PktLenByt != 1 + 1 + 4 ) //如果本次视频输入帧为有图像活动，就发送。
+			{
+				m_LastSendVdoInptFrmTimeStamp += 1; //视频输入帧的时间戳递增一个步进。
+
+				//设置数据包类型为视频输入帧包。
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 0 ] = ( byte ) ClntMediaPocsThrd.PktTyp.VdoFrm;
+				//设置视频输入帧时间戳。
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 2 ] = ( byte ) ( m_LastSendVdoInptFrmTimeStamp & 0xFF );
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 3 ] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF00 ) >> 8 );
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 4 ] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF0000 ) >> 16 );
+				m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 5 ] = ( byte ) ( ( m_LastSendVdoInptFrmTimeStamp & 0xFF000000 ) >> 24 );
+
+				AllCnctSendAdoVdoPkt( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt, p_PktLenByt, 1, 0 );
+				if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：发送有图像活动的视频输入帧包成功。视频输入帧时间戳：" + m_LastSendVdoInptFrmTimeStamp + "。总长度：" + p_PktLenByt + "。类型：" + ( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 10 ] & 0xff ) + "。" );
+			}
+			else //如果本次视频输入帧为无图像活动，无需发送。
+			{
+				if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "客户端媒体处理线程：广播客户端：本次视频输入帧为无图像活动，无需发送。" );
 			}
 		}
 	}

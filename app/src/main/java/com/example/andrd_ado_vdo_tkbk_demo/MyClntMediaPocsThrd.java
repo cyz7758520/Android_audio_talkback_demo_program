@@ -158,10 +158,10 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 
 				//发送对讲客户端的本端对讲模式消息。
 				SendTkbkClntLclTkbkModeMsg( 0,
-											( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoInpt : 0 ) +
-											( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoOtpt : 0 ) +
-											( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoInpt : 0 ) +
-											( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoOtpt : 0 ) );
+											( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).isChecked() ) ? TkbkMode.AdoInpt : 0 ) +
+											( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? TkbkMode.AdoOtpt : 0 ) +
+											( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).isChecked() ) ? TkbkMode.VdoInpt : 0 ) +
+											( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? TkbkMode.VdoOtpt : 0 ) );
 			}
 
 			Log.i( m_CurClsNameStrPt, "对讲初始化结束。" );
@@ -208,7 +208,9 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 			}
 
 			//发送广播客户端初始化消息。
-			SendBdctClntInitMsg( 0, 0 );
+			SendBdctClntInitMsg( 0, 0,
+								 ( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptBdctTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoInpt : 0 ) +
+								 ( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptBdctTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoInpt : 0 ) );
 
 			//发送广播客户端的连接初始化消息。
 			for( Map< String, String > p_ClntLstItemPt : m_MainActPt.m_ClntLstItemArrayLstPt )
@@ -258,7 +260,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	}
 
 	//用户定义的消息函数。
-	@Override public int _UserMsg( int MsgTyp, Object MsgArgPt[] )
+	@Override public int _UserMsg( int MsgTyp, Object MsgParmPt[] )
 	{
 		return 0;
 	}
@@ -311,9 +313,20 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	//用户定义的对讲客户端连接销毁函数。
 	@Override public void UserTkbkClntCnctDstoy()
 	{
+		if( ( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.AdoInpt ) != 0 ) //如果对讲客户端要使用音频输入，且广播客户端未初始化或不使用音频输入。
+			&& ( ( m_BdctClntPt.m_IsInit == 0 ) || ( ( m_BdctClntPt.m_LclTkbkMode & TkbkMode.AdoInpt ) == 0 ) ) )
+		{
+			SetNotUseAdoInpt(); //设置不使用音频输入。
+		}
+
+		if( ( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.VdoInpt ) != 0 ) //如果对讲客户端要使用视频输入，且广播客户端未初始化或不使用视频输入。
+			&& ( ( m_BdctClntPt.m_IsInit == 0 ) || ( ( m_BdctClntPt.m_LclTkbkMode & TkbkMode.VdoInpt ) == 0 ) ) )
+		{
+			SetNotUseVdoInpt(); //设置不使用视频输入。
+		}
+
 		m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.ClntLstModifyItem, m_TkbkClntNum, "", null , "" );
 		m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.TkbkClntCnctDstoy );
-		m_MainActPt.SendVdoInptOtptViewDstoyMsg( m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt );
 	}
 
 	//用户定义的对讲客户端连接状态函数。
@@ -354,7 +367,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		{
 			if( ( OldLclTkbkMode & TkbkMode.AdoInpt ) == 0 ) //如果旧对讲模式无音频输入。
 			{
-				if( m_AdoInptPt.m_IsInit == 0 ) //如果音频输入未初始化。
+				if( ( m_BdctClntPt.m_IsInit == 0 ) || ( ( m_BdctClntPt.m_LclTkbkMode & TkbkMode.AdoInpt ) == 0 ) ) //如果广播客户端未初始化或不使用音频输入。
 				{
 					SetToUseAdoInpt(); //设置要使用音频输入。
 				}
@@ -364,7 +377,10 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		{
 			if( ( OldLclTkbkMode & TkbkMode.AdoInpt ) != 0 ) //如果旧对讲模式有音频输入。
 			{
-				SetNotUseAdoInpt(); //设置不使用音频输入。
+				if( ( m_BdctClntPt.m_IsInit == 0 ) || ( ( m_BdctClntPt.m_LclTkbkMode & TkbkMode.AdoInpt ) == 0 ) ) //如果广播客户端未初始化或不使用音频输入。
+				{
+					SetNotUseAdoInpt(); //设置不使用音频输入。
+				}
 			}
 		}
 
@@ -387,14 +403,20 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		{
 			if( ( OldLclTkbkMode & TkbkMode.VdoInpt ) == 0 ) //如果旧对讲模式无视频输入。
 			{
-				SetToUseVdoInpt(); //设置要使用视频输入。
+				if( ( m_BdctClntPt.m_IsInit == 0 ) || ( ( m_BdctClntPt.m_LclTkbkMode & TkbkMode.VdoInpt ) == 0 ) ) //如果广播客户端未初始化或不使用视频输入。
+				{
+					SetToUseVdoInpt(); //设置要使用视频输入。
+				}
 			}
 		}
 		else //如果新对讲模式无视频输入。
 		{
 			if( ( OldLclTkbkMode & TkbkMode.VdoInpt ) != 0 ) //如果旧对讲模式有视频输入。
 			{
-				SetNotUseVdoInpt(); //设置不使用视频输入。
+				if( ( m_BdctClntPt.m_IsInit == 0 ) || ( ( m_BdctClntPt.m_LclTkbkMode & TkbkMode.VdoInpt ) == 0 ) ) //如果广播客户端未初始化或不使用视频输入。
+				{
+					SetNotUseVdoInpt(); //设置不使用视频输入。
+				}
 			}
 		}
 
@@ -520,16 +542,33 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	//用户定义的广播客户端初始化函数。
 	@Override public void UserBdctClntInit()
 	{
-		if( m_AdoInptPt.m_IsInit == 0 ) //如果音频输入未初始化。
+		if( ( ( m_BdctClntPt.m_LclTkbkMode & TkbkMode.AdoInpt ) != 0 ) //如果广播客户端要使用音频输入，且对讲客户端未初始化或不使用音频输入。
+			&& ( ( m_TkbkClntPt.m_CnctIsInit == 0 ) || ( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.AdoInpt ) == 0 ) ) )
 		{
 			SetToUseAdoInpt(); //设置要使用音频输入。
+		}
+
+		if( ( ( m_BdctClntPt.m_LclTkbkMode & TkbkMode.VdoInpt ) != 0 ) //如果广播客户端要使用视频输入，且对讲客户端未初始化或不使用视频输入。
+			&& ( ( m_TkbkClntPt.m_CnctIsInit == 0 ) || ( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.VdoInpt ) == 0 ) ) )
+		{
+			SetToUseVdoInpt(); //设置要使用视频输入。
 		}
 	}
 
 	//用户定义的广播客户端销毁函数。
 	@Override public void UserBdctClntDstoy()
 	{
+		if( ( ( m_BdctClntPt.m_LclTkbkMode & TkbkMode.AdoInpt ) != 0 ) //如果广播客户端要使用音频输入，且对讲客户端未初始化或不使用音频输入。
+			&& ( ( m_TkbkClntPt.m_CnctIsInit == 0 ) || ( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.AdoInpt ) == 0 ) ) )
+		{
+			SetNotUseAdoInpt(); //设置不使用音频输入。
+		}
 
+		if( ( ( m_BdctClntPt.m_LclTkbkMode & TkbkMode.VdoInpt ) != 0 ) //如果广播客户端要使用视频输入，且对讲客户端未初始化或不使用视频输入。
+			&& ( ( m_TkbkClntPt.m_CnctIsInit == 0 ) || ( ( m_TkbkClntPt.m_LclTkbkMode & TkbkMode.VdoInpt ) == 0 ) ) )
+		{
+			SetNotUseVdoInpt(); //设置不使用视频输入。
+		}
 	}
 
 	//用户定义的广播客户端连接初始化函数。
