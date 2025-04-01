@@ -1,18 +1,25 @@
 apply plugin: 'com.android.application'
 
 android {
-	compileSdk 34
-	buildToolsVersion = '35.0.0'
+	compileSdk 35
+	buildToolsVersion = '36.0.0'
 
 	defaultConfig {
 		applicationId "com.example.andrd_ado_vdo_tkbk_demo"
 
 		//minSdkVersion 9
 		minSdkVersion 14
-		targetSdk 34
+		targetSdk 35
 		versionCode 1
-		versionName "2025.01.07"
+		versionName "2025.04.01"
 		testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+		ndk {
+			abiFilters 'armeabi-v7a' //指定NDK的平台。
+			abiFilters 'arm64-v8a' //指定NDK的平台。
+			abiFilters 'x86' //指定NDK的平台。
+			abiFilters 'x86_64' //指定NDK的平台。
+		}
 	}
 	buildTypes {
 		release {

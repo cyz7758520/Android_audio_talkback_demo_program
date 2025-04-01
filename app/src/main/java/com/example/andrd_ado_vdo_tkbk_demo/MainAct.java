@@ -7,9 +7,6 @@ import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraManager;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -46,7 +43,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -536,24 +532,27 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 			Log.e( m_CurClsNameStrPt, "获取OpenH264解码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 		}
 
-		if( SystemH264Encd.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		if( android.os.Build.VERSION.SDK_INT >= 20 ) //低版本的系统无法调用SystemH264库的GetAppLmtInfo函数。
 		{
-			Log.i( m_CurClsNameStrPt, "系统自带H264编码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-			Log.i( m_CurClsNameStrPt, "系统自带H264编码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
-		}
-		else
-		{
-			Log.e( m_CurClsNameStrPt, "获取系统自带H264编码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
-		}
+			if( SystemH264Encd.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+			{
+				Log.i( m_CurClsNameStrPt, "系统自带H264编码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+				Log.i( m_CurClsNameStrPt, "系统自带H264编码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+			}
+			else
+			{
+				Log.e( m_CurClsNameStrPt, "获取系统自带H264编码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+			}
 
-		if( SystemH264Decd.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
-		{
-			Log.i( m_CurClsNameStrPt, "系统自带H264解码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-			Log.i( m_CurClsNameStrPt, "系统自带H264解码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
-		}
-		else
-		{
-			Log.e( m_CurClsNameStrPt, "获取系统自带H264解码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+			if( SystemH264Decd.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+			{
+				Log.i( m_CurClsNameStrPt, "系统自带H264解码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+				Log.i( m_CurClsNameStrPt, "系统自带H264解码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+			}
+			else
+			{
+				Log.e( m_CurClsNameStrPt, "获取系统自带H264解码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+			}
 		}
 
 		if( AAjb.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
@@ -672,8 +671,11 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		m_MainActPt = this;
 		m_MainActHandlerPt = new MainActHandler();
 
-		//设置AppID文本框。
-		( ( TextView ) m_MainLyotViewPt.findViewById( R.id.AppIDTxtId ) ).setText( "AppID：" + getApplicationContext().getPackageName() );
+		//设置AppId文本框。
+		( ( TextView ) m_MainLyotViewPt.findViewById( R.id.AppIdTxtId ) ).setText( "AppId：" + getApplicationContext().getPackageName() );
+
+		//设置SysInfo文本框。
+		( ( TextView ) m_MainLyotViewPt.findViewById( R.id.SysInfoTxtId ) ).setText( "CpuAbi：" + android.os.Build.CPU_ABI + "  Sdk：" + android.os.Build.VERSION.RELEASE + "  ApiLvl：" + android.os.Build.VERSION.SDK_INT );
 
 		//设置扩展目录完整绝对路径字符串。
 		{

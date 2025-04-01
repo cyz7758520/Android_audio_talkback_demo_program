@@ -849,6 +849,7 @@ public class TkbkClnt //对讲客户端。
 									}
 
 									p_TkbkInfoTmpPt = m_TkbkInfoCntnrPt.get( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] );
+									if( p_TkbkInfoTmpPt.m_IsInit == 0 ) break RecvPktOut;
 									int p_OldRmtTkbkMode = p_TkbkInfoTmpPt.m_RmtTkbkMode; //设置旧远端对讲模式。
 									p_TkbkInfoTmpPt.m_RmtTkbkMode = m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 2 ]; //设置远端对讲模式。
 									if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：对讲客户端：接收对讲模式包。对讲索引：" + p_TkbkInfoTmpPt.m_TkbkIdx + "。对讲模式：" + ClntMediaPocsThrd.m_TkbkModeStrArrPt[ p_TkbkInfoTmpPt.m_RmtTkbkMode ] + "。" );
@@ -869,6 +870,7 @@ public class TkbkClnt //对讲客户端。
 
 									//将音频输出帧放入容器或自适应抖动缓冲器。
 									p_TkbkInfoTmpPt = m_TkbkInfoCntnrPt.get( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] );
+									if( p_TkbkInfoTmpPt.m_IsInit == 0 ) break RecvPktOut;
 									if( ( m_LclTkbkMode & ClntMediaPocsThrd.TkbkMode.AdoOtpt ) != 0 ) //如果本端对讲模式有音频输出。
 									{
 										switch( m_UseWhatRecvOtptFrm ) //使用什么接收输出帧。
@@ -938,6 +940,7 @@ public class TkbkClnt //对讲客户端。
 
 									//将视频输出帧放入容器或自适应抖动缓冲器。
 									p_TkbkInfoTmpPt = m_TkbkInfoCntnrPt.get( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] );
+									if( p_TkbkInfoTmpPt.m_IsInit == 0 ) break RecvPktOut;
 									if( ( m_LclTkbkMode & ClntMediaPocsThrd.TkbkMode.VdoOtpt ) != 0 ) //如果本端对讲模式有视频输出。
 									{
 										switch( m_UseWhatRecvOtptFrm ) //使用什么接收输出帧。

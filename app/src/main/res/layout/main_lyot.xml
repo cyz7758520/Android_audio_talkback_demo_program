@@ -36,17 +36,27 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="版本：2025年01月07日"
+                android:text="版本：2025年04月01日"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="normal|bold" />
 
             <TextView
-                android:id="@+id/AppIDTxtId"
+                android:id="@+id/AppIdTxtId"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="AppID："
+                android:text="AppId："
+                android:textAlignment="center"
+                android:textSize="20sp"
+                android:textStyle="normal|bold" />
+
+            <TextView
+                android:id="@+id/SysInfoTxtId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="SysInfo："
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="normal|bold" />

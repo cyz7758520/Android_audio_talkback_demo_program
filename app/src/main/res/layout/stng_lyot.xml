@@ -197,7 +197,7 @@
 					android:layout_width="match_parent"
 					android:layout_height="0dp"
 					android:layout_weight="1"
-					android:text="自己设计的自适应抖动缓冲器" />
+					android:text="*自己设计的自适应抖动缓冲器" />
 
 			</RadioGroup>
 
@@ -282,7 +282,7 @@
 				android:layout_weight="10"
 				android:layout_width="0dp"
 				android:layout_height="match_parent"
-				android:text="保存音视频输入输出到Avi文件"/>
+				android:text="*保存音视频输入输出到Avi文件"/>
 
 			<Button
 				android:layout_weight="2"
@@ -438,7 +438,7 @@
 					android:layout_width="match_parent"
 					android:layout_height="0dp"
 					android:layout_weight="1"
-					android:text="Speex声学回音消除器" />
+					android:text="*Speex声学回音消除器" />
 
 				<RadioButton
 					android:id="@+id/UseWebRtcAecmRdBtnId"
@@ -448,14 +448,14 @@
 					android:text="WebRtc定点版声学回音消除器" />
 
 				<RadioButton
-					android:text="WebRtc浮点版声学回音消除器"
+					android:text="*WebRtc浮点版声学回音消除器"
 					android:id="@+id/UseWebRtcAecRdBtnId"
 					android:layout_weight="1"
 					android:layout_width="match_parent"
 					android:layout_height="0dp"/>
 
 				<RadioButton
-					android:text="WebRtc第三版声学回音消除器"
+					android:text="*WebRtc第三版声学回音消除器"
 					android:id="@+id/UseWebRtcAec3RdBtnId"
 					android:layout_weight="1"
 					android:layout_width="match_parent"
@@ -466,7 +466,7 @@
 					android:layout_width="match_parent"
 					android:layout_height="0dp"
 					android:layout_weight="1"
-					android:text="SpeexWebRtc三重声学回音消除器" />
+					android:text="*SpeexWebRtc三重声学回音消除器" />
 
 			</RadioGroup>
 
@@ -574,7 +574,7 @@
 					android:layout_width="match_parent"
 					android:layout_height="0dp"
 					android:layout_weight="1"
-					android:text="RNNoise噪音抑制器" />
+					android:text="*RNNoise噪音抑制器" />
 
 			</RadioGroup>
 
@@ -951,14 +951,14 @@
 					android:layout_weight="1"
 					android:layout_width="match_parent"
 					android:layout_height="0dp"
-					android:text="OpenH264编解码器"/>
+					android:text="*OpenH264编解码器"/>
 
 				<RadioButton
 					android:id="@+id/UseSystemH264CodecRdBtnId"
 					android:layout_weight="1"
 					android:layout_width="match_parent"
 					android:layout_height="0dp"
-					android:text="系统自带H264编解码器"/>
+					android:text="*系统自带H264编解码器"/>
 
 			</RadioGroup>
 
