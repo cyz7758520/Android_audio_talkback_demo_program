@@ -192,7 +192,7 @@ public class VdoInpt //视频输入。
 					}
 					catch( RuntimeException e )
 					{
-						String p_InfoStrPt = "媒体处理线程：视频输入：初始化设备失败。原因：打开设备失败。原因：" + e.getMessage();
+						String p_InfoStrPt = "媒体处理线程：视频输入：打开设备失败。原因：" + e.getMessage();
 						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
 						if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 						break Out;
@@ -403,12 +403,17 @@ public class VdoInpt //视频输入。
 				}
 				catch( RuntimeException e )
 				{
-					String p_InfoStrPt = "媒体处理线程：视频输入：初始化设备失败。原因：设置参数到设备失败。原因：" + e.getMessage();
+					String p_InfoStrPt = "媒体处理线程：视频输入：设置参数到设备失败。原因：" + e.getMessage();
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
 					if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 					break Out;
 				}
 
+				if( m_DvcPt.m_PrvwSurfaceViewPt == null )
+				{
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：预览Surface视图的指针为空。" );
+					break Out;
+				}
 				m_DvcPt.m_PrvwSurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置预览Surface视图的类型。老机型上必须要用。
 				m_DvcPt.m_PrvwSurfaceClbkPt = new SurfaceHolder.Callback() //创建预览Surface的回调函数。
 				{
@@ -626,9 +631,12 @@ public class VdoInpt //视频输入。
 				m_DvcPt.m_Nv21SrcFrmCntnrPt = null;
 			}
 			m_DvcPt.m_PrvwClbkPt = null;
-			m_DvcPt.m_PrvwSurfaceViewPt.getHolder().removeCallback( m_DvcPt.m_PrvwSurfaceClbkPt ); //设置预览Surface视图的回调函数移除。
+			if( m_DvcPt.m_PrvwSurfaceViewPt != null )
+			{
+				m_DvcPt.m_PrvwSurfaceViewPt.getHolder().removeCallback( m_DvcPt.m_PrvwSurfaceClbkPt ); //设置预览Surface视图的回调函数移除。
+				m_DvcPt.m_PrvwSurfaceViewPt.SetBlack(); //设置预览Surface视图为黑屏。
+			}
 			m_DvcPt.m_PrvwSurfaceClbkPt = null;
-			m_DvcPt.m_PrvwSurfaceViewPt.SetBlack(); //设置预览Surface视图为黑屏。
 			m_DvcPt.m_PrvwClbkBufPtPt = null;
 			m_DvcPt.m_Yu12SrcFrmRotate = 0;
 			m_DvcPt.m_Nv21SrcFrmWidth = 0;

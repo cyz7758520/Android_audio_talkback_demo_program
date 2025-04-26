@@ -26,12 +26,6 @@ public class AudpSokt
 		Dstoy( null );
 	}
 
-	//本端高级UDP协议套接字获取应用程序限制信息。
-	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
-	{
-		return AudpGetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
-	}
-
 	public static final int AudpCnctStsWait = 0; //连接状态：等待远端接受连接。
 	public static final int AudpCnctStsCnct = 1; //连接状态：已连接。
 	public static final int AudpCnctStsTmot = 2; //连接状态：超时未接收任何数据包。异常断开。
@@ -43,15 +37,41 @@ public class AudpSokt
 		return m_AudpSoktPt;
 	}
 
+	//本端高级UDP协议套接字获取应用程序限制信息。
+	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
+	{
+		return AudpGetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+	}
+
 	//创建并初始化本端高级UDP协议套接字。
-	public int Init( byte LicnCodePt[], int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, short NewCnctMaxWaitCnt, short TmotMsec, Vstr ErrInfoVstrPt )
+	public int Init( byte LicnCodePt[], int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, short NewCnctMaxWaitCnt, short NtwkTmotMsec, Vstr ErrInfoVstrPt )
 	{
 		if( m_AudpSoktPt == 0 )
 		{
 			HTLong p_AudpSoktPt = new HTLong();
-			if( AudpInit( LicnCodePt, p_AudpSoktPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, NewCnctMaxWaitCnt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( AudpInit( LicnCodePt, p_AudpSoktPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, NewCnctMaxWaitCnt, NtwkTmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_AudpSoktPt = p_AudpSoktPt.m_Val;
+				return 0;
+			}
+			else
+			{
+				return -1;
+			}
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	//关闭并销毁本端高级UDP协议套接字。
+	public int Dstoy( Vstr ErrInfoVstrPt )
+	{
+		if( m_AudpSoktPt != 0 )
+		{
+			if( AudpDstoy( m_AudpSoktPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			{
+				m_AudpSoktPt = 0;
 				return 0;
 			}
 			else
@@ -136,32 +156,13 @@ public class AudpSokt
 		return AudpRecvApkt( m_AudpSoktPt, CnctIdx, PktPt, PktSzByt, PktLenBytPt, IsRlabPt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
-	//关闭并销毁本端高级UDP协议套接字。
-	public int Dstoy( Vstr ErrInfoVstrPt )
-	{
-		if( m_AudpSoktPt != 0 )
-		{
-			if( AudpDstoy( m_AudpSoktPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
-			{
-				m_AudpSoktPt = 0;
-				return 0;
-			}
-			else
-			{
-				return -1;
-			}
-		}
-		else
-		{
-			return 0;
-		}
-	}
-
 	//本端高级UDP协议套接字获取应用程序限制信息。
 	private static native int AudpGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化本端高级UDP协议套接字。
-	private native int AudpInit( byte LicnCodePt[], HTLong AudpSoktPt, int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, short NewCnctMaxWaitCnt, short TmotMsec, long ErrInfoVstrPt );
+	private native int AudpInit( byte LicnCodePt[], HTLong AudpSoktPt, int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, short NewCnctMaxWaitCnt, short NtwkTmotMsec, long ErrInfoVstrPt );
+	//关闭并销毁本端高级UDP协议套接字。
+	private native int AudpDstoy( long AudpSoktPt, long ErrInfoVstrPt );
 
 	//用本端高级UDP协议套接字接受远端高级UDP协议套接字的连接。
 	private native int AudpAcpt( long AudpSoktPt, HTLong CnctIdxPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, short TmotMsec, long ErrInfoVstrPt );
@@ -194,7 +195,4 @@ public class AudpSokt
 	private native int AudpSendApkt( long AudpSoktPt, long CnctIdx, byte PktPt[], long PktLenByt, int Times, int IsRlab, long ErrInfoVstrPt );
 	//用本端高级UDP协议套接字接收连接的远端高级UDP协议套接字发送的高级数据包。
 	private native int AudpRecvApkt( long AudpSoktPt, long CnctIdx, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, HTInt IsRlabPt, short TmotMsec, long ErrInfoVstrPt );
-
-	//关闭并销毁本端高级UDP协议套接字。
-	private native int AudpDstoy( long AudpSoktPt, long ErrInfoVstrPt );
 }

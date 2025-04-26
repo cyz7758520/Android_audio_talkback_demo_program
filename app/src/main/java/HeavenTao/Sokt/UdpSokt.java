@@ -53,6 +53,26 @@ public class UdpSokt
 			return 0;
 		}
 	}
+	//关闭并销毁本端UDP协议套接字。
+	public int Dstoy( Vstr ErrInfoVstrPt )
+	{
+		if( m_UdpSoktPt != 0 )
+		{
+			if( UdpDstoy( m_UdpSoktPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			{
+				m_UdpSoktPt = 0;
+				return 0;
+			}
+			else
+			{
+				return -1;
+			}
+		}
+		else
+		{
+			return 0;
+		}
+	}
 
 	//本端UDP协议套接字的互斥锁加锁。
 	public int Locked( Vstr ErrInfoVstrPt )
@@ -136,29 +156,10 @@ public class UdpSokt
 		return UdpRecvApkt( m_UdpSoktPt, RmtNodeAddrFmlyPt, RmtNodeAddrPt, RmtNodePortPt, PktPt, PktSzByt, PktLenBytPt, TmotMsec, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
-	//关闭并销毁本端UDP协议套接字。
-	public int Dstoy( Vstr ErrInfoVstrPt )
-	{
-		if( m_UdpSoktPt != 0 )
-		{
-			if( UdpDstoy( m_UdpSoktPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
-			{
-				m_UdpSoktPt = 0;
-				return 0;
-			}
-			else
-			{
-				return -1;
-			}
-		}
-		else
-		{
-			return 0;
-		}
-	}
-
 	//创建并初始化本端UDP协议套接字。
 	private native int UdpInit( HTLong UdpSoktPt, int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, long ErrInfoVstrPt );
+	//关闭并销毁本端UDP协议套接字。
+	private native int UdpDstoy( long UdpSoktPt, long ErrInfoVstrPt );
 
 	//本端UDP协议套接字的互斥锁加锁。
 	private native int UdpLocked( long UdpSoktPt, long ErrInfoVstrPt );
@@ -196,7 +197,4 @@ public class UdpSokt
 	private native int UdpSendApkt( long UdpSoktPt, int RmtNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, byte PktPt[], long PktLenByt, short TmotMsec, int Times, int IsAutoLock, long ErrInfoVstrPt );
 	//用本端UDP协议套接字接收远端UDP协议套接字发送的高级数据包。
 	private native int UdpRecvApkt( long UdpSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, short TmotMsec, int IsAutoLock, long ErrInfoVstrPt );
-
-	//关闭并销毁本端UDP协议套接字。
-	private native int UdpDstoy( long UdpSoktPt, long ErrInfoVstrPt );
 }

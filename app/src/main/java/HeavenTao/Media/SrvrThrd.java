@@ -115,6 +115,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 	public TcpSrvrSokt m_TcpSrvrSoktPt; //存放本端Tcp协议服务端套接字的指针。
 	public AudpSokt m_AudpSrvrSoktPt; //存放本端高级Udp协议服务端套接字的指针。
 	public int m_IsAutoRqirExit; //存放是否自动请求退出，为0表示手动，为1表示在所有连接销毁时自动请求退出，为2表示在所有连接和服务端都销毁时自动请求退出。
+	public int m_IsRqstDstoy; //存放是否请求销毁，为0表示未请求，为1表示已请求。
 
 	public class CnctInfo //连接信息。
 	{
@@ -348,7 +349,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 			{
 				m_TcpSrvrSoktPt = new TcpSrvrSokt();
 
-				if( m_TcpSrvrSoktPt.Init( p_LclNodeAddrFamly, LclNodeNameStrPt, LclNodeSrvcStrPt, 1, 1, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端Tcp协议服务端套接字成功。
+				if( m_TcpSrvrSoktPt.Init( p_LclNodeAddrFamly, LclNodeNameStrPt, LclNodeSrvcStrPt, 1, 1, ( short )5000, m_ErrInfoVstrPt ) == 0 ) //如果初始化本端Tcp协议服务端套接字成功。
 				{
 					if( m_TcpSrvrSoktPt.GetLclAddr( null, m_ThrdPt.m_LclNodeAddrPt, m_ThrdPt.m_LclNodePortPt, 0, m_ErrInfoVstrPt ) != 0 ) //如果获取本端Tcp协议服务端套接字绑定的本地节点地址和端口失败。
 					{
@@ -417,6 +418,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 			m_MaxCnctNum = MaxCnctNum; //设置最大连接数。
 			m_IsAutoRqirExit = IsAutoRqirExit; //设置是否自动请求退出。
+			m_IsRqstDstoy = 0; //设置是否请求销毁。
 
 			UserVibrate(); //调用用户定义的振动函数。
 
@@ -870,6 +872,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 							String p_InfoStrPt = "服务端线程：用本端Tcp协议服务端套接字接受远端Tcp协议客户端套接字的连接失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 							UserShowLog( p_InfoStrPt );
+							m_IsRqstDstoy = 1; //设置已请求销毁。
 							break TcpSrvrSoktAcptOut;
 						}
 					}
@@ -921,6 +924,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 							String p_InfoStrPt = "服务端线程：用本端高级Udp协议服务端套接字接受远端高级Udp协议客户端套接字的连接失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 							UserShowLog( p_InfoStrPt );
+							m_IsRqstDstoy = 1; //设置已请求销毁。
 							break AudpSrvrSoktAcptOut;
 						}
 					}
@@ -1223,6 +1227,12 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 						CnctInfoDstoy( p_CnctInfoTmpPt );
 					}
 				}
+			}
+
+			//服务端销毁。
+			if( m_IsRqstDstoy == 1 ) //如果已请求销毁。
+			{
+				SrvrDstoy();
 			}
 
 			p_Rslt = 0; //设置本函数执行成功。

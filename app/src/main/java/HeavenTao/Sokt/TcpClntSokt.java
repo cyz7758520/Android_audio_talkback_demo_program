@@ -31,12 +31,12 @@ public class TcpClntSokt
 	public static final int TcpCnctStsFail = 2; //连接状态：连接失败。
 
 	//创建并初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字。
-	public int Init( int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, Vstr ErrInfoVstrPt )
+	public int Init( int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, short NtwkTmotMsec, Vstr ErrInfoVstrPt )
 	{
 		if( m_TcpClntSoktPt == 0 )
 		{
 			HTLong p_TcpClntSoktPt = new HTLong();
-			if( TcpClntInit( p_TcpClntSoktPt, RmtLclNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, LclNodeNamePt, LclNodeSrvcPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( TcpClntInit( p_TcpClntSoktPt, RmtLclNodeAddrFmly, RmtNodeNamePt, RmtNodeSrvcPt, LclNodeNamePt, LclNodeSrvcPt, NtwkTmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_TcpClntSoktPt = p_TcpClntSoktPt.m_Val;
 				return 0;
@@ -51,7 +51,28 @@ public class TcpClntSokt
 			return 0;
 		}
 	}
+	//关闭并销毁本端TCP协议客户端套接字。
+	public int Dstoy( short TmotSec, Vstr ErrInfoVstrPt )
+	{
+		if( m_TcpClntSoktPt != 0 )
+		{
+			if( TcpClntDstoy( m_TcpClntSoktPt, TmotSec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			{
+				m_TcpClntSoktPt = 0;
+				return 0;
+			}
+			else
+			{
+				return -1;
+			}
+		}
+		else
+		{
+			return 0;
+		}
+	}
 
+	//等待本端TCP协议客户端套接字连接远端TCP协议服务端套接字是否成功。
 	public int WaitCnct( short TmotMsec, HTInt CnctStsPt, Vstr ErrInfoVstrPt )
 	{
 		return TcpClntWaitCnct( m_TcpClntSoktPt, TmotMsec, CnctStsPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
@@ -150,29 +171,10 @@ public class TcpClntSokt
 		return TcpClntRecvApkt( m_TcpClntSoktPt, PktPt, PktSzByt, PktLenBytPt, TmotMsec, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
-	//关闭并销毁本端TCP协议客户端套接字。
-	public int Dstoy( short TmotSec, Vstr ErrInfoVstrPt )
-	{
-		if( m_TcpClntSoktPt != 0 )
-		{
-			if( TcpClntDstoy( m_TcpClntSoktPt, TmotSec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
-			{
-				m_TcpClntSoktPt = 0;
-				return 0;
-			}
-			else
-			{
-				return -1;
-			}
-		}
-		else
-		{
-			return 0;
-		}
-	}
-
 	//创建并初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字。
-	private native int TcpClntInit( HTLong TcpClntSoktPt, int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, long ErrInfoVstrPt );
+	private native int TcpClntInit( HTLong TcpClntSoktPt, int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, short NtwkTmotMsec, long ErrInfoVstrPt );
+	//关闭并销毁本端TCP协议客户端套接字。
+	private native int TcpClntDstoy( long TcpClntSoktPt, short TmotSec, long ErrInfoVstrPt );
 
 	//等待本端TCP协议客户端套接字连接远端TCP协议服务端套接字是否成功。
 	private native int TcpClntWaitCnct( long TcpClntSoktPt, short TmotMsec, HTInt CnctStsPt, long ErrInfoVstrPt );
@@ -218,7 +220,4 @@ public class TcpClntSokt
 	private native int TcpClntSendApkt( long TcpClntSoktPt, byte PktPt[], long PktLenByt, short TmotMsec, int Times, int IsAutoLock, long ErrInfoVstrPt );
 	//用本端TCP协议客户端套接字接收连接的远端TCP协议客户端套接字发送的高级数据包。
 	private native int TcpClntRecvApkt( long TcpClntSoktPt, byte PktPt[], long PktSzByt, HTLong PktLenBytPt, short TmotMsec, int IsAutoLock, long ErrInfoVstrPt );
-
-	//关闭并销毁本端TCP协议客户端套接字。
-	private native int TcpClntDstoy( long TcpClntSoktPt, short TmotSec, long ErrInfoVstrPt );
 }

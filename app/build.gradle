@@ -11,7 +11,7 @@ android {
 		minSdkVersion 14
 		targetSdk 35
 		versionCode 1
-		versionName "2025.04.01"
+		versionName "2025.04.26"
 		testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
 		ndk {

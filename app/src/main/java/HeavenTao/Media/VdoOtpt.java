@@ -184,6 +184,11 @@ public class VdoOtpt //视频输出。
 
 			Out:
 			{
+				if( m_DvcPt.m_DspySurfaceViewPt == null )
+				{
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：显示Surface视图的指针为空。" );
+					break Out;
+				}
 				m_DvcPt.m_DspySurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_NORMAL );
 				m_DvcPt.m_DspySurfaceClbkPt = new SurfaceHolder.Callback() //创建显示Surface的回调函数。
 				{
@@ -223,7 +228,7 @@ public class VdoOtpt //视频输出。
 				p_Rslt = 0; //设置本函数执行成功。
 			}
 
-			//if( p_Rslt != 0 ) //如果本函数执行失败。
+			if( p_Rslt != 0 ) //如果本函数执行失败。
 			{
 			}
 			return p_Rslt;
@@ -259,9 +264,12 @@ public class VdoOtpt //视频输出。
 				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：销毁线程的临时变量成功。" );
 			}
 
-			m_DvcPt.m_DspySurfaceViewPt.getHolder().removeCallback( m_DvcPt.m_DspySurfaceClbkPt ); //设置显示Surface视图的回调函数移除。
+			if( m_DvcPt.m_DspySurfaceViewPt != null )
+			{
+				m_DvcPt.m_DspySurfaceViewPt.getHolder().removeCallback(m_DvcPt.m_DspySurfaceClbkPt); //设置显示Surface视图的回调函数移除。
+				m_DvcPt.m_DspySurfaceViewPt.SetBlack(); //设置显示SurfaceView为黑屏。
+			}
 			m_DvcPt.m_DspySurfaceClbkPt = null;
-			m_DvcPt.m_DspySurfaceViewPt.SetBlack(); //设置显示SurfaceView为黑屏。
 		}
 
 		//初始化视频输出的流。

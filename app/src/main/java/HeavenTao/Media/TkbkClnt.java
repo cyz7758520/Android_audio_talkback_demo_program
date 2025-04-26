@@ -562,7 +562,7 @@ public class TkbkClnt //对讲客户端。
 								}
 
 								m_TcpClntSoktPt = new TcpClntSokt();
-								if( m_TcpClntSoktPt.Init( p_RmtNodeAddrFamly, m_RmtNodeNameStrPt, m_RmtNodeSrvcStrPt, null, null, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 ) //如果初始化本端Tcp协议客户端套接字，并连接远端Tcp协议服务端套接字失败。
+								if( m_TcpClntSoktPt.Init( p_RmtNodeAddrFamly, m_RmtNodeNameStrPt, m_RmtNodeSrvcStrPt, null, null, ( short )5000, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 ) //如果初始化本端Tcp协议客户端套接字，并连接远端Tcp协议服务端套接字失败。
 								{
 									String p_InfoStrPt = "客户端媒体处理线程：对讲客户端：初始化本端Tcp协议客户端套接字，并连接远端Tcp协议服务端套接字[" + m_RmtNodeNameStrPt + ":" + m_RmtNodeSrvcStrPt + "]失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
 									if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
