@@ -132,7 +132,7 @@ public class VdoInpt //视频输入。
 				//打开设备。
 				{
 					//查找设备对应的标识符。
-					if( m_DvcPt.m_UseWhatDvc == -1 ) //如果自动查找摄像头。
+					if( m_DvcPt.m_UseWhatDvc == -1 ) //如果要自动查找。
 					{
 						p_CameraId = -1;
 					}
@@ -144,8 +144,9 @@ public class VdoInpt //视频输入。
 					{
 						p_CameraId = m_DvcPt.m_BackCameraId;
 					}
-					if( p_CameraId == -1 ) //如果需要自动查找设备ID。
+					if( p_CameraId == -1 ) //如果需要自动查找设备标识符。
 					{
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：开始自动查找设备标识符，摄像头总数：" + Camera.getNumberOfCameras() + "。" );
 						for( p_CameraId = 0; p_CameraId < Camera.getNumberOfCameras(); p_CameraId++ )
 						{
 							try
@@ -167,7 +168,7 @@ public class VdoInpt //视频输入。
 									break;
 								}
 							}
-							else if( p_CameraInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_BACK )
+							else //if( p_CameraInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_BACK ) //这里不加判断，因为有些后置摄像头的方向不是Camera.CameraInfo.CAMERA_FACING_BACK（0x0），而是0x2。
 							{
 								if( ( m_DvcPt.m_UseWhatDvc == -1 ) || ( m_DvcPt.m_UseWhatDvc == 1 ) )
 								{

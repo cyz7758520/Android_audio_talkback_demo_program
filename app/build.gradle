@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-	compileSdk 35
+	compileSdk 36
 	buildToolsVersion = '36.0.0'
 
 	defaultConfig {
@@ -9,9 +9,9 @@ android {
 
 		//minSdkVersion 9
 		minSdkVersion 14
-		targetSdk 35
+		targetSdk 36
 		versionCode 1
-		versionName "2025.04.26"
+		versionName "2025.06.28"
 		testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
 		ndk {
