@@ -7,8 +7,8 @@ public class WebRtcAecm
 {
 	static
 	{
-		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
+		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "WebRtc" ); //加载libWebRtc.so。
 	}
 
@@ -47,25 +47,6 @@ public class WebRtcAecm
 			return 0;
 		}
 	}
-
-	//设置WebRtc定点版声学回音消除器的回音延迟。
-	public int SetDelay( int Delay )
-	{
-		return WebRtcAecmSetDelay( m_WebRtcAecmPt, Delay );
-	}
-
-	//获取WebRtc定点版声学回音消除器的回音延迟。
-	public int GetDelay( HTInt DelayPt )
-	{
-		return WebRtcAecmGetDelay( m_WebRtcAecmPt, DelayPt );
-	}
-
-	//用WebRtc定点版声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行WebRtc定点版声学回音消除。
-	public int Pocs( short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] )
-	{
-		return WebRtcAecmPocs( m_WebRtcAecmPt, InptFrmPt, OtptFrmPt, RsltFrmPt );
-	}
-
 	//销毁WebRtc定点版声学回音消除器。
 	public int Dstoy()
 	{
@@ -87,18 +68,33 @@ public class WebRtcAecm
 		}
 	}
 
+	//设置WebRtc定点版声学回音消除器的回音延迟。
+	public int SetDelay( int Delay )
+	{
+		return WebRtcAecmSetDelay( m_WebRtcAecmPt, Delay );
+	}
+	//获取WebRtc定点版声学回音消除器的回音延迟。
+	public int GetDelay( HTInt DelayPt )
+	{
+		return WebRtcAecmGetDelay( m_WebRtcAecmPt, DelayPt );
+	}
+
+	//用WebRtc定点版声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行WebRtc定点版声学回音消除。
+	public int Pocs( short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] )
+	{
+		return WebRtcAecmPocs( m_WebRtcAecmPt, InptFrmPt, OtptFrmPt, RsltFrmPt );
+	}
+
 	//创建并初始化WebRtc定点版声学回音消除器。
 	private native int WebRtcAecmInit( HTLong WebRtcAecmPt, int SmplRate, long FrmLenUnit, int IsUseCNGMode, int EchoMode, int Delay, long ErrInfoVstrPt );
+	//销毁WebRtc定点版声学回音消除器。
+	private native int WebRtcAecmDstoy( long WebRtcAecmPt );
 
 	//设置WebRtc定点版声学回音消除器的回音延迟。
 	private native int WebRtcAecmSetDelay( long WebRtcAecmPt, int Delay );
-
 	//获取WebRtc定点版声学回音消除器的回音延迟。
 	private native int WebRtcAecmGetDelay( long WebRtcAecmPt, HTInt DelayPt );
 
 	//用WebRtc定点版声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行WebRtc定点版声学回音消除。
 	private native int WebRtcAecmPocs( long WebRtcAecmPt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );
-
-	//销毁WebRtc定点版声学回音消除器。
-	private native int WebRtcAecmDstoy( long WebRtcAecmPt );
 }

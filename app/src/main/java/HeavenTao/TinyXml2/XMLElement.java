@@ -6,6 +6,7 @@ public class XMLElement
 {
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "MediaFile" ); //加载libMediaFile.so。
 	}

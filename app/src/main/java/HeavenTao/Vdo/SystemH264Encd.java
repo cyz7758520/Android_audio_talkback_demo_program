@@ -10,6 +10,7 @@ public class SystemH264Encd
 	{
 		if( android.os.Build.VERSION.SDK_INT >= 21 )
 		{
+			System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 			System.loadLibrary( "Func" ); //加载libFunc.so。
 			System.loadLibrary( "SystemH264" ); //加载libSystemH264.so。
 		}
@@ -62,13 +63,6 @@ public class SystemH264Encd
 			return 0;
 		}
 	}
-
-	//用系统自带H264编码器对8位无符号整型Yu12格式帧进行H264格式编码。
-	public int Pocs( byte Yu12FrmPt[], long Yu12FrmTimeStampMsec, byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt, long TimeOutMsec, Vstr ErrInfoVstrPt )
-	{
-		return SystemH264EncdPocs( m_SystemH264EncdPt, Yu12FrmPt, Yu12FrmTimeStampMsec, H264FrmPt, H264FrmSz, H264FrmLenPt, TimeOutMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
-	}
-
 	//销毁系统自带H264编码器。
 	public int Dstoy( Vstr ErrInfoVstrPt )
 	{
@@ -90,15 +84,20 @@ public class SystemH264Encd
 		}
 	}
 
+	//用系统自带H264编码器对8位无符号整型Yu12格式帧进行H264格式编码。
+	public int Pocs( byte Yu12FrmPt[], long Yu12FrmTimeStampMsec, byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt, long TimeOutMsec, Vstr ErrInfoVstrPt )
+	{
+		return SystemH264EncdPocs( m_SystemH264EncdPt, Yu12FrmPt, Yu12FrmTimeStampMsec, H264FrmPt, H264FrmSz, H264FrmLenPt, TimeOutMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+	}
+
 	//系统自带H264编码器获取应用程序限制信息。
 	private static native int SystemH264EncdGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化系统自带H264编码器。
 	private native int SystemH264EncdInit( byte LicnCodePt[], HTLong SystemH264EncdPt, int Yu12FrmWidth, int Yu12FrmHeight, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlTimeSec, int Cmplxt, long ErrInfoVstrPt );
+	//销毁系统自带H264编码器。
+	private native int SystemH264EncdDstoy( long SystemH264EncdPt, long ErrInfoVstrPt );
 
 	//用系统自带H264编码器对8位无符号整型Yu12格式帧进行H264格式编码。
 	private native int SystemH264EncdPocs( long SystemH264EncdPt, byte Yu12FrmPt[], long Yu12FrmTimeStampMsec, byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt, long TimeOutMsec, long ErrInfoVstrPt );
-
-	//销毁系统自带H264编码器。
-	private native int SystemH264EncdDstoy( long SystemH264EncdPt, long ErrInfoVstrPt );
 }

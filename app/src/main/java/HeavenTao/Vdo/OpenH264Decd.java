@@ -7,6 +7,7 @@ public class OpenH264Decd
 {
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "OpenH264" ); //加载libOpenH264.so。
 	}
@@ -52,18 +53,6 @@ public class OpenH264Decd
 			return 0;
 		}
 	}
-
-	//用OpenH264解码器对H264格式进行8位无符号整型Yu12格式帧解码。
-	public int Pocs( byte H264FrmPt[], long H264FrmLen,
-					 byte Yu12FrmPt[], long Yu12FrmSz, HTInt Yu12FrmWidth, HTInt Yu12FrmHeight,
-					 Vstr ErrInfoVstrPt )
-	{
-		return OpenH264DecdPocs( m_OpenH264DecdPt,
-								 H264FrmPt, H264FrmLen,
-								 Yu12FrmPt, Yu12FrmSz, Yu12FrmWidth, Yu12FrmHeight,
-								 ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
-	}
-
 	//销毁OpenH264解码器。
 	public int Dstoy( Vstr ErrInfoVstrPt )
 	{
@@ -85,18 +74,28 @@ public class OpenH264Decd
 		}
 	}
 
+	//用OpenH264解码器对H264格式进行8位无符号整型Yu12格式帧解码。
+	public int Pocs( byte H264FrmPt[], long H264FrmLen,
+					 byte Yu12FrmPt[], long Yu12FrmSz, HTInt Yu12FrmWidth, HTInt Yu12FrmHeight,
+					 Vstr ErrInfoVstrPt )
+	{
+		return OpenH264DecdPocs( m_OpenH264DecdPt,
+								 H264FrmPt, H264FrmLen,
+								 Yu12FrmPt, Yu12FrmSz, Yu12FrmWidth, Yu12FrmHeight,
+								 ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+	}
+
 	//OpenH264解码器获取应用程序限制信息。
 	private static native int OpenH264DecdGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化OpenH264解码器。
 	private native int OpenH264DecdInit( byte LicnCodePt[], HTLong OpenH264DecdPt, int DecdThrdNum, long ErrInfoVstrPt );
+	//销毁OpenH264解码器。
+	private native int OpenH264DecdDstoy( long OpenH264DecdPt, long ErrInfoVstrPt );
 
 	//用OpenH264解码器对H264格式进行8位无符号整型Yu12格式帧解码。
 	private native int OpenH264DecdPocs( long OpenH264DecdPt,
 										 byte H264FrmPt[], long H264FrmLen,
 										 byte Yu12FrmPt[], long Yu12FrmSz, HTInt Yu12FrmWidth, HTInt Yu12FrmHeight,
 										 long ErrInfoVstrPt );
-
-	//销毁OpenH264解码器。
-	private native int OpenH264DecdDstoy( long OpenH264DecdPt, long ErrInfoVstrPt );
 }

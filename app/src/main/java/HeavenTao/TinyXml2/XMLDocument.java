@@ -6,6 +6,7 @@ public class XMLDocument
 {
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "MediaFile" ); //加载libMediaFile.so。
 	}
@@ -44,6 +45,25 @@ public class XMLDocument
 			return 0;
 		}
 	}
+	public int Dstoy()
+	{
+		if( m_XMLDocumentPt != 0 )
+		{
+			if( XMLDocumentDstoy( m_XMLDocumentPt ) == 0 )
+			{
+				m_XMLDocumentPt = 0;
+				return 0;
+			}
+			else
+			{
+				return -1;
+			}
+		}
+		else
+		{
+			return 0;
+		}
+	}
 
 	public int NewElement( XMLElement XMLNewElementPt, String NamePt )
 	{
@@ -70,27 +90,8 @@ public class XMLDocument
 		return XMLDocumentLoadFile( m_XMLDocumentPt, FileFullNamePt );
 	}
 
-	public int Dstoy()
-	{
-		if( m_XMLDocumentPt != 0 )
-		{
-			if( XMLDocumentDstoy( m_XMLDocumentPt ) == 0 )
-			{
-				m_XMLDocumentPt = 0;
-				return 0;
-			}
-			else
-			{
-				return -1;
-			}
-		}
-		else
-		{
-			return 0;
-		}
-	}
-
 	private native int XMLDocumentInit( HTLong XMLDocumentPt );
+	private native int XMLDocumentDstoy( long XMLDocumentPt );
 
 	private native int XMLDocumentNewElement( long XMLDocumentPt, XMLElement XMLNewElementPt, String NamePt );
 
@@ -101,6 +102,4 @@ public class XMLDocument
 	private native int XMLDocumentSaveFile( long XMLDocumentPt, String FileFullNamePt );
 
 	private native int XMLDocumentLoadFile( long XMLDocumentPt, String FileFullNamePt );
-
-	private native int XMLDocumentDstoy( long XMLDocumentPt );
 }

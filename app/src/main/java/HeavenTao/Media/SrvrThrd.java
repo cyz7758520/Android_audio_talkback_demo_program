@@ -885,7 +885,8 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 					if( p_TcpClntSoktTmpPt != null )
 					{
 						m_ThrdPt.m_TmpBytePt[ 0 ] = ( byte ) PktTyp.Exit; //设置退出包。
-						p_TcpClntSoktTmpPt.SendApkt( m_ThrdPt.m_TmpBytePt, 1, ( short ) 0, 1, 0, null ); //发送退出包。
+						m_ThrdPt.m_TmpBytePt[ 1 ] = ( byte ) -1; //设置对讲索引为达到最大连接数。
+						p_TcpClntSoktTmpPt.SendApkt( m_ThrdPt.m_TmpBytePt, 2, ( short ) 0, 1, 0, null ); //发送退出包。
 						p_TcpClntSoktTmpPt.Dstoy( ( short ) -1, null );
 					}
 				}
@@ -937,7 +938,8 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 					if( m_ThrdPt.m_TmpHTLongPt.m_Val != -1 )
 					{
 						m_ThrdPt.m_TmpBytePt[ 0 ] = ( byte ) PktTyp.Exit; //设置退出包。
-						m_AudpSrvrSoktPt.SendApkt( m_ThrdPt.m_TmpHTLongPt.m_Val, m_ThrdPt.m_TmpBytePt, 1, 1, 1, null ); //发送退出包。
+						m_ThrdPt.m_TmpBytePt[ 1 ] = ( byte ) -1; //设置对讲索引为达到最大连接数。
+						m_AudpSrvrSoktPt.SendApkt( m_ThrdPt.m_TmpHTLongPt.m_Val, m_ThrdPt.m_TmpBytePt, 2, 1, 1, null ); //发送退出包。
 						m_AudpSrvrSoktPt.ClosCnct( m_ThrdPt.m_TmpHTLongPt.m_Val, null );
 					}
 				}

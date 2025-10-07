@@ -7,6 +7,7 @@ public class WaveFileReader
 {
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "MediaFile" ); //加载libMediaFile.so。
 	}
@@ -46,13 +47,6 @@ public class WaveFileReader
 			return 0;
 		}
 	}
-
-	//用Wave文件读取器读取Short型数据。
-	public int ReadShort( short DataPt[], long DataSz, HTLong DataLenPt )
-	{
-		return WaveFileReaderReadShort( m_WaveFileReaderPt, DataPt, DataSz, DataLenPt );
-	}
-
 	//销毁Wave文件读取器。
 	public int Dstoy()
 	{
@@ -74,12 +68,17 @@ public class WaveFileReader
 		}
 	}
 
+	//用Wave文件读取器读取Short型数据。
+	public int ReadShort( short DataPt[], long DataSz, HTLong DataLenPt )
+	{
+		return WaveFileReaderReadShort( m_WaveFileReaderPt, DataPt, DataSz, DataLenPt );
+	}
+
 	//创建并初始化Wave文件读取器。
 	private native int WaveFileReaderInit( HTLong WaveFileReaderPt, String WaveFileFullPathStrPt, HTInt NumChanlPt, HTInt SmplRatePt, HTInt SmplBitPt );
+	//销毁Wave文件读取器。
+	private native int WaveFileReaderDstoy( long WaveFileReaderPt );
 
 	//用Wave文件读取器读取数据。
 	private native int WaveFileReaderReadShort( long WaveFileReaderPt, short DataPt[], long DataSz, HTLong DataLenPt );
-
-	//销毁Wave文件读取器。
-	private native int WaveFileReaderDstoy( long WaveFileReaderPt );
 }

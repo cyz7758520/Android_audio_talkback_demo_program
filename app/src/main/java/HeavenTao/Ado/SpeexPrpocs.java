@@ -7,6 +7,7 @@ public class SpeexPrpocs
 {
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "SpeexDsp" ); //加载libSpeexDsp.so。
 	}
@@ -46,13 +47,6 @@ public class SpeexPrpocs
 			return 0;
 		}
 	}
-
-	//用Speex预处理器对单声道16位有符号整型Pcm格式帧进行Speex预处理。
-	public int Pocs( short FrmPt[], short RsltFrmPt[], HTInt VoiceActStsPt )
-	{
-		return SpeexPrpocsPocs( m_SpeexPrpocsPt, FrmPt, RsltFrmPt, VoiceActStsPt );
-	}
-
 	//销毁Speex预处理器。
 	public int Dstoy()
 	{
@@ -74,12 +68,17 @@ public class SpeexPrpocs
 		}
 	}
 
+	//用Speex预处理器对单声道16位有符号整型Pcm格式帧进行Speex预处理。
+	public int Pocs( short FrmPt[], short RsltFrmPt[], HTInt VoiceActStsPt )
+	{
+		return SpeexPrpocsPocs( m_SpeexPrpocsPt, FrmPt, RsltFrmPt, VoiceActStsPt );
+	}
+
 	//创建并初始化Speex预处理器。
 	private native int SpeexPrpocsInit( HTLong SpeexPrpocsPt, int SmplRate, long FrmLenUnit, int IsUseNs, int NoiseSupes, int IsUseDereverb, int IsUseVad, int VadProbStart, int VadProbCntu, int IsUseAgc, int AgcLevel, int AgcIncrement, int AgcDecrement, int AgcMaxGain, long ErrInfoVstrPt );
+	//销毁Speex预处理器。
+	private native int SpeexPrpocsDstoy( long SpeexPrpocsPt );
 
 	//用Speex预处理器对单声道16位有符号整型Pcm格式帧进行Speex预处理。
 	private native int SpeexPrpocsPocs( long SpeexPrpocsPt, short FrmPt[], short RsltFrmPt[], HTInt VoiceActStsPt );
-
-	//销毁Speex预处理器。
-	private native int SpeexPrpocsDstoy( long SpeexPrpocsPt );
 }

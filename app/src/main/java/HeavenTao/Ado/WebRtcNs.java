@@ -7,8 +7,8 @@ public class WebRtcNs
 {
 	static
 	{
-		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
+		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "WebRtc" ); //加载libWebRtc.so。
 	}
 
@@ -47,13 +47,6 @@ public class WebRtcNs
 			return 0;
 		}
 	}
-
-	//用WebRtc浮点版噪音抑制器对单声道16位有符号整型Pcm格式帧进行WebRtc浮点版噪音抑制。
-	public int Pocs( short FrmObj[], short RsltFrmObj[] )
-	{
-		return WebRtcNsPocs( m_WebRtcNsPt, FrmObj, RsltFrmObj );
-	}
-
 	//销毁WebRtc浮点版噪音抑制器。
 	public int Dstoy()
 	{
@@ -75,12 +68,17 @@ public class WebRtcNs
 		}
 	}
 
+	//用WebRtc浮点版噪音抑制器对单声道16位有符号整型Pcm格式帧进行WebRtc浮点版噪音抑制。
+	public int Pocs( short FrmObj[], short RsltFrmObj[] )
+	{
+		return WebRtcNsPocs( m_WebRtcNsPt, FrmObj, RsltFrmObj );
+	}
+
 	//创建并初始化WebRtc浮点版噪音抑制器。
 	private native int WebRtcNsInit( HTLong WebRtcNsPt, int SmplRate, long FrmLenUnit, int PolicyMode, long ErrInfoVstrPt );
+	//销毁WebRtc浮点版噪音抑制器。
+	private native int WebRtcNsDstoy( long WebRtcNsPt );
 
 	//用WebRtc浮点版噪音抑制器对单声道16位有符号整型Pcm格式帧进行WebRtc浮点版噪音抑制。
 	private native int WebRtcNsPocs( long WebRtcNsPt, short FrmObj[], short RsltFrmObj[] );
-
-	//销毁WebRtc浮点版噪音抑制器。
-	private native int WebRtcNsDstoy( long WebRtcNsPt );
 }

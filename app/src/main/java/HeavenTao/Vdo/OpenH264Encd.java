@@ -7,6 +7,7 @@ public class OpenH264Encd
 {
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "OpenH264" ); //加载libOpenH264.so。
 	}
@@ -52,6 +53,26 @@ public class OpenH264Encd
 			return 0;
 		}
 	}
+	//销毁OpenH264编码器。
+	public int Dstoy( Vstr ErrInfoVstrPt )
+	{
+		if( m_OpenH264EncdPt != 0 )
+		{
+			if( OpenH264EncdDstoy( m_OpenH264EncdPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			{
+				m_OpenH264EncdPt = 0;
+				return 0;
+			}
+			else
+			{
+				return -1;
+			}
+		}
+		else
+		{
+			return 0;
+		}
+	}
 
 	//设置OpenH264编码器的编码后比特率。
 	public int SetEncdBitrate( int EncdBitrate, Vstr ErrInfoVstrPt )
@@ -76,29 +97,10 @@ public class OpenH264Encd
 								 ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
-	//销毁OpenH264编码器。
-	public int Dstoy( Vstr ErrInfoVstrPt )
-	{
-		if( m_OpenH264EncdPt != 0 )
-		{
-			if( OpenH264EncdDstoy( m_OpenH264EncdPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
-			{
-				m_OpenH264EncdPt = 0;
-				return 0;
-			}
-			else
-			{
-				return -1;
-			}
-		}
-		else
-		{
-			return 0;
-		}
-	}
-
 	//OpenH264编码器获取应用程序限制信息。
 	private static native int OpenH264EncdGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
+	//销毁OpenH264编码器。
+	private native int OpenH264EncdDstoy( long OpenH264EncdPt, long ErrInfoVstrPt );
 
 	//创建并初始化OpenH264编码器。
 	private native int OpenH264EncdInit( byte LicnCodePt[], HTLong OpenH264EncdPt, int EncdPictrWidth, int EncdPictrHeight, int VdoType, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlFrmCnt, int Cmplxt, long ErrInfoVstrPt );
@@ -114,7 +116,4 @@ public class OpenH264Encd
 										 byte Yu12FrmPt[], int Yu12FrmWidth, int Yu12FrmHeight, long Yu12FrmTimeStampMsec,
 										 byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt,
 										 long ErrInfoVstrPt );
-
-	//销毁OpenH264编码器。
-	private native int OpenH264EncdDstoy( long OpenH264EncdPt, long ErrInfoVstrPt );
 }

@@ -748,7 +748,7 @@ public class TkbkClnt //对讲客户端。
 								{
 									//重新循环，继续等待本端高级Udp协议套接字连接远端。
 								}
-								else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.AudpCnctStsCnct ) //如果连接成功。
+								else if( ( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.AudpCnctStsCnct ) || ( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.AudpCnctStsDsct ) ) //如果连接成功活连接断开。因为连接断开其实也是连接成功后断开的。
 								{
 									if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.GetRmtAddr( m_AudpClntCnctIdx, null, m_ClntMediaPocsThrdPt.m_ThrdPt.m_RmtNodeAddrPt, m_ClntMediaPocsThrdPt.m_ThrdPt.m_RmtNodePortPt, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 )
 									{
@@ -769,13 +769,6 @@ public class TkbkClnt //对讲客户端。
 								else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.AudpCnctStsTmot ) //如果连接超时。
 								{
 									String p_InfoStrPt = "客户端媒体处理线程：对讲客户端：用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字[" + m_RmtNodeNameStrPt + ":" + m_RmtNodeSrvcStrPt + "]失败。原因：连接超时。";
-									if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
-									m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
-									break AudpClntSoktCnctOut;
-								}
-								else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.AudpCnctStsDsct ) //如果连接断开。
-								{
-									String p_InfoStrPt = "客户端媒体处理线程：对讲客户端：用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字[" + m_RmtNodeNameStrPt + ":" + m_RmtNodeSrvcStrPt + "]失败。原因：连接断开。";
 									if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
 									m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
 									break AudpClntSoktCnctOut;
@@ -1025,7 +1018,7 @@ public class TkbkClnt //对讲客户端。
 								}
 								else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 0 ] == ( byte ) ClntMediaPocsThrd.PktTyp.TstNtwkDlyRply ) //如果是测试网络延迟应答包。
 								{
-									if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTLongPt.m_Val < 1 + 1 ) //如果退出包的长度小于1 + 1，表示没有对讲索引。
+									if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTLongPt.m_Val < 1 + 1 ) //如果测试网络延迟应答包的长度小于1 + 1，表示没有对讲索引。
 									{
 										if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：对讲客户端：接收测试网络延迟应答包。长度为" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTLongPt.m_Val + "小于1 + 1，表示没有对讲索引，无法继续接收。" );
 										break RecvPktOut;
@@ -1054,12 +1047,28 @@ public class TkbkClnt //对讲客户端。
 										break RecvPktOut;
 									}
 
-									String p_InfoStrPt = "客户端媒体处理线程：对讲客户端：接收退出包。对讲索引：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] + "。";
-									if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
-									m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
-									if( m_ClntMediaPocsThrdPt.m_IsShowToast != 0 ) m_ClntMediaPocsThrdPt.UserShowToast( p_InfoStrPt );
+									{
+										String p_InfoStrPt = "客户端媒体处理线程：对讲客户端：接收退出包。对讲索引：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] + "。";
+										if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
+										m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
+										if( m_ClntMediaPocsThrdPt.m_IsShowToast != 0 ) m_ClntMediaPocsThrdPt.UserShowToast( p_InfoStrPt );
+									}
 
-									if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] == m_MyTkbkIdx ) //如果对讲索引是我的对讲索引。
+									if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] == -1 ) //如果对讲索引是服务端达到最大连接数。
+									{
+										{
+											String p_InfoStrPt = "客户端媒体处理线程：对讲客户端：服务端达到最大连接数。";
+											if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
+											m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
+											if( m_ClntMediaPocsThrdPt.m_IsShowToast != 0 ) m_ClntMediaPocsThrdPt.UserShowToast( p_InfoStrPt );
+										}
+
+										m_IsRecvExitPkt = 1; //设置已接收退出包。
+										m_CurCnctSts = ClntMediaPocsThrd.CnctSts.SrvrMaxCnct; //设置当前连接状态为服务端达到最大连接数。
+										m_ClntMediaPocsThrdPt.UserTkbkClntCnctSts( m_CurCnctSts ); //调用用户定义的对讲客户端连接状态函数。
+										m_IsRqstDstoy = 1; //设置已请求销毁。
+									}
+									else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpBytePt[ 1 ] == m_MyTkbkIdx ) //如果对讲索引是我的对讲索引。
 									{
 										m_IsRecvExitPkt = 1; //设置已接收退出包。
 										m_IsRqstDstoy = 1; //设置已请求销毁。

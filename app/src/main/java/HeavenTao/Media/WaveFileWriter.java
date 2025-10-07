@@ -7,6 +7,7 @@ public class WaveFileWriter
 {
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "MediaFile" ); //加载libMediaFile.so。
 	}
@@ -46,13 +47,6 @@ public class WaveFileWriter
 			return 0;
 		}
 	}
-
-	//用Wave文件写入器写入Short型数据。
-	public int WriteShort( short DataPt[], long DataLen )
-	{
-		return WaveFileWriterWriteShort( m_WaveFileWriterPt, DataPt, DataLen );
-	}
-
 	//销毁Wave文件写入器。
 	public int Dstoy()
 	{
@@ -74,12 +68,17 @@ public class WaveFileWriter
 		}
 	}
 
+	//用Wave文件写入器写入Short型数据。
+	public int WriteShort( short DataPt[], long DataLen )
+	{
+		return WaveFileWriterWriteShort( m_WaveFileWriterPt, DataPt, DataLen );
+	}
+
 	//创建并初始化Wave文件写入器。
 	private native int WaveFileWriterInit( HTLong WaveFileWriterPt, String WaveFileFullPathStrPt, long WaveFileWrBufSzByt, int NumChanl, int SmplRate, int SmplBit );
+	//销毁Wave文件写入器。
+	private native int WaveFileWriterDstoy( long WaveFileWriterPt );
 
 	//用Wave文件写入器写入数据。
 	private native int WaveFileWriterWriteShort( long WaveFileWriterPt, short DataPt[], long DataLen );
-
-	//销毁Wave文件写入器。
-	private native int WaveFileWriterDstoy( long WaveFileWriterPt );
 }

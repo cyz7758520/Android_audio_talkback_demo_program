@@ -7,8 +7,8 @@ public class WebRtcAec3
 {
 	static
 	{
-		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
+		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "WebRtc3" ); //加载libWebRtc3.so。
 	}
 
@@ -53,25 +53,6 @@ public class WebRtcAec3
 			return 0;
 		}
 	}
-
-	//设置WebRtc第三版声学回音消除器的回音延迟。
-	public int SetDelay( int Delay )
-	{
-		return WebRtcAec3SetDelay( m_WebRtcAec3Pt, Delay );
-	}
-
-	//获取WebRtc第三版声学回音消除器的回音延迟。
-	public int GetDelay( HTInt DelayPt )
-	{
-		return WebRtcAec3GetDelay( m_WebRtcAec3Pt, DelayPt );
-	}
-
-	//用WebRtc第三版声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行WebRtc第三版声学回音消除。
-	public int Pocs( short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] )
-	{
-		return WebRtcAec3Pocs( m_WebRtcAec3Pt, InptFrmPt, OtptFrmPt, RsltFrmPt );
-	}
-
 	//销毁WebRtc第三版声学回音消除器。
 	public int Dstoy()
 	{
@@ -93,21 +74,36 @@ public class WebRtcAec3
 		}
 	}
 
+	//设置WebRtc第三版声学回音消除器的回音延迟。
+	public int SetDelay( int Delay )
+	{
+		return WebRtcAec3SetDelay( m_WebRtcAec3Pt, Delay );
+	}
+	//获取WebRtc第三版声学回音消除器的回音延迟。
+	public int GetDelay( HTInt DelayPt )
+	{
+		return WebRtcAec3GetDelay( m_WebRtcAec3Pt, DelayPt );
+	}
+
+	//用WebRtc第三版声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行WebRtc第三版声学回音消除。
+	public int Pocs( short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] )
+	{
+		return WebRtcAec3Pocs( m_WebRtcAec3Pt, InptFrmPt, OtptFrmPt, RsltFrmPt );
+	}
+
 	//WebRtc第三版声学回音消除器获取应用程序限制信息。
 	private static native int WebRtcAec3GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化WebRtc第三版声学回音消除器。
 	private native int WebRtcAec3Init( byte LicnCodePt[], HTLong WebRtcAec3Pt, int SmplRate, long FrmLenUnit, int Delay, long ErrInfoVstrPt );
+	//销毁WebRtc第三版声学回音消除器。
+	private native int WebRtcAec3Dstoy( long WebRtcAec3Pt );
 
 	//设置WebRtc第三版声学回音消除器的回音延迟。
 	private native int WebRtcAec3SetDelay( long WebRtcAec3Pt, int Delay );
-
 	//获取WebRtc第三版声学回音消除器的回音延迟。
 	private native int WebRtcAec3GetDelay( long WebRtcAec3Pt, HTInt DelayPt );
 
 	//用WebRtc第三版声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行WebRtc第三版声学回音消除。
 	private native int WebRtcAec3Pocs( long WebRtcAec3Pt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );
-
-	//销毁WebRtc第三版声学回音消除器。
-	private native int WebRtcAec3Dstoy( long WebRtcAec3Pt );
 }

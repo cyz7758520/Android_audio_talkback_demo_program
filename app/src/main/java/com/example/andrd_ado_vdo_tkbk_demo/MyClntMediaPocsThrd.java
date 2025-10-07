@@ -344,6 +344,10 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		{
 			m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.ClntLstModifyItem, m_TkbkClntNum, "已连接", null , null );
 		}
+		else if( CurCnctSts == CnctSts.SrvrMaxCnct )
+		{
+			m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.ClntLstModifyItem, m_TkbkClntNum, "服务端达到最大连接数", null , null );
+		}
 		else if( CurCnctSts == ClntMediaPocsThrd.CnctSts.Tmot )
 		{
 			m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.ClntLstModifyItem, m_TkbkClntNum, "异常断开", null , null );

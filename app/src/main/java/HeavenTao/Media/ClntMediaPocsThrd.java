@@ -58,8 +58,9 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	{
 		public static final int Wait = 0; //等待远端接受连接。
 		public static final int Cnct = 1; //已连接。
-		public static final int Tmot = 2; //超时未接收任何数据包。异常断开。
-		public static final int Dsct = 3; //已断开。
+		public static final int SrvrMaxCnct = 2; //服务端达到最大连接数。
+		public static final int Tmot = 3; //超时未接收任何数据包。异常断开。
+		public static final int Dsct = 4; //已断开。
 	}
 
 	public TkbkClnt m_TkbkClntPt = new TkbkClnt();
@@ -543,10 +544,10 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 					int p_OldLclTkbkMode = m_TkbkClntPt.m_LclTkbkMode; //设置旧本端对讲模式。
 
 					if( p_LclTkbkMode != TkbkMode.NoChg ) m_TkbkClntPt.m_LclTkbkMode = p_LclTkbkMode; //设置本端对讲模式。
-					SetTkbkMode( 1, 1 ); //只设置不使用的对讲模式。因为在调用用户定义的对讲客户端本端对讲模式函数时，可能会对不使用的做一些销毁工作，并对要使用的做一些初始化工作，所以先只设置不使用的。
+					if( m_TkbkClntPt.m_MyTkbkIdx != -1 ) SetTkbkMode( 1, 1 ); //如果已设置我的对讲索引，就只设置不使用的对讲模式。因为在调用用户定义的对讲客户端本端对讲模式函数时，可能会对不使用的做一些销毁工作，并对要使用的做一些初始化工作，所以先只设置不使用的。
 					UserTkbkClntLclTkbkMode( p_OldLclTkbkMode, m_TkbkClntPt.m_LclTkbkMode ); //调用用户定义的对讲客户端本端对讲模式函数。
-					if( m_TkbkClntPt.m_CurCnctSts == CnctSts.Cnct ) m_TkbkClntPt.CnctSendTkbkModePkt( m_TkbkClntPt.m_LclTkbkMode ); //发送对讲模式包。
-					SetTkbkMode( 1, 2 ); //只设置要使用的对讲模式。
+					if( ( m_TkbkClntPt.m_CurCnctSts == CnctSts.Cnct ) && ( ( m_TkbkClntPt.m_MyTkbkIdx != -1 ) ) ) m_TkbkClntPt.CnctSendTkbkModePkt( m_TkbkClntPt.m_LclTkbkMode ); //如果当前连接状态为已连接，且已设置我的对讲索引，就发送对讲模式包。
+					if( m_TkbkClntPt.m_MyTkbkIdx != -1 ) SetTkbkMode( 1, 2 ); //如果已设置我的对讲索引，就只设置要使用的对讲模式。
 					break;
 				}
 				case ThrdMsgTyp.TkbkClntPttBtnDown:

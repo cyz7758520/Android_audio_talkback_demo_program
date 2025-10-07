@@ -10,6 +10,7 @@ public class LibYUV
 {
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "LibYUV" ); //加载libLibYUV.so。
 	}

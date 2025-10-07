@@ -7,6 +7,7 @@ public class AviFileWriter
 {
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "MediaFile" ); //加载libMediaFile.so。
 	}
@@ -40,6 +41,26 @@ public class AviFileWriter
 			if( AviFileWriterInit( LicnCodePt, p_AviFileWriterPt, AviFileFullPathStrPt, AviFileWrBufSzByt, MaxStrmNum, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_AviFileWriterPt = p_AviFileWriterPt.m_Val;
+				return 0;
+			}
+			else
+			{
+				return -1;
+			}
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	//销毁Avi文件写入器。
+	public int Dstoy( Vstr ErrInfoVstrPt )
+	{
+		if( m_AviFileWriterPt != 0 )
+		{
+			if( AviFileWriterDstoy( m_AviFileWriterPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			{
+				m_AviFileWriterPt = 0;
 				return 0;
 			}
 			else
@@ -109,32 +130,13 @@ public class AviFileWriter
 		return AviFileWriterVdoStrmWriteShort( m_AviFileWriterPt, VdoStrmIdx, FrmTimeStampMsec, FrmPt, FrmLenByt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
-	//销毁Avi文件写入器。
-	public int Dstoy( Vstr ErrInfoVstrPt )
-	{
-		if( m_AviFileWriterPt != 0 )
-		{
-			if( AviFileWriterDstoy( m_AviFileWriterPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
-			{
-				m_AviFileWriterPt = 0;
-				return 0;
-			}
-			else
-			{
-				return -1;
-			}
-		}
-		else
-		{
-			return 0;
-		}
-	}
-
 	//Avi文件写入器获取应用程序限制信息。
 	private static native int AviFileWriterGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化Avi文件写入器。
 	private native int AviFileWriterInit( byte LicnCodePt[], HTLong AviFileWriterPt, String AviFileFullPathStrPt, long AviFileWrBufSzByt, int MaxStrmNum, long ErrInfoVstrPt );
+	//销毁Avi文件写入器。
+	private native int AviFileWriterDstoy( long AviFileWriterPt, long ErrInfoVstrPt );
 
 	//设置整个Avi文件时间线的起始时间戳。
 	private native int AviFileWriterSetStartTimeStamp( long AviFileWriterPt, long StartTimeStampMsec, long ErrInfoVstrPt );
@@ -160,7 +162,4 @@ public class AviFileWriter
 	private native int AviFileWriterVdoStrmWriteByte( long AviFileWriterPt, int VdoStrmIdx, long FrmTimeStampMsec, byte FrmPt[], long FrmLenByt, long ErrInfoVstrPt );
 	//Avi文件指定视频流的写入短整型视频帧。
 	private native int AviFileWriterVdoStrmWriteShort( long AviFileWriterPt, int VdoStrmIdx, long FrmTimeStampMsec, short FrmPt[], long FrmLenTwoByt, long ErrInfoVstrPt );
-
-	//销毁Avi文件写入器。
-	private native int AviFileWriterDstoy( long AviFileWriterPt, long ErrInfoVstrPt );
 }

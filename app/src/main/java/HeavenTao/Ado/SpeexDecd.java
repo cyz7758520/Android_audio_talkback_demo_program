@@ -7,6 +7,7 @@ public class SpeexDecd
 {
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "Speex" ); //加载libSpeex.so。
 	}
@@ -46,13 +47,6 @@ public class SpeexDecd
 			return 0;
 		}
 	}
-
-	//用Speex解码器对单声道16位有符号整型20毫秒Pcm格式帧进行Speex格式编码。
-	public int Pocs( byte SpeexFrmPt[], long SpeexFrmLen, short PcmFrmPt[] )
-	{
-		return SpeexDecdPocs( m_SpeexDecdPt, SpeexFrmPt, SpeexFrmLen, PcmFrmPt );
-	}
-
 	//销毁Speex解码器。
 	public int Dstoy()
 	{
@@ -74,12 +68,17 @@ public class SpeexDecd
 		}
 	}
 
+	//用Speex解码器对单声道16位有符号整型20毫秒Pcm格式帧进行Speex格式编码。
+	public int Pocs( byte SpeexFrmPt[], long SpeexFrmLen, short PcmFrmPt[] )
+	{
+		return SpeexDecdPocs( m_SpeexDecdPt, SpeexFrmPt, SpeexFrmLen, PcmFrmPt );
+	}
+
 	//创建并初始化Speex解码器。
 	private native int SpeexDecdInit( HTLong SpeexDecdPt, int SmplRate, int IsUsePrcplEnhsmt );
+	//销毁Speex解码器。
+	private native int SpeexDecdDstoy( long SpeexDecdPt );
 
 	//用Speex解码器对单声道16位有符号整型20毫秒Speex格式帧进行Pcm格式解码。
 	private native int SpeexDecdPocs( long SpeexDecdPt, byte SpeexFrmPt[], long SpeexFrmLen, short PcmFrmPt[] );
-
-	//销毁Speex解码器。
-	private native int SpeexDecdDstoy( long SpeexDecdPt );
 }

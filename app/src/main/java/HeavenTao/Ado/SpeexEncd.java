@@ -7,6 +7,7 @@ public class SpeexEncd
 {
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "Speex" ); //加载libSpeex.so。
 	}
@@ -46,13 +47,6 @@ public class SpeexEncd
 			return 0;
 		}
 	}
-
-	//用Speex编码器对单声道16位有符号整型20毫秒Pcm格式帧进行Speex格式编码。
-	public int Pocs( short PcmFrmPt[], byte SpeexFrmPt[], long SpeexFrmSz, HTLong SpeexFrmLenPt, HTInt IsNeedTransPt )
-	{
-		return SpeexEncdPocs( m_SpeexEncdPt, PcmFrmPt, SpeexFrmPt, SpeexFrmSz, SpeexFrmLenPt, IsNeedTransPt );
-	}
-
 	//销毁Speex编码器。
 	public int Dstoy()
 	{
@@ -74,12 +68,17 @@ public class SpeexEncd
 		}
 	}
 
+	//用Speex编码器对单声道16位有符号整型20毫秒Pcm格式帧进行Speex格式编码。
+	public int Pocs( short PcmFrmPt[], byte SpeexFrmPt[], long SpeexFrmSz, HTLong SpeexFrmLenPt, HTInt IsNeedTransPt )
+	{
+		return SpeexEncdPocs( m_SpeexEncdPt, PcmFrmPt, SpeexFrmPt, SpeexFrmSz, SpeexFrmLenPt, IsNeedTransPt );
+	}
+
 	//创建并初始化Speex编码器。
 	private native int SpeexEncdInit( HTLong SpeexEncdPt, int SmplRate, int UseCbrOrVbr, int Qualt, int Cmplxt, int PlcExptLossRate );
+	//销毁Speex编码器。
+	private native int SpeexEncdDstoy( long SpeexEncdPt );
 
 	//用Speex编码器对单声道16位有符号整型20毫秒Pcm格式帧进行Speex格式编码。
 	private native int SpeexEncdPocs( long SpeexEncdPt, short PcmFrmPt[], byte SpeexFrmPt[], long SpeexFrmSz, HTLong SpeexFrmLenPt, HTInt IsNeedTransPt );
-
-	//销毁Speex编码器。
-	private native int SpeexEncdDstoy( long SpeexEncdPt );
 }

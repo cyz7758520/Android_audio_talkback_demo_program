@@ -7,6 +7,7 @@ public class SpeexAec
 {
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "SpeexDsp" ); //加载libSpeexDsp.so。
 	}
@@ -52,13 +53,6 @@ public class SpeexAec
 			return 0;
 		}
 	}
-
-	//用Speex声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行Speex声学回音消除。
-	public int Pocs( short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] )
-	{
-		return SpeexAecPocs( m_SpeexAecPt, InptFrmPt, OtptFrmPt, RsltFrmPt );
-	}
-
 	//销毁Speex声学回音消除器。
 	public int Dstoy()
 	{
@@ -80,15 +74,20 @@ public class SpeexAec
 		}
 	}
 
+	//用Speex声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行Speex声学回音消除。
+	public int Pocs( short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] )
+	{
+		return SpeexAecPocs( m_SpeexAecPt, InptFrmPt, OtptFrmPt, RsltFrmPt );
+	}
+
 	//Speex声学回音消除器获取应用程序限制信息。
 	private static native int SpeexAecGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化Speex声学回音消除器。
 	private native int SpeexAecInit( byte LicnCodePt[], HTLong SpeexAecPt, int SmplRate, long FrmLenUnit, int FilterLenMsec, int IsUseRec, float EchoMutp, float EchoCntu, int EchoSupes, int EchoSupesAct, long ErrInfoVstrPt );
+	//销毁Speex声学回音消除器。
+	private native int SpeexAecDstoy( long SpeexAecPt );
 
 	//用Speex声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行Speex声学回音消除。
 	private native int SpeexAecPocs( long SpeexAecPt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );
-
-	//销毁Speex声学回音消除器。
-	private native int SpeexAecDstoy( long SpeexAecPt );
 }

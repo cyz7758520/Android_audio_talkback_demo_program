@@ -7,8 +7,8 @@ public class RNNoise
 {
 	static
 	{
-		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
+		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "WebRtc" ); //加载libWebRtc.so。
 		System.loadLibrary( "RNNoise" ); //加载libRNNoise.so。
 	}
@@ -54,13 +54,6 @@ public class RNNoise
 			return 0;
 		}
 	}
-
-	//用RNNoise噪音抑制器对单声道16位有符号整型Pcm格式帧进行RNNoise噪音抑制。
-	public int Pocs( short FrmPt[], short RsltFrmPt[] )
-	{
-		return RNNoisePocs( m_RNNoisePt, FrmPt, RsltFrmPt );
-	}
-
 	//销毁RNNoise噪音抑制器。
 	public int Dstoy()
 	{
@@ -82,15 +75,20 @@ public class RNNoise
 		}
 	}
 
+	//用RNNoise噪音抑制器对单声道16位有符号整型Pcm格式帧进行RNNoise噪音抑制。
+	public int Pocs( short FrmPt[], short RsltFrmPt[] )
+	{
+		return RNNoisePocs( m_RNNoisePt, FrmPt, RsltFrmPt );
+	}
+
 	//RNNoise噪音抑制器获取应用程序限制信息。
 	private static native int RNNoiseGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
 
 	//创建并初始化RNNoise噪音抑制器。
 	private native int RNNoiseInit( byte LicnCodePt[], HTLong RNNoisePt, int SmplRate, long FrmLenUnit, long ErrInfoVstrPt );
+	//销毁RNNoise噪音抑制器。
+	private native int RNNoiseDstoy( long RNNoisePt );
 
 	//用RNNoise噪音抑制器对单声道16位有符号整型Pcm格式帧进行RNNoise噪音抑制。
 	private native int RNNoisePocs( long RNNoisePt, short FrmPt[], short RsltFrmPt[] );
-
-	//销毁RNNoise噪音抑制器。
-	private native int RNNoiseDstoy( long RNNoisePt );
 }

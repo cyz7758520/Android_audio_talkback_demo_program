@@ -7,8 +7,8 @@ public class WebRtcNsx
 {
 	static
 	{
-		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
+		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "WebRtc" ); //加载libWebRtc.so。
 	}
 
@@ -47,13 +47,6 @@ public class WebRtcNsx
 			return 0;
 		}
 	}
-
-	//用WebRtc定点版噪音抑制器对单声道16位有符号整型Pcm格式帧进行WebRtc定点版噪音抑制。
-	public int Pocs( short FrmPt[], short RsltFrmPt[] )
-	{
-		return WebRtcNsxPocs( m_WebRtcNsxPt, FrmPt, RsltFrmPt );
-	}
-
 	//销毁WebRtc定点版噪音抑制器。
 	public int Dstoy()
 	{
@@ -75,12 +68,17 @@ public class WebRtcNsx
 		}
 	}
 
+	//用WebRtc定点版噪音抑制器对单声道16位有符号整型Pcm格式帧进行WebRtc定点版噪音抑制。
+	public int Pocs( short FrmPt[], short RsltFrmPt[] )
+	{
+		return WebRtcNsxPocs( m_WebRtcNsxPt, FrmPt, RsltFrmPt );
+	}
+
 	//创建并初始化WebRtc定点版噪音抑制器。
 	private native int WebRtcNsxInit( HTLong WebRtcNsxPt, int SmplRate, long FrmLenUnit, int PolicyMode, long ErrInfoVstrPt );
+	//销毁WebRtc定点版噪音抑制器。
+	private native int WebRtcNsxDstoy( long WebRtcNsxPt );
 
 	//用WebRtc定点版噪音抑制器对单声道16位有符号整型Pcm格式帧进行WebRtc定点版噪音抑制。
 	private native int WebRtcNsxPocs( long WebRtcNsxPt, short FrmPt[], short RsltFrmPt[] );
-
-	//销毁WebRtc定点版噪音抑制器。
-	private native int WebRtcNsxDstoy( long WebRtcNsxPt );
 }

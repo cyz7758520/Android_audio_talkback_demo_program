@@ -9,6 +9,7 @@ public class UdpSokt
 
 	static
 	{
+		System.loadLibrary( "c++_shared" ); //加载libc++_shared.so。
 		System.loadLibrary( "Func" ); //加载libFunc.so。
 		System.loadLibrary( "DataStruct" ); //加载libDataStruct.so。
 		System.loadLibrary( "Sokt" ); //加载libSokt.so。
