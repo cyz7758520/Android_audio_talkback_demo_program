@@ -2693,21 +2693,21 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				//使用Wave文件写入器。
 				if( m_AdoInptPt.m_WaveFileWriterPt.m_IsSave != 0 )
 				{
-					if( m_AdoInptPt.m_WaveFileWriterPt.m_SrcPt.WriteShort( m_ThrdPt.m_AdoInptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmSrcFrmPt.length ) == 0 )
+					if( m_AdoInptPt.m_WaveFileWriterPt.m_SrcPt.WriteShort( m_ThrdPt.m_AdoInptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmSrcFrmPt.length, m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频输入原始Wave文件写入器写入音频输入Pcm格式原始帧成功。" );
 					}
 					else
 					{
-						if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输入原始Wave文件写入器写入音频输入Pcm格式原始帧失败。" );
+						if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输入原始Wave文件写入器写入音频输入Pcm格式原始帧失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 					}
-					if( m_AdoInptPt.m_WaveFileWriterPt.m_RsltPt.WriteShort( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt.length ) == 0 )
+					if( m_AdoInptPt.m_WaveFileWriterPt.m_RsltPt.WriteShort( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt.length, m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频输入结果Wave文件写入器写入音频输入Pcm格式结果帧成功。" );
 					}
 					else
 					{
-						if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输入结果Wave文件写入器写入音频输入Pcm格式结果帧失败。" );
+						if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输入结果Wave文件写入器写入音频输入Pcm格式结果帧失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 					}
 				}
 
@@ -2771,13 +2771,13 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				//使用Wave文件写入器。
 				if( m_AdoOtptPt.m_WaveFileWriterPt.m_IsSave != 0 )
 				{
-					if( m_AdoOtptPt.m_WaveFileWriterPt.m_SrcPt.WriteShort( m_ThrdPt.m_AdoOtptPcmSrcFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.length ) == 0 )
+					if( m_AdoOtptPt.m_WaveFileWriterPt.m_SrcPt.WriteShort( m_ThrdPt.m_AdoOtptPcmSrcFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.length, m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频输出原始Wave文件写入器写入音频输出帧成功。" );
 					}
 					else
 					{
-						if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输出原始Wave文件写入器写入音频输出帧失败。" );
+						if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音频输出原始Wave文件写入器写入音频输出帧失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 					}
 				}
 

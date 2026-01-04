@@ -69,9 +69,9 @@ public class SpeexEncd
 	}
 
 	//用Speex编码器对单声道16位有符号整型20毫秒Pcm格式帧进行Speex格式编码。
-	public int Pocs( short PcmFrmPt[], byte SpeexFrmPt[], long SpeexFrmSz, HTLong SpeexFrmLenPt, HTInt IsNeedTransPt )
+	public int Pocs( short PcmFrmPt[], byte SpeexFrmPt[], long SpeexFrmSz, HTLong SpeexFrmLenBytPt, HTInt IsNeedTransPt )
 	{
-		return SpeexEncdPocs( m_SpeexEncdPt, PcmFrmPt, SpeexFrmPt, SpeexFrmSz, SpeexFrmLenPt, IsNeedTransPt );
+		return SpeexEncdPocs( m_SpeexEncdPt, PcmFrmPt, SpeexFrmPt, SpeexFrmSz, SpeexFrmLenBytPt, IsNeedTransPt );
 	}
 
 	//创建并初始化Speex编码器。
@@ -80,5 +80,5 @@ public class SpeexEncd
 	private native int SpeexEncdDstoy( long SpeexEncdPt );
 
 	//用Speex编码器对单声道16位有符号整型20毫秒Pcm格式帧进行Speex格式编码。
-	private native int SpeexEncdPocs( long SpeexEncdPt, short PcmFrmPt[], byte SpeexFrmPt[], long SpeexFrmSz, HTLong SpeexFrmLenPt, HTInt IsNeedTransPt );
+	private native int SpeexEncdPocs( long SpeexEncdPt, short PcmFrmPt[], byte SpeexFrmPt[], long SpeexFrmSz, HTLong SpeexFrmLenBytPt, HTInt IsNeedTransPt );
 }

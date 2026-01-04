@@ -810,7 +810,7 @@ public class VdoInpt //视频输入。
 					//裁剪Nv21格式原始帧。
 					if( m_DvcPt.m_Nv21SrcFrmIsCrop != 0 )
 					{
-						if( LibYUV.PictrCrop( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PICTR_FMT_BT601F8_NV21, m_DvcPt.m_Nv21SrcFrmWidth, m_DvcPt.m_Nv21SrcFrmHeight,
+						if( LibYUV.PictrCrop( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PictrFmt.Bt601F8Nv12, m_DvcPt.m_Nv21SrcFrmWidth, m_DvcPt.m_Nv21SrcFrmHeight,
 											  m_DvcPt.m_Nv21SrcFrmCropX, m_DvcPt.m_Nv21SrcFrmCropY, m_DvcPt.m_Nv21SrcFrmCropWidth, m_DvcPt.m_Nv21SrcFrmCropHeight,
 											  m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, m_ThrdPt.m_TmpFrmLenBytPt, null, null,
 											  null ) == 0 )
@@ -826,7 +826,7 @@ public class VdoInpt //视频输入。
 					}
 
 					//Nv21格式原始帧旋转为Yu12格式原始帧。
-					if( LibYUV.PictrRotate( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PICTR_FMT_BT601F8_NV21, m_DvcPt.m_Nv21SrcFrmCropWidth, m_DvcPt.m_Nv21SrcFrmCropHeight,
+					if( LibYUV.PictrRotate( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PictrFmt.Bt601F8Nv21, m_DvcPt.m_Nv21SrcFrmCropWidth, m_DvcPt.m_Nv21SrcFrmCropHeight,
 											m_DvcPt.m_Yu12SrcFrmRotate,
 											m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, null, null,
 											null ) == 0 )
@@ -843,7 +843,7 @@ public class VdoInpt //视频输入。
 					//缩放Yu12格式原始帧。
 					if( m_DvcPt.m_Yu12SrcFrmIsScale != 0 )
 					{
-						if( LibYUV.PictrScale( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PICTR_FMT_BT601F8_Yu12_I420, m_DvcPt.m_Yu12SrcFrmRotateWidth, m_DvcPt.m_Yu12SrcFrmRotateHeight,
+						if( LibYUV.PictrScale( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PictrFmt.Bt601F8Yu12I420, m_DvcPt.m_Yu12SrcFrmRotateWidth, m_DvcPt.m_Yu12SrcFrmRotateHeight,
 											   3,
 											   m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, m_ThrdPt.m_TmpFrmLenBytPt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight,
 											   null ) == 0 )

@@ -29,12 +29,10 @@ public class XMLElement
 	{
 		return XMLElementName( m_XMLElementPt, NamePt );
 	}
-
 	public int SetText( String TextPt )
 	{
 		return XMLElementSetText( m_XMLElementPt, TextPt );
 	}
-
 	public int GetText( HTString TextPt )
 	{
 		return XMLElementGetText( m_XMLElementPt, TextPt );
@@ -44,26 +42,20 @@ public class XMLElement
 	{
 		return XMLElementInsertEndChild( m_XMLElementPt, ( XMLChildElementPt != null ) ? XMLChildElementPt.m_XMLElementPt : 0 );
 	}
-
 	public int NextSiblingElement( XMLElement XMLNextSiblingElementPt )
 	{
 		return XMLElementNextSiblingElement( m_XMLElementPt, XMLNextSiblingElementPt );
 	}
-
 	public int FirstChildElement( XMLElement XMLFirstChildElementPt )
 	{
 		return XMLElementFirstChildElement( m_XMLElementPt, XMLFirstChildElementPt );
 	}
 
 	private native int XMLElementName( long XMLElementPt, HTString NamePt );
-
 	private native int XMLElementSetText( long XMLElementPt, String TextPt );
-
 	private native int XMLElementGetText( long XMLElementPt, HTString TextPt );
 
 	private native int XMLElementInsertEndChild( long XMLElementPt, long XMLChildElementPt );
-
 	private native int XMLElementNextSiblingElement( long XMLElementPt, XMLElement XMLNextSiblingElementPt );
-
 	private native int XMLElementFirstChildElement( long XMLElementPt, XMLElement XMLFirstChildElementPt );
 }

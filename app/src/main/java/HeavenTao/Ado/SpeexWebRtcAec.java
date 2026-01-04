@@ -15,6 +15,7 @@ public class SpeexWebRtcAec
 		System.loadLibrary( "SpeexWebRtcAec" ); //加载libSpeexWebRtcAec.so。
 	}
 
+	//工作模式。
 	public class WorkMode
 	{
 		public static final int SpeexAecWebRtcAecm = 0b0011; //Speex声学回音消除器+WebRtc定点版声学回音消除器。

@@ -51,7 +51,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:text="写入缓冲区大小，单位为字节："
+                android:text="写入缓冲区的大小，单位为字节："
                 android:layout_weight="3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"

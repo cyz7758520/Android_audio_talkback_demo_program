@@ -108,28 +108,28 @@ public class UdpSokt
 		return UdpGetRmtAddr( m_UdpSoktPt, RmtNodeAddrFmlyPt, RmtNodeAddrPt, RmtNodePortPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
-	//设置本端UDP协议套接字的发送缓冲区大小。
+	//设置本端UDP协议套接字的发送缓冲区的大小。
 	public int SetSendBufSz( long SendBufSzByt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
 		return UdpSetSendBufSz( m_UdpSoktPt, SendBufSzByt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
-	//获取本端UDP协议套接字的发送缓冲区大小。
+	//获取本端UDP协议套接字的发送缓冲区的大小。
 	public int GetSendBufSz( HTLong SendBufSzBytPt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
 		return UdpGetSendBufSz( m_UdpSoktPt, SendBufSzBytPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
-	//设置本端UDP协议套接字的接收缓冲区大小。
+	//设置本端UDP协议套接字的接收缓冲区的大小。
 	public int SetRecvBufSz( long RecvBufSzByt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
 		return UdpSetRecvBufSz( m_UdpSoktPt, RecvBufSzByt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
-	//获取本端UDP协议套接字的接收缓冲区大小。
+	//获取本端UDP协议套接字的接收缓冲区的大小。
 	public int GetRecvBufSz( HTLong RecvBufSzBytPt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
 		return UdpGetRecvBufSz( m_UdpSoktPt, RecvBufSzBytPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
-	//获取本端UDP协议套接字的接收缓冲区长度。
+	//获取本端UDP协议套接字的接收缓冲区的长度。
 	public int GetRecvBufLen( HTLong RecvBufLenBytPt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
 		return UdpGetRecvBufLen( m_UdpSoktPt, RecvBufLenBytPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
@@ -177,16 +177,16 @@ public class UdpSokt
 	//获取本端UDP协议套接字连接的远端UDP协议套接字绑定的远端节点地址和端口。
 	private native int UdpGetRmtAddr( long UdpSoktPt, HTInt RmtNodeAddrFmlyPt, HTString RmtNodeAddrPt, HTString RmtNodePortPt, int IsAutoLock, long ErrInfoVstrPt );
 
-	//设置本端UDP协议套接字的发送缓冲区大小。
+	//设置本端UDP协议套接字的发送缓冲区的大小。
 	private native int UdpSetSendBufSz( long UdpSoktPt, long SendBufSzByt, int IsAutoLock, long ErrInfoVstrPt );
-	//获取本端UDP协议套接字的发送缓冲区大小。
+	//获取本端UDP协议套接字的发送缓冲区的大小。
 	private native int UdpGetSendBufSz( long UdpSoktPt, HTLong SendBufSzBytPt, int IsAutoLock, long ErrInfoVstrPt );
 
-	//设置本端UDP协议套接字的接收缓冲区大小。
+	//设置本端UDP协议套接字的接收缓冲区的大小。
 	private native int UdpSetRecvBufSz( long UdpSoktPt, long RecvBufSzByt, int IsAutoLock, long ErrInfoVstrPt );
-	//获取本端UDP协议套接字的接收缓冲区大小。
+	//获取本端UDP协议套接字的接收缓冲区的大小。
 	private native int UdpGetRecvBufSz( long UdpSoktPt, HTLong RecvBufSzBytPt, int IsAutoLock, long ErrInfoVstrPt );
-	//获取本端UDP协议套接字的接收缓冲区长度。
+	//获取本端UDP协议套接字的接收缓冲区的长度。
 	private native int UdpGetRecvBufLen( long UdpSoktPt, HTLong RecvBufLenBytPt, int IsAutoLock, long ErrInfoVstrPt );
 
 	//用本端UDP协议套接字发送原始数据包到指定的或连接的远端UDP协议套接字。

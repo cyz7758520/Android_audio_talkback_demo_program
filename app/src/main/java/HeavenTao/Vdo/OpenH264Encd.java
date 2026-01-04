@@ -99,15 +99,14 @@ public class OpenH264Encd
 
 	//OpenH264编码器获取应用程序限制信息。
 	private static native int OpenH264EncdGetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, long ErrInfoVstrPt );
-	//销毁OpenH264编码器。
-	private native int OpenH264EncdDstoy( long OpenH264EncdPt, long ErrInfoVstrPt );
 
 	//创建并初始化OpenH264编码器。
 	private native int OpenH264EncdInit( byte LicnCodePt[], HTLong OpenH264EncdPt, int EncdPictrWidth, int EncdPictrHeight, int VdoType, int EncdBitrate, int BitrateCtrlMode, int MaxFrmRate, int IDRFrmIntvlFrmCnt, int Cmplxt, long ErrInfoVstrPt );
+    //销毁OpenH264编码器。
+    private native int OpenH264EncdDstoy( long OpenH264EncdPt, long ErrInfoVstrPt );
 
 	//设置OpenH264编码器的编码后比特率。
 	private native int OpenH264EncdSetEncdBitrate( long OpenH264EncdPt, int EncdBitrate, long ErrInfoVstrPt );
-
 	//获取OpenH264编码器的编码后比特率。
 	private native int OpenH264EncdGetEncdBitrate( long OpenH264EncdPt, HTInt EncdBitratePt, long ErrInfoVstrPt );
 

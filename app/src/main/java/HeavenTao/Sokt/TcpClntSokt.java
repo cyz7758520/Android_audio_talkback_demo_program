@@ -27,9 +27,13 @@ public class TcpClntSokt
 		Dstoy( ( short )-1, null );
 	}
 
-	public static final int TcpCnctStsWait = 0; //连接状态：等待远端接受连接。
-	public static final int TcpCnctStsCnct = 1; //连接状态：已连接。
-	public static final int TcpCnctStsFail = 2; //连接状态：连接失败。
+	//连接状态。
+	public class CnctSts
+	{
+		public static final int Wait = 0; //连接状态：等待远端接受连接。
+		public static final int Cnct = 1; //连接状态：已连接。
+		public static final int Fail = 2; //连接状态：连接失败。
+	}
 
 	//创建并初始化本端TCP协议客户端套接字，并连接远端TCP协议服务端套接字。
 	public int Init( int RmtLclNodeAddrFmly, String RmtNodeNamePt, String RmtNodeSrvcPt, String LclNodeNamePt, String LclNodeSrvcPt, short NtwkTmotMsec, Vstr ErrInfoVstrPt )
@@ -112,28 +116,28 @@ public class TcpClntSokt
 		return TcpClntGetNoDelay( m_TcpClntSoktPt, IsNoDelayPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
-	//设置本端TCP协议客户端套接字的发送缓冲区大小。
+	//设置本端TCP协议客户端套接字的发送缓冲区的大小。
 	public int SetSendBufSz( long SendBufSz, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
 		return TcpClntSetSendBufSz( m_TcpClntSoktPt, SendBufSz, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
-	//获取本端TCP协议客户端套接字的发送缓冲区大小。
+	//获取本端TCP协议客户端套接字的发送缓冲区的大小。
 	public int GetSendBufSz( HTLong SendBufSzPt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
 		return TcpClntGetSendBufSz( m_TcpClntSoktPt, SendBufSzPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
-	//设置本端TCP协议客户端套接字的接收缓冲区大小。
+	//设置本端TCP协议客户端套接字的接收缓冲区的大小。
 	public int SetRecvBufSz( long RecvBufSz, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
 		return TcpClntSetRecvBufSz( m_TcpClntSoktPt, RecvBufSz, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
-	//获取本端TCP协议客户端套接字的接收缓冲区大小。
+	//获取本端TCP协议客户端套接字的接收缓冲区的大小。
 	public int GetRecvBufSz( HTLong RecvBufSzPt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
 		return TcpClntGetRecvBufSz( m_TcpClntSoktPt, RecvBufSzPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
-	//获取本端TCP协议客户端套接字的接收缓冲区长度。
+	//获取本端TCP协议客户端套接字的接收缓冲区的长度。
 	public int GetRecvBufLen( HTLong RecvBufLenPt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
 		return TcpClntGetRecvBufLen( m_TcpClntSoktPt, RecvBufLenPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
@@ -195,16 +199,16 @@ public class TcpClntSokt
 	//获取本端TCP协议客户端套接字的Nagle延迟算法状态。
 	private native int TcpClntGetNoDelay( long TcpClntSoktPt, HTInt IsNoDelayPt, int IsAutoLock, long ErrInfoVstrPt );
 
-	//设置本端TCP协议客户端套接字的发送缓冲区大小。
+	//设置本端TCP协议客户端套接字的发送缓冲区的大小。
 	private native int TcpClntSetSendBufSz( long TcpClntSoktPt, long SendBufSzByt, int IsAutoLock, long ErrInfoVstrPt );
-	//获取本端TCP协议客户端套接字的发送缓冲区大小。
+	//获取本端TCP协议客户端套接字的发送缓冲区的大小。
 	private native int TcpClntGetSendBufSz( long TcpClntSoktPt, HTLong SendBufSzBytPt, int IsAutoLock, long ErrInfoVstrPt );
 
-	//设置本端TCP协议客户端套接字的接收缓冲区大小。
+	//设置本端TCP协议客户端套接字的接收缓冲区的大小。
 	private native int TcpClntSetRecvBufSz( long TcpClntSoktPt, long RecvBufSzByt, int IsAutoLock, long ErrInfoVstrPt );
-	//获取本端TCP协议客户端套接字的接收缓冲区大小。
+	//获取本端TCP协议客户端套接字的接收缓冲区的大小。
 	private native int TcpClntGetRecvBufSz( long TcpClntSoktPt, HTLong RecvBufSzBytPt, int IsAutoLock, long ErrInfoVstrPt );
-	//获取本端TCP协议客户端套接字的接收缓冲区长度。
+	//获取本端TCP协议客户端套接字的接收缓冲区的长度。
 	private native int TcpClntGetRecvBufLen( long TcpClntSoktPt, HTLong RecvBufLenBytPt, int IsAutoLock, long ErrInfoVstrPt );
 
 	//设置本端TCP协议客户端套接字的保活机制。

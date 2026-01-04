@@ -28,12 +28,12 @@ public class TcpSrvrSokt
 	}
 
 	//创建并初始化本端TCP协议服务端套接字。
-	public int Init( int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, int MaxWait, int IsReuseAddr, short TcpClntSoktNtwkTmotMsec, Vstr ErrInfoVstrPt )
+	public int Init( int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, int MaxWait, int IsReuseLclNodeAddr, short TcpClntSoktNtwkTmotMsec, Vstr ErrInfoVstrPt )
 	{
 		if( m_TcpSrvrSoktPt == 0 )
 		{
 			HTLong p_TcpSrvrSoktPt = new HTLong();
-			if( TcpSrvrInit( p_TcpSrvrSoktPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, MaxWait, IsReuseAddr, TcpClntSoktNtwkTmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
+			if( TcpSrvrInit( p_TcpSrvrSoktPt, LclNodeAddrFmly, LclNodeNamePt, LclNodeSrvcPt, MaxWait, IsReuseLclNodeAddr, TcpClntSoktNtwkTmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_TcpSrvrSoktPt = p_TcpSrvrSoktPt.m_Val;
 				return 0;
@@ -93,7 +93,7 @@ public class TcpSrvrSokt
 	}
 
 	//创建并初始化本端TCP协议服务端套接字。
-	private native int TcpSrvrInit( HTLong TcpSrvrSoktPt, int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, int MaxWait, int IsReuseAddr, short TcpClntSoktNtwkTmotMsec, long ErrInfoVstrPt );
+	private native int TcpSrvrInit( HTLong TcpSrvrSoktPt, int LclNodeAddrFmly, String LclNodeNamePt, String LclNodeSrvcPt, int MaxWait, int IsReuseLclNodeAddr, short TcpClntSoktNtwkTmotMsec, long ErrInfoVstrPt );
 	//关闭并销毁本端TCP协议服务端套接字。
 	private native int TcpSrvrDstoy( long TcpSrvrSoktPt, long ErrInfoVstrPt );
 

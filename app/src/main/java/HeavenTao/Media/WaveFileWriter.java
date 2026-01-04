@@ -23,16 +23,16 @@ public class WaveFileWriter
 	//析构函数。
 	protected void finalize()
 	{
-		Dstoy();
+		Dstoy( null );
 	}
 
 	//创建并初始化Wave文件写入器。
-	public int Init( String WaveFileFullPathStrPt, long WaveFileWrBufSzByt, int NumChanl, int SmplRate, int SmplBit )
+	public int Init( String WaveFileFullPathStrPt, long WaveFileWrBufSzByt, int NumChanl, int SmplRate, int SmplBit, Vstr ErrInfoVstrPt )
 	{
 		if( m_WaveFileWriterPt == 0 )
 		{
 			HTLong p_WaveFileWriterPt = new HTLong();
-			if( WaveFileWriterInit( p_WaveFileWriterPt, WaveFileFullPathStrPt, WaveFileWrBufSzByt, NumChanl, SmplRate, SmplBit ) == 0 )
+			if( WaveFileWriterInit( p_WaveFileWriterPt, WaveFileFullPathStrPt, WaveFileWrBufSzByt, NumChanl, SmplRate, SmplBit, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_WaveFileWriterPt = p_WaveFileWriterPt.m_Val;
 				return 0;
@@ -48,11 +48,11 @@ public class WaveFileWriter
 		}
 	}
 	//销毁Wave文件写入器。
-	public int Dstoy()
+	public int Dstoy( Vstr ErrInfoVstrPt )
 	{
 		if( m_WaveFileWriterPt != 0 )
 		{
-			if( WaveFileWriterDstoy( m_WaveFileWriterPt ) == 0 )
+			if( WaveFileWriterDstoy( m_WaveFileWriterPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_WaveFileWriterPt = 0;
 				return 0;
@@ -69,16 +69,16 @@ public class WaveFileWriter
 	}
 
 	//用Wave文件写入器写入Short型数据。
-	public int WriteShort( short DataPt[], long DataLen )
+	public int WriteShort( short DataPt[], long DataLen, Vstr ErrInfoVstrPt )
 	{
-		return WaveFileWriterWriteShort( m_WaveFileWriterPt, DataPt, DataLen );
+		return WaveFileWriterWriteShort( m_WaveFileWriterPt, DataPt, DataLen, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//创建并初始化Wave文件写入器。
-	private native int WaveFileWriterInit( HTLong WaveFileWriterPt, String WaveFileFullPathStrPt, long WaveFileWrBufSzByt, int NumChanl, int SmplRate, int SmplBit );
+	private native int WaveFileWriterInit( HTLong WaveFileWriterPt, String WaveFileFullPathStrPt, long WaveFileWrBufSzByt, int NumChanl, int SmplRate, int SmplBit, long ErrInfoVstrPt );
 	//销毁Wave文件写入器。
-	private native int WaveFileWriterDstoy( long WaveFileWriterPt );
+	private native int WaveFileWriterDstoy( long WaveFileWriterPt, long ErrInfoVstrPt );
 
 	//用Wave文件写入器写入数据。
-	private native int WaveFileWriterWriteShort( long WaveFileWriterPt, short DataPt[], long DataLen );
+	private native int WaveFileWriterWriteShort( long WaveFileWriterPt, short DataPt[], long DataLen, long ErrInfoVstrPt );
 }

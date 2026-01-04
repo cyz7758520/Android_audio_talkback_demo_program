@@ -462,11 +462,11 @@ public class BdctClnt //广播客户端。
 
 								if( p_CnctInfoTmpPt.m_TcpClntSoktPt.WaitCnct( ( short ) 0, m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 ) //如果等待本端Tcp协议客户端套接字连接远端Tcp协议服务端套接字成功。
 								{
-									if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == TcpClntSokt.TcpCnctStsWait ) //如果等待远端接受连接。
+									if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == TcpClntSokt.CnctSts.Wait ) //如果等待远端接受连接。
 									{
 										//继续等待本端本端Tcp协议客户端套接字连接远端Tcp协议服务端套接字。
 									}
-									else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == TcpClntSokt.TcpCnctStsCnct ) //如果连接成功。
+									else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == TcpClntSokt.CnctSts.Cnct ) //如果连接成功。
 									{
 										if( p_CnctInfoTmpPt.m_TcpClntSoktPt.SetNoDelay( 1, 0, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 ) //如果设置本端Tcp协议客户端套接字的Nagle延迟算法状态为禁用失败。
 										{
@@ -478,7 +478,7 @@ public class BdctClnt //广播客户端。
 
 										if( p_CnctInfoTmpPt.m_TcpClntSoktPt.SetSendBufSz( 1024 * 1024, 0, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 )
 										{
-											String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：设置本端Tcp协议客户端套接字的发送缓冲区大小失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+											String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：设置本端Tcp协议客户端套接字的发送缓冲区的大小失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
 											if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
 											m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
 											break TcpClntSoktCnctOut;
@@ -486,7 +486,7 @@ public class BdctClnt //广播客户端。
 
 										if( p_CnctInfoTmpPt.m_TcpClntSoktPt.SetRecvBufSz( 1024 * 1024 * 3, 0, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 )
 										{
-											String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：设置本端Tcp协议客户端套接字的接收缓冲区大小失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+											String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：设置本端Tcp协议客户端套接字的接收缓冲区的大小失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
 											if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
 											m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
 											break TcpClntSoktCnctOut;
@@ -564,7 +564,7 @@ public class BdctClnt //广播客户端。
 									{
 										if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.SetSendBufSz( 1024 * 1024, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 )
 										{
-											String p_InfoStrPt = "客户端媒体处理线程：广播客户端：设置本端高级Udp协议客户端套接字的发送缓冲区大小失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+											String p_InfoStrPt = "客户端媒体处理线程：广播客户端：设置本端高级Udp协议客户端套接字的发送缓冲区的大小失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
 											if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 											m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
 											break Out;
@@ -572,7 +572,7 @@ public class BdctClnt //广播客户端。
 
 										if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.SetRecvBufSz( 1024 * 1024 * 3, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 )
 										{
-											String p_InfoStrPt = "客户端媒体处理线程：广播客户端：设置本端高级Udp协议客户端套接字的接收缓冲区大小失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
+											String p_InfoStrPt = "客户端媒体处理线程：广播客户端：设置本端高级Udp协议客户端套接字的接收缓冲区的大小失败。原因：" + m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt.GetStr();
 											if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 											m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
 											break Out;
@@ -632,11 +632,11 @@ public class BdctClnt //广播客户端。
 
 								if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.WaitCnct( p_CnctInfoTmpPt.m_AudpClntCnctIdx, ( short )0, m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 ) //循环等待本端高级Udp协议套接字连接远端成功。
 								{
-									if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.AudpCnctStsWait ) //如果等待远端接受连接。
+									if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.CnctSts.Wait ) //如果等待远端接受连接。
 									{
 										//重新循环，继续等待本端高级Udp协议套接字连接远端。
 									}
-									else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.AudpCnctStsCnct ) //如果连接成功。
+									else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.CnctSts.Cnct ) //如果连接成功。
 									{
 										if( m_ClntMediaPocsThrdPt.m_AudpClntSoktPt.GetRmtAddr( p_CnctInfoTmpPt.m_AudpClntCnctIdx, null, m_ClntMediaPocsThrdPt.m_ThrdPt.m_RmtNodeAddrPt, m_ClntMediaPocsThrdPt.m_ThrdPt.m_RmtNodePortPt, m_ClntMediaPocsThrdPt.m_ErrInfoVstrPt ) != 0 )
 										{
@@ -653,14 +653,14 @@ public class BdctClnt //广播客户端。
 										if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
 										m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
 									}
-									else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.AudpCnctStsTmot ) //如果连接超时。
+									else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.CnctSts.Tmot ) //如果连接超时。
 									{
 										String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNameStrPt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt + "]失败。原因：连接超时。";
 										if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );
 										m_ClntMediaPocsThrdPt.UserShowLog( p_InfoStrPt );
 										break AudpClntSoktCnctOut;
 									}
-									else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.AudpCnctStsDsct ) //如果连接断开。
+									else if( m_ClntMediaPocsThrdPt.m_ThrdPt.m_TmpHTIntPt.m_Val == AudpSokt.CnctSts.Dsct ) //如果连接断开。
 									{
 										String p_InfoStrPt = "客户端媒体处理线程：广播客户端：连接" + p_CnctInfoTmpPt.m_Idx + "：用本端高级Udp协议客户端套接字连接远端高级Udp协议服务端套接字[" + p_CnctInfoTmpPt.m_RmtNodeNameStrPt + ":" + p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt + "]失败。原因：连接断开。";
 										if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, p_InfoStrPt );

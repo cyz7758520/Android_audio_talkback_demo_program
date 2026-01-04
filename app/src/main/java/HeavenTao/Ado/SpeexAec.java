@@ -74,6 +74,12 @@ public class SpeexAec
 		}
 	}
 
+	//获取Speex声学回音消除器是否收敛。
+	public int GetIsCnvgnc( HTInt IsCnvgncPt )
+	{
+		return SpeexAecGetIsCnvgnc( m_SpeexAecPt, IsCnvgncPt );
+	}
+
 	//用Speex声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行Speex声学回音消除。
 	public int Pocs( short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] )
 	{
@@ -87,6 +93,9 @@ public class SpeexAec
 	private native int SpeexAecInit( byte LicnCodePt[], HTLong SpeexAecPt, int SmplRate, long FrmLenUnit, int FilterLenMsec, int IsUseRec, float EchoMutp, float EchoCntu, int EchoSupes, int EchoSupesAct, long ErrInfoVstrPt );
 	//销毁Speex声学回音消除器。
 	private native int SpeexAecDstoy( long SpeexAecPt );
+
+	//获取Speex声学回音消除器是否收敛。
+	private native int SpeexAecGetIsCnvgnc( long SpeexAecPt, HTInt IsCnvgncPt );
 
 	//用Speex声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行Speex声学回音消除。
 	private native int SpeexAecPocs( long SpeexAecPt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );

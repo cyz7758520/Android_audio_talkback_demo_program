@@ -187,7 +187,7 @@ public class AdoInpt //音频输入。
 	class Dvc //存放设备。
 	{
 		AudioRecord m_Pt; //存放指针。
-		int m_BufSzByt; //存放缓冲区大小，单位为字节。
+		int m_BufSzByt; //存放缓冲区的大小，单位为字节。
 		public int m_IsMute; //存放是否静音，为0表示有声音，为非0表示静音。
 	}
 	Dvc m_DvcPt = new Dvc();
@@ -809,25 +809,25 @@ public class AdoInpt //音频输入。
 			if( m_WaveFileWriterPt.m_IsSave != 0 )
 			{
 				m_WaveFileWriterPt.m_SrcPt = new HeavenTao.Media.WaveFileWriter();
-				if( m_WaveFileWriterPt.m_SrcPt.Init( m_WaveFileWriterPt.m_SrcFullPathStrPt, m_WaveFileWriterPt.m_WrBufSzByt, ( short ) 1, m_SmplRate, 16 ) == 0 )
+				if( m_WaveFileWriterPt.m_SrcPt.Init( m_WaveFileWriterPt.m_SrcFullPathStrPt, m_WaveFileWriterPt.m_WrBufSzByt, ( short ) 1, m_SmplRate, 16, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
 				{
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化原始Wave文件 " + m_WaveFileWriterPt.m_SrcFullPathStrPt + " 写入器成功。" );
 				}
 				else
 				{
 					m_WaveFileWriterPt.m_SrcPt = null;
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化原始Wave文件 " + m_WaveFileWriterPt.m_SrcFullPathStrPt + " 写入器失败。" );
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化原始Wave文件 " + m_WaveFileWriterPt.m_SrcFullPathStrPt + " 写入器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
 					break Out;
 				}
 				m_WaveFileWriterPt.m_RsltPt = new HeavenTao.Media.WaveFileWriter();
-				if( m_WaveFileWriterPt.m_RsltPt.Init( m_WaveFileWriterPt.m_RsltFullPathStrPt, m_WaveFileWriterPt.m_WrBufSzByt, ( short ) 1, m_SmplRate, 16 ) == 0 )
+				if( m_WaveFileWriterPt.m_RsltPt.Init( m_WaveFileWriterPt.m_RsltFullPathStrPt, m_WaveFileWriterPt.m_WrBufSzByt, ( short ) 1, m_SmplRate, 16, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
 				{
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化结果Wave文件 " + m_WaveFileWriterPt.m_RsltFullPathStrPt + " 写入器成功。" );
 				}
 				else
 				{
 					m_WaveFileWriterPt.m_RsltPt = null;
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化结果Wave文件 " + m_WaveFileWriterPt.m_RsltFullPathStrPt + " 写入器失败。" );
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化结果Wave文件 " + m_WaveFileWriterPt.m_RsltFullPathStrPt + " 写入器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
 					break Out;
 				}
 			}
@@ -848,25 +848,25 @@ public class AdoInpt //音频输入。
 		{
 			if( m_WaveFileWriterPt.m_SrcPt != null )
 			{
-				if( m_WaveFileWriterPt.m_SrcPt.Dstoy() == 0 )
+				if( m_WaveFileWriterPt.m_SrcPt.Dstoy( m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
 				{
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁原始Wave文件写入器成功。" );
 				}
 				else
 				{
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁原始Wave文件写入器失败。" );
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁原始Wave文件写入器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
 				}
 				m_WaveFileWriterPt.m_SrcPt = null;
 			}
 			if( m_WaveFileWriterPt.m_RsltPt != null )
 			{
-				if( m_WaveFileWriterPt.m_RsltPt.Dstoy() == 0 )
+				if( m_WaveFileWriterPt.m_RsltPt.Dstoy( m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
 				{
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁结果Wave文件写入器成功。" );
 				}
 				else
 				{
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁结果Wave文件写入器失败。" );
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：销毁结果Wave文件写入器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
 				}
 				m_WaveFileWriterPt.m_RsltPt = null;
 			}
@@ -914,7 +914,7 @@ public class AdoInpt //音频输入。
 													m_DvcPt.m_BufSzByt );
 					if( m_DvcPt.m_Pt.getState() == AudioRecord.STATE_INITIALIZED )
 					{
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化设备成功。采样频率：" + m_SmplRate + "，缓冲区大小：" + m_DvcPt.m_BufSzByt + "。" );
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化设备成功。采样频率：" + m_SmplRate + "，缓冲区的大小：" + m_DvcPt.m_BufSzByt + "。" );
 					}
 					else
 					{

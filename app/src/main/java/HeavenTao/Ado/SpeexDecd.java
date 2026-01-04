@@ -69,9 +69,9 @@ public class SpeexDecd
 	}
 
 	//用Speex解码器对单声道16位有符号整型20毫秒Pcm格式帧进行Speex格式编码。
-	public int Pocs( byte SpeexFrmPt[], long SpeexFrmLen, short PcmFrmPt[] )
+	public int Pocs( byte SpeexFrmPt[], long SpeexFrmLenByt, short PcmFrmPt[] )
 	{
-		return SpeexDecdPocs( m_SpeexDecdPt, SpeexFrmPt, SpeexFrmLen, PcmFrmPt );
+		return SpeexDecdPocs( m_SpeexDecdPt, SpeexFrmPt, SpeexFrmLenByt, PcmFrmPt );
 	}
 
 	//创建并初始化Speex解码器。
@@ -80,5 +80,5 @@ public class SpeexDecd
 	private native int SpeexDecdDstoy( long SpeexDecdPt );
 
 	//用Speex解码器对单声道16位有符号整型20毫秒Speex格式帧进行Pcm格式解码。
-	private native int SpeexDecdPocs( long SpeexDecdPt, byte SpeexFrmPt[], long SpeexFrmLen, short PcmFrmPt[] );
+	private native int SpeexDecdPocs( long SpeexDecdPt, byte SpeexFrmPt[], long SpeexFrmLenByt, short PcmFrmPt[] );
 }

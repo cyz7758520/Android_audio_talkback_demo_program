@@ -23,16 +23,16 @@ public class WaveFileReader
 	//析构函数。
 	protected void finalize()
 	{
-		Dstoy();
+		Dstoy( null );
 	}
 
 	//创建并初始化Wave文件读取器。
-	public int Init( String WaveFileFullPathStrPt, HTInt NumChanlPt, HTInt SmplRatePt, HTInt SmplBitPt )
+	public int Init( String WaveFileFullPathStrPt, HTInt NumChanlPt, HTInt SmplRatePt, HTInt SmplBitPt, Vstr ErrInfoVstrPt )
 	{
 		if( m_WaveFileReaderPt == 0 )
 		{
 			HTLong p_WaveFileReaderPt = new HTLong();
-			if( WaveFileReaderInit( p_WaveFileReaderPt, WaveFileFullPathStrPt, NumChanlPt, SmplRatePt, SmplBitPt ) == 0 )
+			if( WaveFileReaderInit( p_WaveFileReaderPt, WaveFileFullPathStrPt, NumChanlPt, SmplRatePt, SmplBitPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_WaveFileReaderPt = p_WaveFileReaderPt.m_Val;
 				return 0;
@@ -48,11 +48,11 @@ public class WaveFileReader
 		}
 	}
 	//销毁Wave文件读取器。
-	public int Dstoy()
+	public int Dstoy( Vstr ErrInfoVstrPt )
 	{
 		if( m_WaveFileReaderPt != 0 )
 		{
-			if( WaveFileReaderDstoy( m_WaveFileReaderPt ) == 0 )
+			if( WaveFileReaderDstoy( m_WaveFileReaderPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 ) == 0 )
 			{
 				m_WaveFileReaderPt = 0;
 				return 0;
@@ -69,16 +69,16 @@ public class WaveFileReader
 	}
 
 	//用Wave文件读取器读取Short型数据。
-	public int ReadShort( short DataPt[], long DataSz, HTLong DataLenPt )
+	public int ReadShort( short DataPt[], long DataSz, HTLong DataLenPt, Vstr ErrInfoVstrPt )
 	{
-		return WaveFileReaderReadShort( m_WaveFileReaderPt, DataPt, DataSz, DataLenPt );
+		return WaveFileReaderReadShort( m_WaveFileReaderPt, DataPt, DataSz, DataLenPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//创建并初始化Wave文件读取器。
-	private native int WaveFileReaderInit( HTLong WaveFileReaderPt, String WaveFileFullPathStrPt, HTInt NumChanlPt, HTInt SmplRatePt, HTInt SmplBitPt );
+	private native int WaveFileReaderInit( HTLong WaveFileReaderPt, String WaveFileFullPathStrPt, HTInt NumChanlPt, HTInt SmplRatePt, HTInt SmplBitPt, long ErrInfoVstrPt );
 	//销毁Wave文件读取器。
-	private native int WaveFileReaderDstoy( long WaveFileReaderPt );
+	private native int WaveFileReaderDstoy( long WaveFileReaderPt, long ErrInfoVstrPt );
 
 	//用Wave文件读取器读取数据。
-	private native int WaveFileReaderReadShort( long WaveFileReaderPt, short DataPt[], long DataSz, HTLong DataLenPt );
+	private native int WaveFileReaderReadShort( long WaveFileReaderPt, short DataPt[], long DataSz, HTLong DataLenPt, long ErrInfoVstrPt );
 }

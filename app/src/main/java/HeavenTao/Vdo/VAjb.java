@@ -54,7 +54,7 @@ public class VAjb
 		}
 	}
 	//销毁视频自适应抖动缓冲器。
-	public int Dstoy( Vstr ErrInfoVstrPt)
+	public int Dstoy( Vstr ErrInfoVstrPt )
 	{
 		if( m_VAjbPt != 0 )
 		{

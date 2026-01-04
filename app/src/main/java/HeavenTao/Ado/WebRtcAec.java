@@ -84,6 +84,11 @@ public class WebRtcAec
 	{
 		return WebRtcAecGetDelay( m_WebRtcAecPt, DelayPt );
 	}
+	//获取WebRtc浮点版声学回音消除器是否收敛。
+	public int GetIsCnvgnc( HTInt IsCnvgncPt )
+	{
+		return WebRtcAecGetIsCnvgnc( m_WebRtcAecPt, IsCnvgncPt );
+	}
 
 	//用WebRtc浮点版声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行WebRtc浮点版声学回音消除。
 	public int Pocs( short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] )
@@ -103,6 +108,8 @@ public class WebRtcAec
 	private native int WebRtcAecSetDelay( long WebRtcAecPt, int Delay );
 	//获取WebRtc浮点版声学回音消除器的回音延迟。
 	private native int WebRtcAecGetDelay( long WebRtcAecPt, HTInt DelayPt );
+	//获取WebRtc浮点版声学回音消除器是否收敛。
+	private native int WebRtcAecGetIsCnvgnc( long WebRtcAecPt, HTInt IsCnvgncPt );
 
 	//用WebRtc浮点版声学回音消除器对单声道16位有符号整型Pcm格式输入帧进行WebRtc浮点版声学回音消除。
 	private native int WebRtcAecPocs( long WebRtcAecPt, short InptFrmPt[], short OtptFrmPt[], short RsltFrmPt[] );

@@ -381,7 +381,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 				{
 					if( m_AudpSrvrSoktPt.SetSendBufSz( 1024 * 1024, m_ErrInfoVstrPt ) != 0 )
 					{
-						String p_InfoStrPt = "服务端线程：设置本端高级Udp协议服务端套接字的发送缓冲区大小失败。原因：" + m_ErrInfoVstrPt.GetStr();
+						String p_InfoStrPt = "服务端线程：设置本端高级Udp协议服务端套接字的发送缓冲区的大小失败。原因：" + m_ErrInfoVstrPt.GetStr();
 						if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 						UserShowLog( p_InfoStrPt );
 						break Out;
@@ -389,7 +389,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 					if( m_AudpSrvrSoktPt.SetRecvBufSz( 1024 * 1024 * 3, m_ErrInfoVstrPt ) != 0 )
 					{
-						String p_InfoStrPt = "服务端线程：设置本端高级Udp协议服务端套接字的接收缓冲区大小失败。原因：" + m_ErrInfoVstrPt.GetStr();
+						String p_InfoStrPt = "服务端线程：设置本端高级Udp协议服务端套接字的接收缓冲区的大小失败。原因：" + m_ErrInfoVstrPt.GetStr();
 						if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 						UserShowLog( p_InfoStrPt );
 						break Out;
@@ -829,7 +829,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 								if( p_TcpClntSoktTmpPt.SetSendBufSz( 1024 * 1024, 0, m_ErrInfoVstrPt ) != 0 )
 								{
-									String p_InfoStrPt = "服务端线程：设置本端Tcp协议客户端套接字的发送缓冲区大小失败。原因：" + m_ErrInfoVstrPt.GetStr();
+									String p_InfoStrPt = "服务端线程：设置本端Tcp协议客户端套接字的发送缓冲区的大小失败。原因：" + m_ErrInfoVstrPt.GetStr();
 									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 									UserShowLog( p_InfoStrPt );
 									break TcpSrvrSoktAcptOut;
@@ -837,7 +837,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 								if( p_TcpClntSoktTmpPt.SetRecvBufSz( 1024 * 1024 * 3, 0, m_ErrInfoVstrPt ) != 0 )
 								{
-									String p_InfoStrPt = "服务端线程：设置本端Tcp协议客户端套接字的接收缓冲区大小失败。原因：" + m_ErrInfoVstrPt.GetStr();
+									String p_InfoStrPt = "服务端线程：设置本端Tcp协议客户端套接字的接收缓冲区的大小失败。原因：" + m_ErrInfoVstrPt.GetStr();
 									if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 									UserShowLog( p_InfoStrPt );
 									break TcpSrvrSoktAcptOut;

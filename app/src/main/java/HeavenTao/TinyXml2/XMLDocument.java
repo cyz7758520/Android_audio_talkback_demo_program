@@ -74,20 +74,18 @@ public class XMLDocument
 	{
 		return XMLDocumentInsertEndChild( m_XMLDocumentPt, ( XMLChildElementPt != null ) ? XMLChildElementPt.m_XMLElementPt : 0 );
 	}
-
 	public int FirstChildElement( XMLElement XMLFirstChildElementPt )
 	{
 		return XMLDocumentFirstChildElement( m_XMLDocumentPt, XMLFirstChildElementPt );
 	}
 
-	public int SaveFile( String FileFullNamePt )
+	public int SaveFile( String XmlFileFullNamePt )
 	{
-		return XMLDocumentSaveFile( m_XMLDocumentPt, FileFullNamePt );
+		return XMLDocumentSaveFile( m_XMLDocumentPt, XmlFileFullNamePt );
 	}
-
-	public int LoadFile( String FileFullNamePt )
+	public int LoadFile( String XmlFileFullNamePt )
 	{
-		return XMLDocumentLoadFile( m_XMLDocumentPt, FileFullNamePt );
+		return XMLDocumentLoadFile( m_XMLDocumentPt, XmlFileFullNamePt );
 	}
 
 	private native int XMLDocumentInit( HTLong XMLDocumentPt );
@@ -96,10 +94,8 @@ public class XMLDocument
 	private native int XMLDocumentNewElement( long XMLDocumentPt, XMLElement XMLNewElementPt, String NamePt );
 
 	private native int XMLDocumentInsertEndChild( long XMLDocumentPt, long XMLChildElementPt );
-
 	private native int XMLDocumentFirstChildElement( long XMLDocumentPt, XMLElement XMLFirstChildElementPt );
 
-	private native int XMLDocumentSaveFile( long XMLDocumentPt, String FileFullNamePt );
-
-	private native int XMLDocumentLoadFile( long XMLDocumentPt, String FileFullNamePt );
+	private native int XMLDocumentSaveFile( long XMLDocumentPt, String XmlFileFullNamePt );
+	private native int XMLDocumentLoadFile( long XMLDocumentPt, String XmlFileFullNamePt );
 }

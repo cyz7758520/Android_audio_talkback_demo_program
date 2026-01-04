@@ -463,7 +463,7 @@ public class VdoOtpt //视频输出。
 						m_DvcPt.m_DspySurfaceViewPt.SetWidthToHeightRatio( ( float )m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val / m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val );
 
 						//显示帧。
-						if( LibYUV.PictrDrawToSurface( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, 0, LibYUV.PICTR_FMT_BT601F8_Yu12_I420, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
+						if( LibYUV.PictrDrawToSurface( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, 0, LibYUV.PictrFmt.Bt601F8Yu12I420, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
 													   m_DvcPt.m_DspySurfaceViewPt.getHolder().getSurface(),
 													   null ) != 0 )
 						{
