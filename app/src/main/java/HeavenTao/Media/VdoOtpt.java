@@ -228,8 +228,9 @@ public class VdoOtpt //视频输出。
 				p_Rslt = 0; //设置本函数执行成功。
 			}
 
-			if( p_Rslt != 0 ) //如果本函数执行失败。
+			//if( p_Rslt != 0 ) //如果本函数执行失败。
 			{
+
 			}
 			return p_Rslt;
 		}
@@ -287,6 +288,7 @@ public class VdoOtpt //视频输出。
 
 			//if( p_Rslt != 0 ) //如果本函数执行失败。
 			{
+
 			}
 			return p_Rslt;
 		}
@@ -674,12 +676,12 @@ public class VdoOtpt //视频输出。
 	public int Init()
 	{
 		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
-		long p_LastMsec = 0;
-		long p_NowMsec = 0;
+		long p_LastTickMsec = 0;
+		long p_NowTickMsec = 0;
 
 		Out:
 		{
-			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) p_LastMsec = SystemClock.uptimeMillis(); //记录初始化开始的时间。
+			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) p_LastTickMsec = SystemClock.uptimeMillis(); //记录初始化开始的时间。
 
 			//初始化帧容器。
 			m_FrmCntnrPt = new ConcurrentLinkedQueue<>();
@@ -699,8 +701,8 @@ public class VdoOtpt //视频输出。
 
 			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )
 			{
-				p_NowMsec = SystemClock.uptimeMillis(); //记录初始化结束的时间。
-				Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：初始化耗时 " + ( p_NowMsec - p_LastMsec ) + " 毫秒。" );
+				p_NowTickMsec = SystemClock.uptimeMillis(); //记录初始化结束的时间。
+				Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：初始化耗时 " + ( p_NowTickMsec - p_LastTickMsec ) + " 毫秒。" );
 			}
 
 			p_Rslt = 0; //设置本函数执行成功。
@@ -716,10 +718,10 @@ public class VdoOtpt //视频输出。
 	//销毁视频输出。
 	public void Dstoy()
 	{
-		long p_LastMsec = 0;
-		long p_NowMsec = 0;
+		long p_LastTickMsec = 0;
+		long p_NowTickMsec = 0;
 
-		if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) p_LastMsec = SystemClock.uptimeMillis(); //记录销毁开始的时间。
+		if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) p_LastTickMsec = SystemClock.uptimeMillis(); //记录销毁开始的时间。
 
 		for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
 		{
@@ -744,8 +746,8 @@ public class VdoOtpt //视频输出。
 
 		if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )
 		{
-			p_NowMsec = SystemClock.uptimeMillis(); //记录销毁结束的时间。
-			Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：销毁耗时 " + ( p_NowMsec - p_LastMsec ) + " 毫秒。" );
+			p_NowTickMsec = SystemClock.uptimeMillis(); //记录销毁结束的时间。
+			Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：销毁耗时 " + ( p_NowTickMsec - p_LastTickMsec ) + " 毫秒。" );
 		}
 	}
 }

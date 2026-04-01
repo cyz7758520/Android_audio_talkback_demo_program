@@ -136,7 +136,8 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 			Log.i( m_CurClsNameStrPt, "对讲初始化开始。" );
 
 			p_TkbkClntNum = m_MainActPt.m_ClntLstViewPt.getCheckedItemPosition();
-			if( ( p_TkbkClntNum != -1 ) && ( p_TkbkClntNum < m_MainActPt.m_ClntLstItemArrayLstPt.size() ) )
+			if( p_TkbkClntNum == -1 ) p_TkbkClntNum = 0; //如果未选择任何客户端，就默认选择第一个。
+			if( p_TkbkClntNum < m_MainActPt.m_ClntLstItemArrayLstPt.size() )
 			{
 				if( isAlive() == false ) //如果我的客户端媒体处理线程未启动。
 				{

@@ -104,7 +104,7 @@ public class BdctClnt //广播客户端。
 			p_Rslt = 0; //设置本函数执行成功。
 		}
 
-		if( p_Rslt != 0 ) //如果本函数执行失败。
+		//if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
 
 		}
@@ -282,7 +282,7 @@ public class BdctClnt //广播客户端。
 			p_Rslt = 0; //设置本函数执行成功。
 		}
 
-		if( p_Rslt != 0 ) //如果本函数执行失败。
+		//if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
 
 		}
@@ -318,7 +318,7 @@ public class BdctClnt //广播客户端。
 			p_Rslt = 0; //设置本函数执行成功。
 		}
 
-		if( p_Rslt != 0 ) //如果本函数执行失败。
+		//if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
 
 		}
@@ -349,7 +349,7 @@ public class BdctClnt //广播客户端。
 			p_Rslt = 0; //设置本函数执行成功。
 		}
 
-		if( p_Rslt != 0 ) //如果本函数执行失败。
+		//if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
 
 		}
@@ -382,7 +382,7 @@ public class BdctClnt //广播客户端。
 			p_Rslt = 0; //设置本函数执行成功。
 		}
 
-		if( p_Rslt != 0 ) //如果本函数执行失败。
+		//if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
 
 		}
@@ -826,7 +826,7 @@ public class BdctClnt //广播客户端。
 			p_Rslt = 0; //设置本函数执行成功。
 		}
 
-		if( p_Rslt != 0 ) //如果本函数执行失败。
+		//if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
 
 		}

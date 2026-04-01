@@ -9,10 +9,8 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.PowerManager;
 import android.os.SystemClock;
-import android.support.v4.app.ActivityCompat;
-//import androidx.core.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-//import androidx.core.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.widget.Toast;
@@ -133,6 +131,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	PowerManager.WakeLock m_ProximityScreenOffWakeLockPt; //存放接近息屏唤醒锁的指针。
 	PowerManager.WakeLock m_FullWakeLockPt; //存放屏幕键盘全亮唤醒锁的指针。
 
+	public int m_IsCanUseAec; //存放是否可以使用声学回音消除器，为0表示不可以，为非0表示可以。
+
 	public static class AdoInptOtptDvcInfo //音频输入输出设备信息。
 	{
 		public int m_DvcTyp; //存放设备类型。
@@ -172,9 +172,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 		int m_IsSaveVdoOtpt; //存放是否保存视频输出，为非0表示要保存，为0表示不保存。
 		int m_AdoInptPcmSrcStrmIdx; //存放音频输入Pcm格式原始流的索引。
 		int m_AdoInptPcmRsltStrmIdx; //存放音频输入Pcm格式结果流的索引。
-		int m_AdoInptStrmTimeStampIsReset; //存放音频输入流时间戳是否重置，为非0表示要重置，为0表示不重置。
 		int m_AdoOtptPcmSrcStrmIdx; //存放音频输出Pcm格式原始流的索引。
-		int m_AdoOtptStrmTimeStampIsReset; //存放音频输出流时间戳是否重置，为非0表示要重置，为0表示不重置。
 		int m_VdoInptEncdRsltStrmIdx; //存放视频输入已编码格式结果流的索引。
 		HashMap< Integer, Integer > m_VdoOtptEncdSrcStrmIdxMapPt; //存放视频输出已编码格式原始流的索引映射的指针。
 	}
@@ -190,10 +188,10 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	class Thrd //线程。
 	{
 		int m_IsInitThrdTmpVar; //存放是否初始化线程的临时变量。
-		short m_AdoInptPcmSrcFrmPt[]; //存放音频输入Pcm格式原始帧的指针。
+		AdoInpt.Frm m_AdoInptPcmSrcFrmPt; //存放音频输入Pcm格式原始帧的指针。
 		short m_AdoInptPcmRsltFrmPt[]; //存放音频输入Pcm格式结果帧的指针。
 		short m_AdoInptPcmTmpFrmPt[]; //存放音频输入Pcm格式临时帧的指针。
-		short m_AdoOtptPcmSrcFrmPt[]; //存放音频输出Pcm格式原始帧的指针。
+		AdoOtpt.Frm m_AdoOtptPcmSrcFrmPt; //存放音频输出Pcm格式原始帧的指针。
 		HTInt m_AdoInptPcmRsltFrmVoiceActStsPt; //存放音频输入Pcm格式结果帧语音活动状态的指针，为非0表示有语音活动，为0表示无语音活动。
 		byte m_AdoInptEncdRsltFrmPt[]; //存放音频输入已编码格式结果帧的指针，大小为 m_AdoInptPt.m_FrmLenByt 字节。
 		HTLong m_AdoInptEncdRsltFrmLenBytPt; //存放音频输入已编码格式结果帧的长度的的指针，单位为字节。
@@ -231,7 +229,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 	//用户定义的写入音频输出帧函数。
 	public abstract void UserWriteAdoOtptFrm( int AdoOtptStrmIdx,
-											  short AdoOtptPcmSrcFrmPt[], int AdoOtptPcmFrmLenUnit,
+											  short AdoOtptPcmSrcFrmPt[], long AdoOtptPcmFrmLenUnit,
 											  byte AdoOtptEncdSrcFrmPt[], long AdoOtptEncdSrcFrmSzByt, HTLong AdoOtptEncdSrcFrmLenBytPt );
 
 	//用户定义的获取音频输出帧函数。
@@ -258,7 +256,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 		m_LicnCodePt = LicnCodePt; //设置授权码。
 
-		m_AdoInptOtptUseDvcInfoPt = GetAllAdoInptOtptDvcInfo().get( 0 ); //设置音频输入输出使用的设备信息的指针。
+		SetAdoInptOtptUseDvc( 0, GetAllAdoInptOtptDvcInfo().get( 0 ), 0 ); //设置设置音频输入输出使用的设备。
 
 		//初始化音频输入。
 		m_AdoInptPt.m_MediaPocsThrdPt = this;
@@ -285,11 +283,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	protected void finalize()
 	{
 		//销毁错误信息动态字符串。
-		if( m_ErrInfoVstrPt != null )
-		{
-			m_ErrInfoVstrPt.Dstoy();
-			m_ErrInfoVstrPt = null;
-		}
+        m_ErrInfoVstrPt.Dstoy();
 	}
 
 	//获取音频设备信息类型名称。
@@ -417,7 +411,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						case AudioDeviceInfo.TYPE_BLE_HEADSET:
 						//case AudioDeviceInfo.TYPE_HDMI_EARC:
 						case AudioDeviceInfo.TYPE_BLE_SPEAKER:
-						case AudioDeviceInfo.TYPE_BLE_BROADCAST:
+						case AudioDeviceInfo.TYPE_BLE_BROADCAST: //其他类型音频输出设备与同类型同名称的音频输入设备配对。
 						{
 							p_AdoInptOtptDvcInfoPt = new AdoInptOtptDvcInfo();
 							p_AdoInptOtptDvcInfoPt.m_DvcTyp = AdoInptOtptDvcInfo.DvcTyp.Other;
@@ -486,8 +480,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 			}
 		}
 
-		if( p_AdoInptOtptDvcInfoArrPt.isEmpty() ) return null;
-		else return p_AdoInptOtptDvcInfoArrPt;
+		return p_AdoInptOtptDvcInfoArrPt;
 	}
 
 	//媒体处理线程的设置音频输入输出使用的设备。
@@ -1027,6 +1020,44 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.UserMsgMinVal + MsgTyp, MsgParmPt );
 	}
 
+	//设置是否可以使用声学回音消除器。
+	void SetIsCanUseAec()
+	{
+		if( m_AdoInptPt.m_UseWhatAec != 0 ) //如果要使用声学回音消除器。
+		{
+			if( m_AdoInptPt.m_IsUse == 0 )
+			{
+				if( m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：因为不使用音频输入，所以不可以使用声学回音消除器。" );
+				m_IsCanUseAec = 0;
+			}
+			else if( m_AdoOtptPt.m_IsUse == 0 )
+			{
+				if( m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：因为不使用音频输出，所以不可以使用声学回音消除器。" );
+				m_IsCanUseAec = 0;
+			}
+			else if( m_AdoInptPt.m_SmplRate != m_AdoOtptPt.m_SmplRate )
+			{
+				if( m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：因为音频输入的采样频率与音频输出不一致，所以不可以使用声学回音消除器。" );
+				m_IsCanUseAec = 0;
+			}
+			else if( ( m_AdoInptPt.m_FrmLenMsec != m_AdoOtptPt.m_FrmLenMsec ) || ( m_AdoInptPt.m_FrmLenUnit != m_AdoOtptPt.m_FrmLenUnit ) )
+			{
+				if( m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：因为音频输入帧的长度与音频输出不一致，所以不可以使用声学回音消除器。" );
+				m_IsCanUseAec = 0;
+			}
+			else
+			{
+				if( m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：因为要使用声学回音消除器，所以可以使用声学回音消除器。" );
+				m_IsCanUseAec = 1;
+			}
+		}
+		else //如果不使用声学回音消除器。
+		{
+			if( m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：因为不使用声学回音消除器，所以不可以使用声学回音消除器。" );
+			m_IsCanUseAec = 0;
+		}
+	}
+
 	//音频输入输出设备修改回调初始化。
 	private int AdoInptOtptDvcChgCallbackInit()
 	{
@@ -1046,7 +1077,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						{
 							if( m_IsFirstCallback == 0 )
 							{
-								if( m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：检测到音频设备添加，发送音频输入输出设备关闭线程消息。" ); //因为音频设备改变都会导致音频服务卡顿，从而导致音频输入输出帧不同步，所以音频设备需要重新初始化。
+								if( m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：检测到音频设备添加，发送音频输入输出设备关闭线程消息。" ); //因为音频设备改变都会导致音频服务卡顿，从而导致音频输入输出帧不同步，所以音频设备需要重新初始化。
 								m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
 							}
 							else
@@ -1059,7 +1090,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						{
 							if( m_IsFirstCallback == 0 )
 							{
-								if( m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：检测到音频设备删除，发送音频输入输出设备关闭线程消息。" ); //因为音频设备改变都会导致音频服务卡顿，从而导致音频输入输出帧不同步，所以音频设备需要重新初始化。
+								if( m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：检测到音频设备删除，发送音频输入输出设备关闭线程消息。" ); //因为音频设备改变都会导致音频服务卡顿，从而导致音频输入输出帧不同步，所以音频设备需要重新初始化。
 								m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
 							}
 							else
@@ -1076,7 +1107,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 			p_Rslt = 0; //设置本函数执行成功。
 		}
 
-		if( p_Rslt != 0 ) //如果本函数执行失败。
+		//if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
 
 		}
@@ -1195,7 +1226,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 			p_Rslt = 0; //设置本函数执行成功。
 		}
 
-		if( p_Rslt != 0 ) //如果本函数执行失败。
+		//if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
 
 		}
@@ -1218,9 +1249,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 			m_AdoVdoInptOtptAviFilePt.m_WriterPt = null;
 			m_AdoVdoInptOtptAviFilePt.m_AdoInptPcmSrcStrmIdx = -1;
 			m_AdoVdoInptOtptAviFilePt.m_AdoInptPcmRsltStrmIdx = -1;
-			m_AdoVdoInptOtptAviFilePt.m_AdoInptStrmTimeStampIsReset = 0;
 			m_AdoVdoInptOtptAviFilePt.m_AdoOtptPcmSrcStrmIdx = -1;
-			m_AdoVdoInptOtptAviFilePt.m_AdoOtptStrmTimeStampIsReset = 0;
 			m_AdoVdoInptOtptAviFilePt.m_VdoInptEncdRsltStrmIdx = -1;
 			m_AdoVdoInptOtptAviFilePt.m_VdoOtptEncdSrcStrmIdxMapPt = null;
 		}
@@ -1298,18 +1327,17 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 		Out:
 		{
-			if( m_AdoOtptPt.m_IsUse != 0 ) //如果要使用音频输出。在初始化音频输入前初始化音频输出，因为要音频输入线程让音频输出设备开始播放和开始音频输出线程。
+			if( m_AdoOtptPt.m_IsUse != 0 ) //如果要使用音频输出。在初始化音频输入前初始化音频输出，因为要音频输入线程去开始音频输出线程。
 			{
 				if( m_AdoOtptPt.m_IsInit == 0 ) //如果未初始化音频输出。
 				{
+					SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 					if( m_AdoOtptPt.Init() != 0 ) break Out;
 					m_AdoOtptPt.m_IsInit = 1; //设置已初始化音频输出。
-					m_AdoVdoInptOtptAviFilePt.m_AdoOtptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输出流时间戳要重置。
 					if( m_AdoInptPt.m_IsUse == 0 ) //如果不使用音频输入。
 					{
-						m_AdoOtptPt.m_DvcPt.m_Pt.play(); //让音频输出设备开始播放。
 						m_AdoOtptPt.m_ThrdPt.m_ThrdIsStart = 1; //设置音频输出线程已开始。
-					} //如果要使用音频输入，就不设置已初始化音频输出，因为要音频输入线程让音频输出设备开始播放和开始音频输出线程。
+					} //如果要使用音频输入，就不设置已初始化音频输出，因为要音频输入线程去开始音频输出线程。
 				}
 				else //如果已初始化音频输出。
 				{
@@ -1317,9 +1345,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					{
 						if( m_AdoInptPt.m_IsInit == 0 ) //如果未初始化音频输入。
 						{
-							m_AdoOtptPt.DvcAndThrdDstoy(); //销毁并初始化音频输出设备和线程，因为要音频输入线程让音频输出设备开始播放和开始音频输出线程。
+							m_AdoOtptPt.DvcAndThrdDstoy(); //销毁并初始化音频输出设备和线程，因为要音频输入线程去开始音频输出线程。
+							SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 							if( m_AdoOtptPt.DvcAndThrdInit() != 0 ) break Out;
-							m_AdoVdoInptOtptAviFilePt.m_AdoOtptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输出流时间戳要重置。
 						} //如果音频输入已初始化，表示音频输入输出都已初始化，无需再销毁并初始化。
 					}
 				}
@@ -1337,10 +1365,9 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 			{
 				if( m_AdoInptPt.m_IsInit == 0 ) //如果未初始化音频输入。
 				{
-					m_AdoInptPt.SetIsCanUseAec();
-					if( m_AdoInptPt.Init() != 0 ) break Out; //在音频输出初始化后再初始化音频输入，因为要音频输入线程让音频输出设备开始播放和开始音频输出线程。
+					SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
+					if( m_AdoInptPt.Init() != 0 ) break Out; //在音频输出初始化后再初始化音频输入，因为要音频输入线程去开始音频输出线程。
 					m_AdoInptPt.m_IsInit = 1; //设置已初始化音频输入。
-					m_AdoVdoInptOtptAviFilePt.m_AdoInptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输入流时间戳要重置。
 					MediaPocsThrdTmpVarInit();
 				}
 				else //如果已初始化音频输入。
@@ -1351,16 +1378,15 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						{
 							if( m_AdoInptPt.m_ThrdPt.m_IsStartAdoOtptThrd != 0 ) //如果音频输入线程已开始音频输出线程。
 							{
-								m_AdoInptPt.DvcAndThrdDstoy(); //销毁并初始化音频输入设备和线程，因为要音频输入线程让音频输出设备开始播放和开始音频输出线程。
-								m_AdoInptPt.SetIsCanUseAec();
+								m_AdoInptPt.DvcAndThrdDstoy(); //销毁并初始化音频输入设备和线程，因为要音频输入线程去开始音频输出线程。
+								SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 								if( m_AdoInptPt.DvcAndThrdInit() != 0 ) break Out;
-								m_AdoVdoInptOtptAviFilePt.m_AdoInptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输入流时间戳要重置。
 							} //如果音频输入线程未开始音频输出线程，就不用管，等一会音频输入线程就会开始音频输出线程。
 						} //如果音频输出线程已开始，表示音频输入输出都已初始化，无需再销毁并初始化。
 					}
 					else //如果不使用音频输出。
 					{
-						m_AdoInptPt.SetIsCanUseAec();
+						SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 					}
 				}
 			}
@@ -1370,7 +1396,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					m_AdoInptPt.Dstoy();
 					m_AdoInptPt.m_IsInit = 0; //设置未初始化音频输入。
-					m_AdoInptPt.SetIsCanUseAec();
+					SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 					MediaPocsThrdTmpVarInit();
 				}
 			}
@@ -1414,6 +1440,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 		//if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
+
 		}
 		return p_Rslt;
 	}
@@ -1472,15 +1499,12 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoOtptPt.m_IsInit != 0 )
 					{
 						if( m_AdoOtptPt.DvcAndThrdInit() != 0 ) break Out;
-						m_AdoVdoInptOtptAviFilePt.m_AdoOtptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输出流时间戳要重置。
 						if( m_AdoInptPt.m_IsInit != 0 )
 						{
 							if( m_AdoInptPt.DvcAndThrdInit() != 0 ) break Out;
-							m_AdoVdoInptOtptAviFilePt.m_AdoInptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输入流时间戳要重置。
 						}
 						else
 						{
-							m_AdoOtptPt.m_DvcPt.m_Pt.play(); //让音频输出设备开始播放。
 							m_AdoOtptPt.m_ThrdPt.m_ThrdIsStart = 1; //设置音频输出线程已开始。
 						}
 					}
@@ -1503,14 +1527,12 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
+						SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 						if( m_AdoOtptPt.m_IsInit != 0 )
 						{
 							if( m_AdoOtptPt.DvcAndThrdInit() != 0 ) break Out;
-							m_AdoVdoInptOtptAviFilePt.m_AdoOtptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输出流时间戳要重置。
 						}
-						m_AdoInptPt.SetIsCanUseAec();
 						if( m_AdoInptPt.Init() != 0 ) break Out;
-						m_AdoVdoInptOtptAviFilePt.m_AdoInptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输入流时间戳要重置。
 						MediaPocsThrdTmpVarInit();
 					}
 					break;
@@ -1530,10 +1552,8 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						if( m_AdoOtptPt.m_IsInit != 0 )
 						{
 							if( m_AdoOtptPt.DvcAndThrdInit() != 0 ) break Out;
-							m_AdoVdoInptOtptAviFilePt.m_AdoOtptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输出流时间戳要重置。
 						}
 						if( m_AdoInptPt.DvcAndThrdInit() != 0 ) break Out;
-						m_AdoVdoInptOtptAviFilePt.m_AdoInptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输入流时间戳要重置。
 					}
 					break;
 				}
@@ -1546,7 +1566,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
 						if( m_AdoInptPt.AecInit() != 0 ) break Out;
-						m_AdoInptPt.SetIsCanUseAec();
+						SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 					}
 					break;
 				}
@@ -1565,7 +1585,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
 						if( m_AdoInptPt.AecInit() != 0 ) break Out;
-						m_AdoInptPt.SetIsCanUseAec();
+						SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 					}
 					break;
 				}
@@ -1581,7 +1601,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
 						if( m_AdoInptPt.AecInit() != 0 ) break Out;
-						m_AdoInptPt.SetIsCanUseAec();
+						SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 					}
 					break;
 				}
@@ -1600,7 +1620,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
 						if( m_AdoInptPt.AecInit() != 0 ) break Out;
-						m_AdoInptPt.SetIsCanUseAec();
+						SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 					}
 					break;
 				}
@@ -1614,7 +1634,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
 						if( m_AdoInptPt.AecInit() != 0 ) break Out;
-						m_AdoInptPt.SetIsCanUseAec();
+						SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 					}
 					break;
 				}
@@ -1646,7 +1666,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					if( m_AdoInptPt.m_IsInit != 0 )
 					{
 						if( m_AdoInptPt.AecInit() != 0 ) break Out;
-						m_AdoInptPt.SetIsCanUseAec();
+						SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 					}
 					break;
 				}
@@ -1839,17 +1859,14 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 
 					if( m_AdoOtptPt.m_IsInit != 0 )
 					{
+						SetIsCanUseAec(); //设置是否可以使用声学回音消除器。
 						if( m_AdoOtptPt.Init() != 0 ) break Out;
-						m_AdoVdoInptOtptAviFilePt.m_AdoOtptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输出流时间戳要重置。
 						if( m_AdoInptPt.m_IsInit != 0 )
 						{
-							m_AdoInptPt.SetIsCanUseAec();
 							if( m_AdoInptPt.DvcAndThrdInit() != 0 ) break Out;
-							m_AdoVdoInptOtptAviFilePt.m_AdoInptStrmTimeStampIsReset = 1; //设置音视频输入输出Avi文件的音频输入流时间戳要重置。
 						}
 						else
 						{
-							m_AdoOtptPt.m_DvcPt.m_Pt.play(); //让音频输出设备开始播放。
 							m_AdoOtptPt.m_ThrdPt.m_ThrdIsStart = 1; //设置音频输出线程已开始。
 						}
 					}
@@ -2451,34 +2468,34 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 			else p_TmpInt321 = 0;
 			if( m_AdoOtptPt.m_PcmSrcFrmCntnrPt != null ) p_TmpInt322 = m_AdoOtptPt.m_PcmSrcFrmCntnrPt.size(); //获取Pcm格式原始帧容器的元素总数。
 			else p_TmpInt322 = 0;
-			if( m_AdoInptPt.m_IsCanUseAec != 0 ) //如果可以使用声学回音消除器。
+			if( m_IsCanUseAec != 0 ) //如果可以使用声学回音消除器。
 			{
 				if( ( p_TmpInt321 > 0 ) && ( p_TmpInt322 > 0 ) ) //如果Pcm格式原始帧容器和Pcm格式原始帧容器中都有帧了，就开始取出。
 				{
-					m_ThrdPt.m_AdoInptPcmSrcFrmPt = ( short[] ) m_AdoInptPt.m_PcmSrcFrmCntnrPt.poll(); //从音频输入Pcm格式原始帧容器中取出并删除第一个帧。
+					m_ThrdPt.m_AdoInptPcmSrcFrmPt = m_AdoInptPt.m_PcmSrcFrmCntnrPt.poll(); //从音频输入Pcm格式原始帧容器中取出并删除第一个帧。
 					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从音频输入Pcm格式原始帧容器中取出并删除第一个帧，音频输入Pcm格式原始帧容器元素总数：" + p_TmpInt321 + "。" );
 
-					m_ThrdPt.m_AdoOtptPcmSrcFrmPt = ( short[] ) m_AdoOtptPt.m_PcmSrcFrmCntnrPt.poll(); //从音频输出Pcm格式原始帧容器中取出并删除第一个帧。
+					m_ThrdPt.m_AdoOtptPcmSrcFrmPt = m_AdoOtptPt.m_PcmSrcFrmCntnrPt.poll(); //从音频输出Pcm格式原始帧容器中取出并删除第一个帧。
 					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从音频输出Pcm格式原始帧容器中取出并删除第一个帧，音频输出Pcm格式原始帧容器元素总数：" + p_TmpInt322 + "。" );
 
 					//将音频输入Pcm格式原始帧复制到音频输入Pcm格式结果帧，方便处理。
-					System.arraycopy( m_ThrdPt.m_AdoInptPcmSrcFrmPt, 0, m_ThrdPt.m_AdoInptPcmRsltFrmPt, 0, m_ThrdPt.m_AdoInptPcmSrcFrmPt.length );
+					System.arraycopy( m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt, 0, m_ThrdPt.m_AdoInptPcmRsltFrmPt, 0, m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt.length );
 				}
 			}
 			else //如果不可以使用声学回音消除器。
 			{
 				if( p_TmpInt321 > 0 ) //如果Pcm格式原始帧容器有帧了，就开始取出。
 				{
-					m_ThrdPt.m_AdoInptPcmSrcFrmPt = ( short[] ) m_AdoInptPt.m_PcmSrcFrmCntnrPt.poll(); //从音频输入Pcm格式原始帧容器中取出并删除第一个帧。
+					m_ThrdPt.m_AdoInptPcmSrcFrmPt = m_AdoInptPt.m_PcmSrcFrmCntnrPt.poll(); //从音频输入Pcm格式原始帧容器中取出并删除第一个帧。
 					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从音频输入Pcm格式原始帧容器中取出并删除第一个帧，音频输入Pcm格式原始帧容器元素总数：" + p_TmpInt321 + "。" );
 
 					//将音频输入Pcm格式原始帧复制到音频输入Pcm格式结果帧，方便处理。
-					System.arraycopy( m_ThrdPt.m_AdoInptPcmSrcFrmPt, 0, m_ThrdPt.m_AdoInptPcmRsltFrmPt, 0, m_ThrdPt.m_AdoInptPcmSrcFrmPt.length );
+					System.arraycopy( m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt, 0, m_ThrdPt.m_AdoInptPcmRsltFrmPt, 0, m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt.length );
 				}
 
 				if( p_TmpInt322 > 0 ) //如果Pcm格式原始帧容器有帧了，就开始取出。
 				{
-					m_ThrdPt.m_AdoOtptPcmSrcFrmPt = ( short[] ) m_AdoOtptPt.m_PcmSrcFrmCntnrPt.poll(); //从音频输出Pcm格式原始帧容器中取出并删除第一个帧。
+					m_ThrdPt.m_AdoOtptPcmSrcFrmPt = m_AdoOtptPt.m_PcmSrcFrmCntnrPt.poll(); //从音频输出Pcm格式原始帧容器中取出并删除第一个帧。
 					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：从音频输出Pcm格式原始帧容器中取出并删除第一个帧，音频输出Pcm格式原始帧容器元素总数：" + p_TmpInt322 + "。" );
 				}
 			}
@@ -2487,7 +2504,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 			if( m_ThrdPt.m_AdoInptPcmSrcFrmPt != null )
 			{
 				//使用声学回音消除器。
-				if( m_AdoInptPt.m_IsCanUseAec != 0 ) //如果可以使用声学回音消除器。
+				if( m_IsCanUseAec != 0 ) //如果可以使用声学回音消除器。
 				{
 					switch( m_AdoInptPt.m_UseWhatAec )
 					{
@@ -2498,7 +2515,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						}
 						case 1: //如果要使用Speex声学回音消除器。
 						{
-							if( m_AdoInptPt.m_SpeexAecPt.m_Pt.Pocs( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmTmpFrmPt ) == 0 )
+							if( m_AdoInptPt.m_SpeexAecPt.m_Pt.Pocs( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmTmpFrmPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用Speex声学回音消除器成功。" );
 								short p_TmpPt[] = m_ThrdPt.m_AdoInptPcmRsltFrmPt;m_ThrdPt.m_AdoInptPcmRsltFrmPt = m_ThrdPt.m_AdoInptPcmTmpFrmPt;m_ThrdPt.m_AdoInptPcmTmpFrmPt = p_TmpPt; //交换音频输入Pcm格式结果帧和音频输入Pcm格式临时帧。
@@ -2511,7 +2528,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						}
 						case 2: //如果要使用WebRtc定点版声学回音消除器。
 						{
-							if( m_AdoInptPt.m_WebRtcAecmPt.m_Pt.Pocs( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmTmpFrmPt ) == 0 )
+							if( m_AdoInptPt.m_WebRtcAecmPt.m_Pt.Pocs( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmTmpFrmPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用WebRtc定点版声学回音消除器成功。" );
 								short p_TmpPt[] = m_ThrdPt.m_AdoInptPcmRsltFrmPt;m_ThrdPt.m_AdoInptPcmRsltFrmPt = m_ThrdPt.m_AdoInptPcmTmpFrmPt;m_ThrdPt.m_AdoInptPcmTmpFrmPt = p_TmpPt; //交换音频输入Pcm格式结果帧和音频输入Pcm格式临时帧。
@@ -2524,7 +2541,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						}
 						case 3: //如果要使用WebRtc浮点版声学回音消除器。
 						{
-							if( m_AdoInptPt.m_WebRtcAecPt.m_Pt.Pocs( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmTmpFrmPt ) == 0 )
+							if( m_AdoInptPt.m_WebRtcAecPt.m_Pt.Pocs( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmTmpFrmPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用WebRtc浮点版声学回音消除器成功。" );
 								short p_TmpPt[] = m_ThrdPt.m_AdoInptPcmRsltFrmPt;m_ThrdPt.m_AdoInptPcmRsltFrmPt = m_ThrdPt.m_AdoInptPcmTmpFrmPt;m_ThrdPt.m_AdoInptPcmTmpFrmPt = p_TmpPt; //交换音频输入Pcm格式结果帧和音频输入Pcm格式临时帧。
@@ -2537,7 +2554,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						}
 						case 4: //如果要使用WebRtc第三版声学回音消除器。
 						{
-							if( m_AdoInptPt.m_WebRtcAec3Pt.m_Pt.Pocs( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmTmpFrmPt ) == 0 )
+							if( m_AdoInptPt.m_WebRtcAec3Pt.m_Pt.Pocs( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmTmpFrmPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用WebRtc第三版声学回音消除器成功。" );
 								short p_TmpPt[] = m_ThrdPt.m_AdoInptPcmRsltFrmPt;m_ThrdPt.m_AdoInptPcmRsltFrmPt = m_ThrdPt.m_AdoInptPcmTmpFrmPt;m_ThrdPt.m_AdoInptPcmTmpFrmPt = p_TmpPt; //交换音频输入Pcm格式结果帧和音频输入Pcm格式临时帧。
@@ -2550,7 +2567,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						}
 						case 5: //如果要使用SpeexWebRtc三重声学回音消除器。
 						{
-							if( m_AdoInptPt.m_SpeexWebRtcAecPt.m_Pt.Pocs( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmTmpFrmPt ) == 0 )
+							if( m_AdoInptPt.m_SpeexWebRtcAecPt.m_Pt.Pocs( m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmTmpFrmPt ) == 0 )
 							{
 								if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用SpeexWebRtc三重声学回音消除器成功。" );
 								short p_TmpPt[] = m_ThrdPt.m_AdoInptPcmRsltFrmPt;m_ThrdPt.m_AdoInptPcmRsltFrmPt = m_ThrdPt.m_AdoInptPcmTmpFrmPt;m_ThrdPt.m_AdoInptPcmTmpFrmPt = p_TmpPt; //交换音频输入Pcm格式结果帧和音频输入Pcm格式临时帧。
@@ -2672,7 +2689,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				//使用波形器。
 				if( m_AdoInptPt.m_WavfmPt.m_IsDraw != 0 )
 				{
-					if( m_AdoInptPt.m_WavfmPt.m_SrcPt.Draw( m_ThrdPt.m_AdoInptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmSrcFrmPt.length, m_AdoInptPt.m_WavfmPt.m_SrcSurfacePt.getHolder().getSurface(), m_ErrInfoVstrPt ) == 0 )
+					if( m_AdoInptPt.m_WavfmPt.m_SrcPt.Draw( m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt.length, m_AdoInptPt.m_WavfmPt.m_SrcSurfacePt.getHolder().getSurface(), m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频输入原始波形器绘制音频输入原始波形到Surface成功。" );
 					}
@@ -2693,7 +2710,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				//使用Wave文件写入器。
 				if( m_AdoInptPt.m_WaveFileWriterPt.m_IsSave != 0 )
 				{
-					if( m_AdoInptPt.m_WaveFileWriterPt.m_SrcPt.WriteShort( m_ThrdPt.m_AdoInptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmSrcFrmPt.length, m_ErrInfoVstrPt ) == 0 )
+					if( m_AdoInptPt.m_WaveFileWriterPt.m_SrcPt.WriteShort( m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt.length, m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频输入原始Wave文件写入器写入音频输入Pcm格式原始帧成功。" );
 					}
@@ -2714,18 +2731,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				//使用音视频输入输出Avi文件。
 				if( m_AdoVdoInptOtptAviFilePt.m_IsSaveAdoInpt != 0 )
 				{
-					if( m_AdoVdoInptOtptAviFilePt.m_AdoInptStrmTimeStampIsReset != 0 ) //如果音视频输入输出Avi文件的音频输入流时间戳要重置。
-					{
-						p_NowTickMsec = SystemClock.uptimeMillis();
-
-						m_AdoVdoInptOtptAviFilePt.m_WriterPt.AdoStrmSetCurTimeStamp( m_AdoVdoInptOtptAviFilePt.m_AdoInptPcmSrcStrmIdx, p_NowTickMsec, null );
-						m_AdoVdoInptOtptAviFilePt.m_WriterPt.AdoStrmSetCurTimeStamp( m_AdoVdoInptOtptAviFilePt.m_AdoInptPcmRsltStrmIdx, p_NowTickMsec, null );
-						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：设置音视频输入输出Avi文件音频输入Pcm格式原始结果流的当前时间戳为 " + p_NowTickMsec + " 。" );
-
-						m_AdoVdoInptOtptAviFilePt.m_AdoInptStrmTimeStampIsReset = 0; //设置音视频输入输出Avi文件的音频输入流时间戳不重置。
-					}
-
-					if( m_AdoVdoInptOtptAviFilePt.m_WriterPt.AdoStrmWriteShort( m_AdoVdoInptOtptAviFilePt.m_AdoInptPcmSrcStrmIdx, m_ThrdPt.m_AdoInptPcmSrcFrmPt, m_AdoInptPt.m_FrmLenData, m_AdoInptPt.m_FrmLenMsec, m_ErrInfoVstrPt ) == 0 )
+					if( m_AdoVdoInptOtptAviFilePt.m_WriterPt.AdoStrmWriteShort( m_AdoVdoInptOtptAviFilePt.m_AdoInptPcmSrcStrmIdx, m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_TimeStampMsec, m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt, m_AdoInptPt.m_FrmLenData, m_AdoInptPt.m_FrmLenMsec, m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音视频输入输出Avi文件写入器写入音频输入Pcm格式原始帧成功。" );
 					}
@@ -2733,7 +2739,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 					{
 						if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, "媒体处理线程：使用音视频输入输出Avi文件写入器写入音频输入Pcm格式原始帧失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 					}
-					if( m_AdoVdoInptOtptAviFilePt.m_WriterPt.AdoStrmWriteShort( m_AdoVdoInptOtptAviFilePt.m_AdoInptPcmRsltStrmIdx, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenData, m_AdoInptPt.m_FrmLenMsec, m_ErrInfoVstrPt ) == 0 )
+					if( m_AdoVdoInptOtptAviFilePt.m_WriterPt.AdoStrmWriteShort( m_AdoVdoInptOtptAviFilePt.m_AdoInptPcmRsltStrmIdx, m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_TimeStampMsec, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenData, m_AdoInptPt.m_FrmLenMsec, m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音视频输入输出Avi文件写入器写入音频输入Pcm格式结果帧成功。" );
 					}
@@ -2758,7 +2764,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				//使用波形器。
 				if( m_AdoOtptPt.m_WavfmPt.m_IsDraw != 0 )
 				{
-					if( m_AdoOtptPt.m_WavfmPt.m_SrcPt.Draw( m_ThrdPt.m_AdoOtptPcmSrcFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.length, m_AdoOtptPt.m_WavfmPt.m_SrcSurfacePt.getHolder().getSurface(), m_ErrInfoVstrPt ) == 0 )
+					if( m_AdoOtptPt.m_WavfmPt.m_SrcPt.Draw( m_ThrdPt.m_AdoOtptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.m_PcmFrmPt.length, m_AdoOtptPt.m_WavfmPt.m_SrcSurfacePt.getHolder().getSurface(), m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频输出原始波形器绘制音频输入原始波形到Surface成功。" );
 					}
@@ -2771,7 +2777,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				//使用Wave文件写入器。
 				if( m_AdoOtptPt.m_WaveFileWriterPt.m_IsSave != 0 )
 				{
-					if( m_AdoOtptPt.m_WaveFileWriterPt.m_SrcPt.WriteShort( m_ThrdPt.m_AdoOtptPcmSrcFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.length, m_ErrInfoVstrPt ) == 0 )
+					if( m_AdoOtptPt.m_WaveFileWriterPt.m_SrcPt.WriteShort( m_ThrdPt.m_AdoOtptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.m_PcmFrmPt.length, m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音频输出原始Wave文件写入器写入音频输出帧成功。" );
 					}
@@ -2784,17 +2790,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				//使用音视频输入输出Avi文件。
 				if( m_AdoVdoInptOtptAviFilePt.m_IsSaveAdoOtpt != 0 )
 				{
-					if( m_AdoVdoInptOtptAviFilePt.m_AdoOtptStrmTimeStampIsReset != 0 ) //如果音视频输入输出Avi文件的音频输出流时间戳要重置。
-					{
-						p_NowTickMsec = SystemClock.uptimeMillis();
-
-						m_AdoVdoInptOtptAviFilePt.m_WriterPt.AdoStrmSetCurTimeStamp( m_AdoVdoInptOtptAviFilePt.m_AdoOtptPcmSrcStrmIdx, p_NowTickMsec, null );
-						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：设置音视频输入输出Avi文件音频输出Pcm格式原始流的当前时间戳为 " + p_NowTickMsec + " 。" );
-
-						m_AdoVdoInptOtptAviFilePt.m_AdoOtptStrmTimeStampIsReset = 0; //设置音视频输入输出Avi文件的音频输出流时间戳不重置。
-					}
-
-					if( m_AdoVdoInptOtptAviFilePt.m_WriterPt.AdoStrmWriteShort( m_AdoVdoInptOtptAviFilePt.m_AdoOtptPcmSrcStrmIdx, m_ThrdPt.m_AdoOtptPcmSrcFrmPt, m_AdoOtptPt.m_FrmLenData, m_AdoOtptPt.m_FrmLenMsec, m_ErrInfoVstrPt ) == 0 )
+					if( m_AdoVdoInptOtptAviFilePt.m_WriterPt.AdoStrmWriteShort( m_AdoVdoInptOtptAviFilePt.m_AdoOtptPcmSrcStrmIdx, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.m_TimeStampMsec, m_ThrdPt.m_AdoOtptPcmSrcFrmPt.m_PcmFrmPt, m_AdoOtptPt.m_FrmLenData, m_AdoOtptPt.m_FrmLenMsec, m_ErrInfoVstrPt ) == 0 )
 					{
 						if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：使用音视频输入输出Avi文件写入器写入音频输出Pcm格式原始帧成功。" );
 					}
@@ -2906,7 +2902,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						{
 							if( m_ThrdPt.m_VdoInptFrmPt.m_EncdRsltFrmPt != null ) //如果有视频输入已编码格式结果帧。
 							{
-								UserReadAdoVdoInptFrm( m_ThrdPt.m_AdoInptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenUnit, m_ThrdPt.m_AdoInptPcmRsltFrmVoiceActStsPt.m_Val,
+								UserReadAdoVdoInptFrm( m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenUnit, m_ThrdPt.m_AdoInptPcmRsltFrmVoiceActStsPt.m_Val,
 													   m_ThrdPt.m_AdoInptEncdRsltFrmPt, m_ThrdPt.m_AdoInptEncdRsltFrmLenBytPt.m_Val, m_ThrdPt.m_AdoInptEncdRsltFrmIsNeedTransPt.m_Val,
 													   m_ThrdPt.m_VdoInptFrmPt.m_Nv21SrcFrmPt, m_VdoInptPt.m_DvcPt.m_Nv21SrcFrmWidth, m_VdoInptPt.m_DvcPt.m_Nv21SrcFrmHeight, m_VdoInptPt.m_DvcPt.m_Nv21SrcFrmLenByt,
 													   m_ThrdPt.m_VdoInptFrmPt.m_Yu12RsltFrmPt, m_VdoInptPt.m_DvcPt.m_Yu12SrcFrmScaleWidth, m_VdoInptPt.m_DvcPt.m_Yu12SrcFrmScaleHeight, m_VdoInptPt.m_DvcPt.m_Yu12SrcFrmScaleLenByt,
@@ -2914,7 +2910,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 							}
 							else //如果没有视频输入已编码格式结果帧。
 							{
-								UserReadAdoVdoInptFrm( m_ThrdPt.m_AdoInptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenUnit, m_ThrdPt.m_AdoInptPcmRsltFrmVoiceActStsPt.m_Val,
+								UserReadAdoVdoInptFrm( m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenUnit, m_ThrdPt.m_AdoInptPcmRsltFrmVoiceActStsPt.m_Val,
 													   m_ThrdPt.m_AdoInptEncdRsltFrmPt, m_ThrdPt.m_AdoInptEncdRsltFrmLenBytPt.m_Val, m_ThrdPt.m_AdoInptEncdRsltFrmIsNeedTransPt.m_Val,
 													   m_ThrdPt.m_VdoInptFrmPt.m_Nv21SrcFrmPt, m_VdoInptPt.m_DvcPt.m_Nv21SrcFrmWidth, m_VdoInptPt.m_DvcPt.m_Nv21SrcFrmHeight, m_VdoInptPt.m_DvcPt.m_Nv21SrcFrmLenByt,
 													   m_ThrdPt.m_VdoInptFrmPt.m_Yu12RsltFrmPt, m_VdoInptPt.m_DvcPt.m_Yu12SrcFrmScaleWidth, m_VdoInptPt.m_DvcPt.m_Yu12SrcFrmScaleHeight, m_VdoInptPt.m_DvcPt.m_Yu12SrcFrmScaleLenByt,
@@ -2923,7 +2919,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						}
 						else //如果没有视频输入帧。
 						{
-							UserReadAdoVdoInptFrm( m_ThrdPt.m_AdoInptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenUnit, m_ThrdPt.m_AdoInptPcmRsltFrmVoiceActStsPt.m_Val,
+							UserReadAdoVdoInptFrm( m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenUnit, m_ThrdPt.m_AdoInptPcmRsltFrmVoiceActStsPt.m_Val,
 												   m_ThrdPt.m_AdoInptEncdRsltFrmPt, m_ThrdPt.m_AdoInptEncdRsltFrmLenBytPt.m_Val, m_ThrdPt.m_AdoInptEncdRsltFrmIsNeedTransPt.m_Val,
 												   null, 0, 0, 0,
 												   null, 0, 0, 0,
@@ -2936,7 +2932,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						{
 							if( m_ThrdPt.m_VdoInptFrmPt.m_EncdRsltFrmPt != null ) //如果有视频输入已编码格式结果帧。
 							{
-								UserReadAdoVdoInptFrm( m_ThrdPt.m_AdoInptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenUnit, m_ThrdPt.m_AdoInptPcmRsltFrmVoiceActStsPt.m_Val,
+								UserReadAdoVdoInptFrm( m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenUnit, m_ThrdPt.m_AdoInptPcmRsltFrmVoiceActStsPt.m_Val,
 													   null, 0, 0,
 													   m_ThrdPt.m_VdoInptFrmPt.m_Nv21SrcFrmPt, m_VdoInptPt.m_DvcPt.m_Nv21SrcFrmWidth, m_VdoInptPt.m_DvcPt.m_Nv21SrcFrmHeight, m_VdoInptPt.m_DvcPt.m_Nv21SrcFrmLenByt,
 													   m_ThrdPt.m_VdoInptFrmPt.m_Yu12RsltFrmPt, m_VdoInptPt.m_DvcPt.m_Yu12SrcFrmScaleWidth, m_VdoInptPt.m_DvcPt.m_Yu12SrcFrmScaleHeight, m_VdoInptPt.m_DvcPt.m_Yu12SrcFrmScaleLenByt,
@@ -2944,7 +2940,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 							}
 							else //如果没有视频输入已编码格式结果帧。
 							{
-								UserReadAdoVdoInptFrm( m_ThrdPt.m_AdoInptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenUnit, m_ThrdPt.m_AdoInptPcmRsltFrmVoiceActStsPt.m_Val,
+								UserReadAdoVdoInptFrm( m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenUnit, m_ThrdPt.m_AdoInptPcmRsltFrmVoiceActStsPt.m_Val,
 													   null, 0, 0,
 													   m_ThrdPt.m_VdoInptFrmPt.m_Nv21SrcFrmPt, m_VdoInptPt.m_DvcPt.m_Nv21SrcFrmWidth, m_VdoInptPt.m_DvcPt.m_Nv21SrcFrmHeight, m_VdoInptPt.m_DvcPt.m_Nv21SrcFrmLenByt,
 													   m_ThrdPt.m_VdoInptFrmPt.m_Yu12RsltFrmPt, m_VdoInptPt.m_DvcPt.m_Yu12SrcFrmScaleWidth, m_VdoInptPt.m_DvcPt.m_Yu12SrcFrmScaleHeight, m_VdoInptPt.m_DvcPt.m_Yu12SrcFrmScaleLenByt,
@@ -2953,7 +2949,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 						}
 						else //如果没有视频输入帧。
 						{
-							UserReadAdoVdoInptFrm( m_ThrdPt.m_AdoInptPcmSrcFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenUnit, m_ThrdPt.m_AdoInptPcmRsltFrmVoiceActStsPt.m_Val,
+							UserReadAdoVdoInptFrm( m_ThrdPt.m_AdoInptPcmSrcFrmPt.m_PcmFrmPt, m_ThrdPt.m_AdoInptPcmRsltFrmPt, m_AdoInptPt.m_FrmLenUnit, m_ThrdPt.m_AdoInptPcmRsltFrmVoiceActStsPt.m_Val,
 												   null, 0, 0,
 												   null, 0, 0, 0,
 												   null, 0, 0, 0,
@@ -3001,17 +2997,17 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				m_AdoInptPt.m_PcmIdleFrmCntnrPt.offer( m_ThrdPt.m_AdoInptPcmSrcFrmPt );
 				m_ThrdPt.m_AdoInptPcmSrcFrmPt = null;
 			}
-			if( m_ThrdPt.m_AdoOtptPcmSrcFrmPt != null ) //如果取出了音频输出Pcm格式原始帧，就追加到Pcm格式空闲帧容器。注意：从取出到追加过程中不能跳出，否则会内存泄露。
+			if( m_ThrdPt.m_AdoOtptPcmSrcFrmPt != null ) //如果取出了音频输出Pcm格式原始帧，就放入到Pcm格式空闲帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
 			{
 				m_AdoOtptPt.m_PcmIdleFrmCntnrPt.offer( m_ThrdPt.m_AdoOtptPcmSrcFrmPt );
 				m_ThrdPt.m_AdoOtptPcmSrcFrmPt = null;
 			}
-			if( m_ThrdPt.m_VdoInptFrmPt != null ) //如果取出了视频输入帧，就追加到视频输入空闲帧容器。注意：从取出到追加过程中不能跳出，否则会内存泄露。
+			if( m_ThrdPt.m_VdoInptFrmPt != null ) //如果取出了视频输入帧，就放入到视频输入空闲帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
 			{
 				m_VdoInptPt.m_IdleFrmCntnrPt.offer( m_ThrdPt.m_VdoInptFrmPt );
 				m_ThrdPt.m_VdoInptFrmPt = null;
 			}
-			if( m_ThrdPt.m_VdoOtptFrmPt != null ) //如果取出了视频输出帧，就追加到视频输出空闲帧容器。注意：从取出到追加过程中不能跳出，否则会内存泄露。
+			if( m_ThrdPt.m_VdoOtptFrmPt != null ) //如果取出了视频输出帧，就放入到视频输出空闲帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
 			{
 				m_VdoOtptPt.m_IdleFrmCntnrPt.offer( m_ThrdPt.m_VdoOtptFrmPt );
 				m_ThrdPt.m_VdoOtptFrmPt = null;
@@ -3020,7 +3016,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 			p_Rslt = 0; //设置本函数执行成功。
 		}
 
-		if( p_Rslt != 0 ) //如果本函数执行失败。
+		//if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
 
 		}

@@ -90,24 +90,19 @@ public class AviFileWriter
 	{
 		return AviFileWriterAddAdoStrm( m_AviFileWriterPt, Fmt, SampleRate, ChanlNum, AdoStrmIdxPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
-	//设置Avi文件指定音频流的当前时间戳。
-	public int AdoStrmSetCurTimeStamp( int AdoStrmIdx, long CurTimeStampMsec, Vstr ErrInfoVstrPt )
-	{
-		return AviFileWriterAdoStrmSetCurTimeStamp( m_AviFileWriterPt, AdoStrmIdx, CurTimeStampMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
-	}
 	//获取Avi文件指定音频流的当前时间戳。
 	public int AdoStrmGetCurTimeStamp( int AdoStrmIdx, HTLong CurTimeStampMsecPt, Vstr ErrInfoVstrPt )
 	{
 		return AviFileWriterAdoStrmGetCurTimeStamp( m_AviFileWriterPt, AdoStrmIdx, CurTimeStampMsecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 	//Avi文件指定音频流的写入音频帧。
-	public int AdoStrmWriteByte( int AdoStrmIdx, byte FrmPt[], long FrmLenByt, long FrmLenMsec, Vstr ErrInfoVstrPt )
+	public int AdoStrmWriteByte( int AdoStrmIdx, long FrmTimeStampMsec, byte FrmPt[], long FrmLenByt, long FrmLenMsec, Vstr ErrInfoVstrPt )
 	{
-		return AviFileWriterAdoStrmWriteByte( m_AviFileWriterPt, AdoStrmIdx, FrmPt, FrmLenByt, FrmLenMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return AviFileWriterAdoStrmWriteByte( m_AviFileWriterPt, AdoStrmIdx, FrmTimeStampMsec, FrmPt, FrmLenByt, FrmLenMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
-	public int AdoStrmWriteShort( int AdoStrmIdx, short FrmPt[], long FrmLenByt, long FrmLenMsec, Vstr ErrInfoVstrPt )
+	public int AdoStrmWriteShort( int AdoStrmIdx, long FrmTimeStampMsec, short FrmPt[], long FrmLenByt, long FrmLenMsec, Vstr ErrInfoVstrPt )
 	{
-		return AviFileWriterAdoStrmWriteShort( m_AviFileWriterPt, AdoStrmIdx, FrmPt, FrmLenByt, FrmLenMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return AviFileWriterAdoStrmWriteShort( m_AviFileWriterPt, AdoStrmIdx, FrmTimeStampMsec, FrmPt, FrmLenByt, FrmLenMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//Avi文件添加视频流。
@@ -145,14 +140,12 @@ public class AviFileWriter
 
 	//Avi文件添加音频流。
 	private native int AviFileWriterAddAdoStrm( long AviFileWriterPt, int Fmt, int SampleRate, int ChanlNum, HTInt AdoStrmIdxPt, long ErrInfoVstrPt );
-	//设置Avi文件指定音频流的当前时间戳。
-	private native int AviFileWriterAdoStrmSetCurTimeStamp( long AviFileWriterPt, int AdoStrmIdx, long CurTimeStampMsec, long ErrInfoVstrPt );
 	//获取Avi文件指定音频流的当前时间戳。
 	private native int AviFileWriterAdoStrmGetCurTimeStamp( long AviFileWriterPt, int AdoStrmIdx, HTLong CurTimeStampMsecPt, long ErrInfoVstrPt );
 	//Avi文件指定音频流的写入字节型音频帧。
-	private native int AviFileWriterAdoStrmWriteByte( long AviFileWriterPt, int AdoStrmIdx, byte FrmPt[], long FrmLenByt, long FrmLenMsec, long ErrInfoVstrPt );
+	private native int AviFileWriterAdoStrmWriteByte( long AviFileWriterPt, int AdoStrmIdx, long FrmTimeStampMsec, byte FrmPt[], long FrmLenByt, long FrmLenMsec, long ErrInfoVstrPt );
 	//Avi文件指定音频流的写入短整型音频帧。
-	private native int AviFileWriterAdoStrmWriteShort( long AviFileWriterPt, int AdoStrmIdx, short FrmPt[], long FrmLenTwoByt, long FrmLenMsec, long ErrInfoVstrPt );
+	private native int AviFileWriterAdoStrmWriteShort( long AviFileWriterPt, int AdoStrmIdx, long FrmTimeStampMsec, short FrmPt[], long FrmLenTwoByt, long FrmLenMsec, long ErrInfoVstrPt );
 
 	//Avi文件添加视频流。
 	private native int AviFileWriterAddVdoStrm( long AviFileWriterPt, int Fmt, int MaxSampleRate, HTInt VdoStrmIdxPt, long ErrInfoVstrPt );

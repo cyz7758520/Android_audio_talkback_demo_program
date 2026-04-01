@@ -242,6 +242,7 @@ public class TkbkClnt //对讲客户端。
 			}
 
 			m_ClntMediaPocsThrdPt.IsAutoRqirExit(); //判断是否自动请求退出。
+
 			p_Rslt = 0; //设置本函数执行成功。
 		}
 
@@ -1307,7 +1308,7 @@ public class TkbkClnt //对讲客户端。
 
 	//用户定义的写入音频输出帧函数。
 	public void UserWriteAdoOtptFrm( int AdoOtptStrmIdx,
-									 short AdoOtptPcmSrcFrmPt[], int AdoOtptPcmFrmLenUnit,
+									 short AdoOtptPcmSrcFrmPt[], long AdoOtptPcmFrmLenUnit,
 									 byte AdoOtptEncdSrcFrmPt[], long AdoOtptEncdSrcFrmSzByt, HTLong AdoOtptEncdSrcFrmLenBytPt )
 	{
 		TkbkInfo p_TkbkInfoTmpPt;

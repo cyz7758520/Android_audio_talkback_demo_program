@@ -1,5 +1,6 @@
 package com.example.andrd_ado_vdo_tkbk_demo;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
+import android.media.MediaFormat;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
@@ -16,7 +18,9 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.SystemClock;
 import android.os.Vibrator;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -439,6 +443,16 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 	{
 		super.onCreate( savedInstanceState );
 		Log.i( m_CurClsNameStrPt, "onCreate" );
+
+		//添加主界面返回键消息。
+		getOnBackPressedDispatcher().addCallback( this, new OnBackPressedCallback(true) {
+			@Override
+			public void handleOnBackPressed() {
+				Log.i( m_CurClsNameStrPt, "handleOnBackPressed" );
+
+				onBackPressed();
+			}
+		} );
 
 		m_ErrInfoVstrPt = new Vstr();
 		if( m_ErrInfoVstrPt.Init( "" ) != 0 )

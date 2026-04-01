@@ -10,7 +10,15 @@ public abstract class MsgQueue //消息队列。
 	{
 		int m_MsgPocsRslt; //消息处理结果。
 		int m_MsgTyp; //消息类型。
-		Object[] m_MsgArgCntnrPt; //消息参数容器的指针。
+		Object[] m_MsgParmCntnrPt; //消息参数容器的指针。
+
+        //构造函数。
+        public Msg( int MsgPocsRslt, int MsgTyp, Object[] MsgParmCntnrPt )
+        {
+            m_MsgPocsRslt = MsgPocsRslt;
+            m_MsgTyp = MsgTyp;
+            m_MsgParmCntnrPt = MsgParmCntnrPt;
+        }
 	}
 	public final ConcurrentLinkedDeque< Msg > m_MsgCntnrPt = new ConcurrentLinkedDeque<>(); //存放消息容器的指针。这里忽略报错“Call requires API level 21 (current min is 14): new java.util.concurrent.ConcurrentLinkedDeque”。
 	public final Thread m_MsgPocsThrdPt; //消息处理线程的指针。
@@ -35,12 +43,12 @@ public abstract class MsgQueue //消息队列。
 			if( m_MsgCntnrPt.isEmpty() ) break Out; //如果没有消息需要处理。
 
 			p_MsgPt = m_MsgCntnrPt.pollFirst(); //从消息容器中取出并删除第一个消息。这里忽略报错“Call requires API level 21 (current min is 14): java.util.concurrent.ConcurrentLinkedDeque#pollFirst”。
-			p_MsgPt.m_MsgPocsRslt = UserMsgPocs( p_MsgPt.m_MsgTyp, p_MsgPt.m_MsgArgCntnrPt ); //调用用户定义的消息处理回调函数。
+			p_MsgPt.m_MsgPocsRslt = UserMsgPocs( p_MsgPt.m_MsgTyp, p_MsgPt.m_MsgParmCntnrPt ); //调用用户定义的消息处理回调函数。
 
 			p_Rslt = 0; //设置本函数执行成功。
 		}
 
-		if( p_Rslt != 0 ) //如果本函数执行失败。
+		//if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
 
 		}
@@ -54,12 +62,8 @@ public abstract class MsgQueue //消息队列。
 
 		Out:
 		{
-			Msg p_MsgPt = new Msg();
-
 			//放入消息到消息容器。
-			p_MsgPt.m_MsgPocsRslt = -99999;
-			p_MsgPt.m_MsgTyp = MsgTyp;
-			p_MsgPt.m_MsgArgCntnrPt = MsgParmPt;
+            Msg p_MsgPt = new Msg( -99999, MsgTyp, MsgParmPt );
 			if( AddFirstOrLast == 0 ) m_MsgCntnrPt.addFirst( p_MsgPt ); //添加消息到消息容器第一个。这里忽略报错“Call requires API level 21 (current min is 14): java.util.concurrent.ConcurrentLinkedDeque#addFirst”。
 			else m_MsgCntnrPt.addLast( p_MsgPt ); //添加消息到消息容器最后一个。这里忽略报错“Call requires API level 21 (current min is 14): java.util.concurrent.ConcurrentLinkedDeque#addLast”。
 
@@ -87,6 +91,10 @@ public abstract class MsgQueue //消息队列。
 			}
 		}
 
+        //if( p_Rslt != 0 ) //如果本函数执行失败。
+        {
+
+        }
 		return p_Rslt;
 	}
 }

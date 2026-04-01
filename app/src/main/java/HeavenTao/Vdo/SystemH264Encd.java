@@ -85,9 +85,11 @@ public class SystemH264Encd
 	}
 
 	//用系统自带H264编码器对8位无符号整型Yu12格式帧进行H264格式编码。
-	public int Pocs( byte Yu12FrmPt[], long Yu12FrmTimeStampMsec, byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt, long TimeOutMsec, Vstr ErrInfoVstrPt )
+	public int Pocs( byte Yu12FrmPt[], long Yu12FrmTimeStampMsec,
+                     byte H264FrmPt[], long H264FrmSzByt, HTLong H264FrmLenBytPt,
+                     long TmotMsec, Vstr ErrInfoVstrPt )
 	{
-		return SystemH264EncdPocs( m_SystemH264EncdPt, Yu12FrmPt, Yu12FrmTimeStampMsec, H264FrmPt, H264FrmSz, H264FrmLenPt, TimeOutMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return SystemH264EncdPocs( m_SystemH264EncdPt, Yu12FrmPt, Yu12FrmTimeStampMsec, H264FrmPt, H264FrmSzByt, H264FrmLenBytPt, TmotMsec, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//系统自带H264编码器获取应用程序限制信息。
@@ -99,5 +101,8 @@ public class SystemH264Encd
 	private native int SystemH264EncdDstoy( long SystemH264EncdPt, long ErrInfoVstrPt );
 
 	//用系统自带H264编码器对8位无符号整型Yu12格式帧进行H264格式编码。
-	private native int SystemH264EncdPocs( long SystemH264EncdPt, byte Yu12FrmPt[], long Yu12FrmTimeStampMsec, byte H264FrmPt[], long H264FrmSz, HTLong H264FrmLenPt, long TimeOutMsec, long ErrInfoVstrPt );
+	private native int SystemH264EncdPocs( long SystemH264EncdPt,
+                                           byte Yu12FrmPt[], long Yu12FrmTimeStampMsec,
+                                           byte H264FrmPt[], long H264FrmSzByt, HTLong H264FrmLenBytPt,
+                                           long TmotMsec, long ErrInfoVstrPt );
 }
