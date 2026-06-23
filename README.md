@@ -104,7 +104,7 @@
 &emsp;&emsp;保存音视频输入输出的AdoVdoInptOtpt.avi文件不能直接播放，需要使用FFmpeg命令转码后才能播放，建议用VLC播放器，转码命令为：ffmpeg -i AdoVdoInptOtpt.avi -filter_complex "[0:<zero-width space>a:1][0:<zero-width space>a:2]amix=inputs=2:duration=max[aout]" -map [aout] -map 0:v -acodec pcm_s16le -vcodec copy AdoVdoInptOtpt_Mix.avi -y。
 
 # 其他
-&emsp;&emsp;本软件采用了Speex的1.2.1版本、SpeexDsp的1.2.1版本、WebRtc的2019年7月份版本、WebRtc的2024年8月份版本、OpenH264的2.5.0版本为基础，并进行了大量优化。  
+&emsp;&emsp;本软件采用了Speex的1.2.1版本、SpeexDsp的1.2.1版本、WebRtc的2019年7月份版本、WebRtc的2026年4月份版本、OpenH264的2.5.0版本为基础，并进行了大量优化。  
 &emsp;&emsp;讨论QQ群：511046632    欢迎大家参与测试和讨论！  
 &emsp;&emsp;本人QQ号：280604597    赤勇玄心行天道  
 &emsp;&emsp;本人微信：qq280604597    赤勇玄心行天道  

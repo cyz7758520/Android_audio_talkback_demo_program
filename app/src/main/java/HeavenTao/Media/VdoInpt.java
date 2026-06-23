@@ -5,6 +5,8 @@ import android.hardware.Camera;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
 import android.widget.Toast;
 
 import java.util.Arrays;
@@ -21,12 +23,12 @@ public class VdoInpt //视频输入。
 	public int m_IsUse; //存放是否使用视频输入，为0表示不使用，为非0表示要使用。
 	public int m_IsInit; //存放是否初始化视频输入，为0表示未初始化，为非0表示已初始化。
 
-	public int m_MaxSmplRate; //存放最大采样频率，取值范围为[1,60]，实际帧率和图像的亮度有关，亮度较高时采样频率可以达到最大值，亮度较低时系统就自动降低采样频率来提升亮度。
-	public int m_FrmWidth; //存放屏幕旋转0度时，帧的宽度，单位为像素，只能为偶数。
-	public int m_FrmHeight; //存放屏幕旋转0度时，帧的高度，单位为像素，只能为偶数。
+	public int m_MaxSmplRate; //存放最大采样频率，取值范围为[1,60]，实际采样频率和图像的亮度有关，亮度较高时采样频率可以达到最大值，亮度较低时系统就自动降低采样频率来提升亮度。
+	public int m_FrmWidth; //存放屏幕旋转0度竖屏时，帧的宽度，单位为像素，只能为偶数。
+	public int m_FrmHeight; //存放屏幕旋转0度竖屏时，帧的高度，单位为像素，只能为偶数。
 	public long m_Yu12FrmLenByt; //存放Yu12格式帧的长度，单位为字节，为m_FrmWidth * m_FrmHeight * 3 / 2。
-	public int m_SrcFrmWidth; //存放屏幕旋转0度时，原始帧的宽度，单位为像素，只能为偶数，为0表示自动选择。
-	public int m_SrcFrmHeight; //存放屏幕旋转0度时，原始帧的高度，单位为像素，只能为偶数，为0表示自动选择。
+	public int m_SrcFrmWidth; //存放屏幕旋转0度竖屏时，原始帧的宽度，单位为像素，只能为偶数，为0表示自动选择。
+	public int m_SrcFrmHeight; //存放屏幕旋转0度竖屏时，原始帧的高度，单位为像素，只能为偶数，为0表示自动选择。
 	public int m_ScreenRotate; //存放屏幕旋转的角度，只能为0、90、180、270，0度表示竖屏，其他表示顺时针旋转。
 
 	public int m_UseWhatEncd; //存放使用什么编码器，为0表示Yu12原始数据，为1表示OpenH264编码器，为2表示系统自带H264编码器。
@@ -55,14 +57,9 @@ public class VdoInpt //视频输入。
 	public class Dvc //存放设备。
 	{
 		Camera m_Pt; //存放指针。
-		int m_UseWhatDvc; //存放使用什么设备，为-1表示自动查找，为0表示前置摄像头，为1表示后置摄像头。
-		int m_FrontCameraId; //存放前置摄像头的标识符，为-1表示自动查找。
-		int m_BackCameraId; //存放后置摄像头的标识符，为-1表示自动查找。
-		public HTSurfaceView m_PrvwSurfaceViewPt; //存放预览Surface视图的指针。
+		public SurfaceView m_PrvwSurfaceViewPt; //存放预览SurfaceView的指针。
 		SurfaceHolder.Callback m_PrvwSurfaceClbkPt; //存放预览Surface回调函数的指针。
-		byte m_PrvwClbkBufPtPt[][]; //存放预览回调函数缓冲区的指针。
-		VodInptPrvwClbk m_PrvwClbkPt; //存放预览回调函数的指针。
-		ConcurrentLinkedQueue< byte[] > m_Nv21SrcFrmCntnrPt; //存放Nv21格式原始帧容器的指针。
+		VodInptThrdPrvwClbk m_VodInptThrdPrvwClbkPt; //存放视频输入线程的预览回调函数的指针。
 		int m_Nv21SrcFrmWidth; //存放Nv21格式原始帧的宽度，单位为像素。
 		int m_Nv21SrcFrmHeight; //存放Nv21格式原始帧的高度，单位为像素。
 		long m_Nv21SrcFrmLenByt; //存放Nv21格式原始帧的长度，单位为字节，为m_Nv21SrcFrmWidth * m_Nv21SrcFrmHeight * 3 / 2。
@@ -78,6 +75,8 @@ public class VdoInpt //视频输入。
 		int m_Yu12SrcFrmScaleWidth; //存放Yu12格式原始帧缩放后的宽度，单位为像素，为m_FrmWidth或m_FrmHeight。
 		int m_Yu12SrcFrmScaleHeight; //存放Yu12格式原始帧缩放后的高度，单位为像素，为m_FrmWidth或m_FrmHeight。
 		long m_Yu12SrcFrmScaleLenByt; //存放Yu12格式原始帧缩放后的长度，单位为字节，为m_Yu12SrcFrmScaleWidth * m_Yu12SrcFrmScaleHeight * 3 / 2。
+		double m_LastFrmTickMsec; //存放上一个帧的嘀嗒钟，单位为毫秒。
+		double m_FrmTimeStepMsec; //存放帧的时间步进，单位为毫秒。
 		int m_IsBlack; //存放是否黑屏，为0表示有图像，为非0表示黑屏。
 	}
 	public Dvc m_DvcPt = new Dvc();
@@ -96,20 +95,13 @@ public class VdoInpt //视频输入。
 	class Thrd //存放线程。
 	{
 		int m_IsInitThrdTmpVar; //存放是否初始化线程的临时变量。
-		double m_LastFrmTickMsec; //存放上一个帧的嘀嗒钟，单位为毫秒。
-		double m_FrmTimeStepMsec; //存放帧的时间步进，单位为毫秒。
-		byte m_Nv21SrcFrmPt[]; //存放Nv21格式原始帧的指针。
+		Frm m_FrmPt; //存放帧的指针。
 		byte m_TmpFrm1Pt[]; //存放临时帧的指针。
 		byte m_TmpFrm2Pt[]; //存放临时帧的指针。
 		long m_TmpFrmSzByt; //存放临时帧的大小，单位为字节。
 		HTLong m_TmpFrmLenBytPt; //存放临时帧的长度，单位为字节。
-		Frm m_FrmPt; //存放帧的指针。
-		int m_ElmTotal; //存放元素总数。
 		long m_LastTickMsec; //存放上次的嘀嗒钟，单位为毫秒。
 		long m_NowTickMsec; //存放本次的嘀嗒钟，单位为毫秒。
-
-		VdoInptThrd m_ThrdPt; //存放线程的指针。
-		int m_ExitFlag; //存放退出标记，为0表示保持运行，为1表示请求退出。
 	}
 	Thrd m_ThrdPt = new Thrd();
 
@@ -124,29 +116,26 @@ public class VdoInpt //视频输入。
 		{
 			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) p_LastTickMsec = SystemClock.uptimeMillis(); //记录初始化开始的时间。
 
-			//初始化设备。
-			{
-				int p_CameraId = -1;
-				Camera.CameraInfo p_CameraInfoPt = new Camera.CameraInfo();
+			//初始化帧容器。
+			m_FrmCntnrPt = new ConcurrentLinkedQueue<>();
+			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化帧容器成功。" );
 
+			//初始化空闲帧容器。
+			m_IdleFrmCntnrPt = new ConcurrentLinkedQueue<>();
+			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化空闲帧容器成功。" );
+
+			//初始化设备、编码器、线程的临时变量、线程。
+			{
 				//打开设备。
 				{
+					int p_CameraId = m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_CameraId;
+					Camera.CameraInfo p_CameraInfoPt = new Camera.CameraInfo();
+
 					//查找设备对应的标识符。
-					if( m_DvcPt.m_UseWhatDvc == -1 ) //如果要自动查找。
+					if( ( m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.VdoInptDvcInfo.DvcTyp.DftFrontCamera ) || //如果要使用默认前置摄像头或默认后置摄像头。
+						( m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.VdoInptDvcInfo.DvcTyp.DftBackCamera ) )
 					{
-						p_CameraId = -1;
-					}
-					else if( m_DvcPt.m_UseWhatDvc == 0 ) //如果要使用前置摄像头。
-					{
-						p_CameraId = m_DvcPt.m_FrontCameraId;
-					}
-					else if( m_DvcPt.m_UseWhatDvc == 1 ) //如果要使用后置摄像头。
-					{
-						p_CameraId = m_DvcPt.m_BackCameraId;
-					}
-					if( p_CameraId == -1 ) //如果需要自动查找设备标识符。
-					{
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：开始自动查找设备标识符，摄像头总数：" + Camera.getNumberOfCameras() + "。" );
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：开始自动查找默认设备标识符，摄像头总数：" + Camera.getNumberOfCameras() + "。" );
 						for( p_CameraId = 0; p_CameraId < Camera.getNumberOfCameras(); p_CameraId++ )
 						{
 							try
@@ -158,31 +147,55 @@ public class VdoInpt //视频输入。
 								String p_InfoStrPt = "媒体处理线程：视频输入：获取设备 " + p_CameraId + " 的信息失败。原因：" + e.getMessage();
 								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
 								if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
-								break Out;
+								continue;
 							}
 							if( p_CameraInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_FRONT )
 							{
-								if( ( m_DvcPt.m_UseWhatDvc == -1 ) || ( m_DvcPt.m_UseWhatDvc == 0 ) )
+								if( m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.VdoInptDvcInfo.DvcTyp.DftFrontCamera )
 								{
-									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：查找到前置摄像头设备对应的标识符为" + p_CameraId + "。" );
+									m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_CameraId = p_CameraId;
+									m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt = p_CameraInfoPt;
+									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：查找到默认前置摄像头设备对应的标识符为" + p_CameraId + "。" );
 									break;
 								}
 							}
-							else //if( p_CameraInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_BACK ) //这里不加判断，因为有些后置摄像头的方向不是Camera.CameraInfo.CAMERA_FACING_BACK（0x0），而是0x2。
+							else //if( p_CameraInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_BACK ) //这里不判断后置，因为有些摄像头既不是前置也不是后置，所以非前置的都认为是后置。
 							{
-								if( ( m_DvcPt.m_UseWhatDvc == -1 ) || ( m_DvcPt.m_UseWhatDvc == 1 ) )
+								if( m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.VdoInptDvcInfo.DvcTyp.DftBackCamera )
 								{
-									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：查找到后置摄像头设备对应的标识符为" + p_CameraId + "。" );
+									m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_CameraId = p_CameraId;
+									m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt = p_CameraInfoPt;
+									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：查找到默认后置摄像头设备对应的标识符为" + p_CameraId + "。" );
 									break;
 								}
 							}
 						}
 						if( p_CameraId == Camera.getNumberOfCameras() )
 						{
-							String p_InfoStrPt = "媒体处理线程：视频输入：查找设备对应的标识符失败。原因：没有" + ( ( m_DvcPt.m_UseWhatDvc == -1 ) ? "前置或后置摄像头。" : ( m_DvcPt.m_UseWhatDvc == 0 ) ? "前置摄像头。" : "后置摄像头。" );
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
-							if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
-							break Out;
+							{
+								String p_InfoStrPt = "媒体处理线程：视频输入：查找默认设备对应的标识符失败。原因：没有" + ( ( m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.VdoInptDvcInfo.DvcTyp.DftFrontCamera ) ? "前置摄像头。" : "后置摄像头。" ) + "查找第一个可用设备。";
+								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
+								if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+							}
+
+							for( p_CameraId = 0; p_CameraId < Camera.getNumberOfCameras(); p_CameraId++ )
+							{
+								try
+								{
+									Camera.getCameraInfo( p_CameraId, p_CameraInfoPt );
+								}
+								catch( Exception e )
+								{
+									String p_InfoStrPt = "媒体处理线程：视频输入：获取设备 " + p_CameraId + " 的信息失败。原因：" + e.getMessage();
+									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
+									if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
+									continue;
+								}
+								m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_CameraId = p_CameraId;
+								m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt = p_CameraInfoPt;
+								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：查找到默认摄像头设备对应的标识符为" + p_CameraId + "。" );
+								break;
+							}
 						}
 					}
 
@@ -193,7 +206,7 @@ public class VdoInpt //视频输入。
 					}
 					catch( RuntimeException e )
 					{
-						String p_InfoStrPt = "媒体处理线程：视频输入：打开设备失败。原因：" + e.getMessage();
+						String p_InfoStrPt = "媒体处理线程：视频输入：打开设备标识符[" + p_CameraId + "]失败。原因：" + e.getMessage();
 						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, p_InfoStrPt );
 						if( m_MediaPocsThrdPt.m_IsShowToast != 0 ) m_MediaPocsThrdPt.m_ShowToastActPt.runOnUiThread( new Runnable() { public void run() { Toast.makeText( m_MediaPocsThrdPt.m_ShowToastActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show(); } } );
 						break Out;
@@ -204,22 +217,63 @@ public class VdoInpt //视频输入。
 
 				p_CameraParaPt.setPreviewFormat( ImageFormat.NV21 ); //设置预览帧的格式。
 
-				p_CameraParaPt.setPreviewFrameRate( m_MaxSmplRate ); //设置最大采样频率。
+				//设置采样频率。
+				int p_SelMaxFrameRates = 0;
+				int p_SelMinFrameRates = 0;
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：目标的最大采样频率：" + m_MaxSmplRate + "。" );
+				for( int p_SupportedFrameRate[] : p_CameraParaPt.getSupportedPreviewFpsRange() )
+				{
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：设备支持的采样频率：最小：" + p_SupportedFrameRate[ 0 ] + "，最大：" + p_SupportedFrameRate[ 1 ] + "。" );
+
+					//如果支持的最大采样频率满足目标的，且选择的最大采样频率不满足目标的（包括选择的采样频率为0）、或支持的最大采样频率比选择的小，就设置选择的为本次的。
+					//如果支持的最大采样频率不满足目标的，且支持的最大采样频率比选择的大、或支持的最大采样频率与选择的相同但支持的最小采样频率比选择的小，就设置选择的为本次的。
+					if( p_SupportedFrameRate[ 1 ] >= m_MaxSmplRate * 1000 )
+					{
+						if( ( p_SelMaxFrameRates < m_MaxSmplRate * 1000 ) ||
+							( p_SupportedFrameRate[ 1 ] < p_SelMaxFrameRates ) )
+						{
+							p_SelMaxFrameRates = p_SupportedFrameRate[ 1 ];
+							p_SelMinFrameRates = p_SupportedFrameRate[ 0 ];
+						}
+					}
+					else
+					{
+						if(
+							( p_SupportedFrameRate[ 1 ] > p_SelMaxFrameRates ) ||
+							(
+								( p_SupportedFrameRate[ 1 ] == p_SelMaxFrameRates ) &&
+								( p_SupportedFrameRate[ 0 ] < p_SelMinFrameRates )
+							)
+						)
+						{
+							p_SelMaxFrameRates = p_SupportedFrameRate[ 1 ];
+							p_SelMinFrameRates = p_SupportedFrameRate[ 0 ];
+						}
+					}
+				}
+				/*if( p_SelMaxFrameRates > m_MaxSmplRate * 1000 ) //如果选择的最大采样频率满足目标的。不能修改最大和最小值，只能用原始值，否则会报错。
+				{
+					if( p_SelMinFrameRates <= m_MaxSmplRate * 1000 ) p_SelMaxFrameRates = m_MaxSmplRate * 1000; //如果选择的最小采样频率小于等于目标的，就设置选择的最大采样频率为目标的。
+					else p_SelMaxFrameRates = p_SelMinFrameRates; //如果选择的最小采样频率大于目标的，就设置选择的最大采样频率为最小的，
+				}*/
+				p_CameraParaPt.setPreviewFpsRange( p_SelMinFrameRates, p_SelMaxFrameRates ); //设置采样频率。
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：选择设备的采样频率：最小：" + p_SelMinFrameRates + "，最大：" + p_SelMaxFrameRates + "。" );
 
 				//遍历设备支持的Nv21格式原始帧的大小，并智能选择满足目标Nv21格式原始帧的大小。
-				int p_TgtNv21SrcFrmWidth = m_FrmHeight; //存放目标Nv21格式原始帧的宽度，单位为像素。因为帧要旋转，所以设置为帧的高度。
-				int p_TgtNv21SrcFrmHeight = m_FrmWidth; //存放目标Nv21格式原始帧的高度，单位为像素。因为帧要旋转，所以设置为帧的宽度。
+				int p_TgtNv21SrcFrmWidth = ( m_SrcFrmHeight == 0 ) ? m_FrmHeight : m_SrcFrmHeight; //存放目标Nv21格式原始帧的宽度，单位为像素。如果要自动选择，就用指定帧的高度。如果不要自动选择，就用原始帧的高度。因为帧要旋转，所以设置为帧的高度。
+				int p_TgtNv21SrcFrmHeight = ( m_SrcFrmWidth == 0 ) ? m_FrmWidth : m_SrcFrmWidth; //存放目标Nv21格式原始帧的高度，单位为像素。如果要自动选择，就用指定帧的宽度。如果不要自动选择，就用原始帧的宽度。因为帧要旋转，所以设置为帧的宽度。
 				double p_TgtNv21SrcFrmAspectRatio = ( double )p_TgtNv21SrcFrmWidth / ( double )p_TgtNv21SrcFrmHeight; //存放目标Nv21格式原始帧的宽高比。
-				List< Camera.Size > p_SupportedPrvwSizesListPt = p_CameraParaPt.getSupportedPreviewSizes(); //获取设备支持预览的Nv21格式原始帧的大小的列表。
+				List< Camera.Size > p_SuptPrvwSizesListPt = p_CameraParaPt.getSupportedPreviewSizes(); //获取设备支持预览的Nv21格式原始帧的大小的列表。
 				double p_CurNv21SrcFrmAspectRatio; //存放本次Nv21格式原始帧的宽高比。
 				int p_CurNv21SrcFrmCropX; //存放本次Nv21格式原始帧裁剪区域左上角的横坐标，单位像素。
 				int p_CurNv21SrcFrmCropY; //存放本次Nv21格式原始帧裁剪区域左上角的纵坐标，单位像素。
 				int p_CurNv21SrcFrmCropWidth; //存放本次Nv21格式原始帧裁剪区域的宽度，单位像素。
 				int p_CurNv21SrcFrmCropHeight; //存放本次Nv21格式原始帧裁剪区域的高度，单位像素。
 				int p_IsSetSelCur; //存放是否设置选择的为本次的，为0表示不设置，为非0表示要设置。
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：指定帧的大小：宽度：" + m_FrmHeight + "，高度：" + m_FrmWidth + "。" );
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：原始帧的大小：宽度：" + m_SrcFrmHeight + "，高度：" + m_SrcFrmWidth + "。" );
 				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：目标的Nv21格式原始帧的大小：宽度：" + p_TgtNv21SrcFrmWidth + "，高度：" + p_TgtNv21SrcFrmHeight + "。" );
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：指定的Nv21格式原始帧的大小：宽度：" + m_SrcFrmWidth + "，高度：" + m_SrcFrmHeight + "。" );
-				for( Camera.Size p_CurNv21SrcFrmSz : p_SupportedPrvwSizesListPt )
+				for( Camera.Size p_CurNv21SrcFrmSz : p_SuptPrvwSizesListPt )
 				{
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：设备支持的Nv21格式原始帧的大小：宽度：" + p_CurNv21SrcFrmSz.width + "，高度：" + p_CurNv21SrcFrmSz.height + "。" );
 
@@ -246,39 +300,29 @@ public class VdoInpt //视频输入。
 						p_CurNv21SrcFrmCropY -= p_CurNv21SrcFrmCropY % 2;
 					}
 
-					//如果本次的帧的大小符合原始帧的大小，就设置选择的为本次的。
-					//如果要自动选择原始帧的大小，或选择的帧的大小不符合原始帧的大小，就判断本次的和目标的。
+					//如果选择的帧裁剪区域不满足目标的（包括选择的帧裁剪区域为0），则只要本次的帧裁剪区域比选择的大，就设置选择的为本次的。
+					//如果选择的帧裁剪区域满足目标的，就只要本次的帧裁剪区域满足目标的，且本次的帧裁剪区域比选择的小、或本次的帧裁剪区域相同但裁剪量比选择的小，就设置选择的为本次的。
 					p_IsSetSelCur = 0;
-					if( ( p_CurNv21SrcFrmSz.width == m_SrcFrmWidth ) && ( p_CurNv21SrcFrmSz.height == m_SrcFrmHeight ) )
+					if( ( m_DvcPt.m_Nv21SrcFrmCropWidth < p_TgtNv21SrcFrmWidth ) && ( m_DvcPt.m_Nv21SrcFrmCropHeight < p_TgtNv21SrcFrmHeight ) )
 					{
-						p_IsSetSelCur = 1;
-					}
-					else if( ( ( m_SrcFrmWidth == 0 ) && ( m_SrcFrmHeight == 0 ) ) ||
-							 ( m_DvcPt.m_Nv21SrcFrmWidth != m_SrcFrmWidth ) || ( m_DvcPt.m_Nv21SrcFrmHeight != m_SrcFrmHeight ) )
-					{
-						//如果选择的帧裁剪区域不满足目标的（包括选择的帧裁剪区域为0），则只要本次的帧裁剪区域比选择的大，就设置选择的为本次的。
-						//如果选择的帧裁剪区域满足目标的，就只要本次的帧裁剪区域满足目标的，且本次的帧裁剪区域比选择的小、或本次的帧裁剪区域相同但裁剪量比选择的小，就设置选择的为本次的。
-						if( ( m_DvcPt.m_Nv21SrcFrmCropWidth < p_TgtNv21SrcFrmWidth ) && ( m_DvcPt.m_Nv21SrcFrmCropHeight < p_TgtNv21SrcFrmHeight ) )
+						if( ( p_CurNv21SrcFrmCropWidth > m_DvcPt.m_Nv21SrcFrmCropWidth ) && ( p_CurNv21SrcFrmCropHeight > m_DvcPt.m_Nv21SrcFrmCropHeight ) )
 						{
-							if( ( p_CurNv21SrcFrmCropWidth > m_DvcPt.m_Nv21SrcFrmCropWidth ) && ( p_CurNv21SrcFrmCropHeight > m_DvcPt.m_Nv21SrcFrmCropHeight ) )
-							{
-								p_IsSetSelCur = 1;
-							}
+							p_IsSetSelCur = 1;
 						}
-						else
-						{
-							if(
-								( ( p_CurNv21SrcFrmCropWidth >= p_TgtNv21SrcFrmWidth ) && ( p_CurNv21SrcFrmCropHeight >= p_TgtNv21SrcFrmHeight ) )
-								&&
-								(
-									( ( p_CurNv21SrcFrmCropWidth < m_DvcPt.m_Nv21SrcFrmCropWidth ) || ( p_CurNv21SrcFrmCropHeight < m_DvcPt.m_Nv21SrcFrmCropHeight ) )
-									||
-									( ( p_CurNv21SrcFrmCropWidth == m_DvcPt.m_Nv21SrcFrmCropWidth ) && ( p_CurNv21SrcFrmCropHeight == m_DvcPt.m_Nv21SrcFrmCropHeight ) && ( p_CurNv21SrcFrmCropX + p_CurNv21SrcFrmCropY < m_DvcPt.m_Nv21SrcFrmCropX + m_DvcPt.m_Nv21SrcFrmCropY ) )
-								)
+					}
+					else
+					{
+						if(
+							( ( p_CurNv21SrcFrmCropWidth >= p_TgtNv21SrcFrmWidth ) && ( p_CurNv21SrcFrmCropHeight >= p_TgtNv21SrcFrmHeight ) )
+							&&
+							(
+								( ( p_CurNv21SrcFrmCropWidth < m_DvcPt.m_Nv21SrcFrmCropWidth ) || ( p_CurNv21SrcFrmCropHeight < m_DvcPt.m_Nv21SrcFrmCropHeight ) )
+								||
+								( ( p_CurNv21SrcFrmCropWidth == m_DvcPt.m_Nv21SrcFrmCropWidth ) && ( p_CurNv21SrcFrmCropHeight == m_DvcPt.m_Nv21SrcFrmCropHeight ) && ( p_CurNv21SrcFrmCropX + p_CurNv21SrcFrmCropY < m_DvcPt.m_Nv21SrcFrmCropX + m_DvcPt.m_Nv21SrcFrmCropY ) )
 							)
-							{
-								p_IsSetSelCur = 1;
-							}
+						)
+						{
+							p_IsSetSelCur = 1;
 						}
 					}
 					if( p_IsSetSelCur != 0 ) //如果要设置选择的为本次的。
@@ -309,13 +353,13 @@ public class VdoInpt //视频输入。
 				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：Nv21格式原始帧是否裁剪：" + m_DvcPt.m_Nv21SrcFrmIsCrop + "，裁剪区域左上角的横坐标：" + m_DvcPt.m_Nv21SrcFrmCropX + "，纵坐标：" + m_DvcPt.m_Nv21SrcFrmCropY + "，裁剪区域的宽度：" + m_DvcPt.m_Nv21SrcFrmCropWidth + "，高度：" + m_DvcPt.m_Nv21SrcFrmCropHeight + "。" );
 
 				//设置Yu12格式原始帧。
-				if( p_CameraInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_FRONT ) //如果要使用前置摄像头。
+				if( m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_FRONT ) //如果要使用前置摄像头。
 				{
-					m_DvcPt.m_Yu12SrcFrmRotate = ( 270 + m_ScreenRotate ) % 360; //设置Yu12格式原始帧的旋转角度。
+					m_DvcPt.m_Yu12SrcFrmRotate = ( 720 + m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt.orientation + m_ScreenRotate ) % 360; //设置Yu12格式原始帧的旋转角度。
 				}
 				else //如果要使用后置摄像头。
 				{
-					m_DvcPt.m_Yu12SrcFrmRotate = ( 450 - m_ScreenRotate ) % 360; //设置Yu12格式原始帧的旋转角度。
+					m_DvcPt.m_Yu12SrcFrmRotate = ( 720 + m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt.orientation - m_ScreenRotate ) % 360; //设置Yu12格式原始帧的旋转角度。
 				}
 				if( ( m_DvcPt.m_Yu12SrcFrmRotate == 0 ) || ( m_DvcPt.m_Yu12SrcFrmRotate == 180 ) ) //如果旋转后为横屏。
 				{
@@ -327,7 +371,7 @@ public class VdoInpt //视频输入。
 					m_DvcPt.m_Yu12SrcFrmRotateWidth = m_DvcPt.m_Nv21SrcFrmCropHeight; //设置Yu12格式原始帧旋转后的宽度。
 					m_DvcPt.m_Yu12SrcFrmRotateHeight = m_DvcPt.m_Nv21SrcFrmCropWidth; //设置Yu12格式原始帧旋转后的高度。
 				}
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：Yu12格式原始帧旋转后的宽度：" + m_DvcPt.m_Yu12SrcFrmRotateWidth + "，旋转后的高度：" + m_DvcPt.m_Yu12SrcFrmRotateHeight + "。" );
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：Yu12格式原始帧：旋转角度：" + m_DvcPt.m_Yu12SrcFrmRotate + "，旋转后的宽度：" + m_DvcPt.m_Yu12SrcFrmRotateWidth + "，旋转后的高度：" + m_DvcPt.m_Yu12SrcFrmRotateHeight + "。" );
 
 				//设置Yu12格式原始帧是否缩放。
 				if( ( m_DvcPt.m_Nv21SrcFrmCropWidth != p_TgtNv21SrcFrmWidth ) || ( m_DvcPt.m_Nv21SrcFrmCropHeight != p_TgtNv21SrcFrmHeight ) )
@@ -340,13 +384,13 @@ public class VdoInpt //视频输入。
 				}
 				if( ( m_DvcPt.m_Yu12SrcFrmRotate == 0 ) || ( m_DvcPt.m_Yu12SrcFrmRotate == 180 ) ) //如果旋转后为横屏。
 				{
-					m_DvcPt.m_Yu12SrcFrmScaleWidth = p_TgtNv21SrcFrmWidth; //设置Yu12格式原始帧缩放后的宽度。
-					m_DvcPt.m_Yu12SrcFrmScaleHeight = p_TgtNv21SrcFrmHeight; //设置Yu12格式原始帧缩放后的高度。
+					m_DvcPt.m_Yu12SrcFrmScaleWidth = m_FrmHeight; //设置Yu12格式原始帧缩放后的宽度。
+					m_DvcPt.m_Yu12SrcFrmScaleHeight = m_FrmWidth; //设置Yu12格式原始帧缩放后的高度。
 				}
 				else //如果旋转后为竖屏。
 				{
-					m_DvcPt.m_Yu12SrcFrmScaleWidth = p_TgtNv21SrcFrmHeight; //设置Yu12格式原始帧缩放后的宽度。
-					m_DvcPt.m_Yu12SrcFrmScaleHeight = p_TgtNv21SrcFrmWidth; //设置Yu12格式原始帧缩放后的高度。
+					m_DvcPt.m_Yu12SrcFrmScaleWidth = m_FrmWidth; //设置Yu12格式原始帧缩放后的宽度。
+					m_DvcPt.m_Yu12SrcFrmScaleHeight = m_FrmHeight; //设置Yu12格式原始帧缩放后的高度。
 				}
 				m_DvcPt.m_Yu12SrcFrmScaleLenByt = m_DvcPt.m_Yu12SrcFrmScaleWidth * m_DvcPt.m_Yu12SrcFrmScaleHeight * 3 / 2; //设置Yu12格式原始帧缩放后的长度。
 				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：Yu12格式原始帧是否缩放：" + m_DvcPt.m_Yu12SrcFrmIsScale + "，缩放后的宽度：" + m_DvcPt.m_Yu12SrcFrmScaleWidth + "，缩放后的高度：" + m_DvcPt.m_Yu12SrcFrmScaleHeight + "。" );
@@ -412,16 +456,16 @@ public class VdoInpt //视频输入。
 
 				if( m_DvcPt.m_PrvwSurfaceViewPt == null )
 				{
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：预览Surface视图的指针为空。" );
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：预览SurfaceView的指针为空。" );
 					break Out;
 				}
-				m_DvcPt.m_PrvwSurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置预览Surface视图的类型。老机型上必须要用。
+				m_DvcPt.m_PrvwSurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置预览SurfaceView的类型。老机型上必须要用。
 				m_DvcPt.m_PrvwSurfaceClbkPt = new SurfaceHolder.Callback() //创建预览Surface的回调函数。
 				{
 					@Override public void surfaceCreated( SurfaceHolder holder )
 					{
 						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：VdoInptPrvwSurface Created" );
-						m_MediaPocsThrdPt.VdoInptSetUseDvc( 0, m_DvcPt.m_UseWhatDvc, m_DvcPt.m_FrontCameraId, m_DvcPt.m_BackCameraId ); //重启视频输入。
+						m_MediaPocsThrdPt.VdoInptSetUseDvc( 0, null ); //重启视频输入。
 					}
 
 					@Override public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
@@ -434,35 +478,93 @@ public class VdoInpt //视频输入。
 						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：VdoInptPrvwSurface Destroyed" );
 					}
 				};
-				m_DvcPt.m_PrvwSurfaceViewPt.getHolder().addCallback( m_DvcPt.m_PrvwSurfaceClbkPt ); //设置预览Surface视图的回调函数添加。
+				m_DvcPt.m_PrvwSurfaceViewPt.getHolder().addCallback( m_DvcPt.m_PrvwSurfaceClbkPt ); //设置预览SurfaceView的回调函数添加。
 				try
 				{
-					m_DvcPt.m_Pt.setPreviewDisplay( m_DvcPt.m_PrvwSurfaceViewPt.getHolder() ); //设置预览Surface视图。
+					m_DvcPt.m_Pt.setPreviewDisplay( m_DvcPt.m_PrvwSurfaceViewPt.getHolder() ); //设置预览SurfaceView。
 				}
 				catch( Exception ignored )
 				{
 				}
-				if( m_ScreenRotate == 0 || m_ScreenRotate == 180 ) //如果屏幕为竖屏。
+				if( m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt.facing == Camera.CameraInfo.CAMERA_FACING_FRONT ) //如果要使用前置摄像头。
 				{
-					m_DvcPt.m_PrvwSurfaceViewPt.SetWidthToHeightRatio( ( float )m_DvcPt.m_Nv21SrcFrmHeight / m_DvcPt.m_Nv21SrcFrmWidth ); //设置预览SurfaceView视图的宽高比。
+					m_DvcPt.m_Pt.setDisplayOrientation( ( 720 - m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt.orientation - m_ScreenRotate ) % 360 ); //设置预览显示的旋转角度。
 				}
-				else //如果屏幕为横屏。
+				else //如果要使用后置摄像头。
 				{
-					m_DvcPt.m_PrvwSurfaceViewPt.SetWidthToHeightRatio( ( float )m_DvcPt.m_Nv21SrcFrmWidth / m_DvcPt.m_Nv21SrcFrmHeight ); //设置预览SurfaceView视图的宽高比。
+					m_DvcPt.m_Pt.setDisplayOrientation( ( 720 + m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt.orientation - m_ScreenRotate ) % 360 ); //设置预览显示的旋转角度。
 				}
-				m_DvcPt.m_Pt.setDisplayOrientation( ( 450 - m_ScreenRotate ) % 360 ); //设置预览显示的旋转角度。
 
-				//设置预览回调函数缓冲区的指针。
-				m_DvcPt.m_PrvwClbkBufPtPt = new byte[ m_MaxSmplRate ][ ( int ) m_DvcPt.m_Nv21SrcFrmLenByt ];
-				for( int p_TmpInt = 0; p_TmpInt < m_MaxSmplRate; p_TmpInt++ )
-					m_DvcPt.m_Pt.addCallbackBuffer( m_DvcPt.m_PrvwClbkBufPtPt[ p_TmpInt ] ); //放入Nv21格式原始帧到设备。
+				//设置预览回调函数缓冲区的指针。只需要2个缓冲区就能达到每秒30帧。
+				for( int p_TmpInt = 0; p_TmpInt < 2; p_TmpInt++ )
+					m_DvcPt.m_Pt.addCallbackBuffer( new byte[ ( int ) m_DvcPt.m_Nv21SrcFrmLenByt ] ); //放入Nv21格式原始帧到设备。
 
-				//设置预览回调函数。
-				m_DvcPt.m_PrvwClbkPt = new VodInptPrvwClbk();
-				m_DvcPt.m_Pt.setPreviewCallbackWithBuffer( m_DvcPt.m_PrvwClbkPt );
+				//设置视频输入线程的预览回调函数。
+				m_DvcPt.m_VodInptThrdPrvwClbkPt = new VodInptThrdPrvwClbk();
+				m_DvcPt.m_Pt.setPreviewCallbackWithBuffer( m_DvcPt.m_VodInptThrdPrvwClbkPt );
 
-				//初始化Nv21格式原始帧容器。
-				m_DvcPt.m_Nv21SrcFrmCntnrPt = new ConcurrentLinkedQueue();
+				m_DvcPt.m_LastFrmTickMsec = 0; //初始化上一个帧的嘀嗒钟。
+				m_DvcPt.m_FrmTimeStepMsec = 1000.0 / m_MaxSmplRate; //初始化帧的时间步进。
+
+				//初始化编码器。
+				switch( m_UseWhatEncd )
+				{
+					case 0: //如果要使用Yu12原始数据。
+					{
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化Yu12原始数据成功。" );
+						break;
+					}
+					case 1: //如果要使用OpenH264编码器。
+					{
+						m_OpenH264EncdPt.m_Pt = new HeavenTao.Vdo.OpenH264Encd();
+						if( m_OpenH264EncdPt.m_Pt.Init( m_MediaPocsThrdPt.m_LicnCodePt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight, m_OpenH264EncdPt.m_VdoType, m_OpenH264EncdPt.m_EncdBitrate, m_OpenH264EncdPt.m_BitrateCtrlMode, m_MaxSmplRate, m_OpenH264EncdPt.m_IDRFrmIntvl, m_OpenH264EncdPt.m_Cmplxt, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+						{
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化OpenH264编码器成功。" );
+						}
+						else
+						{
+							m_OpenH264EncdPt.m_Pt = null;
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化OpenH264编码器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
+							break Out;
+						}
+						break;
+					}
+					case 2: //如果要使用系统自带H264编码器。
+					{
+						m_SystemH264EncdPt.m_Pt = new HeavenTao.Vdo.SystemH264Encd();
+						if( m_SystemH264EncdPt.m_Pt.Init( m_MediaPocsThrdPt.m_LicnCodePt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight, m_SystemH264EncdPt.m_EncdBitrate, m_SystemH264EncdPt.m_BitrateCtrlMode, m_MaxSmplRate, m_SystemH264EncdPt.m_IDRFrmIntvlTimeSec, m_SystemH264EncdPt.m_Cmplxt, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
+						{
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化系统自带H264编码器成功。" );
+						}
+						else
+						{
+							m_SystemH264EncdPt.m_Pt = null;
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化系统自带H264编码器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
+							break Out;
+						}
+						break;
+					}
+				}
+
+				//初始化线程的临时变量。
+				{
+					m_ThrdPt.m_IsInitThrdTmpVar = 1; //设置已初始化线程的临时变量。
+					if( m_DvcPt.m_Yu12SrcFrmScaleLenByt >= m_DvcPt.m_Nv21SrcFrmLenByt ) //如果Yu12格式原始帧缩放后的长度大于等于Nv21格式原始帧的长度。
+					{
+						m_ThrdPt.m_TmpFrmSzByt = m_DvcPt.m_Yu12SrcFrmScaleLenByt; //初始化临时帧的大小。
+					}
+					else //如果Yu12格式原始帧缩放后的长度小于Nv21格式原始帧的长度。
+					{
+						m_ThrdPt.m_TmpFrmSzByt = m_DvcPt.m_Nv21SrcFrmLenByt; //初始化临时帧的大小。
+					}
+					m_ThrdPt.m_TmpFrm1Pt = new byte[( int )m_ThrdPt.m_TmpFrmSzByt]; //初始化临时帧的指针。
+					m_ThrdPt.m_TmpFrm2Pt = new byte[( int )m_ThrdPt.m_TmpFrmSzByt]; //初始化临时帧的指针。
+					m_ThrdPt.m_TmpFrmLenBytPt = new HTLong(); //初始化临时帧的长度。
+					m_ThrdPt.m_FrmPt = null; //初始化视频输入帧的指针。
+					m_ThrdPt.m_LastTickMsec = 0; //初始化上次的嘀嗒钟。
+					m_ThrdPt.m_NowTickMsec = 0; //初始化本次的嘀嗒钟。
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化线程的临时变量成功。" );
+				}
 
 				//设置设备开始预览。
 				try
@@ -475,90 +577,11 @@ public class VdoInpt //视频输入。
 					break Out;
 				}
 
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化设备和线程成功。" );
+
 				//发送视频输入设备改变线程消息。
-				m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypVdoInptDvcChg, p_CameraId );
-
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化设备成功。" );
-			}
-
-			//初始化编码器。
-			switch( m_UseWhatEncd )
-			{
-				case 0: //如果要使用Yu12原始数据。
-				{
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化Yu12原始数据成功。" );
-					break;
-				}
-				case 1: //如果要使用OpenH264编码器。
-				{
-					m_OpenH264EncdPt.m_Pt = new HeavenTao.Vdo.OpenH264Encd();
-					if( m_OpenH264EncdPt.m_Pt.Init( m_MediaPocsThrdPt.m_LicnCodePt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight, m_OpenH264EncdPt.m_VdoType, m_OpenH264EncdPt.m_EncdBitrate, m_OpenH264EncdPt.m_BitrateCtrlMode, m_MaxSmplRate, m_OpenH264EncdPt.m_IDRFrmIntvl, m_OpenH264EncdPt.m_Cmplxt, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
-					{
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化OpenH264编码器成功。" );
-					}
-					else
-					{
-						m_OpenH264EncdPt.m_Pt = null;
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化OpenH264编码器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
-						break Out;
-					}
-					break;
-				}
-				case 2: //如果要使用系统自带H264编码器。
-				{
-					m_SystemH264EncdPt.m_Pt = new HeavenTao.Vdo.SystemH264Encd();
-					if( m_SystemH264EncdPt.m_Pt.Init( m_MediaPocsThrdPt.m_LicnCodePt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight, m_SystemH264EncdPt.m_EncdBitrate, m_SystemH264EncdPt.m_BitrateCtrlMode, m_MaxSmplRate, m_SystemH264EncdPt.m_IDRFrmIntvlTimeSec, m_SystemH264EncdPt.m_Cmplxt, m_MediaPocsThrdPt.m_ErrInfoVstrPt ) == 0 )
-					{
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化系统自带H264编码器成功。" );
-					}
-					else
-					{
-						m_SystemH264EncdPt.m_Pt = null;
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化系统自带H264编码器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
-						break Out;
-					}
-					break;
-				}
-			}
-
-			//初始化线程的临时变量。
-			{
-				m_ThrdPt.m_IsInitThrdTmpVar = 1; //设置已初始化线程的临时变量。
-				m_ThrdPt.m_LastFrmTickMsec = 0; //初始化上一个帧的嘀嗒钟。
-				m_ThrdPt.m_FrmTimeStepMsec = 1000.0 / m_MaxSmplRate; //初始化帧的时间步进。
-				m_ThrdPt.m_Nv21SrcFrmPt = null; //初始化Nv21格式原始帧的指针。
-				if( m_DvcPt.m_Yu12SrcFrmScaleLenByt >= m_DvcPt.m_Nv21SrcFrmLenByt ) //如果Yu12格式原始帧缩放后的长度大于等于Nv21格式原始帧的长度。
-				{
-					m_ThrdPt.m_TmpFrmSzByt = m_DvcPt.m_Yu12SrcFrmScaleLenByt; //初始化临时帧的大小。
-				}
-				else //如果Yu12格式原始帧缩放后的长度小于Nv21格式原始帧的长度。
-				{
-					m_ThrdPt.m_TmpFrmSzByt = m_DvcPt.m_Nv21SrcFrmLenByt; //初始化临时帧的大小。
-				}
-				m_ThrdPt.m_TmpFrm1Pt = new byte[( int )m_ThrdPt.m_TmpFrmSzByt]; //初始化临时帧的指针。
-				m_ThrdPt.m_TmpFrm2Pt = new byte[( int )m_ThrdPt.m_TmpFrmSzByt]; //初始化临时帧的指针。
-				m_ThrdPt.m_TmpFrmLenBytPt = new HTLong(); //初始化临时帧的长度。
-				m_ThrdPt.m_FrmPt = null; //初始化视频输入帧的指针。
-				m_ThrdPt.m_ElmTotal = 0; //初始化元素总数。
-				m_ThrdPt.m_LastTickMsec = 0; //初始化上次的嘀嗒钟。
-				m_ThrdPt.m_NowTickMsec = 0; //初始化本次的嘀嗒钟。
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化线程的临时变量成功。" );
-			}
-
-			//初始化帧容器。
-			m_FrmCntnrPt = new ConcurrentLinkedQueue<>();
-			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化帧容器成功。" );
-
-			//初始化空闲帧容器。
-			m_IdleFrmCntnrPt = new ConcurrentLinkedQueue<>();
-			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：初始化空闲帧容器成功。" );
-
-			//初始化线程。
-			{
-				m_ThrdPt.m_ExitFlag = 0; //设置线程退出标记为0表示保持运行。
-				m_ThrdPt.m_ThrdPt = new VdoInptThrd();
-				m_ThrdPt.m_ThrdPt.start(); //启动线程。
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：创建线程成功。" );
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：发送视频输入设备改变线程消息。" );
+				m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.VdoInptDvcChg );
 			}
 
 			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )
@@ -585,86 +608,50 @@ public class VdoInpt //视频输入。
 
 		if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) p_LastTickMsec = SystemClock.uptimeMillis(); //记录销毁开始的时间。
 
-		//销毁线程。
-		if( m_ThrdPt.m_ThrdPt != null )
-		{
-			m_ThrdPt.m_ExitFlag = 1; //请求线程退出。
-			try
-			{
-				m_ThrdPt.m_ThrdPt.join(); //等待线程退出。
-			}
-			catch( InterruptedException ignored )
-			{
-			}
-			m_ThrdPt.m_ThrdPt = null;
-			m_ThrdPt.m_ExitFlag = 0;
-			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁线程成功。" );
-		}
-
-		//销毁线程的临时变量。
-		if( m_ThrdPt.m_IsInitThrdTmpVar != 0 )
-		{
-			m_ThrdPt.m_IsInitThrdTmpVar = 0; //设置未初始化线程的临时变量。
-			m_ThrdPt.m_LastFrmTickMsec = 0; //销毁上一个帧的嘀嗒钟。
-			m_ThrdPt.m_FrmTimeStepMsec = 0; //销毁帧的时间步进。
-			m_ThrdPt.m_Nv21SrcFrmPt = null; //销毁Nv21格式原始帧的指针。
-			m_ThrdPt.m_TmpFrm1Pt = null; //初始化临时帧的指针。
-			m_ThrdPt.m_TmpFrm2Pt = null; //初始化临时帧的指针。
-			m_ThrdPt.m_TmpFrmLenBytPt = null; //初始化结果帧的长度。
-			m_ThrdPt.m_TmpFrmSzByt = 0; //销毁结果帧的大小。
-			m_ThrdPt.m_FrmPt = null; //销毁帧的指针。
-			m_ThrdPt.m_ElmTotal = 0; //销毁元素总数。
-			m_ThrdPt.m_LastTickMsec = 0; //销毁上次的嘀嗒钟。
-			m_ThrdPt.m_NowTickMsec = 0; //销毁本次的嘀嗒钟。
-			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁线程的临时变量成功。" );
-		}
-
-		//销毁设备。
+		//销毁设备和线程。
 		if( m_DvcPt.m_Pt != null )
 		{
 			m_DvcPt.m_Pt.setPreviewCallback( null ); //设置预览回调函数为空，防止出现java.lang.RuntimeException: Method called after release()异常。
 			m_DvcPt.m_Pt.stopPreview(); //停止预览。
 			m_DvcPt.m_Pt.release(); //销毁摄像头。
 			m_DvcPt.m_Pt = null;
-			if( m_DvcPt.m_Nv21SrcFrmCntnrPt != null )
-			{
-				m_DvcPt.m_Nv21SrcFrmCntnrPt.clear();
-				m_DvcPt.m_Nv21SrcFrmCntnrPt = null;
-			}
-			m_DvcPt.m_PrvwClbkPt = null;
 			if( m_DvcPt.m_PrvwSurfaceViewPt != null )
 			{
-				m_DvcPt.m_PrvwSurfaceViewPt.getHolder().removeCallback( m_DvcPt.m_PrvwSurfaceClbkPt ); //设置预览Surface视图的回调函数移除。
-				m_DvcPt.m_PrvwSurfaceViewPt.SetBlack(); //设置预览Surface视图为黑屏。
+				m_DvcPt.m_PrvwSurfaceViewPt.getHolder().removeCallback( m_DvcPt.m_PrvwSurfaceClbkPt ); //设置预览SurfaceView的回调函数移除。
+				m_DvcPt.m_PrvwSurfaceViewPt.post( new Runnable() { @Override public void run() { m_DvcPt.m_PrvwSurfaceViewPt.setVisibility( View.GONE ); m_DvcPt.m_PrvwSurfaceViewPt.setVisibility( View.VISIBLE ); } } ); //设置预览SurfaceView为黑屏。
 			}
 			m_DvcPt.m_PrvwSurfaceClbkPt = null;
-			m_DvcPt.m_PrvwClbkBufPtPt = null;
-			m_DvcPt.m_Yu12SrcFrmRotate = 0;
+			m_DvcPt.m_VodInptThrdPrvwClbkPt = null;
 			m_DvcPt.m_Nv21SrcFrmWidth = 0;
 			m_DvcPt.m_Nv21SrcFrmHeight = 0;
+			m_DvcPt.m_Nv21SrcFrmLenByt = 0;
 			m_DvcPt.m_Nv21SrcFrmIsCrop = 0;
 			m_DvcPt.m_Nv21SrcFrmCropX = 0;
 			m_DvcPt.m_Nv21SrcFrmCropY = 0;
 			m_DvcPt.m_Nv21SrcFrmCropWidth = 0;
 			m_DvcPt.m_Nv21SrcFrmCropHeight = 0;
+			m_DvcPt.m_Yu12SrcFrmRotate = 0;
 			m_DvcPt.m_Yu12SrcFrmIsScale = 0;
-			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁设备成功。" );
+			m_DvcPt.m_Yu12SrcFrmScaleWidth = 0;
+			m_DvcPt.m_Yu12SrcFrmScaleHeight = 0;
+			m_DvcPt.m_Yu12SrcFrmScaleLenByt = 0;
+			m_DvcPt.m_LastFrmTickMsec = 0;
+			m_DvcPt.m_FrmTimeStepMsec = 0;
+			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁设备和线程成功。" );
 		}
 
-		//销毁空闲帧容器。
-		if( m_IdleFrmCntnrPt != null )
+		//销毁线程的临时变量。
+		if( m_ThrdPt.m_IsInitThrdTmpVar != 0 )
 		{
-			m_IdleFrmCntnrPt.clear();
-			m_IdleFrmCntnrPt = null;
-			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁空闲帧容器成功。" );
-		}
-
-		//销毁帧容器。
-		if( m_FrmCntnrPt != null )
-		{
-			m_FrmCntnrPt.clear();
-			m_FrmCntnrPt = null;
-			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁帧容器成功。" );
+			m_ThrdPt.m_IsInitThrdTmpVar = 0; //设置未初始化线程的临时变量。
+			m_ThrdPt.m_TmpFrm1Pt = null; //初始化临时帧的指针。
+			m_ThrdPt.m_TmpFrm2Pt = null; //初始化临时帧的指针。
+			m_ThrdPt.m_TmpFrmLenBytPt = null; //初始化结果帧的长度。
+			m_ThrdPt.m_TmpFrmSzByt = 0; //销毁结果帧的大小。
+			m_ThrdPt.m_FrmPt = null; //销毁帧的指针。
+			m_ThrdPt.m_LastTickMsec = 0; //销毁上次的嘀嗒钟。
+			m_ThrdPt.m_NowTickMsec = 0; //销毁本次的嘀嗒钟。
+			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁线程的临时变量成功。" );
 		}
 
 		//销毁编码器。
@@ -709,6 +696,22 @@ public class VdoInpt //视频输入。
 			}
 		}
 
+		//销毁空闲帧容器。
+		if( m_IdleFrmCntnrPt != null )
+		{
+			m_IdleFrmCntnrPt.clear();
+			m_IdleFrmCntnrPt = null;
+			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁空闲帧容器成功。" );
+		}
+
+		//销毁帧容器。
+		if( m_FrmCntnrPt != null )
+		{
+			m_FrmCntnrPt.clear();
+			m_FrmCntnrPt = null;
+			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：销毁帧容器成功。" );
+		}
+
 		if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )
 		{
 			p_NowTickMsec = SystemClock.uptimeMillis(); //记录销毁结束的时间。
@@ -716,235 +719,222 @@ public class VdoInpt //视频输入。
 		}
 	}
 
-	//视频输入预览回调函数。
-	public class VodInptPrvwClbk implements Camera.PreviewCallback
+	//获取一个空闲帧。
+	private Frm GetIdleFrm( int IsChkFrmCntnrElmTotal )
 	{
-		//读取一个视频输入帧的预览回调函数，本函数是在主线程中运行的。
-		@Override public void onPreviewFrame( byte[] data, Camera camera )
+		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+		Frm p_IdleFrmPt = null; //存放空闲帧的指针。
+		int p_ElmTotal; //存放元素总数。
+
+		Out:
 		{
-			m_DvcPt.m_Nv21SrcFrmCntnrPt.offer( data ); //放入本次视频输入帧到视频输入帧容器。
-			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：读取一个Nv21格式原始帧。" );
+			p_ElmTotal = m_IdleFrmCntnrPt.size(); //获取空闲帧容器的元素总数。
+			if( p_ElmTotal > 0 ) //如果空闲帧容器中有帧。
+			{
+				p_IdleFrmPt = m_IdleFrmCntnrPt.poll(); //从空闲帧容器中取出并删除第一个帧。
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：从空闲帧容器中取出并删除第一个帧，空闲帧容器元素总数：" + p_ElmTotal + "。" );
+			}
+			else //如果空闲帧容器中没有帧。
+			{
+				if( IsChkFrmCntnrElmTotal != 0 )
+				{
+					p_ElmTotal = m_FrmCntnrPt.size(); //获取帧容器的元素总数。
+					if( p_ElmTotal > 20 )
+					{
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：帧容器中帧总数为" + p_ElmTotal + "已经超过上限20，不再创建一个空闲帧，本次帧丢弃。" );
+						break Out;
+					}
+				}
+
+				p_IdleFrmPt = new Frm(); //创建一个空闲帧。
+				p_IdleFrmPt.m_Nv21SrcFrmPt = new byte[ ( int )m_DvcPt.m_Nv21SrcFrmLenByt ];
+				p_IdleFrmPt.m_Yu12RsltFrmPt = new byte[ ( int )m_DvcPt.m_Yu12SrcFrmScaleLenByt ];
+				if( m_UseWhatEncd != 0 )
+				{
+					p_IdleFrmPt.m_EncdRsltFrmPt = new byte[ ( int )m_DvcPt.m_Yu12SrcFrmScaleLenByt ];
+				}
+				else
+				{
+					p_IdleFrmPt.m_EncdRsltFrmPt = null;
+				}
+				p_IdleFrmPt.m_EncdRsltFrmLenBytPt = new HTLong( 0 );
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：空闲帧容器中没有帧，创建一个空闲帧成功。" );
+			}
+
+			p_Rslt = 0; //设置本函数执行成功。
 		}
+
+		if( p_Rslt != 0 ) //如果本函数执行失败。
+		{
+			p_IdleFrmPt = null;
+		}
+		return p_IdleFrmPt;
 	}
 
-	//视频输入线程。
-	public class VdoInptThrd extends Thread
+	//视频输入线程的预览回调函数。
+	public class VodInptThrdPrvwClbk implements Camera.PreviewCallback
 	{
-		public void run()
+		//读取一个视频输入帧的预览回调函数，本函数是在独立线程中运行的。
+		@Override public void onPreviewFrame( byte[] data, Camera camera )
 		{
-			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：开始准备视频输入。" );
-
-			//视频输入循环开始。
-			while( true )
+			Out:
 			{
-				OutPocs:
+				//丢弃采样频率过快的Nv21格式原始帧。
+				m_ThrdPt.m_LastTickMsec = SystemClock.uptimeMillis();
+				if( m_DvcPt.m_LastFrmTickMsec != 0 ) //如果已经设置过上一个帧的嘀嗒钟。
 				{
-					m_ThrdPt.m_ElmTotal = m_DvcPt.m_Nv21SrcFrmCntnrPt.size(); //获取Nv21格式原始帧容器的元素总数。
-					if( m_ThrdPt.m_ElmTotal > 0 ) //如果Nv21格式原始帧容器中有帧了。
+					if( m_ThrdPt.m_LastTickMsec - m_DvcPt.m_LastFrmTickMsec >= m_DvcPt.m_FrmTimeStepMsec )
 					{
-						m_ThrdPt.m_Nv21SrcFrmPt = ( byte[] ) m_DvcPt.m_Nv21SrcFrmCntnrPt.poll(); //从Nv21格式原始帧容器中取出并删除第一个帧。
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：从Nv21格式原始帧容器中取出并删除第一个帧，Nv21格式原始帧容器元素总数：" + m_ThrdPt.m_ElmTotal + "。" );
+						m_DvcPt.m_LastFrmTickMsec += m_DvcPt.m_FrmTimeStepMsec;
 					}
-					else //如果Nv21格式原始帧容器中没有帧。
+					else
 					{
-						break OutPocs;
+						m_DvcPt.m_Pt.addCallbackBuffer( data ); //放入本次Nv21格式原始帧到设备。
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：读取一个Nv21格式原始帧，但采样频率过快本次帧丢弃。" );
+						break Out;
 					}
+				}
+				else //如果没有设置过上一个帧的嘀嗒钟。
+				{
+					m_DvcPt.m_LastFrmTickMsec = m_ThrdPt.m_LastTickMsec;
+				}
 
-					//丢弃采样频率过快的Nv21格式原始帧。
-					m_ThrdPt.m_LastTickMsec = SystemClock.uptimeMillis();
-					if( m_ThrdPt.m_LastFrmTickMsec != 0 ) //如果已经设置过上一个帧的嘀嗒钟。
-					{
-						if( m_ThrdPt.m_LastTickMsec - m_ThrdPt.m_LastFrmTickMsec >= m_ThrdPt.m_FrmTimeStepMsec )
-						{
-							m_ThrdPt.m_LastFrmTickMsec += m_ThrdPt.m_FrmTimeStepMsec;
-						}
-						else
-						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：采样频率过快，本次帧丢弃。" );
-							break OutPocs;
-						}
-					}
-					else //如果没有设置过上一个帧的嘀嗒钟。
-					{
-						m_ThrdPt.m_LastFrmTickMsec = m_ThrdPt.m_LastTickMsec;
-					}
+				//获取一个空闲帧。
+				m_ThrdPt.m_FrmPt = GetIdleFrm( 1 );
+				if( m_ThrdPt.m_FrmPt != null )
+				{
+					m_DvcPt.m_Pt.addCallbackBuffer( m_ThrdPt.m_FrmPt.m_Nv21SrcFrmPt ); //放入本次空闲Nv21格式原始帧到设备。
 
-					//获取一个空闲帧。
-					m_ThrdPt.m_ElmTotal = m_IdleFrmCntnrPt.size(); //获取空闲帧容器的元素总数。
-					if( m_ThrdPt.m_ElmTotal > 0 ) //如果空闲帧容器中有帧。
-					{
-						m_ThrdPt.m_FrmPt = m_IdleFrmCntnrPt.poll(); //从空闲帧容器中取出并删除第一个帧。
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：从空闲帧容器中取出并删除第一个帧，空闲帧容器元素总数：" + m_ThrdPt.m_ElmTotal + "。" );
-					}
-					else //如果空闲帧容器中没有帧。
-					{
-						m_ThrdPt.m_ElmTotal = m_FrmCntnrPt.size(); //获取帧容器的元素总数。
-						if( m_ThrdPt.m_ElmTotal <= 20 )
-						{
-							m_ThrdPt.m_FrmPt = new Frm(); //创建一个空闲帧。
-							m_ThrdPt.m_FrmPt.m_Nv21SrcFrmPt = new byte[ ( int ) m_DvcPt.m_Nv21SrcFrmLenByt ];
-							m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt = new byte[ ( int ) m_DvcPt.m_Yu12SrcFrmScaleLenByt ];
-							if( m_UseWhatEncd != 0 )
-							{
-								m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt = new byte[ ( int ) m_DvcPt.m_Yu12SrcFrmScaleLenByt ];
-							}
-							else
-							{
-								m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt = null;
-							}
-							m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt = new HTLong( 0 );
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：空闲帧容器中没有帧，创建一个空闲帧。" );
-						}
-						else
-						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：帧容器中帧数量为" + m_ThrdPt.m_ElmTotal + "已经超过上限20，不再创建一个空闲帧，本次帧丢弃。" );
-							break OutPocs;
-						}
-					}
+					m_ThrdPt.m_FrmPt.m_Nv21SrcFrmPt = data;
+					m_ThrdPt.m_FrmPt.m_TimeStampMsec = m_ThrdPt.m_LastTickMsec; //设置时间戳。
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：读取一个Nv21格式原始帧，并放入空闲Nv21格式原始帧。" );
+				}
+				else
+				{
+					m_DvcPt.m_Pt.addCallbackBuffer( data ); //放入本次Nv21格式原始帧到设备。
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：读取一个Nv21格式原始帧，但未放入空闲Nv21格式原始帧。" );
+					break Out;
+				}
 
-					{
-						System.arraycopy( m_ThrdPt.m_Nv21SrcFrmPt, 0, m_ThrdPt.m_FrmPt.m_Nv21SrcFrmPt, 0, ( int )m_DvcPt.m_Nv21SrcFrmLenByt ); //复制Nv21格式原始帧。
-						System.arraycopy( m_ThrdPt.m_Nv21SrcFrmPt, 0, m_ThrdPt.m_TmpFrm1Pt, 0, ( int )m_DvcPt.m_Nv21SrcFrmLenByt );  //将Nv21格式原始帧复制到临时帧，方便处理。
-					}
+				System.arraycopy( m_ThrdPt.m_FrmPt.m_Nv21SrcFrmPt, 0, m_ThrdPt.m_TmpFrm1Pt, 0, ( int )m_DvcPt.m_Nv21SrcFrmLenByt ); //将Nv21格式原始帧复制到临时帧，方便处理。
 
-					//裁剪Nv21格式原始帧。
-					if( m_DvcPt.m_Nv21SrcFrmIsCrop != 0 )
+				//裁剪Nv21格式原始帧。
+				if( m_DvcPt.m_Nv21SrcFrmIsCrop != 0 )
+				{
+					if( LibYUV.PictrCrop( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PictrFmt.Bt601F8Nv12, m_DvcPt.m_Nv21SrcFrmWidth, m_DvcPt.m_Nv21SrcFrmHeight,
+							m_DvcPt.m_Nv21SrcFrmCropX, m_DvcPt.m_Nv21SrcFrmCropY, m_DvcPt.m_Nv21SrcFrmCropWidth, m_DvcPt.m_Nv21SrcFrmCropHeight,
+							m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, m_ThrdPt.m_TmpFrmLenBytPt, null, null,
+							null ) == 0 )
 					{
-						if( LibYUV.PictrCrop( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PictrFmt.Bt601F8Nv12, m_DvcPt.m_Nv21SrcFrmWidth, m_DvcPt.m_Nv21SrcFrmHeight,
-											  m_DvcPt.m_Nv21SrcFrmCropX, m_DvcPt.m_Nv21SrcFrmCropY, m_DvcPt.m_Nv21SrcFrmCropWidth, m_DvcPt.m_Nv21SrcFrmCropHeight,
-											  m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, m_ThrdPt.m_TmpFrmLenBytPt, null, null,
-											  null ) == 0 )
-						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：裁剪Nv21格式原始帧成功。" );
-							byte p_SwapFrmPt[] = m_ThrdPt.m_TmpFrm1Pt; m_ThrdPt.m_TmpFrm1Pt = m_ThrdPt.m_TmpFrm2Pt; m_ThrdPt.m_TmpFrm2Pt = p_SwapFrmPt; //交换临时帧的指针。
-						}
-						else
-						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：裁剪Nv21格式原始帧失败，本次帧丢弃。" );
-							break OutPocs;
-						}
-					}
-
-					//Nv21格式原始帧旋转为Yu12格式原始帧。
-					if( LibYUV.PictrRotate( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PictrFmt.Bt601F8Nv21, m_DvcPt.m_Nv21SrcFrmCropWidth, m_DvcPt.m_Nv21SrcFrmCropHeight,
-											m_DvcPt.m_Yu12SrcFrmRotate,
-											m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, null, null,
-											null ) == 0 )
-					{
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：Nv21格式原始帧旋转为Yu12格式原始帧成功。" );
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：裁剪Nv21格式原始帧成功。" );
 						byte p_SwapFrmPt[] = m_ThrdPt.m_TmpFrm1Pt; m_ThrdPt.m_TmpFrm1Pt = m_ThrdPt.m_TmpFrm2Pt; m_ThrdPt.m_TmpFrm2Pt = p_SwapFrmPt; //交换临时帧的指针。
 					}
 					else
 					{
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：Nv21格式原始帧旋转为Yu12格式原始帧失败，本次帧丢弃。" );
-						break OutPocs;
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：裁剪Nv21格式原始帧失败，本次帧丢弃。" );
+						break Out;
 					}
+				}
 
-					//缩放Yu12格式原始帧。
-					if( m_DvcPt.m_Yu12SrcFrmIsScale != 0 )
+				//Nv21格式原始帧旋转为Yu12格式原始帧。
+				if( LibYUV.PictrRotate( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PictrFmt.Bt601F8Nv21, m_DvcPt.m_Nv21SrcFrmCropWidth, m_DvcPt.m_Nv21SrcFrmCropHeight,
+						m_DvcPt.m_Yu12SrcFrmRotate,
+						m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, null, null,
+						null ) == 0 )
+				{
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：Nv21格式原始帧旋转为Yu12格式原始帧成功。" );
+					byte p_SwapFrmPt[] = m_ThrdPt.m_TmpFrm1Pt; m_ThrdPt.m_TmpFrm1Pt = m_ThrdPt.m_TmpFrm2Pt; m_ThrdPt.m_TmpFrm2Pt = p_SwapFrmPt; //交换临时帧的指针。
+				}
+				else
+				{
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：Nv21格式原始帧旋转为Yu12格式原始帧失败，本次帧丢弃。" );
+					break Out;
+				}
+
+				//缩放Yu12格式原始帧。
+				if( m_DvcPt.m_Yu12SrcFrmIsScale != 0 )
+				{
+					if( LibYUV.PictrScale( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PictrFmt.Bt601F8Yu12I420, m_DvcPt.m_Yu12SrcFrmRotateWidth, m_DvcPt.m_Yu12SrcFrmRotateHeight,
+							3,
+							m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, m_ThrdPt.m_TmpFrmLenBytPt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight,
+							null ) == 0 )
 					{
-						if( LibYUV.PictrScale( m_ThrdPt.m_TmpFrm1Pt, LibYUV.PictrFmt.Bt601F8Yu12I420, m_DvcPt.m_Yu12SrcFrmRotateWidth, m_DvcPt.m_Yu12SrcFrmRotateHeight,
-											   3,
-											   m_ThrdPt.m_TmpFrm2Pt, m_ThrdPt.m_TmpFrmSzByt, m_ThrdPt.m_TmpFrmLenBytPt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight,
-											   null ) == 0 )
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：缩放Yu12格式原始帧成功。" );
+						byte p_SwapFrmPt[] = m_ThrdPt.m_TmpFrm1Pt; m_ThrdPt.m_TmpFrm1Pt = m_ThrdPt.m_TmpFrm2Pt; m_ThrdPt.m_TmpFrm2Pt = p_SwapFrmPt; //交换临时帧的指针。
+					}
+					else
+					{
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：缩放Yu12格式原始帧失败，本次帧丢弃。" );
+						break Out;
+					}
+				}
+
+				System.arraycopy( m_ThrdPt.m_TmpFrm1Pt, 0, m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, 0, ( int )m_DvcPt.m_Yu12SrcFrmScaleLenByt ); //将Yu12格式原始帧复制到Yu12格式结果帧。
+
+				//判断设备是否黑屏。在视频输入处理完后再设置黑屏，这样可以保证视频输入处理器的连续性。
+				if( m_DvcPt.m_IsBlack != 0 )
+				{
+					int p_TmpLenByt = m_DvcPt.m_Yu12SrcFrmScaleWidth * m_DvcPt.m_Yu12SrcFrmScaleHeight;
+					Arrays.fill( m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, 0, p_TmpLenByt, ( byte ) 0 );
+					Arrays.fill( m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, p_TmpLenByt, m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt.length, ( byte ) 128 );
+				}
+
+				//使用编码器。
+				switch( m_UseWhatEncd )
+				{
+					case 0: //如果要使用Yu12原始数据。
+					{
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：使用Yu12原始数据。" );
+						break;
+					}
+					case 1: //如果要使用OpenH264编码器。
+					{
+						if( m_OpenH264EncdPt.m_Pt.Pocs( m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight, m_ThrdPt.m_LastTickMsec,
+								m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt, m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt.length, m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt,
+								null ) == 0 )
 						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：缩放Yu12格式原始帧成功。" );
-							byte p_SwapFrmPt[] = m_ThrdPt.m_TmpFrm1Pt; m_ThrdPt.m_TmpFrm1Pt = m_ThrdPt.m_TmpFrm2Pt; m_ThrdPt.m_TmpFrm2Pt = p_SwapFrmPt; //交换临时帧的指针。
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：使用OpenH264编码器成功。H264格式结果帧的长度：" + m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt.m_Val + "，时间戳：" + m_ThrdPt.m_LastTickMsec + "，类型：" + ( m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt[4] & 0xff ) + "。" );
 						}
 						else
 						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：缩放Yu12格式原始帧失败，本次帧丢弃。" );
-							break OutPocs;
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：使用OpenH264编码器失败，本次帧丢弃。" );
+							break Out;
 						}
+						break;
 					}
-
-					//将Yu12格式原始帧复制到Yu12格式结果帧。
-					System.arraycopy( m_ThrdPt.m_TmpFrm1Pt, 0, m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, 0, ( int )m_DvcPt.m_Yu12SrcFrmScaleLenByt );
-
-					//判断设备是否黑屏。在视频输入处理完后再设置黑屏，这样可以保证视频输入处理器的连续性。
-					if( m_DvcPt.m_IsBlack != 0 )
+					case 2: //如果要使用系统自带H264编码器。
 					{
-						int p_TmpLenByt = m_DvcPt.m_Yu12SrcFrmScaleWidth * m_DvcPt.m_Yu12SrcFrmScaleHeight;
-						Arrays.fill( m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, 0, p_TmpLenByt, ( byte ) 0 );
-						Arrays.fill( m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, p_TmpLenByt, m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt.length, ( byte ) 128 );
-					}
-
-					//使用编码器。
-					switch( m_UseWhatEncd )
-					{
-						case 0: //如果要使用Yu12原始数据。
+						if( m_SystemH264EncdPt.m_Pt.Pocs( m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, m_ThrdPt.m_LastTickMsec,
+								m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt, ( long ) m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt.length, m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt,
+								1000 / m_MaxSmplRate * 2 / 3, null ) == 0 )
 						{
-							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：使用Yu12原始数据。" );
-							break;
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：使用系统自带H264编码器成功。H264格式结果帧的长度：" + m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt.m_Val + "，时间戳：" + m_ThrdPt.m_LastTickMsec + "，类型：" + ( m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt[4] & 0xff ) + "。" );
 						}
-						case 1: //如果要使用OpenH264编码器。
+						else
 						{
-							if( m_OpenH264EncdPt.m_Pt.Pocs( m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, m_DvcPt.m_Yu12SrcFrmScaleWidth, m_DvcPt.m_Yu12SrcFrmScaleHeight, m_ThrdPt.m_LastTickMsec,
-															m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt, m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt.length, m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt,
-															null ) == 0 )
-							{
-								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：使用OpenH264编码器成功。H264格式结果帧的长度：" + m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt.m_Val + "，时间戳：" + m_ThrdPt.m_LastTickMsec + "，类型：" + ( m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt[4] & 0xff ) + "。" );
-							}
-							else
-							{
-								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：使用OpenH264编码器失败，本次帧丢弃。" );
-								break OutPocs;
-							}
-							break;
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：使用系统自带H264编码器失败，本次帧丢弃。" );
+							break Out;
 						}
-						case 2: //如果要使用系统自带H264编码器。
-						{
-							if( m_SystemH264EncdPt.m_Pt.Pocs( m_ThrdPt.m_FrmPt.m_Yu12RsltFrmPt, m_ThrdPt.m_LastTickMsec,
-															  m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt, ( long ) m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt.length, m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt,
-															  1000 / m_MaxSmplRate * 2 / 3, null ) == 0 )
-							{
-								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：使用系统自带H264编码器成功。H264格式结果帧的长度：" + m_ThrdPt.m_FrmPt.m_EncdRsltFrmLenBytPt.m_Val + "，时间戳：" + m_ThrdPt.m_LastTickMsec + "，类型：" + ( m_ThrdPt.m_FrmPt.m_EncdRsltFrmPt[4] & 0xff ) + "。" );
-							}
-							else
-							{
-								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：使用系统自带H264编码器失败，本次帧丢弃。" );
-								break OutPocs;
-							}
-							break;
-						}
-					}
-
-					m_ThrdPt.m_FrmPt.m_TimeStampMsec = m_ThrdPt.m_LastTickMsec; //设置时间戳。
-
-					//放入本次帧到帧容器。注意：从取出到放入过程中可以跳出，跳出后会重新放入到空闲帧容器。
-					m_FrmCntnrPt.offer( m_ThrdPt.m_FrmPt );
-					m_ThrdPt.m_FrmPt = null;
-
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )
-					{
-						m_ThrdPt.m_NowTickMsec = SystemClock.uptimeMillis();
-						Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：本次帧处理完毕，耗时 " + ( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_LastTickMsec ) + " 毫秒。" );
+						break;
 					}
 				}
 
-				if( m_ThrdPt.m_FrmPt != null ) //如果获取的空闲帧没有放入到帧容器。
+				//放入本次帧到帧容器。注意：从取出到放入过程中可以跳出，跳出后会重新放入到空闲帧容器。
+				m_FrmCntnrPt.offer( m_ThrdPt.m_FrmPt );
+				m_ThrdPt.m_FrmPt = null;
+
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )
 				{
-					m_IdleFrmCntnrPt.offer( m_ThrdPt.m_FrmPt );
-					m_ThrdPt.m_FrmPt = null;
+					m_ThrdPt.m_NowTickMsec = SystemClock.uptimeMillis();
+					Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：本次帧处理完毕，耗时 " + ( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_LastTickMsec ) + " 毫秒。" );
 				}
+			}
 
-				//放入本次Nv21格式原始帧到设备。
-				if( m_ThrdPt.m_Nv21SrcFrmPt != null )
-				{
-					m_DvcPt.m_Pt.addCallbackBuffer( m_ThrdPt.m_Nv21SrcFrmPt );
-					m_ThrdPt.m_Nv21SrcFrmPt = null;
-				}
-
-				if( m_ThrdPt.m_ExitFlag == 1 ) //如果退出标记为请求退出。
-				{
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：接收退出请求。" );
-					break;
-				}
-
-				SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
-			} //视频输入循环结束。
-
-			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输入线程：本线程已退出。" );
+			if( m_ThrdPt.m_FrmPt != null ) //如果获取的空闲帧没有放入到帧容器。
+			{
+				m_IdleFrmCntnrPt.offer( m_ThrdPt.m_FrmPt );
+				m_ThrdPt.m_FrmPt = null;
+			}
 		}
 	}
 }

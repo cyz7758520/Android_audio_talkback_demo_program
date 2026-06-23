@@ -33,6 +33,12 @@ public class SystemH264Encd
 	//系统自带H264编码器获取应用程序限制信息。
 	public static int GetAppLmtInfo( byte LicnCodePt[], HTLong LmtTimeSecPt, HTLong RmnTimeSecPt, Vstr ErrInfoVstrPt )
 	{
+		if( android.os.Build.VERSION.SDK_INT < 21 )
+		{
+			ErrInfoVstrPt.Cpy( "当前系统不自带H264编码器。" );
+			return -1;
+		}
+
 		return SystemH264EncdGetAppLmtInfo( LicnCodePt, LmtTimeSecPt, RmnTimeSecPt, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 

@@ -13,7 +13,6 @@ import android.view.SurfaceView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import HeavenTao.Ado.*;
@@ -136,7 +135,7 @@ public class AdoOtpt //音频输出。
 			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出流索引" + m_Idx + "：音频输出流销毁成功。" );
 		}
 	}
-	public ArrayList< Strm > m_StrmCntnrPt; //存放流容器的指针。
+	public ArrayList< Strm > m_StrmCntnrPt; //存放流容器的指针。因为该容器遍历次数最多，增删改次数很少，所以使用ArrayList。
 	public int m_StrmUseTotal; //存放流要使用的总数。
 
 	class Wavfm //存放波形器。
@@ -199,8 +198,10 @@ public class AdoOtpt //音频输出。
 		synchronized( m_StrmCntnrPt )
 		{
 			//查找流索引。
-			for( Strm p_StrmPt : m_StrmCntnrPt )
+			for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 			{
+				Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
 				if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 				{
 					return;
@@ -220,9 +221,10 @@ public class AdoOtpt //音频输出。
 		synchronized( m_StrmCntnrPt )
 		{
 			//查找流索引。
-			for( Iterator< Strm > p_StrmItrtr = m_StrmCntnrPt.iterator(); p_StrmItrtr.hasNext(); )
+			for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 			{
-				Strm p_StrmPt = p_StrmItrtr.next();
+				Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
 				if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 				{
 					//从流容器删除。
@@ -234,7 +236,7 @@ public class AdoOtpt //音频输出。
 					{
 						m_StrmUseTotal--;
 					}
-					p_StrmItrtr.remove();
+					m_StrmCntnrPt.remove( p_StrmCntnrNum );
 					return;
 				}
 			}
@@ -247,8 +249,10 @@ public class AdoOtpt //音频输出。
 		synchronized( m_StrmCntnrPt )
 		{
 			//查找流索引。
-			for( Strm p_StrmPt : m_StrmCntnrPt )
+			for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 			{
+				Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
 				if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 				{
 					if( ( m_IsInit != 0 ) && ( p_StrmPt.m_IsUse != 0 ) ) p_StrmPt.Dstoy();
@@ -268,8 +272,10 @@ public class AdoOtpt //音频输出。
 		synchronized( m_StrmCntnrPt )
 		{
 			//查找流索引。
-			for( Strm p_StrmPt : m_StrmCntnrPt )
+			for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 			{
+				Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
 				if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 				{
 					if( ( m_IsInit != 0 ) && ( p_StrmPt.m_IsUse != 0 ) ) p_StrmPt.Dstoy();
@@ -290,8 +296,10 @@ public class AdoOtpt //音频输出。
 		synchronized( m_StrmCntnrPt )
 		{
 			//查找流索引。
-			for( Strm p_StrmPt : m_StrmCntnrPt )
+			for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 			{
+				Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
 				if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 				{
 					if( ( m_IsInit != 0 ) && ( p_StrmPt.m_IsUse != 0 ) ) p_StrmPt.Dstoy();
@@ -311,8 +319,10 @@ public class AdoOtpt //音频输出。
 		synchronized( m_StrmCntnrPt )
 		{
 			//查找流索引。
-			for( Strm p_StrmPt : m_StrmCntnrPt )
+			for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 			{
+				Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
 				if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 				{
 					if( IsUseStrm != 0 ) //如果要使用流。
@@ -355,8 +365,10 @@ public class AdoOtpt //音频输出。
 
 		Out:
 		{
-			for( Strm p_StrmPt : m_StrmCntnrPt )
+			for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 			{
+				Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
 				if( p_StrmPt.m_IsUse != 0 )
 				{
 					if( p_StrmPt.Init() != 0 ) break Out;
@@ -377,8 +389,10 @@ public class AdoOtpt //音频输出。
 	//销毁音频输出的流容器。
 	public void StrmCntnrDstoy()
 	{
-		for( Strm p_StrmPt : m_StrmCntnrPt )
+		for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 		{
+			Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
 			p_StrmPt.Dstoy();
 		}
 		if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：销毁流容器成功。" );
@@ -404,7 +418,7 @@ public class AdoOtpt //音频输出。
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：初始化原始波形器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
 					break Out;
 				}
-				m_WavfmPt.m_SrcSurfacePt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置预览Surface视图的类型。老机型上必须要用。
+				m_WavfmPt.m_SrcSurfacePt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置预览SurfaceView的类型。老机型上必须要用。
 			}
 
 			p_Rslt = 0; //设置本函数执行成功。
@@ -587,7 +601,7 @@ public class AdoOtpt //音频输出。
 						if( !m_DvcPt.m_Pt.setPreferredDevice( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt ) ) //如果设置音频输出使用的设备失败。
 						{
 							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：设置音频输出使用的设备失败，发送音频输入输出设备关闭线程消息。" );
-							m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
+							m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.AdoInptOtptDvcClos );
 							p_Rslt = 0; //这里返回成功是为了防止媒体处理线程报错退出。
 							break Out;
 						}
@@ -599,9 +613,9 @@ public class AdoOtpt //音频输出。
 						AudioDeviceInfo p_AdoOtptRoutedDevicePt = m_DvcPt.m_Pt.getRoutedDevice();
 
 						Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：设置音频输出使用的设备[" + m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_NameStrPt + "]成功。" +
-																"指定设备：" + ( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt != null ) ? ( MediaPocsThrd.GetAdoDvcInfoTypeName( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getType() ) + m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getProductName() ) : "空" ) + "。" +
-																"首选设备：" + ( ( p_AdoOtptPreferredDevicePt != null ) ? ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoOtptPreferredDevicePt.getType() ) + p_AdoOtptPreferredDevicePt.getProductName() ) : "空" ) + "。" +
-																"路由设备：" + ( ( p_AdoOtptRoutedDevicePt != null ) ? ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoOtptRoutedDevicePt.getType() ) + p_AdoOtptRoutedDevicePt.getProductName() ) : "空" ) + "。" );
+																	  "指定设备：" + ( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt != null ) ? MediaPocsThrd.GetAdoInptOtptDvcInfoName( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt ) : "空" ) + "。" +
+																	  "首选设备：" + ( ( p_AdoOtptPreferredDevicePt != null ) ? MediaPocsThrd.GetAdoInptOtptDvcInfoName( p_AdoOtptPreferredDevicePt ) : "空" ) + "。" +
+																	  "路由设备：" + ( ( p_AdoOtptRoutedDevicePt != null ) ? MediaPocsThrd.GetAdoInptOtptDvcInfoName( p_AdoOtptRoutedDevicePt ) : "空" ) + "。" );
 
 						if( p_AdoOtptPreferredDevicePt == null )
 						{
@@ -629,7 +643,7 @@ public class AdoOtpt //音频输出。
 					( ( m_MediaPocsThrdPt.m_AdoInptPt.m_IsUse == 0 ) || ( m_MediaPocsThrdPt.m_AdoInptPt.m_IsInit != 0 ) ) )
 				{
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输出：发送音频输入输出设备改变线程消息。" );
-					m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcChg );
+					m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.AdoInptOtptDvcChg ); //发送音频输入输出设备改变线程消息。
 				}
 			}
 
@@ -793,7 +807,7 @@ public class AdoOtpt //音频输出。
 	}
 
 	//获取一个Pcm格式空闲帧。
-	private Frm GetPcmIdleFrm(int IsChkPcmSrcFrmCntnrElmTotal )
+	private Frm GetPcmIdleFrm( int IsChkPcmSrcFrmCntnrElmTotal )
 	{
 		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		Frm p_IdleFrmPt = null; //存放空闲帧的指针。
@@ -819,8 +833,8 @@ public class AdoOtpt //音频输出。
 					}
 				}
 
-				p_IdleFrmPt = new Frm();
-				p_IdleFrmPt.m_PcmFrmPt = new short[ ( int )m_FrmLenData ];
+				p_IdleFrmPt = new Frm(); //创建一个Pcm格式空闲帧。
+				p_IdleFrmPt.m_PcmFrmPt = new short[ ( int )m_FrmLenData ]; //创建一个Pcm格式帧。
 
 				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：Pcm格式空闲帧容器中没有帧，创建一个Pcm格式空闲帧成功。" );
 			}
@@ -886,9 +900,9 @@ public class AdoOtpt //音频输出。
 							if( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt == null ) || //如果音频输出指定的设备信息为空。
 								( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getId() != p_AdoOtptRoutedDevicePt.getId() ) ) //如果音频输出指定的设备与路由的设备不一致。
 							{
-								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出的指定设备改为[" + ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoOtptRoutedDevicePt.getType() ) + p_AdoOtptRoutedDevicePt.getProductName() ) + "]，发送音频输入输出设备改变线程消息。" );
+								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：音频输出的指定设备改为[" + MediaPocsThrd.GetAdoInptOtptDvcInfoName( p_AdoOtptRoutedDevicePt ) + "]，发送音频输入输出设备改变线程消息。" );
 								m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt = p_AdoOtptRoutedDevicePt;
-								m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcChg ); //发送音频输入输出设备改变线程消息。
+								m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.AdoInptOtptDvcChg ); //发送音频输入输出设备改变线程消息。
 							}
 						}
 						//注意：这里不再发送音频输入输出设备关闭线程消息，因为有些设备系统会在中途自动修改音频路由的设备信息，导致获取的音频路由的设备信息不准确，为了防止这种情况下频繁误发送音频输入输出设备关闭线程消息，所以这里就不发送了。
@@ -912,12 +926,12 @@ public class AdoOtpt //音频输出。
 					{
 						if( m_StrmUseTotal > 0 ) //如果有流要使用。
 						{
-							Iterator< Strm > p_StrmItrtr = m_StrmCntnrPt.iterator();
+							int p_StrmCntnrNum; //存放流容器的序号。
 							Strm p_StrmPt; //存放流的指针。
 
-							while( p_StrmItrtr.hasNext() ) //查找第一条要使用的流。
+							for( p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ ) //查找第一条要使用的流。
 							{
-								p_StrmPt = ( Strm )p_StrmItrtr.next();
+								p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
 
 								if( p_StrmPt.m_IsUse != 0 ) //如果该流为要使用。
 								{
@@ -976,9 +990,9 @@ public class AdoOtpt //音频输出。
 									m_ThrdPt.m_PcmMixFrmPt[ p_TmpInt ] = m_ThrdPt.m_PcmSrcFrmPt.m_PcmFrmPt[ p_TmpInt ];
 								}
 
-								while( p_StrmItrtr.hasNext() ) //查找其他要使用的流。
+								for( p_StrmCntnrNum++; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ ) //查找其他要使用的流。
 								{
-									p_StrmPt = ( Strm )p_StrmItrtr.next();
+									p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
 
 									if( p_StrmPt.m_IsUse != 0 ) //如果该流为要使用。
 									{
@@ -1062,7 +1076,8 @@ public class AdoOtpt //音频输出。
 						//判断是否需要补帧或丢帧。
 						OutAddOrDropFrm:
 						{
-							m_ThrdPt.m_NowTickMsec = SystemClock.uptimeMillis() - m_FrmLenMsec; //设置本次的滴答钟。因为当前帧的时间戳为帧的起始时间，所以要递减一个帧长。
+							m_ThrdPt.m_NowTickMsec = SystemClock.uptimeMillis(); //设置本次的滴答钟。因为当前帧的时间戳为帧的起始时间，所以要递减一个帧长。
+							//Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：本次的滴答钟：" + m_ThrdPt.m_NowTickMsec + "，当前帧的时间戳：" + m_ThrdPt.m_CurFrmTimeStampMsec + "。" );
 
 							if( ( m_ThrdPt.m_NowTickMsec > m_ThrdPt.m_CurFrmTimeStampMsec ) && ( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_CurFrmTimeStampMsec > m_FrmLenMsec ) ) //如果本次的滴答钟比当前帧的时间戳高一个帧长，就表示当前少帧了，需要补帧。
 							{
@@ -1070,11 +1085,11 @@ public class AdoOtpt //音频输出。
 								{
 									if( m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec > 0 ) //如果已经准备开始补帧。
 									{
-										if( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec < 1000 ) //如果已经准备开始补帧小于1秒。
+										if( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec < 500 ) //如果已经准备开始补帧小于0.5秒。
 										{
 											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 高一个帧长 " + m_FrmLenMsec + "，就表示当前少帧了，继续准备补帧。" );
 										}
-										else //如果已经准备开始补帧大于等于1秒，才开始补帧，因为可能是帧数不稳定导致误判需要补帧。
+										else //如果已经准备开始补帧大于等于0.5秒，才开始补帧，因为可能是帧数不稳定导致误判需要补帧。
 										{
 											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 高一个帧长 " + m_FrmLenMsec + "，就表示当前少帧了，立即开始补帧。" );
 
@@ -1085,7 +1100,7 @@ public class AdoOtpt //音频输出。
 												break OutAddOrDropFrm;
 											}
 
-											//放入本次补的Pcm格式原始帧到Pcm格式原始帧容器。
+											//放入本次补的Pcm格式原始帧到Pcm格式原始帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
 											System.arraycopy( m_ThrdPt.m_PcmSrcFrmPt.m_PcmFrmPt, 0, m_ThrdPt.m_AddPcmSrcFrmPt.m_PcmFrmPt, 0, ( int )m_FrmLenData );
 											m_ThrdPt.m_AddPcmSrcFrmPt.m_TimeStampMsec = m_ThrdPt.m_CurFrmTimeStampMsec;
 											m_PcmSrcFrmCntnrPt.offer( m_ThrdPt.m_AddPcmSrcFrmPt );
@@ -1104,8 +1119,12 @@ public class AdoOtpt //音频输出。
 								}
 								else //如果本次的滴答钟比当前帧的时间戳高了大于等于1秒，就表示不要补帧了，直接发送音频输出设备关闭线程消息来重启音频输出。
 								{
+									//放入本次取出的Pcm格式原始帧到Pcm格式空闲帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
+									m_PcmIdleFrmCntnrPt.offer( m_ThrdPt.m_PcmSrcFrmPt );
+									m_ThrdPt.m_PcmSrcFrmPt = null;
+
 									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 高了大于等于1秒，就表示不要补帧了，直接发送音频输出设备关闭线程消息来重启音频输出。" );
-									m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
+									m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.AdoInptOtptDvcClos );
 									break; //这里要退出线程，防止多次发送线程消息。
 								}
 							}
@@ -1115,15 +1134,15 @@ public class AdoOtpt //音频输出。
 								{
 									if( m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec < 0 ) //如果已经准备开始丢帧。
 									{
-										if( m_ThrdPt.m_NowTickMsec - ( m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec & 0x7FFFFFFFFFFFFFFFL ) < 1000 ) //如果已经准备开始丢帧小于1秒。
+										if( m_ThrdPt.m_NowTickMsec - ( -m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec ) < 500 ) //如果已经准备开始丢帧小于0.5秒。
 										{
 											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低一个帧长 " + m_FrmLenMsec + "，就表示当前多帧了，继续准备丢帧。" );
 										}
-										else //如果已经准备开始丢帧大于等于1秒，才开始丢帧，因为可能是帧数不稳定导致误判需要丢帧。
+										else //如果已经准备开始丢帧大于等于0.5秒，才开始丢帧，因为可能是帧数不稳定导致误判需要丢帧。
 										{
 											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低一个帧长 " + m_FrmLenMsec + "，就表示当前多帧了，立即开始丢帧。" );
 
-											//放入本次丢的Pcm格式原始帧到音频输出Pcm格式空闲帧容器。
+											//放入本次丢的Pcm格式原始帧到Pcm格式空闲帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
 											m_PcmIdleFrmCntnrPt.offer( m_ThrdPt.m_PcmSrcFrmPt );
 											m_ThrdPt.m_PcmSrcFrmPt = null;
 
@@ -1136,13 +1155,17 @@ public class AdoOtpt //音频输出。
 									{
 										if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低一个帧长 " + m_FrmLenMsec + "，就表示当前多帧了，准备开始丢帧。" );
 
-										m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec = m_ThrdPt.m_NowTickMsec | 0x8000000000000000L; //设置丢帧的起始时间戳。
+										m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec = -m_ThrdPt.m_NowTickMsec; //设置丢帧的起始时间戳。
 									}
 								}
 								else //如果本次的滴答钟比当前帧的时间戳低了大于等于1秒，就表示不要丢帧了，直接发送音频输出设备关闭线程消息来重启音频输出。
 								{
+									//放入本次取出的Pcm格式原始帧到Pcm格式空闲帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
+									m_PcmIdleFrmCntnrPt.offer( m_ThrdPt.m_PcmSrcFrmPt );
+									m_ThrdPt.m_PcmSrcFrmPt = null;
+
 									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输出线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低了大于等于1秒，就表示不要丢帧了，直接发送音频输出设备关闭线程消息来重启音频输出。" );
-									m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
+									m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.AdoInptOtptDvcClos );
 									break; //这里要退出线程，防止多次发送线程消息。
 								}
 							}

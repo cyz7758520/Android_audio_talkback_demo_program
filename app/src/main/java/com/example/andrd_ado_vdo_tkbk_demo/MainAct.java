@@ -1,6 +1,5 @@
 package com.example.andrd_ado_vdo_tkbk_demo;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -8,10 +7,11 @@ import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.hardware.camera2.CameraManager;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
-import android.media.MediaFormat;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -21,6 +21,8 @@ import android.os.Vibrator;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -28,7 +30,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -75,6 +76,10 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 	ArrayList< MediaPocsThrd.AdoInptOtptDvcInfo > m_AdoInptOtptDvcInfoLstPt; //存放音频输入输出设备信息列表的指针。
 	ArrayList< String > m_AdoInptOtptDvcSpinnerItemArrayLst; //存放音频输入输出设备下拉框项目数组列表的指针。
 	MediaPocsThrd.AdoInptOtptDvcInfo m_AdoInptOtptUseDvcInfoPt; //存放音频输入输出使用的设备信息的指针。
+	Spinner m_VdoInptDvcSpinnerPt; //存放视频输入设备下拉框的指针。
+	ArrayList< MediaPocsThrd.VdoInptDvcInfo > m_VdoInptDvcInfoLstPt; //存放视频输入设备信息列表的指针。
+	ArrayList< String > m_VdoInptDvcSpinnerItemArrayLst; //存放视频输入设备下拉框项目数组列表的指针。
+	MediaPocsThrd.VdoInptDvcInfo m_VdoInptUseDvcInfoPt; //存放视频输入使用的设备信息的指针。
 	View m_StngLyotViewPt; //存放设置布局视图的指针。
 	View m_AjbStngLyotViewPt; //存放音频自适应抖动缓冲器设置布局视图的指针。
 	View m_SaveStsToTxtFileStngLyotViewPt; //存放保存状态到Txt文件设置布局视图的指针。
@@ -97,6 +102,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 	MySrvrThrd m_MySrvrThrdPt; //存放我的服务端线程的指针。
 	MyClntMediaPocsThrd m_MyClntMediaPocsThrdPt; //存放我的客户端媒体处理线程的指针。
 	MainAct m_MainActPt; //存放主界面的指针。
+	Configuration m_LastMainActConfigPt; //存放上一次主界面配置的指针。用于判断屏幕是否旋转。
 
 	String m_ExternalDirFullAbsPathStrPt; //存放扩展目录完整绝对路径字符串的指针。
 
@@ -127,19 +133,20 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		public static final int ClntLstModifyItem              = 16; //客户端列表修改项目。
 
 		public static final int GetAdoInptOtptDvcInfo          = 17; //获取音频输入输出设备信息。
+		public static final int GetVdoInptDvcInfo              = 18; //获取视频输入设备信息。
 
-		public static final int VdoInptOtptViewInit            = 18; //视频输入输出视图初始化。
-		public static final int VdoInptOtptViewDstoy           = 19; //视频输入输出视图销毁。
-		public static final int VdoInptOtptViewSetTitle        = 20; //视频输入输出视图设置标题。
+		public static final int VdoInptOtptViewInit            = 19; //视频输入输出视图初始化。
+		public static final int VdoInptOtptViewDstoy           = 20; //视频输入输出视图销毁。
+		public static final int VdoInptOtptViewSetTitle        = 21; //视频输入输出视图设置标题。
 
-		public static final int AdoInptOtptDvcChg              = 21; //音频输入输出设备改变。
-		public static final int VdoInptDvcChg                  = 22; //视频输入设备改变。
+		public static final int AdoInptOtptDvcChg              = 22; //音频输入输出设备改变。
+		public static final int VdoInptDvcChg                  = 23; //视频输入设备改变。
 	}
 
 	//主界面消息处理。
 	class MainActHandler extends Handler
 	{
-		public void handleMessage( Message MessagePt )
+		@Override public void handleMessage( Message MessagePt )
 		{
 			switch( MessagePt.what )
 			{
@@ -289,6 +296,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 					m_MainActPt.m_MyClntMediaPocsThrdPt = null;
 					m_AdoInptOtptUseDvcInfoPt = null;
 					UpdateAdoInptOtptDvcSpinner(); //更新音频输入输出设备下拉框。
+					m_VdoInptUseDvcInfoPt = null;
+					UpdateVdoInptDvcSpinner(); //更新视频输入设备下拉框。
 					break;
 				}
 				case MainActMsgTyp.TkbkClntCnctInit:
@@ -396,6 +405,11 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 					( ( HTObject )( ( Object[] ) MessagePt.obj )[ 0 ] ).m_Val = m_AdoInptOtptDvcInfoLstPt.get( m_AdoInptOtptDvcSpinnerPt.getSelectedItemPosition() );
 					break;
 				}
+				case MainActMsgTyp.GetVdoInptDvcInfo:
+				{
+					( ( HTObject )( ( Object[] ) MessagePt.obj )[ 0 ] ).m_Val = m_VdoInptDvcInfoLstPt.get( m_VdoInptDvcSpinnerPt.getSelectedItemPosition() );
+					break;
+				}
 				case MainActMsgTyp.VdoInptOtptViewInit:
 				{
 					( ( HTObject )( ( Object[] ) MessagePt.obj )[ 1 ] ).m_Val = VdoInptOtptViewInit( ( String ) ( ( Object[] ) MessagePt.obj )[ 0 ] );
@@ -403,12 +417,12 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 				}
 				case MainActMsgTyp.VdoInptOtptViewDstoy:
 				{
-					VdoInptOtptViewDstoy( ( HTSurfaceView ) MessagePt.obj );
+					VdoInptOtptViewDstoy( ( SurfaceView ) MessagePt.obj );
 					break;
 				}
 				case MainActMsgTyp.VdoInptOtptViewSetTitle:
 				{
-					VdoInptOtptViewSetTitle( ( HTSurfaceView ) ( ( Object[] ) MessagePt.obj )[ 0 ], ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
+					VdoInptOtptViewSetTitle( ( SurfaceView ) ( ( Object[] ) MessagePt.obj )[ 0 ], ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
 					break;
 				}
 				case MainActMsgTyp.AdoInptOtptDvcChg:
@@ -419,9 +433,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 				}
 				case MainActMsgTyp.VdoInptDvcChg:
 				{
-					MediaPocsThrd.VdoInptDvcInfo p_VdoInptUseDvcInfoPt = ( MediaPocsThrd.VdoInptDvcInfo )( ( Object[] ) MessagePt.obj )[ 0 ]; //设置视频输入使用的设备信息的指针。
-					if( p_VdoInptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.VdoInptDvcInfo.DvcTyp.FrontCamera ) ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseFrontCamereRdBtnId ) ).setChecked( true );
-					else ( ( RadioButton ) m_MainLyotViewPt.findViewById( R.id.UseBackCamereRdBtnId ) ).setChecked( true );
+					m_VdoInptUseDvcInfoPt = ( MediaPocsThrd.VdoInptDvcInfo )( ( Object[] ) MessagePt.obj )[ 0 ]; //设置视频输入使用的设备信息的指针。
+					UpdateVdoInptDvcSpinner(); //更新视频输入设备下拉框。
 					break;
 				}
 			}
@@ -546,27 +559,24 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 			Log.e( m_CurClsNameStrPt, "获取OpenH264解码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 		}
 
-		if( android.os.Build.VERSION.SDK_INT >= 20 ) //低版本的系统无法调用SystemH264库的GetAppLmtInfo函数。
+		if( SystemH264Encd.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
 		{
-			if( SystemH264Encd.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
-			{
-				Log.i( m_CurClsNameStrPt, "系统自带H264编码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-				Log.i( m_CurClsNameStrPt, "系统自带H264编码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
-			}
-			else
-			{
-				Log.e( m_CurClsNameStrPt, "获取系统自带H264编码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
-			}
+			Log.i( m_CurClsNameStrPt, "系统自带H264编码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "系统自带H264编码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取系统自带H264编码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
+		}
 
-			if( SystemH264Decd.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
-			{
-				Log.i( m_CurClsNameStrPt, "系统自带H264解码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
-				Log.i( m_CurClsNameStrPt, "系统自带H264解码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
-			}
-			else
-			{
-				Log.e( m_CurClsNameStrPt, "获取系统自带H264解码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
-			}
+		if( SystemH264Decd.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
+		{
+			Log.i( m_CurClsNameStrPt, "系统自带H264解码器限制时间：" + p_LmtTimeSecPt.m_Val + "。" );
+			Log.i( m_CurClsNameStrPt, "系统自带H264解码器剩余时间：" + p_RmnTimeSecPt.m_Val + "，约" + ( p_RmnTimeSecPt.m_Val / 24 / 60 / 60 ) + "天。" );
+		}
+		else
+		{
+			Log.e( m_CurClsNameStrPt, "获取系统自带H264解码器的应用程序限制信息失败。原因：" + m_ErrInfoVstrPt.GetStr() );
 		}
 
 		if( AAjb.GetAppLmtInfo( LicnCode.m_LicnCodePt, p_LmtTimeSecPt, p_RmnTimeSecPt, m_ErrInfoVstrPt ) == 0 )
@@ -636,21 +646,73 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 			UpdateAdoInptOtptDvcSpinner(); //更新音频输入输出设备下拉框。
 			if( android.os.Build.VERSION.SDK_INT >= 23 ) //注册音频输入输出设备修改回调。
 			{
-				android.media.AudioDeviceCallback p_AdoInptOtptDvcChgCallbackPt = new android.media.AudioDeviceCallback()
-				{
-					public void onAudioDevicesAdded( AudioDeviceInfo[] addedDevices )
+				( ( AudioManager ) getSystemService( Context.AUDIO_SERVICE ) ).registerAudioDeviceCallback( new android.media.AudioDeviceCallback()
 					{
-						UpdateAdoInptOtptDvcSpinner(); //更新音频输入输出设备下拉框。
-					}
+						public void onAudioDevicesAdded( AudioDeviceInfo[] addedDevices )
+						{
+							UpdateAdoInptOtptDvcSpinner(); //更新音频输入输出设备下拉框。
+						}
 
-					public void onAudioDevicesRemoved( AudioDeviceInfo[] removedDevices )
-					{
-						UpdateAdoInptOtptDvcSpinner(); //更新音频输入输出设备下拉框。
-					}
-				};
+						public void onAudioDevicesRemoved( AudioDeviceInfo[] removedDevices )
+						{
+							UpdateAdoInptOtptDvcSpinner(); //更新音频输入输出设备下拉框。
+						}
 
-				( ( AudioManager ) getSystemService( Context.AUDIO_SERVICE ) ).registerAudioDeviceCallback( p_AdoInptOtptDvcChgCallbackPt, null );
+					}, null );
 			}
+			m_VdoInptDvcSpinnerPt = ( ( Spinner ) m_MainLyotViewPt.findViewById( R.id.VdoInptDvcSpinnerId ) );
+			m_VdoInptDvcSpinnerItemArrayLst = new ArrayList< String >();
+			m_VdoInptDvcSpinnerPt.setAdapter( new ArrayAdapter< String >( MainAct.this, android.R.layout.simple_spinner_dropdown_item, m_VdoInptDvcSpinnerItemArrayLst ) );
+			m_VdoInptDvcSpinnerPt.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() //设置音频输入输出设备下拉框的选择监听器。
+			{
+				@Override
+				public void onItemSelected( AdapterView< ? > parent, View view, int position, long id )
+				{
+					if( m_MyClntMediaPocsThrdPt != null ) //如果是因为用户手动选择触发的。
+					{
+						m_MyClntMediaPocsThrdPt.VdoInptSetUseDvc( 1, m_VdoInptDvcInfoLstPt.get( position ) );
+					}
+				}
+
+				@Override
+				public void onNothingSelected( AdapterView< ? > parent )
+				{
+
+				}
+			} );
+			UpdateVdoInptDvcSpinner(); //更新音频输入输出设备下拉框。
+			if( Build.VERSION.SDK_INT >= 21 )
+			{
+				( ( CameraManager )getSystemService( Context.CAMERA_SERVICE ) ).registerAvailabilityCallback( new CameraManager.AvailabilityCallback()
+					{
+						@Override
+						public void onCameraAvailable( String cameraId )
+						{
+							UpdateVdoInptDvcSpinner(); //更新视频输入设备下拉框。
+						}
+
+						@Override
+						public void onCameraUnavailable( String cameraId )
+						{
+							UpdateVdoInptDvcSpinner(); //更新视频输入设备下拉框。
+						}
+
+						@Override
+						public void onPhysicalCameraAvailable( String cameraId,
+															   String physicalCameraId )
+						{
+							UpdateVdoInptDvcSpinner(); //更新视频输入设备下拉框。
+						}
+
+						@Override
+						public void onPhysicalCameraUnavailable( String cameraId,
+																 String physicalCameraId )
+						{
+							UpdateVdoInptDvcSpinner(); //更新视频输入设备下拉框。
+						}
+
+					}, null );
+            }
 			m_StngLyotViewPt = p_LyotInflater.inflate( R.layout.stng_lyot, null );
 			m_AjbStngLyotViewPt = p_LyotInflater.inflate( R.layout.ajb_stng_lyot, null );
 			m_SaveStsToTxtFileStngLyotViewPt = p_LyotInflater.inflate( R.layout.save_sts_to_txt_file_stng_lyot, null );
@@ -683,6 +745,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 
 		//初始化主界面消息处理。
 		m_MainActPt = this;
+		m_LastMainActConfigPt = new Configuration( getResources().getConfiguration() );
 		m_MainActHandlerPt = new MainActHandler();
 
 		//设置AppId文本框。
@@ -846,26 +909,36 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		}
 	}
 
-	//主界面横竖屏切换消息。
+	//主界面屏幕旋转消息。
 	@Override public void onConfigurationChanged( Configuration newConfig )
 	{
 		super.onConfigurationChanged( newConfig );
 
-		if( m_MyClntMediaPocsThrdPt != null && m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_IsInit != 0 ) //如果我的网络媒体处理线程已经启动，且已初始化视频输入。
+		if( m_LastMainActConfigPt.orientation != newConfig.orientation ) //如果屏幕方向有变化。
 		{
-			m_MyClntMediaPocsThrdPt.SetVdoInpt( 1,
-												m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_MaxSmplRate,
-												m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_FrmWidth,
-												m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_FrmHeight,
-												0,
-												0,
-												( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotateAutoRdBtnId ) ).isChecked() ) ? m_MainActPt.getWindowManager().getDefaultDisplay().getRotation() * 90 :
-												( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate0RdBtnId ) ).isChecked() ) ? 0 :
-												( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate90RdBtnId ) ).isChecked() ) ? 90 :
-												( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate180RdBtnId ) ).isChecked() ) ? 180 :
-												( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate270RdBtnId ) ).isChecked() ) ? 270 : 0,
-												m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt );
+			if( m_MyClntMediaPocsThrdPt != null ) //如果我的网络媒体处理线程已经启动。
+			{
+				if( m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_IsUse != 0 ) //如果要使用视频输入。
+				{
+					m_MyClntMediaPocsThrdPt.SetVdoInpt( 1,
+														m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_MaxSmplRate,
+														m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_FrmWidth,
+														m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_FrmHeight,
+														0,
+														0,
+														( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotateAutoRdBtnId ) ).isChecked() ) ? m_MainActPt.getWindowManager().getDefaultDisplay().getRotation() * 90 :
+														( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate0RdBtnId ) ).isChecked() ) ? 0 :
+														( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate90RdBtnId ) ).isChecked() ) ? 90 :
+														( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate180RdBtnId ) ).isChecked() ) ? 180 :
+														( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate270RdBtnId ) ).isChecked() ) ? 270 : 0,
+														m_MyClntMediaPocsThrdPt.m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt );
+
+
+				}
+			}
 		}
+
+		m_LastMainActConfigPt = new Configuration( newConfig ); //更新上一次主界面配置的指针。
 	}
 
 	//服务端初始化或销毁按钮。
@@ -1042,24 +1115,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		}
 	}
 
-	//使用前置摄像头单选按钮。
-	public void onClickUseFrontCamereRdBtn( View ViewPt )
-	{
-		if( m_MyClntMediaPocsThrdPt != null )
-		{
-			m_MyClntMediaPocsThrdPt.VdoInptSetUseDvc( 1, 0, -1, -1 );
-		}
-	}
-
-	//使用后置摄像头单选按钮。
-	public void onClickUseBackCamereRdBtn( View ViewPt )
-	{
-		if( m_MyClntMediaPocsThrdPt != null )
-		{
-			m_MyClntMediaPocsThrdPt.VdoInptSetUseDvc( 1, 1, -1, -1 );
-		}
-	}
-
 	//音频输入是否静音复选框。
 	public void onClickAdoInptIsMuteCkBox( View ViewPt )
 	{
@@ -1154,16 +1209,18 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		startActivity( new Intent( Intent.ACTION_VIEW, Uri.parse( "https://github.com/cyz7758520/Android_audio_talkback_demo_program" ) ) );
 	}
 
-	//视频输入视频输出Surface视图。
+	//视频输入视频输出SurfaceView。
 	public void onClickVdoInptOtptSurfaceView( View ViewPt )
 	{
-		if( ( ( LinearLayout )ViewPt.getParent().getParent() ).getOrientation() == LinearLayout.HORIZONTAL )
+		LinearLayout p_VdoInptOtptLinearLyotPt = ( ( LinearLayout )ViewPt.getParent().getParent().getParent() );
+
+		if( p_VdoInptOtptLinearLyotPt.getOrientation() == LinearLayout.HORIZONTAL )
 		{
-			( ( LinearLayout )ViewPt.getParent().getParent() ).setOrientation( LinearLayout.VERTICAL );
+			p_VdoInptOtptLinearLyotPt.setOrientation( LinearLayout.VERTICAL );
 		}
 		else
 		{
-			( ( LinearLayout )ViewPt.getParent().getParent() ).setOrientation( LinearLayout.HORIZONTAL );
+			p_VdoInptOtptLinearLyotPt.setOrientation( LinearLayout.HORIZONTAL );
 		}
 	}
 
@@ -1520,18 +1577,20 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		{
 			if( m_AdoInptOtptUseDvcInfoPt != null )
 			{
-				if( m_AdoInptOtptUseDvcInfoPt.m_NameStrPt.equals( "默认扬声器" ) ) //如果要使用默认扬声器。
+				if( m_AdoInptOtptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.AdoInptOtptDvcInfo.DvcTyp.DftSpeaker ) //如果要使用默认扬声器。
 				{
-					if( m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt != null ) m_AdoInptOtptDvcSpinnerItemArrayLst.set( 0, "默认扬声器：" + MediaPocsThrd.GetAdoDvcInfoTypeName( m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getType() ) + m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getProductName() );
-					else if( m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt != null ) m_AdoInptOtptDvcSpinnerItemArrayLst.set( 0, "默认扬声器：" + MediaPocsThrd.GetAdoDvcInfoTypeName( m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getType() ) + m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getProductName() );
+					if( m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt != null ) m_AdoInptOtptDvcSpinnerItemArrayLst.set( 0, "默认扬声器：" + MediaPocsThrd.GetAdoInptOtptDvcInfoName( m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt ) );
+					else if( m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt != null ) m_AdoInptOtptDvcSpinnerItemArrayLst.set( 0, "默认扬声器：" + MediaPocsThrd.GetAdoInptOtptDvcInfoName( m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt ) );
 					else m_AdoInptOtptDvcSpinnerItemArrayLst.set( 0, "默认扬声器" );
+
 					m_AdoInptOtptDvcSpinnerItemArrayLst.set( 1, "默认听筒" );
 				}
-				else if( m_AdoInptOtptUseDvcInfoPt.m_NameStrPt.equals( "默认听筒" ) ) //如果要使用默认听筒。
+				else if( m_AdoInptOtptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.AdoInptOtptDvcInfo.DvcTyp.DftEarpiece ) //如果要使用默认听筒。
 				{
 					m_AdoInptOtptDvcSpinnerItemArrayLst.set( 0, "默认扬声器" );
-					if( m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt != null ) m_AdoInptOtptDvcSpinnerItemArrayLst.set( 1, "默认听筒：" + MediaPocsThrd.GetAdoDvcInfoTypeName( m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getType() ) + m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt.getProductName() );
-					else if( m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt != null ) m_AdoInptOtptDvcSpinnerItemArrayLst.set( 1, "默认听筒：" + MediaPocsThrd.GetAdoDvcInfoTypeName( m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getType() ) + m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getProductName() );
+
+					if( m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt != null ) m_AdoInptOtptDvcSpinnerItemArrayLst.set( 1, "默认听筒：" + MediaPocsThrd.GetAdoInptOtptDvcInfoName( m_AdoInptOtptUseDvcInfoPt.m_AdoOtptDvcInfoPt ) );
+					else if( m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt != null ) m_AdoInptOtptDvcSpinnerItemArrayLst.set( 1, "默认听筒：" + MediaPocsThrd.GetAdoInptOtptDvcInfoName( m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt ) );
 					else m_AdoInptOtptDvcSpinnerItemArrayLst.set( 1, "默认听筒" );
 				}
 				else //如果要使用指定的设备。
@@ -1560,7 +1619,63 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		}
 	}
 
-	//发送视频输入输出视图初始化消息。
+	//更新视频输入设备下拉框。
+	public void UpdateVdoInptDvcSpinner()
+	{
+		MediaPocsThrd.VdoInptDvcInfo p_CurSelVdoInptDvcInfoPt = null; //存放当前选择的视频输入设备信息。
+
+		if( m_VdoInptDvcSpinnerPt.getSelectedItemPosition() != AdapterView.INVALID_POSITION ) p_CurSelVdoInptDvcInfoPt = m_VdoInptDvcInfoLstPt.get( m_VdoInptDvcSpinnerPt.getSelectedItemPosition() ); //设置当前选择的视频输入设备信息。
+
+		m_VdoInptDvcInfoLstPt = MediaPocsThrd.GetAllVdoInptDvcInfo(); //更新视频输入设备信息列表。
+
+		//更新视频输入设备下拉框项目数组列表。
+		m_VdoInptDvcSpinnerItemArrayLst.clear();
+		for( MediaPocsThrd.VdoInptDvcInfo m_VdoInptDvcInfoPt : m_VdoInptDvcInfoLstPt )
+		{
+			m_VdoInptDvcSpinnerItemArrayLst.add( m_VdoInptDvcInfoPt.m_NameStrPt );
+		}
+		if( m_VdoInptUseDvcInfoPt != null )
+		{
+			if( m_VdoInptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.VdoInptDvcInfo.DvcTyp.DftFrontCamera ) //如果要使用默认前置摄像头。
+			{
+				if( m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt != null ) m_VdoInptDvcSpinnerItemArrayLst.set( 0, "默认前置摄像头：" + MediaPocsThrd.GetVdoInptDvcInfoName( m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt.facing, m_VdoInptUseDvcInfoPt.m_CameraId ) );
+				else m_VdoInptDvcSpinnerItemArrayLst.set( 0, "默认前置摄像头" );
+
+				m_VdoInptDvcSpinnerItemArrayLst.set( 1, "默认后置摄像头" );
+			}
+			else if( m_VdoInptUseDvcInfoPt.m_DvcTyp == MediaPocsThrd.VdoInptDvcInfo.DvcTyp.DftBackCamera ) //如果要使用默认后置摄像头。
+			{
+				m_VdoInptDvcSpinnerItemArrayLst.set( 0, "默认前置摄像头" );
+
+				if( m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt != null ) m_VdoInptDvcSpinnerItemArrayLst.set( 1, "默认后置摄像头：" + MediaPocsThrd.GetVdoInptDvcInfoName( m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt.facing, m_VdoInptUseDvcInfoPt.m_CameraId ) );
+				else m_VdoInptDvcSpinnerItemArrayLst.set( 1, "默认后置摄像头" );
+			}
+			else //如果要使用指定的设备。
+			{
+
+			}
+		}
+		( ( ArrayAdapter< String > ) m_VdoInptDvcSpinnerPt.getAdapter() ).notifyDataSetChanged();
+
+		//继续选择之前选择的视频输入设备。
+		if( p_CurSelVdoInptDvcInfoPt != null )
+		{
+			OutFindVdoInptDvcInfo:
+			{
+				for( int i = 0; i < m_VdoInptDvcInfoLstPt.size(); i++ ) //查找要使用的设备。
+				{
+					if( m_VdoInptDvcInfoLstPt.get( i ).m_NameStrPt.equals( p_CurSelVdoInptDvcInfoPt.m_NameStrPt ) )
+					{
+						m_VdoInptDvcSpinnerPt.setSelection( i );
+						break OutFindVdoInptDvcInfo;
+					}
+				}
+				m_VdoInptDvcSpinnerPt.setSelection( 0 ); //如果没有找到就使用默认前置摄像头。
+			}
+		}
+	}
+
+	//发送获取音频输入输出设备信息消息。
 	public MediaPocsThrd.AdoInptOtptDvcInfo SendGetAdoInptOtptDvcInfoMsg()
 	{
 		Message p_MessagePt = new Message();
@@ -1572,46 +1687,66 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		return ( MediaPocsThrd.AdoInptOtptDvcInfo ) p_HTObjectPt.m_Val;
 	}
 
+	//发送获取视频输入设备信息消息。
+	public MediaPocsThrd.VdoInptDvcInfo SendGetVdoInptDvcInfoMsg()
+	{
+		Message p_MessagePt = new Message();
+		HTObject p_HTObjectPt = new HTObject();
+		p_MessagePt.what = MainActMsgTyp.GetVdoInptDvcInfo;
+		p_MessagePt.obj = new Object[]{ p_HTObjectPt };
+		m_MainActHandlerPt.sendMessage( p_MessagePt );
+		while( p_HTObjectPt.m_Val == null ) SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
+		return ( MediaPocsThrd.VdoInptDvcInfo ) p_HTObjectPt.m_Val;
+	}
+
 	//视频输入输出视图初始化。
-	public HTSurfaceView VdoInptOtptViewInit( String TitleStrPt )
+	public SurfaceView VdoInptOtptViewInit( String TitleStrPt )
 	{
 		LinearLayout p_LinearLyotPt = new LinearLayout( this );
 		TextView p_TxtViewPt = new TextView( this );
-		HTSurfaceView p_HTSurfaceViewPt = new HTSurfaceView( this );
-		ViewGroup.LayoutParams p_LayoutParamsPt;
+		ConstraintLayout p_ConstraintLyotPt = new ConstraintLayout( this );
+		SurfaceView p_SurfaceViewPt = new SurfaceView( this );
+		LinearLayout.LayoutParams p_LinearLayoutParamsPt;
+		ConstraintLayout.LayoutParams p_ConstraintLayoutParamsPt;
 
 		if( TitleStrPt.substring( 0, 4 ).equals( "视频输入" ) ) ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).addView( p_LinearLyotPt, 0 );
 		else ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).addView( p_LinearLyotPt );
 		p_LinearLyotPt.addView( p_TxtViewPt );
-		p_LinearLyotPt.addView( p_HTSurfaceViewPt );
+		p_LinearLyotPt.addView( p_ConstraintLyotPt );
+		p_ConstraintLyotPt.addView( p_SurfaceViewPt );
 
 		p_LinearLyotPt.setOrientation( LinearLayout.VERTICAL );
-		p_LayoutParamsPt = p_LinearLyotPt.getLayoutParams();
-		p_LayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
-		p_LayoutParamsPt.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-		( ( LinearLayout.LayoutParams )p_LayoutParamsPt ).weight = 1;
-		p_LinearLyotPt.setLayoutParams( p_LayoutParamsPt );
+		p_LinearLayoutParamsPt = ( LinearLayout.LayoutParams )p_LinearLyotPt.getLayoutParams();
+		p_LinearLayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
+		p_LinearLayoutParamsPt.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+		p_LinearLayoutParamsPt.weight = 1;
+		p_LinearLyotPt.setLayoutParams( p_LinearLayoutParamsPt );
 
 		p_TxtViewPt.setText( TitleStrPt );
 		p_TxtViewPt.setGravity( Gravity.CENTER );
-		p_LayoutParamsPt = p_TxtViewPt.getLayoutParams();
-		p_LayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
-		p_LayoutParamsPt.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-		p_TxtViewPt.setLayoutParams( p_LayoutParamsPt );
+		p_LinearLayoutParamsPt = ( LinearLayout.LayoutParams )p_TxtViewPt.getLayoutParams();
+		p_LinearLayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
+		p_LinearLayoutParamsPt.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+		p_TxtViewPt.setLayoutParams( p_LinearLayoutParamsPt );
 
-		p_HTSurfaceViewPt.setBackgroundColor( Color.TRANSPARENT );
-		p_LayoutParamsPt = p_HTSurfaceViewPt.getLayoutParams();
-		p_LayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
-		p_LayoutParamsPt.height = 1;
-		( ( LinearLayout.LayoutParams )p_LayoutParamsPt ).weight = 1;
-		p_HTSurfaceViewPt.setLayoutParams( p_LayoutParamsPt );
-		p_HTSurfaceViewPt.setOnClickListener( v -> onClickVdoInptOtptSurfaceView( p_HTSurfaceViewPt ) );
+		p_LinearLayoutParamsPt = ( LinearLayout.LayoutParams )p_ConstraintLyotPt.getLayoutParams();
+		p_LinearLayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
+		p_LinearLayoutParamsPt.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+		p_ConstraintLyotPt.setLayoutParams( p_LinearLayoutParamsPt );
 
-		return p_HTSurfaceViewPt;
+		p_SurfaceViewPt.setBackgroundColor( Color.TRANSPARENT );
+		p_ConstraintLayoutParamsPt = ( ConstraintLayout.LayoutParams )p_SurfaceViewPt.getLayoutParams();
+		p_ConstraintLayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
+		p_ConstraintLayoutParamsPt.height = 0;
+		p_ConstraintLayoutParamsPt.dimensionRatio = "1.0";
+		p_SurfaceViewPt.setLayoutParams( p_ConstraintLayoutParamsPt );
+		p_SurfaceViewPt.setOnClickListener( v -> onClickVdoInptOtptSurfaceView( p_SurfaceViewPt ) );
+
+		return p_SurfaceViewPt;
 	}
 
 	//发送视频输入输出视图初始化消息。
-	public HTSurfaceView SendVdoInptOtptViewInitMsg( String TitleStrPt )
+	public SurfaceView SendVdoInptOtptViewInitMsg( String TitleStrPt )
 	{
 		Message p_MessagePt = new Message();
 		HTObject p_HTObjectPt = new HTObject();
@@ -1619,36 +1754,36 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		p_MessagePt.obj = new Object[]{ TitleStrPt, p_HTObjectPt };
 		m_MainActHandlerPt.sendMessage( p_MessagePt );
 		while( p_HTObjectPt.m_Val == null ) SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
-		return ( HTSurfaceView ) p_HTObjectPt.m_Val;
+		return ( SurfaceView ) p_HTObjectPt.m_Val;
 	}
 
 	//视频输入输出视图销毁。
-	public void VdoInptOtptViewDstoy( HTSurfaceView DspyHTSurfaceViewPt )
+	public void VdoInptOtptViewDstoy( SurfaceView DspySurfaceViewPt )
 	{
-		if( DspyHTSurfaceViewPt != null ) ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).removeView( ( View )DspyHTSurfaceViewPt.getParent() );
+		if( DspySurfaceViewPt != null ) ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).removeView( ( View )DspySurfaceViewPt.getParent().getParent() );
 	}
 
 	//发送视频输入输出视图销毁消息。
-	public void SendVdoInptOtptViewDstoyMsg( HTSurfaceView DspyHTSurfaceViewPt )
+	public void SendVdoInptOtptViewDstoyMsg( SurfaceView DspySurfaceViewPt )
 	{
 		Message p_MessagePt = new Message();
 		p_MessagePt.what = MainActMsgTyp.VdoInptOtptViewDstoy;
-		p_MessagePt.obj = DspyHTSurfaceViewPt;
+		p_MessagePt.obj = DspySurfaceViewPt;
 		m_MainActHandlerPt.sendMessage( p_MessagePt );
 	}
 
 	//视频输入输出视图设置标题。
-	public void VdoInptOtptViewSetTitle( HTSurfaceView DspyHTSurfaceViewPt, String TitleStrPt )
+	public void VdoInptOtptViewSetTitle( SurfaceView DspySurfaceViewPt, String TitleStrPt )
 	{
-		if( ( DspyHTSurfaceViewPt != null ) && ( TitleStrPt != null ) ) ( ( TextView )( ( LinearLayout )DspyHTSurfaceViewPt.getParent() ).getChildAt( 0 ) ).setText( TitleStrPt );
+		if( ( DspySurfaceViewPt != null ) && ( TitleStrPt != null ) ) ( ( TextView )( ( LinearLayout )DspySurfaceViewPt.getParent().getParent() ).getChildAt( 0 ) ).setText( TitleStrPt );
 	}
 
 	//发送视频输入输出视图设置标题消息。
-	public void SendVdoInptOtptViewSetTitleMsg( HTSurfaceView DspyHTSurfaceViewPt, String TitleStrPt )
+	public void SendVdoInptOtptViewSetTitleMsg( SurfaceView DspySurfaceViewPt, String TitleStrPt )
 	{
 		Message p_MessagePt = new Message();
 		p_MessagePt.what = MainActMsgTyp.VdoInptOtptViewSetTitle;
-		p_MessagePt.obj = new Object[]{ DspyHTSurfaceViewPt, TitleStrPt };
+		p_MessagePt.obj = new Object[]{ DspySurfaceViewPt, TitleStrPt };
 		m_MainActHandlerPt.sendMessage( p_MessagePt );
 	}
 }

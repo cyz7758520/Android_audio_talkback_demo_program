@@ -106,7 +106,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 		public static final int BdctClntCnctInit         = 8; //广播客户端的连接初始化。
 		public static final int BdctClntCnctDstoy        = 9; //广播客户端的连接销毁。
 
-		public static final int UserMsgMinVal  = 100; //用户消息的最小值。
+		public static final int UserMsgMinVal            = 100; //用户消息的最小值。
 	}
 
 	//用户定义的相关回调函数。
@@ -125,6 +125,33 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 
 	//用户定义的设备改变函数。
 	public abstract void _UserDvcChg( AdoInptOtptDvcInfo AdoInptOtptDvcInfoPt, VdoInptDvcInfo VdoInptDvcInfoPt );
+
+	//用户定义的读取音视频输入帧函数。
+	public abstract void _UserReadAdoVdoInptFrm( short AdoInptPcmSrcFrmPt[], short AdoInptPcmRsltFrmPt[], long AdoInptPcmFrmLenUnit, int AdoInptPcmRsltFrmVoiceActSts,
+												 byte AdoInptEncdRsltFrmPt[], long AdoInptEncdRsltFrmLenByt, int AdoInptEncdRsltFrmIsNeedTrans,
+												 byte VdoInptNv21SrcFrmPt[], int VdoInptNv21SrcFrmWidth, int VdoInptNv21SrcFrmHeight, long VdoInptNv21SrcFrmLenByt,
+												 byte VdoInptYu12RsltFrmPt[], int VdoInptYu12RsltFrmWidth, int VdoInptYu12RsltFrmHeight, long VdoInptYu12RsltFrmLenByt,
+												 byte VdoInptEncdRsltFrmPt[], long VdoInptEncdRsltFrmLenByt );
+
+	//用户定义的写入音频输出帧函数。
+	public abstract void _UserWriteAdoOtptFrm( int AdoOtptStrmIdx,
+											   short AdoOtptPcmSrcFrmPt[], long AdoOtptPcmFrmLenUnit,
+											   byte AdoOtptEncdSrcFrmPt[], long AdoOtptEncdSrcFrmSzByt, HTLong AdoOtptEncdSrcFrmLenBytPt );
+
+	//用户定义的获取音频输出帧函数。
+	public abstract void _UserGetAdoOtptFrm( int AdoOtptStrmIdx,
+											 short AdoOtptPcmSrcFrmPt[], long AdoOtptPcmFrmLenUnit,
+											 byte AdoOtptEncdSrcFrmPt[], long AdoOtptEncdSrcFrmLenByt );
+
+	//用户定义的写入视频输出帧函数。
+	public abstract void _UserWriteVdoOtptFrm( int VdoOtptStrmIdx,
+											   byte VdoOtptYu12SrcFrmPt[], HTInt VdoOtptYu12SrcFrmWidthPt, HTInt VdoOtptYu12SrcFrmHeightPt,
+											   byte VdoOtptEncdSrcFrmPt[], long VdoOtptEncdSrcFrmSzByt, HTLong VdoOtptEncdSrcFrmLenBytPt );
+
+	//用户定义的获取视频输出帧函数。
+	public abstract void _UserGetVdoOtptFrm( int VdoOtptStrmIdx,
+											 byte VdoOtptYu12SrcFrmPt[], int VdoOtptYu12SrcFrmWidth, int VdoOtptYu12SrcFrmHeight,
+											 byte VdoOtptEncdSrcFrmPt[], long VdoOtptEncdSrcFrmLenByt );
 
 	//用户定义的显示日志函数。
 	public abstract void UserShowLog( String InfoStrPt );
@@ -711,7 +738,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	//用户定义的读取音视频输入帧函数。
 	@Override public void UserReadAdoVdoInptFrm( short AdoInptPcmSrcFrmPt[], short AdoInptPcmRsltFrmPt[], long AdoInptPcmFrmLenUnit, int AdoInptPcmRsltFrmVoiceActSts,
 												 byte AdoInptEncdRsltFrmPt[], long AdoInptEncdRsltFrmLenByt, int AdoInptEncdRsltFrmIsNeedTrans,
-												 byte VdoInptNv21SrcFrmPt[], int VdoInptNv21SrcFrmWidthPt, int VdoInptNv21SrcFrmHeightPt, long VdoInptNv21SrcFrmLenByt,
+												 byte VdoInptNv21SrcFrmPt[], int VdoInptNv21SrcFrmWidth, int VdoInptNv21SrcFrmHeight, long VdoInptNv21SrcFrmLenByt,
 												 byte VdoInptYu12RsltFrmPt[], int VdoInptYu12RsltFrmWidth, int VdoInptYu12RsltFrmHeight, long VdoInptYu12RsltFrmLenByt,
 												 byte VdoInptEncdRsltFrmPt[], long VdoInptEncdRsltFrmLenByt )
 	{
@@ -719,7 +746,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 		{
 			m_TkbkClntPt.UserReadAdoVdoInptFrm( AdoInptPcmSrcFrmPt, AdoInptPcmRsltFrmPt, AdoInptPcmFrmLenUnit, AdoInptPcmRsltFrmVoiceActSts,
 												AdoInptEncdRsltFrmPt, AdoInptEncdRsltFrmLenByt, AdoInptEncdRsltFrmIsNeedTrans,
-												VdoInptNv21SrcFrmPt, VdoInptNv21SrcFrmWidthPt, VdoInptNv21SrcFrmHeightPt, VdoInptNv21SrcFrmLenByt,
+												VdoInptNv21SrcFrmPt, VdoInptNv21SrcFrmWidth, VdoInptNv21SrcFrmHeight, VdoInptNv21SrcFrmLenByt,
 												VdoInptYu12RsltFrmPt, VdoInptYu12RsltFrmWidth, VdoInptYu12RsltFrmHeight, VdoInptYu12RsltFrmLenByt,
 												VdoInptEncdRsltFrmPt, VdoInptEncdRsltFrmLenByt );
 		}
@@ -728,10 +755,16 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 		{
 			m_BdctClntPt.UserReadAdoVdoInptFrm( AdoInptPcmSrcFrmPt, AdoInptPcmRsltFrmPt, AdoInptPcmFrmLenUnit, AdoInptPcmRsltFrmVoiceActSts,
 												AdoInptEncdRsltFrmPt, AdoInptEncdRsltFrmLenByt, AdoInptEncdRsltFrmIsNeedTrans,
-												VdoInptNv21SrcFrmPt, VdoInptNv21SrcFrmWidthPt, VdoInptNv21SrcFrmHeightPt, VdoInptNv21SrcFrmLenByt,
+												VdoInptNv21SrcFrmPt, VdoInptNv21SrcFrmWidth, VdoInptNv21SrcFrmHeight, VdoInptNv21SrcFrmLenByt,
 												VdoInptYu12RsltFrmPt, VdoInptYu12RsltFrmWidth, VdoInptYu12RsltFrmHeight, VdoInptYu12RsltFrmLenByt,
 												VdoInptEncdRsltFrmPt, VdoInptEncdRsltFrmLenByt );
 		}
+
+		_UserReadAdoVdoInptFrm( AdoInptPcmSrcFrmPt, AdoInptPcmRsltFrmPt, AdoInptPcmFrmLenUnit, AdoInptPcmRsltFrmVoiceActSts,
+								AdoInptEncdRsltFrmPt, AdoInptEncdRsltFrmLenByt, AdoInptEncdRsltFrmIsNeedTrans,
+								VdoInptNv21SrcFrmPt, VdoInptNv21SrcFrmWidth, VdoInptNv21SrcFrmHeight, VdoInptNv21SrcFrmLenByt,
+								VdoInptYu12RsltFrmPt, VdoInptYu12RsltFrmWidth, VdoInptYu12RsltFrmHeight, VdoInptYu12RsltFrmLenByt,
+								VdoInptEncdRsltFrmPt, VdoInptEncdRsltFrmLenByt );
 	}
 
 	//用户定义的写入音频输出帧函数。
@@ -742,6 +775,10 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 		m_TkbkClntPt.UserWriteAdoOtptFrm( AdoOtptStrmIdx,
 										  AdoOtptPcmSrcFrmPt, AdoOtptPcmFrmLenUnit,
 										  AdoOtptEncdSrcFrmPt, AdoOtptEncdSrcFrmSzByt, AdoOtptEncdSrcFrmLenBytPt );
+
+		_UserWriteAdoOtptFrm( AdoOtptStrmIdx,
+							  AdoOtptPcmSrcFrmPt, AdoOtptPcmFrmLenUnit,
+							  AdoOtptEncdSrcFrmPt, AdoOtptEncdSrcFrmSzByt, AdoOtptEncdSrcFrmLenBytPt );
 	}
 
 	//用户定义的获取音频输出帧函数。
@@ -749,7 +786,9 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 											 short AdoOtptPcmSrcFrmPt[], long AdoOtptPcmFrmLenUnit,
 											 byte AdoOtptEncdSrcFrmPt[], long AdoOtptEncdSrcFrmLenByt )
 	{
-
+		_UserGetAdoOtptFrm( AdoOtptStrmIdx,
+							AdoOtptPcmSrcFrmPt, AdoOtptPcmFrmLenUnit,
+							AdoOtptEncdSrcFrmPt, AdoOtptEncdSrcFrmLenByt );
 	}
 
 	//用户定义的写入视频输出帧函数。
@@ -760,6 +799,10 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 		m_TkbkClntPt.UserWriteVdoOtptFrm( VdoOtptStrmIdx,
 										  VdoOtptYu12SrcFrmPt, VdoOtptYu12SrcFrmWidthPt, VdoOtptYu12SrcFrmHeightPt,
 										  VdoOtptEncdSrcFrmPt, VdoOtptEncdSrcFrmSzByt, VdoOtptEncdSrcFrmLenBytPt );
+
+		_UserWriteVdoOtptFrm( VdoOtptStrmIdx,
+							  VdoOtptYu12SrcFrmPt, VdoOtptYu12SrcFrmWidthPt, VdoOtptYu12SrcFrmHeightPt,
+							  VdoOtptEncdSrcFrmPt, VdoOtptEncdSrcFrmSzByt, VdoOtptEncdSrcFrmLenBytPt );
 	}
 
 	//用户定义的获取视频输出帧函数。
@@ -767,6 +810,8 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 											 byte VdoOtptYu12SrcFrmPt[], int VdoOtptYu12SrcFrmWidth, int VdoOtptYu12SrcFrmHeight,
 											 byte VdoOtptEncdSrcFrmPt[], long VdoOtptEncdSrcFrmLenByt )
 	{
-
+		_UserGetVdoOtptFrm( VdoOtptStrmIdx,
+							VdoOtptYu12SrcFrmPt, VdoOtptYu12SrcFrmWidth, VdoOtptYu12SrcFrmHeight,
+							VdoOtptEncdSrcFrmPt, VdoOtptEncdSrcFrmLenByt );
 	}
 }

@@ -134,7 +134,7 @@ public class AdoInpt //音频输入。
 	}
 	RNNoise m_RNNoisePt = new RNNoise();
 
-	class SpeexPrpocs
+	class SpeexPrpocs //存放Speex预处理器。
 	{
 		int m_IsUseSpeexPrpocs; //存放是否使用Speex预处理器，为非0表示要使用，为0表示不使用。
 		HeavenTao.Ado.SpeexPrpocs m_Pt; //存放指针。
@@ -725,8 +725,8 @@ public class AdoInpt //音频输入。
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：初始化结果波形器失败。原因：" + m_MediaPocsThrdPt.m_ErrInfoVstrPt.GetStr() );
 					break Out;
 				}
-				m_WavfmPt.m_SrcSurfacePt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置预览Surface视图的类型。老机型上必须要用。
-				m_WavfmPt.m_RsltSurfacePt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置预览Surface视图的类型。老机型上必须要用。
+				m_WavfmPt.m_SrcSurfacePt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置预览SurfaceView的类型。老机型上必须要用。
+				m_WavfmPt.m_RsltSurfacePt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS ); //设置预览SurfaceView的类型。老机型上必须要用。
 			}
 
 			p_Rslt = 0; //设置本函数执行成功。
@@ -925,7 +925,7 @@ public class AdoInpt //音频输入。
 						if( !m_DvcPt.m_Pt.setPreferredDevice( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt ) ) //如果设置音频输入使用的设备失败。
 						{
 							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：设置音频输入使用的设备失败，发送音频输入输出设备关闭线程消息。" );
-							m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
+							m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.AdoInptOtptDvcClos );
 							p_Rslt = 0; //这里返回成功是为了防止媒体处理线程报错退出。
 							break Out;
 						}
@@ -937,9 +937,9 @@ public class AdoInpt //音频输入。
 						AudioDeviceInfo p_AdoInptRoutedDevicePt = m_DvcPt.m_Pt.getRoutedDevice();
 
 						Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：设置音频输入使用的设备[" + m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_NameStrPt + "]成功。" +
-																"指定设备：" + ( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt != null ) ? ( MediaPocsThrd.GetAdoDvcInfoTypeName( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getType() ) + m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getProductName() ) : "空" ) + "。" +
-																"首选设备：" + ( ( p_AdoInptPreferredDevicePt != null ) ? ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoInptPreferredDevicePt.getType() ) + p_AdoInptPreferredDevicePt.getProductName() ) : "空" ) + "。" +
-																"路由设备：" + ( ( p_AdoInptRoutedDevicePt != null ) ? ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoInptRoutedDevicePt.getType() ) + p_AdoInptRoutedDevicePt.getProductName() ) : "空" ) + "。" );
+																	  "指定设备：" + ( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt != null ) ? MediaPocsThrd.GetAdoInptOtptDvcInfoName( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt ) : "空" ) + "。" +
+																	  "首选设备：" + ( ( p_AdoInptPreferredDevicePt != null ) ? MediaPocsThrd.GetAdoInptOtptDvcInfoName( p_AdoInptPreferredDevicePt ) : "空" ) + "。" +
+																	  "路由设备：" + ( ( p_AdoInptRoutedDevicePt != null ) ? MediaPocsThrd.GetAdoInptOtptDvcInfoName( p_AdoInptRoutedDevicePt ) : "空" ) + "。" );
 
 						if( p_AdoInptPreferredDevicePt == null )
 						{
@@ -965,7 +965,7 @@ public class AdoInpt //音频输入。
 					( ( m_MediaPocsThrdPt.m_AdoOtptPt.m_IsUse == 0 ) || ( m_MediaPocsThrdPt.m_AdoOtptPt.m_IsInit != 0 ) ) )
 				{
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：音频输入：发送音频输入输出设备改变线程消息。" );
-					m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcChg );
+					m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.AdoInptOtptDvcChg ); //发送音频输入输出设备改变线程消息。
 				}
 			}
 
@@ -1153,8 +1153,8 @@ public class AdoInpt //音频输入。
 					}
 				}
 
-				p_IdleFrmPt = new Frm();
-				p_IdleFrmPt.m_PcmFrmPt = new short[ ( int )m_FrmLenData ];
+				p_IdleFrmPt = new Frm(); //创建一个Pcm格式空闲帧。
+				p_IdleFrmPt.m_PcmFrmPt = new short[ ( int )m_FrmLenData ]; //创建一个Pcm格式帧。
 
 				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：Pcm格式空闲帧容器中没有帧，创建一个Pcm格式空闲帧成功。" );
 			}
@@ -1280,9 +1280,9 @@ public class AdoInpt //音频输入。
 							if( ( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt == null ) || //如果音频输出指定的设备信息为空。
 								( m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt.getId() != p_AdoInptRoutedDevicePt.getId() ) ) //如果音频输出指定的设备与路由的设备不一致。
 							{
-								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：音频输入的指定设备改为[" + ( MediaPocsThrd.GetAdoDvcInfoTypeName( p_AdoInptRoutedDevicePt.getType() ) + p_AdoInptRoutedDevicePt.getProductName() ) + "]，发送音频输入输出设备改变线程消息。" );
+								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：音频输入的指定设备改为[" + MediaPocsThrd.GetAdoInptOtptDvcInfoName( p_AdoInptRoutedDevicePt ) + "]，发送音频输入输出设备改变线程消息。" );
 								m_MediaPocsThrdPt.m_AdoInptOtptUseDvcInfoPt.m_AdoInptDvcInfoPt = p_AdoInptRoutedDevicePt;
-								m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcChg ); //发送音频输入输出设备改变线程消息。
+								m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.AdoInptOtptDvcChg ); //发送音频输入输出设备改变线程消息。
 							}
 						}
 						//注意：这里不再发送音频输入输出设备关闭线程消息，因为有些设备系统会在中途自动修改音频路由的设备信息，导致获取的音频路由的设备信息不准确，为了防止这种情况下频繁误发送音频输入输出设备关闭线程消息，所以这里就不发送了。
@@ -1311,6 +1311,7 @@ public class AdoInpt //音频输入。
 						OutAddOrDropFrm:
 						{
 							m_ThrdPt.m_NowTickMsec = SystemClock.uptimeMillis() - m_FrmLenMsec; //设置本次的滴答钟。因为当前帧的时间戳为帧的起始时间，所以要递减一个帧长。
+							//Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟：" + m_ThrdPt.m_NowTickMsec + "，当前帧的时间戳：" + m_ThrdPt.m_CurFrmTimeStampMsec + "。" );
 
 							if( ( m_ThrdPt.m_NowTickMsec > m_ThrdPt.m_CurFrmTimeStampMsec ) && ( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_CurFrmTimeStampMsec > m_FrmLenMsec ) ) //如果本次的滴答钟比当前帧的时间戳高一个帧长，就表示当前少帧了，需要补帧。
 							{
@@ -1318,11 +1319,11 @@ public class AdoInpt //音频输入。
 								{
 									if( m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec > 0 ) //如果已经准备开始补帧。
 									{
-										if( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec < 1000 ) //如果已经准备开始补帧小于1秒。
+										if( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec < 500 ) //如果已经准备开始补帧小于0.5秒。
 										{
 											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 高一个帧长 " + m_FrmLenMsec + "，就表示当前少帧了，继续准备补帧。" );
 										}
-										else //如果已经准备开始补帧大于等于1秒，才开始补帧，因为可能是帧数不稳定导致误判需要补帧。
+										else //如果已经准备开始补帧大于等于0.5秒，才开始补帧，因为可能是帧数不稳定导致误判需要补帧。
 										{
 											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 高一个帧长 " + m_FrmLenMsec + "，就表示当前少帧了，立即开始补帧。" );
 
@@ -1333,7 +1334,7 @@ public class AdoInpt //音频输入。
 												break OutAddOrDropFrm;
 											}
 
-											//放入本次补的Pcm格式原始帧到Pcm格式原始帧容器。
+											//放入本次补的Pcm格式原始帧到Pcm格式原始帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
 											System.arraycopy( m_ThrdPt.m_PcmSrcFrmPt.m_PcmFrmPt, 0, m_ThrdPt.m_AddPcmSrcFrmPt.m_PcmFrmPt, 0, ( int )m_FrmLenData );
 											m_ThrdPt.m_AddPcmSrcFrmPt.m_TimeStampMsec = m_ThrdPt.m_CurFrmTimeStampMsec;
 											m_PcmSrcFrmCntnrPt.offer( m_ThrdPt.m_AddPcmSrcFrmPt );
@@ -1352,12 +1353,12 @@ public class AdoInpt //音频输入。
 								}
 								else //如果本次的滴答钟比当前帧的时间戳高了大于等于1秒，就表示不要补帧了，直接发送音频输入设备关闭线程消息来重启音频输入。
 								{
-									//放入本次丢的Pcm格式原始帧到音频输入Pcm格式空闲帧容器。防止内存泄露。
+									//放入本次取出的Pcm格式原始帧到Pcm格式空闲帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
 									m_PcmIdleFrmCntnrPt.offer( m_ThrdPt.m_PcmSrcFrmPt );
 									m_ThrdPt.m_PcmSrcFrmPt = null;
 
 									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 高了大于等于1秒，就表示不要补帧了，直接发送音频输入设备关闭线程消息来重启音频输入。" );
-									m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
+									m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.AdoInptOtptDvcClos );
 									break;
 								}
 							}
@@ -1367,15 +1368,15 @@ public class AdoInpt //音频输入。
 								{
 									if( m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec < 0 ) //如果已经准备开始丢帧。
 									{
-										if( m_ThrdPt.m_NowTickMsec - ( m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec & 0x7FFFFFFFFFFFFFFFL ) < 1000 ) //如果已经准备开始丢帧小于1秒。
+										if( m_ThrdPt.m_NowTickMsec - ( m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec & 0x7FFFFFFFFFFFFFFFL ) < 500 ) //如果已经准备开始丢帧小于0.5秒。
 										{
 											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低一个帧长 " + m_FrmLenMsec + "，就表示当前多帧了，继续准备丢帧。" );
 										}
-										else //如果已经准备开始丢帧大于等于1秒，才开始丢帧，因为可能是帧数不稳定导致误判需要丢帧。
+										else //如果已经准备开始丢帧大于等于0.5秒，才开始丢帧，因为可能是帧数不稳定导致误判需要丢帧。
 										{
 											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低一个帧长 " + m_FrmLenMsec + "，就表示当前多帧了，立即开始丢帧。" );
 
-											//放入本次丢的Pcm格式原始帧到音频输入Pcm格式空闲帧容器。
+											//放入本次丢的Pcm格式原始帧到Pcm格式原始帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
 											m_PcmIdleFrmCntnrPt.offer( m_ThrdPt.m_PcmSrcFrmPt );
 											m_ThrdPt.m_PcmSrcFrmPt = null;
 
@@ -1393,12 +1394,12 @@ public class AdoInpt //音频输入。
 								}
 								else //如果本次的滴答钟比当前帧的时间戳低了大于等于1秒，就表示不要丢帧了，直接发送音频输入设备关闭线程消息来重启音频输入。
 								{
-									//放入本次丢的Pcm格式原始帧到音频输入Pcm格式空闲帧容器。防止内存泄露。
+									//放入本次取出的Pcm格式原始帧到Pcm格式空闲帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
 									m_PcmIdleFrmCntnrPt.offer( m_ThrdPt.m_PcmSrcFrmPt );
 									m_ThrdPt.m_PcmSrcFrmPt = null;
 
 									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低了大于等于1秒，就表示不要丢帧了，直接发送音频输入设备关闭线程消息来重启音频输入。" );
-									m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.ThrdMsgTypAdoInptOtptDvcClos );
+									m_MediaPocsThrdPt.m_ThrdMsgQueuePt.SendMsg( 0, 0, MediaPocsThrd.ThrdMsgTyp.AdoInptOtptDvcClos );
 									break;
 								}
 							}

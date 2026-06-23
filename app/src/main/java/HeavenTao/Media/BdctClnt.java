@@ -836,7 +836,7 @@ public class BdctClnt //广播客户端。
 	//用户定义的读取音视频输入帧函数。
 	public void UserReadAdoVdoInptFrm( short AdoInptPcmSrcFrmPt[], short AdoInptPcmRsltFrmPt[], long AdoInptPcmFrmLenUnit, int AdoInptPcmRsltFrmVoiceActSts,
 									   byte AdoInptEncdRsltFrmPt[], long AdoInptEncdRsltFrmLenByt, int AdoInptEncdRsltFrmIsNeedTrans,
-									   byte VdoInptNv21SrcFrmPt[], int VdoInptNv21SrcFrmWidthPt, int VdoInptNv21SrcFrmHeightPt, long VdoInptNv21SrcFrmLenByt,
+									   byte VdoInptNv21SrcFrmPt[], int VdoInptNv21SrcFrmWidth, int VdoInptNv21SrcFrmHeight, long VdoInptNv21SrcFrmLenByt,
 									   byte VdoInptYu12RsltFrmPt[], int VdoInptYu12RsltFrmWidth, int VdoInptYu12RsltFrmHeight, long VdoInptYu12RsltFrmLenByt,
 									   byte VdoInptEncdRsltFrmPt[], long VdoInptEncdRsltFrmLenByt )
 	{

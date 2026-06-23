@@ -3,10 +3,11 @@ package HeavenTao.Media;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import HeavenTao.Vdo.*;
@@ -58,7 +59,7 @@ public class VdoOtpt //视频输出。
 
 		public class Dvc //存放设备。
 		{
-			public HTSurfaceView m_DspySurfaceViewPt; //存放显示Surface视图的指针。
+			public SurfaceView m_DspySurfaceViewPt; //存放显示SurfaceView的指针。
 			SurfaceHolder.Callback m_DspySurfaceClbkPt; //存放显示Surface回调函数的指针。
 			int m_IsBlack; //存放是否黑屏，为0表示有图像，为非0表示黑屏。
 		}
@@ -68,7 +69,6 @@ public class VdoOtpt //视频输出。
 		{
 			int m_IsInitThrdTmpVar; //存放是否初始化线程的临时变量。
 			VdoOtpt.Frm m_FrmPt; //存放帧的指针。
-			int m_ElmTotal; //存放元素总数。
 			long m_LastTickMsec; //存放上次的嘀嗒钟，单位为毫秒。
 			long m_NowTickMsec; //存放本次的嘀嗒钟，单位为毫秒。
 
@@ -177,43 +177,46 @@ public class VdoOtpt //视频输出。
 			}
 		}
 
-		//初始化视频输出流的线程。
-		public int ThrdInit()
+		//初始化视频输出流的设备和线程。
+		public int DvcAndThrdInit()
 		{
 			int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
 			Out:
 			{
-				if( m_DvcPt.m_DspySurfaceViewPt == null )
+				//初始化设备。
 				{
-					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：显示Surface视图的指针为空。" );
-					break Out;
+					if( m_DvcPt.m_DspySurfaceViewPt == null )
+					{
+						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：初始化设备失败。原因：显示SurfaceView的指针为空。" );
+						break Out;
+					}
+					m_DvcPt.m_DspySurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_NORMAL );
+					m_DvcPt.m_DspySurfaceClbkPt = new SurfaceHolder.Callback() //创建显示Surface的回调函数。
+					{
+						@Override public void surfaceCreated( SurfaceHolder holder )
+						{
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：VdoOtptDspySurface Created" );
+						}
+
+						@Override public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
+						{
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：VdoOtptDspySurface Changed" );
+						}
+
+						@Override public void surfaceDestroyed( SurfaceHolder holder )
+						{
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：VdoOtptDspySurface Destroyed" );
+						}
+					};
+					m_DvcPt.m_DspySurfaceViewPt.getHolder().addCallback( m_DvcPt.m_DspySurfaceClbkPt ); //设置显示SurfaceView的回调函数添加。
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：初始化设备成功。" );
 				}
-				m_DvcPt.m_DspySurfaceViewPt.getHolder().setType( SurfaceHolder.SURFACE_TYPE_NORMAL );
-				m_DvcPt.m_DspySurfaceClbkPt = new SurfaceHolder.Callback() //创建显示Surface的回调函数。
-				{
-					@Override public void surfaceCreated( SurfaceHolder holder )
-					{
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：VdoOtptDspySurface Created" );
-					}
-
-					@Override public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
-					{
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：VdoOtptDspySurface Changed" );
-					}
-
-					@Override public void surfaceDestroyed( SurfaceHolder holder )
-					{
-						if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：VdoOtptDspySurface Destroyed" );
-					}
-				};
-				m_DvcPt.m_DspySurfaceViewPt.getHolder().addCallback( m_DvcPt.m_DspySurfaceClbkPt ); //设置显示Surface视图的回调函数添加。
 
 				//初始化线程的临时变量。
 				{
 					m_ThrdPt.m_IsInitThrdTmpVar = 1; //设置已初始化线程的临时变量。
 					m_ThrdPt.m_FrmPt = null; //初始化帧的指针。
-					m_ThrdPt.m_ElmTotal = 0; //初始化元素总数。
 					m_ThrdPt.m_LastTickMsec = 0; //初始化上次的嘀嗒钟。
 					m_ThrdPt.m_NowTickMsec = 0; //初始化本次的嘀嗒钟。
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：初始化线程的临时变量成功。" );
@@ -235,8 +238,8 @@ public class VdoOtpt //视频输出。
 			return p_Rslt;
 		}
 
-		//销毁视频输出流的线程。
-		public void ThrdDstoy()
+		//销毁视频输出流的设备和线程。
+		public void DvcAndThrdDstoy()
 		{
 			//销毁线程。
 			if( m_ThrdPt.m_ThrdPt != null )
@@ -259,18 +262,19 @@ public class VdoOtpt //视频输出。
 			{
 				m_ThrdPt.m_IsInitThrdTmpVar = 0; //设置未初始化线程的临时变量。
 				m_ThrdPt.m_FrmPt = null; //销毁帧的指针。
-				m_ThrdPt.m_ElmTotal = 0; //销毁元素总数。
 				m_ThrdPt.m_LastTickMsec = 0; //销毁上次的嘀嗒钟。
 				m_ThrdPt.m_NowTickMsec = 0; //销毁本次的嘀嗒钟。
 				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：销毁线程的临时变量成功。" );
 			}
 
+			//销毁设备。
 			if( m_DvcPt.m_DspySurfaceViewPt != null )
 			{
-				m_DvcPt.m_DspySurfaceViewPt.getHolder().removeCallback(m_DvcPt.m_DspySurfaceClbkPt); //设置显示Surface视图的回调函数移除。
-				m_DvcPt.m_DspySurfaceViewPt.SetBlack(); //设置显示SurfaceView为黑屏。
+				m_DvcPt.m_DspySurfaceViewPt.getHolder().removeCallback(m_DvcPt.m_DspySurfaceClbkPt); //设置显示SurfaceView的回调函数移除。
+				m_DvcPt.m_DspySurfaceViewPt.post( new Runnable() { @Override public void run() { m_DvcPt.m_DspySurfaceViewPt.setVisibility( View.GONE ); m_DvcPt.m_DspySurfaceViewPt.setVisibility( View.VISIBLE ); } } ); //设置显示SurfaceView为黑屏。
+				m_DvcPt.m_DspySurfaceClbkPt = null;
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：销毁设备成功。" );
 			}
-			m_DvcPt.m_DspySurfaceClbkPt = null;
 		}
 
 		//初始化视频输出的流。
@@ -281,7 +285,7 @@ public class VdoOtpt //视频输出。
 			Out:
 			{
 				if( DecdInit() != 0 ) break Out;
-				if( ThrdInit() != 0 ) break Out;
+				if( DvcAndThrdInit() != 0 ) break Out;
 
 				p_Rslt = 0; //设置本函数执行成功。
 			}
@@ -296,10 +300,63 @@ public class VdoOtpt //视频输出。
 		//销毁视频输出的流。
 		public void Dstoy()
 		{
-			ThrdDstoy();
+			DvcAndThrdDstoy();
 			DecdDstoy();
 
 			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出流索引" + m_Idx + "：视频输出流销毁成功。" );
+		}
+
+		//获取一个空闲帧。
+		private Frm GetIdleFrm( int IsChkFrmCntnrElmTotal )
+		{
+			int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
+			Frm p_IdleFrmPt = null; //存放空闲帧的指针。
+			int p_ElmTotal; //存放元素总数。
+
+			Out:
+			{
+				p_ElmTotal = m_IdleFrmCntnrPt.size(); //获取空闲帧容器的元素总数。
+				if( p_ElmTotal > 0 ) //如果空闲帧容器中有帧。
+				{
+					p_IdleFrmPt = m_IdleFrmCntnrPt.poll(); //从空闲帧容器中取出并删除第一个帧。
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：从空闲帧容器中取出并删除第一个帧，空闲帧容器元素总数：" + p_ElmTotal + "。" );
+				}
+				else //如果空闲帧容器中没有帧。
+				{
+					if( IsChkFrmCntnrElmTotal != 0 )
+					{
+						p_ElmTotal = m_FrmCntnrPt.size(); //获取帧容器的元素总数。
+						if( p_ElmTotal > 20 )
+						{
+							if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：帧容器中帧总数为" + p_ElmTotal + "已经超过上限20，不再创建空闲帧。" );
+							break Out;
+						}
+					}
+
+					p_IdleFrmPt = new Frm(); //创建一个空闲帧。
+					p_IdleFrmPt.m_Yu12SrcFrmPt = new byte[ m_FrmMaxWidth * m_FrmMaxHeight * 3 / 2 ];
+					p_IdleFrmPt.m_Yu12SrcFrmWidthPt = new HTInt();
+					p_IdleFrmPt.m_Yu12SrcFrmHeightPt = new HTInt();
+					if( m_UseWhatDecd != 0 )
+					{
+						p_IdleFrmPt.m_EncdSrcFrmPt = new byte[ m_FrmMaxWidth * m_FrmMaxHeight * 3 / 2 ];
+					}
+					else
+					{
+						p_IdleFrmPt.m_EncdSrcFrmPt = null;
+					}
+					p_IdleFrmPt.m_EncdSrcFrmLenBytPt = new HTLong( 0 );
+					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：空闲帧容器中没有帧，创建一个空闲帧成功。" );
+				}
+
+				p_Rslt = 0; //设置本函数执行成功。
+			}
+
+			if( p_Rslt != 0 ) //如果本函数执行失败。
+			{
+				p_IdleFrmPt = null;
+			}
+			return p_IdleFrmPt;
 		}
 
 		//视频输出线程。
@@ -317,38 +374,10 @@ public class VdoOtpt //视频输出。
 						if( m_ThrdPt.m_FrmPt == null ) //如果没获取一个空闲帧。
 						{
 							//获取一个空闲帧。
-							m_ThrdPt.m_ElmTotal = m_IdleFrmCntnrPt.size(); //获取空闲帧容器的元素总数。
-							if( m_ThrdPt.m_ElmTotal > 0 ) //如果空闲帧容器中有帧。
+							m_ThrdPt.m_FrmPt = GetIdleFrm( 1 );
+							if( m_ThrdPt.m_FrmPt == null ) //如果没获取一个空闲帧。
 							{
-								m_ThrdPt.m_FrmPt = m_IdleFrmCntnrPt.poll(); //从空闲帧容器中取出并删除第一个帧。
-								if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：从空闲帧容器中取出并删除第一个帧，空闲帧容器元素总数：" + m_ThrdPt.m_ElmTotal + "。" );
-							}
-
-							if( m_ThrdPt.m_FrmPt == null ) //如果没从空闲帧容器获取一个空闲帧。多线程获取时可能会poll到null。
-							{
-								m_ThrdPt.m_ElmTotal = m_FrmCntnrPt.size(); //获取帧容器的元素总数。
-								if( m_ThrdPt.m_ElmTotal <= 20 )
-								{
-									m_ThrdPt.m_FrmPt = new VdoOtpt.Frm(); //创建一个空闲帧。
-									m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt = new byte[ m_FrmMaxWidth * m_FrmMaxHeight * 3 / 2 ];
-									m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt = new HTInt();
-									m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt = new HTInt();
-									if( m_UseWhatDecd != 0 )
-									{
-										m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt = new byte[ m_FrmMaxWidth * m_FrmMaxHeight * 3 / 2 ];
-									}
-									else
-									{
-										m_ThrdPt.m_FrmPt.m_EncdSrcFrmPt = null;
-									}
-									m_ThrdPt.m_FrmPt.m_EncdSrcFrmLenBytPt = new HTLong( 0 );
-									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：空闲帧容器中没有帧，创建一个空闲帧成功。" );
-								}
-								else
-								{
-									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：帧容器中帧总数为" + m_ThrdPt.m_ElmTotal + "已经超过上限20，不再创建空闲帧。" );
-									break OutPocs;
-								}
+								break OutPocs;
 							}
 						}
 
@@ -461,9 +490,6 @@ public class VdoOtpt //视频输出。
 							Arrays.fill( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, p_TmpLenByt, p_TmpLenByt + p_TmpLenByt / 2, ( byte ) 128 );
 						}
 
-						//设置显示SurfaceView的宽高比。
-						m_DvcPt.m_DspySurfaceViewPt.SetWidthToHeightRatio( ( float )m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val / m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val );
-
 						//显示帧。
 						if( LibYUV.PictrDrawToSurface( m_ThrdPt.m_FrmPt.m_Yu12SrcFrmPt, 0, LibYUV.PictrFmt.Bt601F8Yu12I420, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmWidthPt.m_Val, m_ThrdPt.m_FrmPt.m_Yu12SrcFrmHeightPt.m_Val,
 													   m_DvcPt.m_DspySurfaceViewPt.getHolder().getSurface(),
@@ -496,26 +522,34 @@ public class VdoOtpt //视频输出。
 					SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
 				} //视频输出循环结束。
 
+				if( m_ThrdPt.m_FrmPt != null ) //如果获取的空闲帧没有放入到帧容器。
+				{
+					m_IdleFrmCntnrPt.offer( m_ThrdPt.m_FrmPt );
+					m_ThrdPt.m_FrmPt = null;
+				}
+
 				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "视频输出线程：视频输出流索引" + m_Idx + "：本线程已退出。" );
 			}
 		}
 	}
-	public ArrayList< Strm > m_StrmCntnrPt = new ArrayList<>(); //存放流容器的指针。
+	public ArrayList< Strm > m_StrmCntnrPt = new ArrayList<>(); //存放流容器的指针。因为该容器遍历次数最多，增删改次数很少，所以使用ArrayList。
 
 	//添加视频输出的流。
 	public void AddStrm( int StrmIdx )
 	{
 		//查找流索引。
-		for( Strm p_StrmPt : m_StrmCntnrPt )
+		for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 		{
-			if( p_StrmPt.m_Idx == StrmIdx )
+			Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
+			if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 			{
 				return;
 			}
 		}
 
 		//添加到流容器。
-		VdoOtpt.Strm p_StrmPt = new VdoOtpt.Strm();
+		Strm p_StrmPt = new Strm();
 		p_StrmPt.m_Idx = StrmIdx;
 		m_StrmCntnrPt.add( p_StrmPt );
 	}
@@ -524,20 +558,21 @@ public class VdoOtpt //视频输出。
 	public void DelStrm( int StrmIdx )
 	{
 		//查找流索引。
-		for( Iterator< VdoOtpt.Strm > p_StrmItrtr = m_StrmCntnrPt.iterator(); p_StrmItrtr.hasNext(); )
+		for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 		{
-			VdoOtpt.Strm p_StrmPt = p_StrmItrtr.next();
-			if( p_StrmPt.m_Idx == StrmIdx )
+			Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
+			if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 			{
 				p_StrmPt.Dstoy();
-				p_StrmItrtr.remove();
+				m_StrmCntnrPt.remove( p_StrmCntnrNum );
 				return;
 			}
 		}
 	}
 
 	//设置视频输出的流。
-	public void SetStrm( int StrmIdx, HTSurfaceView DspySurfaceViewPt )
+	public void SetStrm( int StrmIdx, SurfaceView DspySurfaceViewPt )
 	{
 		if( DspySurfaceViewPt == null ) //如果显示SurfaceView的指针不正确。
 		{
@@ -545,9 +580,11 @@ public class VdoOtpt //视频输出。
 		}
 
 		//查找流索引。
-		for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
+		for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 		{
-			if( p_StrmPt.m_Idx == StrmIdx )
+			Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
+			if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 			{
 				if( ( m_IsInit != 0 ) && ( p_StrmPt.m_IsUse != 0 ) ) p_StrmPt.Dstoy();
 
@@ -563,9 +600,11 @@ public class VdoOtpt //视频输出。
 	public void SetStrmUseYu12( int StrmIdx )
 	{
 		//查找流索引。
-		for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
+		for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 		{
-			if( p_StrmPt.m_Idx == StrmIdx )
+			Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
+			if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 			{
 				if( ( m_IsInit != 0 ) && ( p_StrmPt.m_IsUse != 0 ) ) p_StrmPt.Dstoy();
 
@@ -581,9 +620,11 @@ public class VdoOtpt //视频输出。
 	public void SetStrmUseOpenH264Decd( int StrmIdx, int DecdThrdNum )
 	{
 		//查找流索引。
-		for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
+		for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 		{
-			if( p_StrmPt.m_Idx == StrmIdx )
+			Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
+			if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 			{
 				if( ( m_IsInit != 0 ) && ( p_StrmPt.m_IsUse != 0 ) ) p_StrmPt.Dstoy();
 
@@ -600,9 +641,11 @@ public class VdoOtpt //视频输出。
 	public void SetStrmUseSystemH264Decd( int StrmIdx )
 	{
 		//查找流索引。
-		for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
+		for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 		{
-			if( p_StrmPt.m_Idx == StrmIdx )
+			Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
+			if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 			{
 				if( ( m_IsInit != 0 ) && ( p_StrmPt.m_IsUse != 0 ) ) p_StrmPt.Dstoy();
 
@@ -618,9 +661,11 @@ public class VdoOtpt //视频输出。
 	public void SetStrmIsBlack( int StrmIdx, int IsBlack )
 	{
 		//查找流索引。
-		for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
+		for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 		{
-			if( p_StrmPt.m_Idx == StrmIdx )
+			Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
+			if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 			{
 				p_StrmPt.m_DvcPt.m_IsBlack = IsBlack;
 				return;
@@ -632,9 +677,11 @@ public class VdoOtpt //视频输出。
 	public void SetStrmIsUse( int StrmIdx, int IsUseStrm )
 	{
 		//查找流索引。
-		for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
+		for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 		{
-			if( p_StrmPt.m_Idx == StrmIdx ) //如果索引找到了。
+			Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
+			if( p_StrmPt.m_Idx == StrmIdx ) //如果流索引找到了。
 			{
 				if( IsUseStrm != 0 ) //如果要使用流。
 				{
@@ -668,6 +715,7 @@ public class VdoOtpt //视频输出。
 						}
 					}
 				}
+				return;
 			}
 		}
 	}
@@ -691,8 +739,10 @@ public class VdoOtpt //视频输出。
 			m_IdleFrmCntnrPt = new ConcurrentLinkedQueue<>();
 			if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输出：初始化空闲帧容器成功。" );
 
-			for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
+			for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 			{
+				Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+				
 				if( p_StrmPt.m_IsUse != 0 )
 				{
 					if( p_StrmPt.Init() != 0 ) break Out;
@@ -723,8 +773,10 @@ public class VdoOtpt //视频输出。
 
 		if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) p_LastTickMsec = SystemClock.uptimeMillis(); //记录销毁开始的时间。
 
-		for( VdoOtpt.Strm p_StrmPt : m_StrmCntnrPt )
+		for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 		{
+			Strm p_StrmPt = m_StrmCntnrPt.get( p_StrmCntnrNum );
+
 			p_StrmPt.Dstoy();
 		}
 

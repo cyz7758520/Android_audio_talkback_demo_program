@@ -9,9 +9,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
+
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import HeavenTao.Ado.SpeexWebRtcAec;
+import HeavenTao.Data.HTInt;
+import HeavenTao.Data.HTLong;
 import HeavenTao.Media.BdctClnt;
 import HeavenTao.Media.ClntMediaPocsThrd;
 import HeavenTao.Media.TkbkClnt;
@@ -21,6 +26,19 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 {
 	public MainAct m_MainActPt; //存放主界面的指针。
 	public int m_TkbkClntNum; //存放对讲客户端的序号。
+	class VdoSurfaceViewSize
+	{
+		SurfaceView m_SurfaceViewPt; //存放SurfaceView的指针。
+		int m_Width; //存放SurfaceView的宽度，单位为像素，只能为偶数。
+		int m_Height; //存放SurfaceView的高度，单位为像素，只能为偶数。
+
+		public VdoSurfaceViewSize( SurfaceView SurfaceViewPt )
+		{
+			m_SurfaceViewPt = SurfaceViewPt;
+		}
+	}
+	public VdoSurfaceViewSize m_LastVdoInptSurfaceViewSizePt; //存放上一次视频输入SurfaceView大小的指针。
+	public ConcurrentHashMap< Integer, VdoSurfaceViewSize > m_LastVdoOtptSurfaceViewSizeCntnrPt; //存放上一次视频输出SurfaceView大小的指针。
 
 	public MyClntMediaPocsThrd( MainAct MainActPt, byte LicnCodePt[] )
 	{
@@ -272,6 +290,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		if( AdoInptOtptDvcInfoPt != null )
 		{
 			AdoInptOtptDvcInfo p_AdoInptOtptDvcInfoPt = new AdoInptOtptDvcInfo();
+			p_AdoInptOtptDvcInfoPt.m_DvcTyp = AdoInptOtptDvcInfoPt.m_DvcTyp;
 			p_AdoInptOtptDvcInfoPt.m_NameStrPt = AdoInptOtptDvcInfoPt.m_NameStrPt;
 			p_AdoInptOtptDvcInfoPt.m_AdoInptDvcInfoPt = AdoInptOtptDvcInfoPt.m_AdoInptDvcInfoPt;
 			p_AdoInptOtptDvcInfoPt.m_AdoOtptDvcInfoPt = AdoInptOtptDvcInfoPt.m_AdoOtptDvcInfoPt;
@@ -282,8 +301,84 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		{
 			VdoInptDvcInfo p_VdoInptDvcInfoPt = new VdoInptDvcInfo();
 			p_VdoInptDvcInfoPt.m_DvcTyp = VdoInptDvcInfoPt.m_DvcTyp;
+			p_VdoInptDvcInfoPt.m_NameStrPt = VdoInptDvcInfoPt.m_NameStrPt;
 			p_VdoInptDvcInfoPt.m_CameraId = VdoInptDvcInfoPt.m_CameraId;
+			p_VdoInptDvcInfoPt.m_VdoInptDvcInfoPt = VdoInptDvcInfoPt.m_VdoInptDvcInfoPt;
 			m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.VdoInptDvcChg, p_VdoInptDvcInfoPt );
+		}
+	}
+
+	//用户定义的读取音视频输入帧函数。
+	@Override public void _UserReadAdoVdoInptFrm( short AdoInptPcmSrcFrmPt[], short AdoInptPcmRsltFrmPt[], long AdoInptPcmFrmLenUnit, int AdoInptPcmRsltFrmVoiceActSts,
+												  byte AdoInptEncdRsltFrmPt[], long AdoInptEncdRsltFrmLenByt, int AdoInptEncdRsltFrmIsNeedTrans,
+												  byte VdoInptNv21SrcFrmPt[], int VdoInptNv21SrcFrmWidth, int VdoInptNv21SrcFrmHeight, long VdoInptNv21SrcFrmLenByt,
+												  byte VdoInptYu12RsltFrmPt[], int VdoInptYu12RsltFrmWidth, int VdoInptYu12RsltFrmHeight, long VdoInptYu12RsltFrmLenByt,
+												  byte VdoInptEncdRsltFrmPt[], long VdoInptEncdRsltFrmLenByt )
+	{
+		if( ( VdoInptYu12RsltFrmPt != null ) && ( ( m_LastVdoInptSurfaceViewSizePt.m_Width != VdoInptYu12RsltFrmWidth ) || ( m_LastVdoInptSurfaceViewSizePt.m_Height != VdoInptYu12RsltFrmHeight ) ) )
+		{
+			m_LastVdoInptSurfaceViewSizePt.m_SurfaceViewPt.post( new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					ConstraintLayout.LayoutParams p_ParamsPt = ( ConstraintLayout.LayoutParams )m_LastVdoInptSurfaceViewSizePt.m_SurfaceViewPt.getLayoutParams();
+					p_ParamsPt.dimensionRatio = String.valueOf( ( ( double )VdoInptYu12RsltFrmWidth / ( double )VdoInptYu12RsltFrmHeight ) );
+					m_LastVdoInptSurfaceViewSizePt.m_SurfaceViewPt.setLayoutParams( p_ParamsPt );
+				}
+			} ); //刷新视频输入SurfaceView的宽高比显示。
+			m_LastVdoInptSurfaceViewSizePt.m_Width = VdoInptYu12RsltFrmWidth;
+			m_LastVdoInptSurfaceViewSizePt.m_Height = VdoInptYu12RsltFrmHeight;
+		}
+	}
+
+	//用户定义的写入音频输出帧函数。
+	@Override public void _UserWriteAdoOtptFrm( int AdoOtptStrmIdx,
+											    short AdoOtptPcmSrcFrmPt[], long AdoOtptPcmFrmLenUnit,
+											    byte AdoOtptEncdSrcFrmPt[], long AdoOtptEncdSrcFrmSzByt, HTLong AdoOtptEncdSrcFrmLenBytPt )
+	{
+
+	}
+
+	//用户定义的获取音频输出帧函数。
+	@Override public void _UserGetAdoOtptFrm( int AdoOtptStrmIdx,
+											  short AdoOtptPcmSrcFrmPt[], long AdoOtptPcmFrmLenUnit,
+											  byte AdoOtptEncdSrcFrmPt[], long AdoOtptEncdSrcFrmLenByt )
+	{
+
+	}
+
+	//用户定义的写入视频输出帧函数。
+	@Override public void _UserWriteVdoOtptFrm( int VdoOtptStrmIdx,
+												byte VdoOtptYu12SrcFrmPt[], HTInt VdoOtptYu12SrcFrmWidthPt, HTInt VdoOtptYu12SrcFrmHeightPt,
+												byte VdoOtptEncdSrcFrmPt[], long VdoOtptEncdSrcFrmSzByt, HTLong VdoOtptEncdSrcFrmLenBytPt )
+	{
+
+	}
+
+	//用户定义的获取视频输出帧函数。
+	@Override public void _UserGetVdoOtptFrm( int VdoOtptStrmIdx,
+											  byte VdoOtptYu12SrcFrmPt[], int VdoOtptYu12SrcFrmWidth, int VdoOtptYu12SrcFrmHeight,
+											  byte VdoOtptEncdSrcFrmPt[], long VdoOtptEncdSrcFrmLenByt )
+	{
+		{
+			VdoSurfaceViewSize m_LastVdoOtptSurfaceViewSizePt = m_LastVdoOtptSurfaceViewSizeCntnrPt.get( VdoOtptStrmIdx );
+
+			if( ( ( m_LastVdoOtptSurfaceViewSizePt.m_Width != VdoOtptYu12SrcFrmWidth ) || ( m_LastVdoOtptSurfaceViewSizePt.m_Height != VdoOtptYu12SrcFrmHeight ) ) )
+			{
+				m_LastVdoOtptSurfaceViewSizePt.m_SurfaceViewPt.post( new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						ConstraintLayout.LayoutParams p_ParamsPt = ( ConstraintLayout.LayoutParams )m_LastVdoOtptSurfaceViewSizePt.m_SurfaceViewPt.getLayoutParams();
+						p_ParamsPt.dimensionRatio = String.valueOf( ( ( double )VdoOtptYu12SrcFrmWidth / ( double )VdoOtptYu12SrcFrmHeight ) );
+						m_LastVdoOtptSurfaceViewSizePt.m_SurfaceViewPt.setLayoutParams( p_ParamsPt );
+					}
+				} ); //刷新视频输出SurfaceView的宽高比显示。
+				m_LastVdoOtptSurfaceViewSizePt.m_Width = VdoOtptYu12SrcFrmWidth;
+				m_LastVdoOtptSurfaceViewSizePt.m_Height = VdoOtptYu12SrcFrmHeight;
+			}
 		}
 	}
 
@@ -1015,6 +1110,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	void SetToUseVdoInpt()
 	{
 		//设置视频输入。
+		SurfaceView p_SurfaceViewPt = m_MainActPt.SendVdoInptOtptViewInitMsg( "视频输入预览" + m_TkbkClntPt.m_MyTkbkIdx );
 		if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).isChecked() ) //如果要使用预设的帧的大小。
 		{
 			SetVdoInpt( 0,
@@ -1037,7 +1133,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 						( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate90RdBtnId ) ).isChecked() ) ? 90 :
 						( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate180RdBtnId ) ).isChecked() ) ? 180 :
 						( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate270RdBtnId ) ).isChecked() ) ? 270 : 0,
-						m_MainActPt.SendVdoInptOtptViewInitMsg( "视频输入预览" + m_TkbkClntPt.m_MyTkbkIdx ) );
+						p_SurfaceViewPt );
 		}
 		else //如果要使用其他的帧的大小。
 		{
@@ -1057,13 +1153,14 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 							( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate90RdBtnId ) ).isChecked() ) ? 90 :
 							( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate180RdBtnId ) ).isChecked() ) ? 180 :
 							( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseScreenRotate270RdBtnId ) ).isChecked() ) ? 270 : 0,
-							m_MainActPt.SendVdoInptOtptViewInitMsg( "视频输入预览" + m_TkbkClntPt.m_MyTkbkIdx ) );
+							p_SurfaceViewPt );
 			}
 			catch( NumberFormatException e )
 			{
 				Toast.makeText( m_MainActPt, "请输入数字", Toast.LENGTH_LONG ).show();
 			}
 		}
+		m_LastVdoInptSurfaceViewSizePt = new VdoSurfaceViewSize( p_SurfaceViewPt );
 
 		//设置视频输入是否使用Yu12原始数据。
 		if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseYu12RdBtnId ) ).isChecked() )
@@ -1093,10 +1190,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		}
 
 		//设置视频输入使用的设备。
-		VdoInptSetUseDvc( 0,
-						  ( ( ( RadioButton ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseFrontCamereRdBtnId ) ).isChecked() ) ? 0 : 1,
-						  -1,
-						  -1 );
+		VdoInptSetUseDvc( 0, m_MainActPt.SendGetVdoInptDvcInfoMsg() );
 
 		//设置视频输入是否黑屏。
 		VdoInptSetIsBlack( 0,
@@ -1107,11 +1201,13 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	void SetNotUseVdoInpt()
 	{
 		m_MainActPt.SendVdoInptOtptViewDstoyMsg( m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt );
+		m_LastVdoInptSurfaceViewSizePt = null;
 	}
 
 	//设置要使用视频输出。
 	void SetToUseVdoOtpt()
 	{
+		m_LastVdoOtptSurfaceViewSizeCntnrPt = new ConcurrentHashMap< Integer, VdoSurfaceViewSize >();
 		for( TkbkClnt.TkbkInfo p_TkbkInfoTmpPt : m_TkbkClntPt.m_TkbkInfoCntnrPt )
 		{
 			if( ( p_TkbkInfoTmpPt.m_IsInit != 0 ) &&
@@ -1133,6 +1229,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 				SetNotUseVdoOtptStrm( p_TkbkInfoTmpPt.m_TkbkIdx );
 			}
 		}
+		m_LastVdoOtptSurfaceViewSizeCntnrPt = null;
 	}
 
 	//设置要使用视频输出流。
@@ -1142,9 +1239,11 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		VdoOtptAddStrm( 0, TkbkIdx );
 
 		//视频输出设置流。
+		SurfaceView p_SurfaceViewPt = m_MainActPt.SendVdoInptOtptViewInitMsg( "视频输出显示" + TkbkIdx );
 		VdoOtptSetStrm( 0,
 						TkbkIdx,
-						m_MainActPt.SendVdoInptOtptViewInitMsg( "视频输出显示" + TkbkIdx ) );
+						p_SurfaceViewPt );
+		m_LastVdoOtptSurfaceViewSizeCntnrPt.put( TkbkIdx, new VdoSurfaceViewSize( p_SurfaceViewPt ) );
 
 		//视频输出设置流要使用Yu12原始数据。
 		if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseYu12RdBtnId ) ).isChecked() )
@@ -1176,14 +1275,16 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	//设置不使用视频输出流。
 	void SetNotUseVdoOtptStrm( int TkbkIdx )
 	{
-		for( VdoOtpt.Strm p_StrmPt : m_VdoOtptPt.m_StrmCntnrPt )
+		for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_VdoOtptPt.m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 		{
-			if( p_StrmPt.m_Idx == TkbkIdx )
+			VdoOtpt.Strm p_VdoOtptStrm = m_VdoOtptPt.m_StrmCntnrPt.get( p_StrmCntnrNum );
+
+			if( p_VdoOtptStrm.m_Idx == TkbkIdx ) //如果流索引找到了。
 			{
-				m_MainActPt.SendVdoInptOtptViewDstoyMsg( p_StrmPt.m_DvcPt.m_DspySurfaceViewPt );
-				break;
+				m_MainActPt.SendVdoInptOtptViewDstoyMsg( p_VdoOtptStrm.m_DvcPt.m_DspySurfaceViewPt );
+				VdoOtptDelStrm( 1, 0, TkbkIdx ); //删除流操作需要立即执行，因为要防止中途出现其他消息导致重复删除流。
+				m_LastVdoOtptSurfaceViewSizeCntnrPt.remove( TkbkIdx );
 			}
 		}
-		VdoOtptDelStrm( 1, 0, TkbkIdx ); //删除流操作需要立即执行，因为要防止中途出现其他消息导致重复删除流。
 	}
 }

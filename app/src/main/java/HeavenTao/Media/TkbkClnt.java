@@ -904,7 +904,7 @@ public class TkbkClnt //对讲客户端。
 												}
 
 												p_TkbkInfoTmpPt.m_AAjbPt.GetBufFrmCnt( m_ClntMediaPocsThrdPt.m_ThrdPt.m_CurHaveBufActFrmCntPt, m_ClntMediaPocsThrdPt.m_ThrdPt.m_CurHaveBufInactFrmCntPt, m_ClntMediaPocsThrdPt.m_ThrdPt.m_CurHaveBufFrmCntPt, m_ClntMediaPocsThrdPt.m_ThrdPt.m_MinNeedBufFrmCntPt, m_ClntMediaPocsThrdPt.m_ThrdPt.m_MaxNeedBufFrmCntPt, m_ClntMediaPocsThrdPt.m_ThrdPt.m_MaxCntuLostFrmCntPt, m_ClntMediaPocsThrdPt.m_ThrdPt.m_CurNeedBufFrmCntPt, 1, null );
-												if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：对讲客户端：对讲索引：" + p_TkbkInfoTmpPt.m_TkbkIdx + "。音频自适应抖动缓冲器：有活动帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_CurHaveBufActFrmCntPt.m_Val + "，无活动帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_CurHaveBufInactFrmCntPt.m_Val + "，帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_MaxNeedBufFrmCntPt.m_Val + "，最大丢帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_MaxCntuLostFrmCntPt.m_Val + "，当前需帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_CurNeedBufFrmCntPt.m_Val + "。" );
+												if( m_ClntMediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( m_ClntMediaPocsThrdPt.m_CurClsNameStrPt, "客户端媒体处理线程：对讲客户端：对讲索引" + p_TkbkInfoTmpPt.m_TkbkIdx + "：音频自适应抖动缓冲器：有活动帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_CurHaveBufActFrmCntPt.m_Val + "，无活动帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_CurHaveBufInactFrmCntPt.m_Val + "，帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_CurHaveBufFrmCntPt.m_Val + "，最小需帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_MinNeedBufFrmCntPt.m_Val + "，最大需帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_MaxNeedBufFrmCntPt.m_Val + "，最大丢帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_MaxCntuLostFrmCntPt.m_Val + "，当前需帧：" + m_ClntMediaPocsThrdPt.m_ThrdPt.m_CurNeedBufFrmCntPt.m_Val + "。" );
 												break;
 											}
 										}
@@ -1140,7 +1140,7 @@ public class TkbkClnt //对讲客户端。
 	//用户定义的读取音视频输入帧函数。
 	public void UserReadAdoVdoInptFrm( short AdoInptPcmSrcFrmPt[], short AdoInptPcmRsltFrmPt[], long AdoInptPcmFrmLenUnit, int AdoInptPcmRsltFrmVoiceActSts,
 									   byte AdoInptEncdRsltFrmPt[], long AdoInptEncdRsltFrmLenByt, int AdoInptEncdRsltFrmIsNeedTrans,
-									   byte VdoInptNv21SrcFrmPt[], int VdoInptNv21SrcFrmWidthPt, int VdoInptNv21SrcFrmHeightPt, long VdoInptNv21SrcFrmLenByt,
+									   byte VdoInptNv21SrcFrmPt[], int VdoInptNv21SrcFrmWidth, int VdoInptNv21SrcFrmHeight, long VdoInptNv21SrcFrmLenByt,
 									   byte VdoInptYu12RsltFrmPt[], int VdoInptYu12RsltFrmWidth, int VdoInptYu12RsltFrmHeight, long VdoInptYu12RsltFrmLenByt,
 									   byte VdoInptEncdRsltFrmPt[], long VdoInptEncdRsltFrmLenByt )
 	{

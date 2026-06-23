@@ -96,7 +96,7 @@ public class AndrdAdoVdoTkbkStng
 				p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
 				p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "VdoInptDvc" );
-				p_TmpXMLElement2Pt.SetText( ( ( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseFrontCamereRdBtnId ) ).isChecked() ) ? "FrontCamere" : "BackCamere" );
+				p_TmpXMLElement2Pt.SetText( MainActPt.m_VdoInptDvcInfoLstPt.get( MainActPt.m_VdoInptDvcSpinnerPt.getSelectedItemPosition() ).m_NameStrPt );
 				p_TmpXMLElement1Pt.InsertEndChild( p_TmpXMLElement2Pt );
 
 				p_XMLDocumentPt.NewElement( p_TmpXMLElement2Pt, "AdoInptIsMute" );
@@ -878,13 +878,17 @@ public class AndrdAdoVdoTkbkStng
 								else if( p_HTString1Pt.m_Val.equals( "VdoInptDvc" ) )
 								{
 									p_TmpXMLElement2Pt.GetText( p_HTString1Pt );
-									if( p_HTString1Pt.m_Val.equals( "FrontCamere" ) )
+									OutFindVdoInptDvcInfo:
 									{
-										( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseFrontCamereRdBtnId ) ).setChecked( true );
-									}
-									else
-									{
-										( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseBackCamereRdBtnId ) ).setChecked( true );
+										for( int i = 0; i < MainActPt.m_VdoInptDvcInfoLstPt.size(); i++ ) //查找要使用的设备。
+										{
+											if( MainActPt.m_VdoInptDvcInfoLstPt.get( i ).m_NameStrPt.equals( p_HTString1Pt.m_Val ) )
+											{
+												MainActPt.m_VdoInptDvcSpinnerPt.setSelection( i );
+												break OutFindVdoInptDvcInfo;
+											}
+										}
+										MainActPt.m_VdoInptDvcSpinnerPt.setSelection( 0 ); //如果没有找到就使用默认扬声器。
 									}
 								}
 								else if( p_HTString1Pt.m_Val.equals( "AdoInptIsMute" ) )
@@ -2281,7 +2285,7 @@ public class AndrdAdoVdoTkbkStng
 
 		//设置音频输入输出设备、视频输入设备。
 		( ( Spinner ) MainActPt.m_MainLyotViewPt.findViewById( R.id.AdoInptOtptDvcSpinnerId ) ).setSelection( 0 );
-		( ( RadioButton ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseFrontCamereRdBtnId ) ).performClick();
+		( ( Spinner ) MainActPt.m_MainLyotViewPt.findViewById( R.id.VdoInptDvcSpinnerId ) ).setSelection( 0 );
 
 		//设置广播对讲模式。
 		( ( CheckBox ) MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptBdctTkbkModeCkBoxId ) ).setChecked( true );

@@ -1,16 +1,16 @@
 apply plugin: 'com.android.application'
 
 android {
-	compileSdk 36
+	compileSdk 37
 	buildToolsVersion = '37.0.0'
 
 	defaultConfig {
 		applicationId "com.example.andrd_ado_vdo_tkbk_demo"
 
 		minSdkVersion 14
-		targetSdk 36
+		targetSdk 37
 		versionCode 1
-		versionName "2026.04.01"
+		versionName "2026.06.23"
 		testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
 		ndk {
@@ -27,9 +27,11 @@ android {
 		}
 	}
 	namespace 'com.example.andrd_ado_vdo_tkbk_demo'
+	compileSdkMinor 0
 }
 
 dependencies {
+	implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.6.1'
 	testImplementation 'junit:junit:4.13.2'
