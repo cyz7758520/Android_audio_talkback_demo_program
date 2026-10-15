@@ -59,7 +59,7 @@
 &emsp;&emsp;2、将HeavenTao.XXXX包和jniLibs文件夹下各个平台的动态库复制到自己的软件中。  
 &emsp;&emsp;3、如果自己的软件已有传输协议：继承HeavenTao.Media.MediaPocsThrd媒体处理线程类，实现UserInit、UserDstoy、UserPocs、UserMsg、UserDvcChg、UserReadAdoVdoInptFrm、UserWriteAdoOtptFrm、UserGetAdoOtptFrm、UserWriteVdoOtptFrm、UserGetVdoOtptFrm这些回调成员函数。  
 &emsp;&emsp;&emsp;&emsp;如果自己的软件没有传输协议：继承HeavenTao.Media.SrvrThrd服务端线程类，实现UserInit、UserDstoy、UserPocs、UserMsg、UserShowLog、UserShowToast、UserVibrate、UserSrvrInit、UserSrvrDstoy、UserCnctInit、UserCnctDstoy、UserCnctSts、UserCnctRmtTkbkMode、UserCnctTstNtwkDly这些回调成员函数。  
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;继承HeavenTao.Media.ClntMediaPocsThrd客户端媒体处理线程类，实现UserInit、UserDstoy、UserPocs、UserMsg、UserDvcChg、UserShowLog、UserShowToast、UserVibrate、UserTkbkClntCnctInit、UserTkbkClntCnctDstoy、UserTkbkClntCnctSts、UserTkbkClntMyTkbkIdx、UserTkbkClntLclTkbkMode、UserTkbkClntTkbkInfoInit、UserTkbkClntTkbkInfoDstoy、UserTkbkClntTkbkInfoRmtTkbkMode、UserTkbkClntTstNtwkDly、UserBdctClntInit、UserBdctClntDstoy、UserBdctClntCnctInit、UserBdctClntCnctDstoy、UserBdctClntCnctSts这些回调成员函数。  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;继承HeavenTao.Media.ClntMediaPocsThrd客户端媒体处理线程类，实现UserInit、UserDstoy、UserPocs、UserMsg、UserDvcChg、UserShowLog、UserShowToast、UserVibrate、UserTkbkClntCnctInit、UserTkbkClntCnctDstoy、UserTkbkClntCnctSts、UserTkbkClntMyTkbkIdx、UserTkbkClntSetLclTkbkMode、UserTkbkClntTkbkInfoInit、UserTkbkClntTkbkInfoDstoy、UserTkbkClntTkbkInfoRmtTkbkMode、UserTkbkClntTstNtwkDly、UserBdctClntInit、UserBdctClntDstoy、UserBdctClntCnctInit、UserBdctClntCnctDstoy、UserBdctClntCnctSts这些回调成员函数。  
 &emsp;&emsp;&emsp;&emsp;如果要在JNI层处理音视频帧，则可以将这些回调成员函数继承为native函数，然后在JNI层实现即可。  
 &emsp;&emsp;4、new这个继承的类，然后调用类的相关设置成员函数，最后调用start()成员函数启动该线程即可。  
 &emsp;&emsp;5、当需要线程退出时，调用线程类的RqirExit()成员函数即可。  
@@ -322,8 +322,8 @@ ___
 函数名称：UserTkbkClntMyTkbkIdx  
 功能说明：用户定义的对讲客户端我的对讲索引函数。  
 ___
-函数名称：UserTkbkClntLclTkbkMode  
-功能说明：用户定义的对讲客户端本端对讲模式函数。  
+函数名称：UserTkbkClntSetLclTkbkMode  
+功能说明：用户定义的对讲客户端设置本端对讲模式函数。  
 ___
 函数名称：UserTkbkClntTkbkInfoInit  
 功能说明：用户定义的对讲客户端对讲信息初始化函数。  

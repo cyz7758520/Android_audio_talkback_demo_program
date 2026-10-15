@@ -155,7 +155,7 @@ public class VdoInpt //视频输入。
 								{
 									m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_CameraId = p_CameraId;
 									m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt = p_CameraInfoPt;
-									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：查找到默认前置摄像头设备对应的标识符为" + p_CameraId + "。" );
+									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：查找到默认前置摄像头设备对应的标识符为：" + p_CameraId + "。" );
 									break;
 								}
 							}
@@ -165,7 +165,7 @@ public class VdoInpt //视频输入。
 								{
 									m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_CameraId = p_CameraId;
 									m_MediaPocsThrdPt.m_VdoInptUseDvcInfoPt.m_VdoInptDvcInfoPt = p_CameraInfoPt;
-									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：查找到默认后置摄像头设备对应的标识符为" + p_CameraId + "。" );
+									if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：查找到默认后置摄像头设备对应的标识符为：" + p_CameraId + "。" );
 									break;
 								}
 							}
@@ -270,9 +270,12 @@ public class VdoInpt //视频输入。
 				int p_CurNv21SrcFrmCropWidth; //存放本次Nv21格式原始帧裁剪区域的宽度，单位像素。
 				int p_CurNv21SrcFrmCropHeight; //存放本次Nv21格式原始帧裁剪区域的高度，单位像素。
 				int p_IsSetSelCur; //存放是否设置选择的为本次的，为0表示不设置，为非0表示要设置。
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：指定帧的大小：宽度：" + m_FrmHeight + "，高度：" + m_FrmWidth + "。" );
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：原始帧的大小：宽度：" + m_SrcFrmHeight + "，高度：" + m_SrcFrmWidth + "。" );
-				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：目标的Nv21格式原始帧的大小：宽度：" + p_TgtNv21SrcFrmWidth + "，高度：" + p_TgtNv21SrcFrmHeight + "。" );
+				if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 )
+				{
+					Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：指定帧的大小：宽度：" + m_FrmHeight + "，高度：" + m_FrmWidth + "。" );
+					Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：原始帧的大小：宽度：" + m_SrcFrmHeight + "，高度：" + m_SrcFrmWidth + "。" );
+					Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：目标的Nv21格式原始帧的大小：宽度：" + p_TgtNv21SrcFrmWidth + "，高度：" + p_TgtNv21SrcFrmHeight + "。" );
+				}
 				for( Camera.Size p_CurNv21SrcFrmSz : p_SuptPrvwSizesListPt )
 				{
 					if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：视频输入：设备支持的Nv21格式原始帧的大小：宽度：" + p_CurNv21SrcFrmSz.width + "，高度：" + p_CurNv21SrcFrmSz.height + "。" );

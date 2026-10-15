@@ -10,7 +10,7 @@ android {
 		minSdkVersion 14
 		targetSdk 37
 		versionCode 1
-		versionName "2026.06.23"
+		versionName "2026.10.15"
 		testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
 		ndk {
@@ -31,8 +31,7 @@ android {
 }
 
 dependencies {
-	implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+	implementation 'androidx.constraintlayout:constraintlayout:1.1.3', 'androidx.appcompat:appcompat:1.6.1'
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.6.1'
 	testImplementation 'junit:junit:4.13.2'
 }

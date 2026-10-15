@@ -146,6 +146,13 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 	//主界面消息处理。
 	class MainActHandler extends Handler
 	{
+		MainAct m_MainActPt;
+
+		MainActHandler( MainAct MainActPt )
+		{
+			m_MainActPt = MainActPt;
+		}
+
 		@Override public void handleMessage( Message MessagePt )
 		{
 			switch( MessagePt.what )
@@ -302,12 +309,12 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 				}
 				case MainActMsgTyp.TkbkClntCnctInit:
 				{
-					( ( Button ) m_MainActPt.findViewById( R.id.ClntCnctOrDstoyBtnId ) ).setText( "销毁" ); //设置客户端创建或销毁按钮的内容为“销毁”。
+					( ( Button ) m_MainActPt.findViewById( R.id.ClntCnctOrDstoyBtnId ) ).setText( "销毁" ); //设置客户端连接或销毁按钮的内容为“销毁”。
 					break;
 				}
 				case MainActMsgTyp.TkbkClntCnctDstoy:
 				{
-					( ( Button ) m_MainActPt.findViewById( R.id.ClntCnctOrDstoyBtnId ) ).setText( "连接" ); //设置客户端创建或销毁按钮的内容为“连接”。
+					( ( Button ) m_MainActPt.findViewById( R.id.ClntCnctOrDstoyBtnId ) ).setText( "连接" ); //设置客户端连接或销毁按钮的内容为“连接”。
 					break;
 				}
 				case MainActMsgTyp.CnctLstAddItem:
@@ -324,6 +331,12 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 					( ( SimpleAdapter ) m_CnctLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知连接列表视图数据集被改变。
 					break;
 				}
+				case MainActMsgTyp.CnctLstDelItem:
+				{
+					m_CnctLstItemArrayLstPt.remove( ( ( Integer ) ( ( Object[] ) MessagePt.obj )[ 0 ] ).intValue() );
+					( ( SimpleAdapter ) m_CnctLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知连接列表视图数据集被改变。
+					break;
+				}
 				case MainActMsgTyp.CnctLstModifyItem:
 				{
 					Map< String, String > p_CnctLstItemPt;
@@ -333,12 +346,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 					if( ( ( Object[] ) MessagePt.obj )[ 2 ] != null ) p_CnctLstItemPt.put( "CnctAndClntLstItemTxt2TxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 2 ] );
 					if( ( ( Object[] ) MessagePt.obj )[ 3 ] != null ) p_CnctLstItemPt.put( "CnctAndClntLstItemTxt3TxtId", ( String ) ( ( Object[] ) MessagePt.obj )[ 3 ] );
 
-					( ( SimpleAdapter ) m_CnctLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知连接列表视图数据集被改变。
-					break;
-				}
-				case MainActMsgTyp.CnctLstDelItem:
-				{
-					m_CnctLstItemArrayLstPt.remove( ( ( Integer ) ( ( Object[] ) MessagePt.obj )[ 0 ] ).intValue() );
 					( ( SimpleAdapter ) m_CnctLstViewPt.getAdapter() ).notifyDataSetChanged(); //通知连接列表视图数据集被改变。
 					break;
 				}
@@ -412,17 +419,64 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 				}
 				case MainActMsgTyp.VdoInptOtptViewInit:
 				{
-					( ( HTObject )( ( Object[] ) MessagePt.obj )[ 1 ] ).m_Val = VdoInptOtptViewInit( ( String ) ( ( Object[] ) MessagePt.obj )[ 0 ] );
+					String p_TitleStrPt = ( String )( ( Object[] )MessagePt.obj )[ 0 ];
+
+					LinearLayout p_LinearLyotPt = new LinearLayout( m_MainActPt );
+					TextView p_TxtViewPt = new TextView( m_MainActPt );
+					ConstraintLayout p_ConstraintLyotPt = new ConstraintLayout( m_MainActPt );
+					SurfaceView p_SurfaceViewPt = new SurfaceView( m_MainActPt );
+					LinearLayout.LayoutParams p_LinearLayoutParamsPt;
+					ConstraintLayout.LayoutParams p_ConstraintLayoutParamsPt;
+
+					if( p_TitleStrPt.substring( 0, 4 ).equals( "视频输入" ) ) ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).addView( p_LinearLyotPt, 0 );
+					else ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).addView( p_LinearLyotPt );
+					p_LinearLyotPt.addView( p_TxtViewPt );
+					p_LinearLyotPt.addView( p_ConstraintLyotPt );
+					p_ConstraintLyotPt.addView( p_SurfaceViewPt );
+
+					p_LinearLyotPt.setOrientation( LinearLayout.VERTICAL );
+					p_LinearLayoutParamsPt = ( LinearLayout.LayoutParams )p_LinearLyotPt.getLayoutParams();
+					p_LinearLayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
+					p_LinearLayoutParamsPt.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+					p_LinearLayoutParamsPt.weight = 1;
+					p_LinearLyotPt.setLayoutParams( p_LinearLayoutParamsPt );
+
+					p_TxtViewPt.setText( p_TitleStrPt );
+					p_TxtViewPt.setGravity( Gravity.CENTER );
+					p_LinearLayoutParamsPt = ( LinearLayout.LayoutParams )p_TxtViewPt.getLayoutParams();
+					p_LinearLayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
+					p_LinearLayoutParamsPt.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+					p_TxtViewPt.setLayoutParams( p_LinearLayoutParamsPt );
+
+					p_LinearLayoutParamsPt = ( LinearLayout.LayoutParams )p_ConstraintLyotPt.getLayoutParams();
+					p_LinearLayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
+					p_LinearLayoutParamsPt.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+					p_ConstraintLyotPt.setLayoutParams( p_LinearLayoutParamsPt );
+
+					p_SurfaceViewPt.setBackgroundColor( Color.TRANSPARENT );
+					p_ConstraintLayoutParamsPt = ( ConstraintLayout.LayoutParams )p_SurfaceViewPt.getLayoutParams();
+					p_ConstraintLayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
+					p_ConstraintLayoutParamsPt.height = 0;
+					p_ConstraintLayoutParamsPt.dimensionRatio = "1.0";
+					p_SurfaceViewPt.setLayoutParams( p_ConstraintLayoutParamsPt );
+					p_SurfaceViewPt.setOnClickListener( v -> onClickVdoInptOtptSurfaceView( p_SurfaceViewPt ) );
+
+					( ( HTObject )( ( Object[] ) MessagePt.obj )[ 1 ] ).m_Val = p_SurfaceViewPt;
 					break;
 				}
 				case MainActMsgTyp.VdoInptOtptViewDstoy:
 				{
-					VdoInptOtptViewDstoy( ( SurfaceView ) MessagePt.obj );
+					SurfaceView p_DspySurfaceViewPt = ( SurfaceView ) MessagePt.obj;
+
+					if( p_DspySurfaceViewPt != null ) ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).removeView( ( View )p_DspySurfaceViewPt.getParent().getParent() );
 					break;
 				}
 				case MainActMsgTyp.VdoInptOtptViewSetTitle:
 				{
-					VdoInptOtptViewSetTitle( ( SurfaceView ) ( ( Object[] ) MessagePt.obj )[ 0 ], ( String ) ( ( Object[] ) MessagePt.obj )[ 1 ] );
+					SurfaceView p_DspySurfaceViewPt = ( SurfaceView ) ( ( Object[] ) MessagePt.obj )[ 0 ];
+					String p_TitleStrPt = ( String )( ( Object[] )MessagePt.obj )[ 1 ];
+
+					if( ( p_DspySurfaceViewPt != null ) && ( p_TitleStrPt != null ) ) ( ( TextView )( ( LinearLayout )p_DspySurfaceViewPt.getParent().getParent() ).getChildAt( 0 ) ).setText( p_TitleStrPt );
 					break;
 				}
 				case MainActMsgTyp.AdoInptOtptDvcChg:
@@ -657,7 +711,6 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 						{
 							UpdateAdoInptOtptDvcSpinner(); //更新音频输入输出设备下拉框。
 						}
-
 					}, null );
 			}
 			m_VdoInptDvcSpinnerPt = ( ( Spinner ) m_MainLyotViewPt.findViewById( R.id.VdoInptDvcSpinnerId ) );
@@ -746,7 +799,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		//初始化主界面消息处理。
 		m_MainActPt = this;
 		m_LastMainActConfigPt = new Configuration( getResources().getConfiguration() );
-		m_MainActHandlerPt = new MainActHandler();
+		m_MainActHandlerPt = new MainActHandler( this );
 
 		//设置AppId文本框。
 		( ( TextView ) m_MainLyotViewPt.findViewById( R.id.AppIdTxtId ) ).setText( "AppId：" + getApplicationContext().getPackageName() );
@@ -992,7 +1045,7 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 			p_Num = m_CnctLstViewPt.getCheckedItemPosition();
 			if( p_Num != -1 )
 			{
-				m_MySrvrThrdPt.SendCnctDstoyMsg( 1, p_Num );
+				m_MySrvrThrdPt.CnctDstoy( 1, p_Num );
 			}
 
 			p_Rslt = 0;
@@ -1106,11 +1159,11 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 	{
 		if( m_MyClntMediaPocsThrdPt != null )
 		{
-			m_MyClntMediaPocsThrdPt.SendTkbkClntLclTkbkModeMsg( 0,
-																( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoInpt : 0 ) +
-																( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoOtpt : 0 ) +
-																( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoInpt : 0 ) +
-																( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoOtpt : 0 ) );
+			m_MyClntMediaPocsThrdPt.TkbkClntSetLclTkbkMode( 0,
+															( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoInpt : 0 ) +
+															( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoOtpt : 0 ) +
+															( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoInpt : 0 ) +
+															( ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoOtpt : 0 ) );
 
 		}
 	}
@@ -1162,13 +1215,13 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 			//设置音频输入是否绘制音频波形到Surface。
 			m_MyClntMediaPocsThrdPt.AdoInptSetIsDrawAdoWavfmToSurface( 1,
 																	   ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
-																	   ( ( SurfaceView ) findViewById( R.id.AdoInptWavfmSurfaceId ) ),
-																	   ( ( SurfaceView ) findViewById( R.id.AdoRsltWavfmSurfaceId ) ) );
+																	   ( ( SurfaceView ) findViewById( R.id.AdoInptSrcWavfmSurfaceId ) ),
+																	   ( ( SurfaceView ) findViewById( R.id.AdoInptRsltWavfmSurfaceId ) ) );
 
 			//设置音频输出是否绘制音频波形到Surface。
 			m_MyClntMediaPocsThrdPt.AdoOtptSetIsDrawAdoWavfmToSurface( 1,
 																	   ( ( ( CheckBox ) m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
-																	   ( ( SurfaceView ) findViewById( R.id.AdoOtptWavfmSurfaceId ) ) );
+																	   ( ( SurfaceView ) findViewById( R.id.AdoOtptSrcWavfmSurfaceId ) ) );
 		}
 	}
 
@@ -1239,14 +1292,14 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 			{
 				case MotionEvent.ACTION_DOWN: //如果是按下消息。
 				{
-					if( m_MyClntMediaPocsThrdPt != null ) m_MyClntMediaPocsThrdPt.SendTkbkClntPttBtnDownMsg( 1 );
+					if( m_MyClntMediaPocsThrdPt != null ) m_MyClntMediaPocsThrdPt.TkbkClntPttBtnDown( 1 );
 
 					ViewPt.setBackgroundColor( Color.GREEN );
 					break;
 				}
 				case MotionEvent.ACTION_UP: //如果是弹起消息。
 				{
-					if( m_MyClntMediaPocsThrdPt != null ) m_MyClntMediaPocsThrdPt.SendTkbkClntPttBtnUpMsg( 1 );
+					if( m_MyClntMediaPocsThrdPt != null ) m_MyClntMediaPocsThrdPt.TkbkClntPttBtnUp( 1 );
 
 					ViewPt.setBackgroundDrawable( m_PttBtnBackgroundPt );
 					break;
@@ -1699,54 +1752,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		return ( MediaPocsThrd.VdoInptDvcInfo ) p_HTObjectPt.m_Val;
 	}
 
-	//视频输入输出视图初始化。
-	public SurfaceView VdoInptOtptViewInit( String TitleStrPt )
-	{
-		LinearLayout p_LinearLyotPt = new LinearLayout( this );
-		TextView p_TxtViewPt = new TextView( this );
-		ConstraintLayout p_ConstraintLyotPt = new ConstraintLayout( this );
-		SurfaceView p_SurfaceViewPt = new SurfaceView( this );
-		LinearLayout.LayoutParams p_LinearLayoutParamsPt;
-		ConstraintLayout.LayoutParams p_ConstraintLayoutParamsPt;
-
-		if( TitleStrPt.substring( 0, 4 ).equals( "视频输入" ) ) ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).addView( p_LinearLyotPt, 0 );
-		else ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).addView( p_LinearLyotPt );
-		p_LinearLyotPt.addView( p_TxtViewPt );
-		p_LinearLyotPt.addView( p_ConstraintLyotPt );
-		p_ConstraintLyotPt.addView( p_SurfaceViewPt );
-
-		p_LinearLyotPt.setOrientation( LinearLayout.VERTICAL );
-		p_LinearLayoutParamsPt = ( LinearLayout.LayoutParams )p_LinearLyotPt.getLayoutParams();
-		p_LinearLayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
-		p_LinearLayoutParamsPt.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-		p_LinearLayoutParamsPt.weight = 1;
-		p_LinearLyotPt.setLayoutParams( p_LinearLayoutParamsPt );
-
-		p_TxtViewPt.setText( TitleStrPt );
-		p_TxtViewPt.setGravity( Gravity.CENTER );
-		p_LinearLayoutParamsPt = ( LinearLayout.LayoutParams )p_TxtViewPt.getLayoutParams();
-		p_LinearLayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
-		p_LinearLayoutParamsPt.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-		p_TxtViewPt.setLayoutParams( p_LinearLayoutParamsPt );
-
-		p_LinearLayoutParamsPt = ( LinearLayout.LayoutParams )p_ConstraintLyotPt.getLayoutParams();
-		p_LinearLayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
-		p_LinearLayoutParamsPt.height = LinearLayout.LayoutParams.WRAP_CONTENT;
-		p_ConstraintLyotPt.setLayoutParams( p_LinearLayoutParamsPt );
-
-		p_SurfaceViewPt.setBackgroundColor( Color.TRANSPARENT );
-		p_ConstraintLayoutParamsPt = ( ConstraintLayout.LayoutParams )p_SurfaceViewPt.getLayoutParams();
-		p_ConstraintLayoutParamsPt.width = LinearLayout.LayoutParams.MATCH_PARENT;
-		p_ConstraintLayoutParamsPt.height = 0;
-		p_ConstraintLayoutParamsPt.dimensionRatio = "1.0";
-		p_SurfaceViewPt.setLayoutParams( p_ConstraintLayoutParamsPt );
-		p_SurfaceViewPt.setOnClickListener( v -> onClickVdoInptOtptSurfaceView( p_SurfaceViewPt ) );
-
-		return p_SurfaceViewPt;
-	}
-
 	//发送视频输入输出视图初始化消息。
-	public SurfaceView SendVdoInptOtptViewInitMsg( String TitleStrPt )
+	public SurfaceView VdoInptOtptViewInit( String TitleStrPt )
 	{
 		Message p_MessagePt = new Message();
 		HTObject p_HTObjectPt = new HTObject();
@@ -1757,14 +1764,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		return ( SurfaceView ) p_HTObjectPt.m_Val;
 	}
 
-	//视频输入输出视图销毁。
-	public void VdoInptOtptViewDstoy( SurfaceView DspySurfaceViewPt )
-	{
-		if( DspySurfaceViewPt != null ) ( ( LinearLayout )findViewById( R.id.VdoInptOtptLinearLyotId ) ).removeView( ( View )DspySurfaceViewPt.getParent().getParent() );
-	}
-
 	//发送视频输入输出视图销毁消息。
-	public void SendVdoInptOtptViewDstoyMsg( SurfaceView DspySurfaceViewPt )
+	public void VdoInptOtptViewDstoy( SurfaceView DspySurfaceViewPt )
 	{
 		Message p_MessagePt = new Message();
 		p_MessagePt.what = MainActMsgTyp.VdoInptOtptViewDstoy;
@@ -1772,14 +1773,8 @@ public class MainAct extends AppCompatActivity implements View.OnTouchListener
 		m_MainActHandlerPt.sendMessage( p_MessagePt );
 	}
 
-	//视频输入输出视图设置标题。
-	public void VdoInptOtptViewSetTitle( SurfaceView DspySurfaceViewPt, String TitleStrPt )
-	{
-		if( ( DspySurfaceViewPt != null ) && ( TitleStrPt != null ) ) ( ( TextView )( ( LinearLayout )DspySurfaceViewPt.getParent().getParent() ).getChildAt( 0 ) ).setText( TitleStrPt );
-	}
-
 	//发送视频输入输出视图设置标题消息。
-	public void SendVdoInptOtptViewSetTitleMsg( SurfaceView DspySurfaceViewPt, String TitleStrPt )
+	public void VdoInptOtptViewSetTitle( SurfaceView DspySurfaceViewPt, String TitleStrPt )
 	{
 		Message p_MessagePt = new Message();
 		p_MessagePt.what = MainActMsgTyp.VdoInptOtptViewSetTitle;

@@ -3,7 +3,6 @@ package HeavenTao.Media;
 import android.content.Context;
 import android.util.Log;
 
-import HeavenTao.Media.*;
 import HeavenTao.Data.*;
 import HeavenTao.Sokt.*;
 
@@ -97,7 +96,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 		public static final int TkbkClntSetIsTstNtwkDly  = 0; //对讲客户端设置是否测试网络延迟。
 		public static final int TkbkClntCnctInit         = 1; //对讲客户端的连接初始化。
 		public static final int TkbkClntCnctDstoy        = 2; //对讲客户端的连接销毁。
-		public static final int TkbkClntLclTkbkMode      = 3; //对讲客户端的本端对讲模式。
+		public static final int TkbkClntSetLclTkbkMode   = 3; //对讲客户端的设置本端对讲模式。
 		public static final int TkbkClntPttBtnDown       = 4; //对讲客户端的一键即按即通按钮按下。
 		public static final int TkbkClntPttBtnUp         = 5; //对讲客户端的一键即按即通按钮弹起。
 
@@ -174,8 +173,8 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 	//用户定义的对讲客户端我的对讲索引函数。
 	public abstract void UserTkbkClntMyTkbkIdx( int MyTkbkIdx );
 
-	//用户定义的对讲客户端本端对讲模式函数。
-	public abstract void UserTkbkClntLclTkbkMode( int OldLclTkbkMode, int NewLclTkbkMode );
+	//用户定义的对讲客户端设置本端对讲模式函数。
+	public abstract void UserTkbkClntSetLclTkbkMode( int OldLclTkbkMode, int NewLclTkbkMode );
 
 	//用户定义的对讲客户端对讲信息初始化函数。
 	public abstract void UserTkbkClntTkbkInfoInit( TkbkClnt.TkbkInfo TkbkInfoPt );
@@ -223,62 +222,62 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 		m_BdctClntPt.m_LastSendVdoInptFrmTimeStamp = 0 - 1; //设置最后发送视频输入帧的时间戳为0的前一个，因为第一次发送视频输入帧时会递增一个步进。
 	}
 
-	//发送对讲客户端设置是否测试网络延迟消息。
-	public int SendTkbkClntSetIsTstNtwkDlyMsg( int IsBlockWait, int IsTstNtwkDly, long SendIntvlMsec )
+	//客户端媒体处理线程的对讲客户端设置是否测试网络延迟。
+	public int TkbkClntSetIsTstNtwkDly( int IsBlockWait, int IsTstNtwkDly, long SendIntvlMsec )
 	{
 		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntSetIsTstNtwkDly, IsTstNtwkDly, SendIntvlMsec );
 	}
 
-	//发送对讲客户端的连接初始化消息。
-	public int SendTkbkClntCnctInitMsg( int IsBlockWait, int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
+	//客户端媒体处理线程的对讲客户端的连接初始化。
+	public int TkbkClntCnctInit( int IsBlockWait, int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
 	{
 		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntCnctInit, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt );
 	}
 
-	//发送对讲客户端的连接销毁消息。
-	public int SendTkbkClntCnctDstoyMsg( int IsBlockWait )
+	//客户端媒体处理线程的对讲客户端的连接销毁。
+	public int TkbkClntCnctDstoy( int IsBlockWait )
 	{
 		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntCnctDstoy );
 	}
 
-	//发送对讲客户端的本端对讲模式消息。
-	public int SendTkbkClntLclTkbkModeMsg( int IsBlockWait, int LclTkbkMode )
+	//客户端媒体处理线程的对讲客户端设置本端对讲模式。
+	public int TkbkClntSetLclTkbkMode( int IsBlockWait, int LclTkbkMode )
 	{
-		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntLclTkbkMode, LclTkbkMode );
+		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntSetLclTkbkMode, LclTkbkMode );
 	}
 
-	//发送对讲客户端的一键即按即通按钮按下消息。
-	public int SendTkbkClntPttBtnDownMsg( int IsBlockWait )
+	//客户端媒体处理线程的对讲客户端的一键即按即通按钮按下。
+	public int TkbkClntPttBtnDown( int IsBlockWait )
 	{
 		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntPttBtnDown );
 	}
 
-	//发送对讲客户端的一键即按即通按钮弹起消息。
-	public int SendTkbkClntPttBtnUpMsg( int IsBlockWait )
+	//客户端媒体处理线程的对讲客户端的一键即按即通按钮弹起。
+	public int TkbkClntPttBtnUp( int IsBlockWait )
 	{
 		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.TkbkClntPttBtnUp );
 	}
 
-	//发送广播客户端初始化消息。
-	public int SendBdctClntInitMsg( int IsBlockWait, int CnctNumIsDecr, int LclTkbkMode )
+	//客户端媒体处理线程的广播客户端初始化。
+	public int BdctClntInit( int IsBlockWait, int CnctNumIsDecr, int LclTkbkMode )
 	{
 		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.BdctClntInit, CnctNumIsDecr, LclTkbkMode );
 	}
 
-	//发送广播客户端销毁消息。
-	public int SendBdctClntDstoyMsg( int IsBlockWait )
+	//客户端媒体处理线程的广播客户端销毁。
+	public int BdctClntDstoy( int IsBlockWait )
 	{
 		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.BdctClntDstoy );
 	}
 
-	//发送广播客户端的连接初始化消息。
-	public int SendBdctClntCnctInitMsg( int IsBlockWait, int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
+	//客户端媒体处理线程的广播客户端的连接初始化。
+	public int BdctClntCnctInit( int IsBlockWait, int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt )
 	{
 		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.BdctClntCnctInit, IsTcpOrAudpPrtcl, RmtNodeNameStrPt, RmtNodeSrvcStrPt );
 	}
 
-	//发送广播客户端的连接销毁消息。
-	public int SendBdctClntCnctDstoyMsg( int IsBlockWait, int CnctNum )
+	//客户端媒体处理线程的广播客户端的连接销毁。
+	public int BdctClntCnctDstoy( int IsBlockWait, int CnctNum )
 	{
 		return super.SendUserMsg( IsBlockWait, ThrdMsgTyp.BdctClntCnctDstoy, CnctNum );
 	}
@@ -565,14 +564,14 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 					m_TkbkClntPt.CnctInfoDstoy();
 					break;
 				}
-				case ThrdMsgTyp.TkbkClntLclTkbkMode:
+				case ThrdMsgTyp.TkbkClntSetLclTkbkMode:
 				{
 					int p_LclTkbkMode = ( Integer ) MsgParmPt[ 0 ]; //设置本端对讲模式。
 					int p_OldLclTkbkMode = m_TkbkClntPt.m_LclTkbkMode; //设置旧本端对讲模式。
 
 					if( p_LclTkbkMode != TkbkMode.NoChg ) m_TkbkClntPt.m_LclTkbkMode = p_LclTkbkMode; //设置本端对讲模式。
-					if( m_TkbkClntPt.m_MyTkbkIdx != -1 ) SetTkbkMode( 1, 1 ); //如果已设置我的对讲索引，就只设置不使用的对讲模式。因为在调用用户定义的对讲客户端本端对讲模式函数时，可能会对不使用的做一些销毁工作，并对要使用的做一些初始化工作，所以先只设置不使用的。
-					UserTkbkClntLclTkbkMode( p_OldLclTkbkMode, m_TkbkClntPt.m_LclTkbkMode ); //调用用户定义的对讲客户端本端对讲模式函数。
+					if( m_TkbkClntPt.m_MyTkbkIdx != -1 ) SetTkbkMode( 1, 1 ); //如果已设置我的对讲索引，就只设置不使用的对讲模式。因为在调用用户定义的对讲客户端设置本端对讲模式函数时，可能会对不使用的做一些销毁工作，并对要使用的做一些初始化工作，所以先只设置不使用的。
+					UserTkbkClntSetLclTkbkMode( p_OldLclTkbkMode, m_TkbkClntPt.m_LclTkbkMode ); //调用用户定义的对讲客户端设置本端对讲模式函数。
 					if( ( m_TkbkClntPt.m_CurCnctSts == CnctSts.Cnct ) && ( ( m_TkbkClntPt.m_MyTkbkIdx != -1 ) ) ) m_TkbkClntPt.CnctSendTkbkModePkt( m_TkbkClntPt.m_LclTkbkMode ); //如果当前连接状态为已连接，且已设置我的对讲索引，就发送对讲模式包。
 					if( m_TkbkClntPt.m_MyTkbkIdx != -1 ) SetTkbkMode( 1, 2 ); //如果已设置我的对讲索引，就只设置要使用的对讲模式。
 					break;
@@ -626,6 +625,7 @@ public abstract class ClntMediaPocsThrd extends MediaPocsThrd //客户端媒体�
 						for( int p_CnctInfoLstIdx = 0; p_CnctInfoLstIdx < m_BdctClntPt.m_CnctInfoCntnrPt.size(); p_CnctInfoLstIdx++ )
 						{
 							p_BdctClntCnctInfoTmpPt = m_BdctClntPt.m_CnctInfoCntnrPt.get( p_CnctInfoLstIdx );
+
 							if( ( p_BdctClntCnctInfoTmpPt.m_IsInit != 0 ) &&
 								( p_BdctClntCnctInfoTmpPt.m_IsTcpOrAudpPrtcl == p_IsTcpOrAudpPrtcl ) &&
 								( p_BdctClntCnctInfoTmpPt.m_RmtNodeNameStrPt.equals( p_RmtNodeNameStrPt ) ) &&

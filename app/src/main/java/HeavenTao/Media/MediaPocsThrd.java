@@ -883,7 +883,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 		return 0;
 	}
 
-	//设媒体处理线程的设置是否使用唤醒锁。
+	//媒体处理线程的设置是否使用唤醒锁。
 	public int SetIsUseWakeLock( int IsBlockWait, int IsUseWakeLock )
 	{
 		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.SetIsUseWakeLock, IsUseWakeLock );
@@ -1091,33 +1091,33 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 		{
 			if( m_AdoInptPt.m_IsUse == 0 )
 			{
-				if( m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：因为不使用音频输入，所以不可以使用声学回音消除器。" );
+				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：因为不使用音频输入，所以不可以使用声学回音消除器。" );
 				m_IsCanUseAec = 0;
 			}
 			else if( m_AdoOtptPt.m_IsUse == 0 )
 			{
-				if( m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：因为不使用音频输出，所以不可以使用声学回音消除器。" );
+				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：因为不使用音频输出，所以不可以使用声学回音消除器。" );
 				m_IsCanUseAec = 0;
 			}
 			else if( m_AdoInptPt.m_SmplRate != m_AdoOtptPt.m_SmplRate )
 			{
-				if( m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：因为音频输入的采样频率与音频输出不一致，所以不可以使用声学回音消除器。" );
+				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：因为音频输入的采样频率与音频输出不一致，所以不可以使用声学回音消除器。" );
 				m_IsCanUseAec = 0;
 			}
 			else if( ( m_AdoInptPt.m_FrmLenMsec != m_AdoOtptPt.m_FrmLenMsec ) || ( m_AdoInptPt.m_FrmLenUnit != m_AdoOtptPt.m_FrmLenUnit ) )
 			{
-				if( m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：因为音频输入帧的长度与音频输出不一致，所以不可以使用声学回音消除器。" );
+				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：因为音频输入帧的长度与音频输出不一致，所以不可以使用声学回音消除器。" );
 				m_IsCanUseAec = 0;
 			}
 			else
 			{
-				if( m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：因为要使用声学回音消除器，所以可以使用声学回音消除器。" );
+				if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：因为要使用声学回音消除器，所以可以使用声学回音消除器。" );
 				m_IsCanUseAec = 1;
 			}
 		}
 		else //如果不使用声学回音消除器。
 		{
-			if( m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "媒体处理线程：因为不使用声学回音消除器，所以不可以使用声学回音消除器。" );
+			if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "媒体处理线程：因为不使用声学回音消除器，所以不可以使用声学回音消除器。" );
 			m_IsCanUseAec = 0;
 		}
 	}
@@ -1125,7 +1125,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 	//媒体处理线程的音视频输入输出Avi文件写入器初始化。
 	private int AdoVdoInptOtptAviFileWriterInit()
 	{
-		int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
+		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		HTInt p_TmpHTIntPt = new HTInt();
 
 		Out:
@@ -2451,7 +2451,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					p_NowTickMsec = SystemClock.uptimeMillis();
 					Log.i( m_CurClsNameStrPt, "媒体处理线程：调用用户定义的处理函数成功。耗时 " + ( p_NowTickMsec - p_LastTickMsec ) + " 毫秒。" );
-					p_LastTickMsec = SystemClock.uptimeMillis();
+					p_LastTickMsec = p_NowTickMsec;
 				}
 			}
 
@@ -2746,7 +2746,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					p_NowTickMsec = SystemClock.uptimeMillis();
 					Log.i( m_CurClsNameStrPt, "媒体处理线程：音频输入帧处理完毕，耗时 " + ( p_NowTickMsec - p_LastTickMsec ) + " 毫秒。" );
-					p_LastTickMsec = SystemClock.uptimeMillis();
+					p_LastTickMsec = p_NowTickMsec;
 				}
 			} //处理音频输入帧结束。
 
@@ -2797,7 +2797,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					p_NowTickMsec = SystemClock.uptimeMillis();
 					Log.i( m_CurClsNameStrPt, "媒体处理线程：音频输出帧处理完毕，耗时 " + ( p_NowTickMsec - p_LastTickMsec ) + " 毫秒。" );
-					p_LastTickMsec = SystemClock.uptimeMillis();
+					p_LastTickMsec = p_NowTickMsec;
 				}
 			} //处理音频输出帧结束。
 
@@ -2828,7 +2828,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					p_NowTickMsec = SystemClock.uptimeMillis();
 					Log.i( m_CurClsNameStrPt, "媒体处理线程：视频输入帧处理完毕，耗时 " + ( p_NowTickMsec - p_LastTickMsec ) + " 毫秒。" );
-					p_LastTickMsec = SystemClock.uptimeMillis();
+					p_LastTickMsec = p_NowTickMsec;
 				}
 			} //处理视频输入帧结束。
 
@@ -2879,7 +2879,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					p_NowTickMsec = SystemClock.uptimeMillis();
 					Log.i( m_CurClsNameStrPt, "媒体处理线程：视频输出帧处理完毕，耗时 " + ( p_NowTickMsec - p_LastTickMsec ) + " 毫秒。" );
-					p_LastTickMsec = SystemClock.uptimeMillis();
+					p_LastTickMsec = p_NowTickMsec;
 				}
 			} //处理视频输出帧结束。
 
@@ -2980,7 +2980,7 @@ public abstract class MediaPocsThrd extends Thread //媒体处理线程。
 				{
 					p_NowTickMsec = SystemClock.uptimeMillis();
 					Log.i( m_CurClsNameStrPt, "媒体处理线程：调用用户定义的读取音视频输入帧函数完毕，耗时 " + ( p_NowTickMsec - p_LastTickMsec ) + " 毫秒。" );
-					p_LastTickMsec = SystemClock.uptimeMillis();
+					p_LastTickMsec = p_NowTickMsec;
 				}
 			}
 

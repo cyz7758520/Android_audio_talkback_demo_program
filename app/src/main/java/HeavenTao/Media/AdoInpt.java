@@ -1319,13 +1319,13 @@ public class AdoInpt //音频输入。
 								{
 									if( m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec > 0 ) //如果已经准备开始补帧。
 									{
-										if( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec < 500 ) //如果已经准备开始补帧小于0.5秒。
+										if( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec < 1000 / ( ( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_CurFrmTimeStampMsec ) / m_FrmLenMsec ) ) //如果已经准备开始补帧小于1秒/少了几帧，为了少帧越多补帧越快。
 										{
-											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 高一个帧长 " + m_FrmLenMsec + "，就表示当前少帧了，继续准备补帧。" );
+											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 高了 " + ( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_CurFrmTimeStampMsec ) + " 大于 " + ( ( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_CurFrmTimeStampMsec ) / m_FrmLenMsec ) + " 个帧长 " + m_FrmLenMsec + "，就表示当前少帧了，继续准备补帧。" );
 										}
 										else //如果已经准备开始补帧大于等于0.5秒，才开始补帧，因为可能是帧数不稳定导致误判需要补帧。
 										{
-											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 高一个帧长 " + m_FrmLenMsec + "，就表示当前少帧了，立即开始补帧。" );
+											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 高了 " + ( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_CurFrmTimeStampMsec ) + " 大于 " + ( ( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_CurFrmTimeStampMsec ) / m_FrmLenMsec ) + " 个帧长 " + m_FrmLenMsec + "，就表示当前少帧了，立即开始补帧。" );
 
 											//获取一个Pcm格式空闲帧。
 											m_ThrdPt.m_AddPcmSrcFrmPt = GetPcmIdleFrm( 0 );
@@ -1346,7 +1346,7 @@ public class AdoInpt //音频输入。
 									}
 									else
 									{
-										if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 高一个帧长 " + m_FrmLenMsec + "，就表示当前少帧了，准备开始补帧。" );
+										if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 高了 " + ( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_CurFrmTimeStampMsec ) + " 大于 " + ( ( m_ThrdPt.m_NowTickMsec - m_ThrdPt.m_CurFrmTimeStampMsec ) / m_FrmLenMsec ) + " 个帧长 " + m_FrmLenMsec + "，就表示当前少帧了，准备开始补帧。" );
 
 										m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec = m_ThrdPt.m_NowTickMsec; //设置补帧的起始时间戳。
 									}
@@ -1368,13 +1368,13 @@ public class AdoInpt //音频输入。
 								{
 									if( m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec < 0 ) //如果已经准备开始丢帧。
 									{
-										if( m_ThrdPt.m_NowTickMsec - ( m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec & 0x7FFFFFFFFFFFFFFFL ) < 500 ) //如果已经准备开始丢帧小于0.5秒。
+										if( m_ThrdPt.m_NowTickMsec - ( -m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec ) < 1000 / ( ( m_ThrdPt.m_CurFrmTimeStampMsec - m_ThrdPt.m_NowTickMsec ) / m_FrmLenMsec ) ) //如果已经准备开始丢帧小于1秒/多了几帧，为多帧越多丢帧越快。
 										{
-											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低一个帧长 " + m_FrmLenMsec + "，就表示当前多帧了，继续准备丢帧。" );
+											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低了 " + ( m_ThrdPt.m_CurFrmTimeStampMsec - m_ThrdPt.m_NowTickMsec ) + " 大于 " + ( ( m_ThrdPt.m_CurFrmTimeStampMsec - m_ThrdPt.m_NowTickMsec ) / m_FrmLenMsec ) + " 个帧长 " + m_FrmLenMsec + "，就表示当前多帧了，继续准备丢帧。" );
 										}
 										else //如果已经准备开始丢帧大于等于0.5秒，才开始丢帧，因为可能是帧数不稳定导致误判需要丢帧。
 										{
-											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低一个帧长 " + m_FrmLenMsec + "，就表示当前多帧了，立即开始丢帧。" );
+											if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.e( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低了 " + ( m_ThrdPt.m_CurFrmTimeStampMsec - m_ThrdPt.m_NowTickMsec ) + " 大于 " + ( ( m_ThrdPt.m_CurFrmTimeStampMsec - m_ThrdPt.m_NowTickMsec ) / m_FrmLenMsec ) + " 个帧长 " + m_FrmLenMsec + "，就表示当前多帧了，立即开始丢帧。" );
 
 											//放入本次丢的Pcm格式原始帧到Pcm格式原始帧容器。注意：从取出到放入过程中不能跳出，否则会内存泄露。
 											m_PcmIdleFrmCntnrPt.offer( m_ThrdPt.m_PcmSrcFrmPt );
@@ -1387,9 +1387,9 @@ public class AdoInpt //音频输入。
 									}
 									else
 									{
-										if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低一个帧长 " + m_FrmLenMsec + "，就表示当前多帧了，准备开始丢帧。" );
+										if( m_MediaPocsThrdPt.m_IsPrintLogcat != 0 ) Log.i( MediaPocsThrd.m_CurClsNameStrPt, "音频输入线程：本次的滴答钟 " + m_ThrdPt.m_NowTickMsec + " 比当前帧的时间戳 " + m_ThrdPt.m_CurFrmTimeStampMsec + " 低了 " + ( m_ThrdPt.m_CurFrmTimeStampMsec - m_ThrdPt.m_NowTickMsec ) + " 大于 " + ( ( m_ThrdPt.m_CurFrmTimeStampMsec - m_ThrdPt.m_NowTickMsec ) / m_FrmLenMsec ) + " 个帧长 " + m_FrmLenMsec + "，就表示当前多帧了，准备开始丢帧。" );
 
-										m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec = m_ThrdPt.m_NowTickMsec | 0x8000000000000000L; //设置丢帧的起始时间戳。
+										m_ThrdPt.m_AddOrDropFrmStartTimeStampMsec = -m_ThrdPt.m_NowTickMsec; //设置丢帧的起始时间戳。
 									}
 								}
 								else //如果本次的滴答钟比当前帧的时间戳低了大于等于1秒，就表示不要丢帧了，直接发送音频输入设备关闭线程消息来重启音频输入。

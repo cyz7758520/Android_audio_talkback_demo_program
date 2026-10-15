@@ -115,7 +115,6 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 	public TcpSrvrSokt m_TcpSrvrSoktPt; //存放本端Tcp协议服务端套接字的指针。
 	public AudpSokt m_AudpSrvrSoktPt; //存放本端高级Udp协议服务端套接字的指针。
 	public int m_IsAutoRqirExit; //存放是否自动请求退出，为0表示手动，为1表示在所有连接销毁时自动请求退出，为2表示在所有连接和服务端都销毁时自动请求退出。
-	public int m_IsRqstDstoy; //存放是否请求销毁，为0表示未请求，为1表示已请求。
 
 	public class CnctInfo //连接信息。
 	{
@@ -128,7 +127,6 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 		public String m_RmtNodeSrvcStrPt; //存放远端套接字绑定的远端节点服务字符串的指针，
 		public TcpClntSokt m_TcpClntSoktPt; //存放本端Tcp协议客户端套接字的指针。
 		public long m_AudpClntCnctIdx; //存放本端高级Udp协议客户端连接索引。
-		public int m_IsRqstDstoy; //存放是否请求销毁，为0表示未请求，为1表示已请求。
 
 		public int m_CurCnctSts; //存放当前连接状态，为[-m_MaxCnctTimes,0]表示等待远端接受连接。
 		public int m_RmtTkbkMode; //存放远端对讲模式。
@@ -233,14 +231,14 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 		return 0;
 	}
 
-	//发送设置是否使用唤醒锁消息。
-	public int SendSetIsUseWakeLockMsg( int IsBlockWait, int IsUseWakeLock )
+	//服务端线程的设置是否使用唤醒锁。
+	public int SetIsUseWakeLock( int IsBlockWait, int IsUseWakeLock )
 	{
 		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.SetIsUseWakeLock, IsUseWakeLock );
 	}
 
-	//发送设置是否测试网络延迟消息。
-	public int SendSetIsTstNtwkDlyMsg( int IsBlockWait, int IsTstNtwkDly, long SendIntvlMsec )
+	//服务端线程的设置是否测试网络延迟。
+	public int SetIsTstNtwkDly( int IsBlockWait, int IsTstNtwkDly, long SendIntvlMsec )
 	{
 		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.SetIsTstNtwkDly, IsTstNtwkDly, SendIntvlMsec );
 	}
@@ -282,40 +280,40 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 		}
 	}
 
-	//发送请求退出消息。
-	public int SendRqirExitMsg( int IsBlockWait )
+	//服务端线程请求退出。
+	public int RqirExit( int IsBlockWait )
 	{
 		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.RqirExit );
 	}
 
-	//发送用户消息。
+	//发送用户消息到服务端线程。
 	public int SendUserMsg( int IsBlockWait, int MsgTyp, Object... MsgParmPt )
 	{
 		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.UserMsgMinVal + MsgTyp, MsgParmPt );
 	}
 
-	//发送服务端初始化消息。
-	public int SendSrvrInitMsg( int IsBlockWait, int IsTcpOrAudpPrtcl, String LclNodeNameStrPt, String LclNodeSrvcStrPt, int MaxCnctNum, int IsAutoRqirExit )
+	//服务端线程的服务端初始化。
+	public int SrvrInit( int IsBlockWait, int IsTcpOrAudpPrtcl, String LclNodeNameStrPt, String LclNodeSrvcStrPt, int MaxCnctNum, int IsAutoRqirExit )
 	{
 		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.SrvrInit, IsTcpOrAudpPrtcl, LclNodeNameStrPt, LclNodeSrvcStrPt, MaxCnctNum, IsAutoRqirExit );
 	}
 
-	//发送服务端销毁消息。
-	public int SendSrvrDstoyMsg( int IsBlockWait )
+	//服务端线程的服务端销毁消。
+	public int SrvrDstoy( int IsBlockWait )
 	{
 		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.SrvrDstoy );
 	}
 
-	//发送连接销毁消息。
-	public int SendCnctDstoyMsg( int IsBlockWait, int CnctNum )
+	//服务端线程连接销毁。
+	public int CnctDstoy( int IsBlockWait, int CnctNum )
 	{
 		return m_ThrdMsgQueuePt.SendMsg( IsBlockWait, 1, ThrdMsgTyp.CnctDstoy, CnctNum );
 	}
 
 	//服务端初始化。
-	private int SrvrInit( int IsTcpOrAudpPrtcl, String LclNodeNameStrPt, String LclNodeSrvcStrPt, int MaxCnctNum, int IsAutoRqirExit )
+	private int _SrvrInit( int IsTcpOrAudpPrtcl, String LclNodeNameStrPt, String LclNodeSrvcStrPt, int MaxCnctNum, int IsAutoRqirExit )
 	{
-		int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
+		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		int p_LclNodeAddrFamly; //存放本端节点的地址族，为4表示IPv4，为6表示IPv6，为0表示自动选择。
 
 		Out:
@@ -332,7 +330,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 			m_SrvrIsInit = 1; //设置服务端已初始化。
 
-			{ //设置远端节点的地址族。
+			{ //设置本端节点的地址族。
 				try
 				{
 					InetAddress inetAddress = InetAddress.getByName( LclNodeNameStrPt );
@@ -418,7 +416,6 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 			m_MaxCnctNum = MaxCnctNum; //设置最大连接数。
 			m_IsAutoRqirExit = IsAutoRqirExit; //设置是否自动请求退出。
-			m_IsRqstDstoy = 0; //设置是否请求销毁。
 
 			UserVibrate(); //调用用户定义的振动函数。
 
@@ -427,15 +424,15 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 		if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
-			SrvrDstoy();
+			_SrvrDstoy();
 		}
 		return p_Rslt;
 	}
 
 	//服务端销毁。
-	private void SrvrDstoy()
+	private void _SrvrDstoy()
 	{
-		int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
+		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		CnctInfo p_CnctInfoTmpPt;
 
 		Out:
@@ -500,7 +497,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 	//连接信息初始化。
 	public CnctInfo CnctInfoInit( int IsTcpOrAudpPrtcl, String RmtNodeNameStrPt, String RmtNodeSrvcStrPt, TcpClntSokt TcpClntSoktPt, long AudpClntCnctIdx, int CurCnctSts )
 	{
-		int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
+		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		CnctInfo p_CnctInfoTmpPt = null;
 		CnctInfo p_CnctInfoTmp2Pt;
 
@@ -541,7 +538,6 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 			p_CnctInfoTmpPt.m_RmtNodeSrvcStrPt = RmtNodeSrvcStrPt; //设置远端套接字绑定的远端节点服务字符串的指针。
 			p_CnctInfoTmpPt.m_TcpClntSoktPt = TcpClntSoktPt; //设置本端Tcp协议客户端套接字的指针。
 			p_CnctInfoTmpPt.m_AudpClntCnctIdx = AudpClntCnctIdx; //设置本端高级Udp协议客户端连接索引。
-			p_CnctInfoTmpPt.m_IsRqstDstoy = 0; //设置是否请求销毁。
 
 			p_CnctInfoTmpPt.m_CurCnctSts = CurCnctSts; //设置当前连接状态。
 			p_CnctInfoTmpPt.m_RmtTkbkMode = TkbkMode.None; //设置远端对讲模式。
@@ -652,7 +648,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 	//连接信息销毁。
 	public void CnctInfoDstoy( CnctInfo CnctInfoPt )
 	{
-		int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
+		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		CnctInfo p_CnctInfoTmpPt;
 
 		Out:
@@ -759,7 +755,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 			{
 				if( m_CnctInfoCurMaxNum == -1 )
 				{
-					SendRqirExitMsg( 0 );
+					RqirExit( 0 );
 
 					String p_InfoStrPt = "服务端线程：所有连接已销毁，自动请求退出。";
 					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
@@ -770,7 +766,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 			{
 				if( ( m_CnctInfoCurMaxNum == -1 ) && ( m_SrvrIsInit == 0 ) )
 				{
-					SendRqirExitMsg( 0 );
+					RqirExit( 0 );
 
 					String p_InfoStrPt = "服务端线程：所有连接和服务端已销毁，自动请求退出。";
 					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
@@ -791,7 +787,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 	//连接处理，包括接受连接、接收发送数据包、删除连接。
 	public void CnctPocs()
 	{
-		int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
+		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		CnctInfo p_CnctInfoTmpPt;
 		CnctInfo p_CnctInfoTmp2Pt;
 		int p_TmpInt;
@@ -872,7 +868,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 							String p_InfoStrPt = "服务端线程：用本端Tcp协议服务端套接字接受远端Tcp协议客户端套接字的连接失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 							UserShowLog( p_InfoStrPt );
-							m_IsRqstDstoy = 1; //设置已请求销毁。
+							_SrvrDstoy(); //服务端销毁。
 							break TcpSrvrSoktAcptOut;
 						}
 					}
@@ -895,7 +891,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 			//用本端高级Udp协议服务端套接字接受远端高级Udp协议客户端套接字的连接。
 			if( m_AudpSrvrSoktPt != null )
 			{
-				int p_PocsRslt = -1; //存放本处理段的执行结果，为0表示成功，为非0表示失败。
+				int p_PocsRslt = -1; //存放本处理段执行结果，为0表示成功，为非0表示失败。
 				m_ThrdPt.m_TmpHTLongPt.m_Val = -1;
 
 				AudpSrvrSoktAcptOut:
@@ -925,7 +921,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 							String p_InfoStrPt = "服务端线程：用本端高级Udp协议服务端套接字接受远端高级Udp协议客户端套接字的连接失败。原因：" + m_ErrInfoVstrPt.GetStr();
 							if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 							UserShowLog( p_InfoStrPt );
-							m_IsRqstDstoy = 1; //设置已请求销毁。
+							_SrvrDstoy(); //服务端销毁。
 							break AudpSrvrSoktAcptOut;
 						}
 					}
@@ -953,7 +949,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 				if( p_CnctInfoTmpPt.m_IsInit != 0 )
 				{
 					//用本端套接字接收连接的远端套接字发送的数据包。
-					if( ( p_CnctInfoTmpPt.m_IsRqstDstoy == 0 ) && ( p_CnctInfoTmpPt.m_CurCnctSts == CnctSts.Cnct ) ) //如果该连接未请求销毁，且当前连接状态为已连接。
+					if( p_CnctInfoTmpPt.m_CurCnctSts == CnctSts.Cnct ) //如果该连接未请求销毁，且当前连接状态为已连接。
 					{
 						RecvPktOut:
 						{
@@ -1176,7 +1172,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 										}
 
 										p_CnctInfoTmpPt.m_IsRecvExitPkt = 1; //设置已接收退出包。
-										p_CnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。
+										CnctInfoDstoy( p_CnctInfoTmpPt ); //连接信息销毁。
 
 										String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：接收退出包。对讲索引：" + m_ThrdPt.m_TmpBytePt[ 1 ] + "。";
 										if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, p_InfoStrPt );
@@ -1189,7 +1185,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 							{
 								p_CnctInfoTmpPt.m_CurCnctSts = CnctSts.Tmot; //设置当前连接状态为异常断开。
 								UserCnctSts( p_CnctInfoTmpPt, p_CnctInfoTmpPt.m_CurCnctSts ); //调用用户定义的连接状态函数。
-								p_CnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。
+								CnctInfoDstoy( p_CnctInfoTmpPt ); //连接信息销毁。
 
 								String p_InfoStrPt = "服务端线程：连接" + p_CnctInfoTmpPt.m_Idx + "：用本端套接字接收连接的远端套接字发送的数据包失败。原因：" + m_ErrInfoVstrPt.GetStr();
 								if( m_IsPrintLogcat != 0 ) Log.e( m_CurClsNameStrPt, p_InfoStrPt );
@@ -1200,7 +1196,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 					}
 
 					//用本端客户端套接字测试网络延迟。
-					if( ( m_TstNtwkDlyPt.m_IsTstNtwkDly != 0 ) && ( p_CnctInfoTmpPt.m_IsRqstDstoy == 0 ) && ( p_CnctInfoTmpPt.m_CurCnctSts == CnctSts.Cnct ) ) //如果要测试网络延迟，且连接未请求销毁，且当前连接状态为已连接。
+					if( ( m_TstNtwkDlyPt.m_IsTstNtwkDly != 0 ) && ( p_CnctInfoTmpPt.m_CurCnctSts == CnctSts.Cnct ) ) //如果要测试网络延迟，且连接未请求销毁，且当前连接状态为已连接。
 					{
 						long p_CurTickMsec = SystemClock.uptimeMillis(); //存放当前嘀嗒钟，单位为毫秒。
 
@@ -1222,19 +1218,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 							}
 						}
 					}
-
-					//销毁连接信息。
-					if( p_CnctInfoTmpPt.m_IsRqstDstoy == 1 ) //如果该连接已请求销毁。
-					{
-						CnctInfoDstoy( p_CnctInfoTmpPt );
-					}
 				}
-			}
-
-			//服务端销毁。
-			if( m_IsRqstDstoy == 1 ) //如果已请求销毁。
-			{
-				SrvrDstoy();
 			}
 
 			p_Rslt = 0; //设置本函数执行成功。
@@ -1283,12 +1267,12 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 				}
 				case ThrdMsgTyp.SrvrInit:
 				{
-					p_Rslt = SrvrInit( ( Integer ) MsgParmPt[ 0 ], ( String ) MsgParmPt[ 1 ], ( String ) MsgParmPt[ 2 ], ( Integer ) MsgParmPt[ 3 ], ( Integer ) MsgParmPt[ 4 ] );
+					p_Rslt = _SrvrInit( ( Integer ) MsgParmPt[ 0 ], ( String ) MsgParmPt[ 1 ], ( String ) MsgParmPt[ 2 ], ( Integer ) MsgParmPt[ 3 ], ( Integer ) MsgParmPt[ 4 ] );
 					break Out;
 				}
 				case ThrdMsgTyp.SrvrDstoy:
 				{
-					SrvrDstoy();
+					_SrvrDstoy();
 					break;
 				}
 				case ThrdMsgTyp.CnctDstoy:
@@ -1311,7 +1295,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 							if( ( p_CnctInfoTmpPt.m_IsInit != 0 ) && ( p_CnctInfoTmpPt.m_Num == p_CnctNum ) )
 							{
-								p_CnctInfoTmpPt.m_IsRqstDstoy = 1; //设置已请求销毁。
+								CnctInfoDstoy( p_CnctInfoTmpPt ); //连接信息销毁。
 								break;
 							}
 						}
@@ -1333,7 +1317,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 				{
 					if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：接收退出请求。" );
 					m_IsRqirExit = 1; //设置已请求退出。
-					if( m_SrvrIsInit != 0 ) SrvrDstoy(); //服务端销毁。
+					if( m_SrvrIsInit != 0 ) _SrvrDstoy(); //服务端销毁。
 					break;
 				}
 				default: //用户消息。
@@ -1371,7 +1355,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 
 		UserInit(); //调用用户定义的初始化函数。
 
-		//媒体处理循环开始。
+		//连接处理循环开始。
 		while( true )
 		{
 			while( m_ThrdMsgQueuePt.MsgPocsThrdMsgPocs() == 0 ); //进行线程消息处理，直到线程消息队列为空。
@@ -1384,7 +1368,7 @@ public abstract class SrvrThrd extends Thread //服务端线程。
 			if( m_IsPrintLogcat != 0 ) Log.i( m_CurClsNameStrPt, "服务端线程：连接处理全部完毕，耗时 " + ( SystemClock.uptimeMillis() - p_LastTickMsec ) + " 毫秒。" );
 
 			SystemClock.sleep( 1 ); //暂停一下，避免CPU使用率过高。
-		} //媒体处理循环结束。
+		} //连接处理循环结束。
 
 		UserDstoy(); //调用用户定义的销毁函数。
 

@@ -16,6 +16,7 @@ public class MySrvrThrd extends SrvrThrd
 
 	public MainAct m_MainActPt; //存放主界面的指针。
 
+	//构造函数。
 	MySrvrThrd( MainAct MainActPt, byte LicnCodePt[] )
 	{
 		super( MainActPt, LicnCodePt );
@@ -30,7 +31,6 @@ public class MySrvrThrd extends SrvrThrd
 	{
 		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		Vstr p_SrvrUrlVstrPt = null;
-		Vstr p_ErrInfoVstrPt = null;
 		HTString p_SrvrPrtclStrPt = new HTString();
 		HTString p_SrvrNodeNameStrPt = new HTString();
 		HTString p_SrvrNodeSrvcStrPt = new HTString();
@@ -48,19 +48,10 @@ public class MySrvrThrd extends SrvrThrd
 					Toast.makeText( m_MainActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show();
 					break Out;
 				}
-				p_ErrInfoVstrPt = new Vstr();
-				if( p_ErrInfoVstrPt.Init( "" ) != 0 )
-				{
-					String p_InfoStrPt = "初始化错误信息动态字符串失败。";
-					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
-					m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.ShowLog, p_InfoStrPt );
-					break Out;
-				}
-
 				//解析服务端Url字符串。
-				if( p_SrvrUrlVstrPt.UrlParse( p_SrvrPrtclStrPt, null, null, p_SrvrNodeNameStrPt, p_SrvrNodeSrvcStrPt, null, null, null, null, p_ErrInfoVstrPt ) != 0 )
+				if( p_SrvrUrlVstrPt.UrlParse( p_SrvrPrtclStrPt, null, null, p_SrvrNodeNameStrPt, p_SrvrNodeSrvcStrPt, null, null, null, null, m_ErrInfoVstrPt ) != 0 )
 				{
-					String p_InfoStrPt = "解析服务端Url字符串失败。原因：" + p_ErrInfoVstrPt.GetStr();
+					String p_InfoStrPt = "解析服务端Url字符串失败。原因：" + m_ErrInfoVstrPt.GetStr();
 					Log.e( m_CurClsNameStrPt, p_InfoStrPt );
 					m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.ShowLog, p_InfoStrPt );
 					Toast.makeText( m_MainActPt, p_InfoStrPt, Toast.LENGTH_LONG ).show();
@@ -90,20 +81,20 @@ public class MySrvrThrd extends SrvrThrd
 										   m_MainActPt );
 
 				//设置是否使用唤醒锁。
-				SendSetIsUseWakeLockMsg( 0,
+				SetIsUseWakeLock( 0,
 										 ( ( ( CheckBox ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.IsUseWakeLockCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
 				//设置是否测试网络延迟。
-				SendSetIsTstNtwkDlyMsg( 0,
-										( ( ( CheckBox ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.IsTstNtwkDlyCkBoxId ) ).isChecked() ) ? 1 : 0,
-										1000 );
+				SetIsTstNtwkDly( 0,
+								 ( ( ( CheckBox ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.IsTstNtwkDlyCkBoxId ) ).isChecked() ) ? 1 : 0,
+								 1000 );
 
 				//服务端初始化。
-				SendSrvrInitMsg( 1,
-								 p_SrvrPrtclStrPt.m_Val.equals( "Tcp" ) ? 0 : 1,
-								 p_SrvrNodeNameStrPt.m_Val,
-								 p_SrvrNodeSrvcStrPt.m_Val,
-								 Integer.parseInt( ( ( TextView ) m_MainActPt.m_SrvrStngLyotViewPt.findViewById( R.id.MaxCnctNumEdTxtId ) ).getText().toString() ), 2 );
+				SrvrInit( 0,
+						  p_SrvrPrtclStrPt.m_Val.equals( "Tcp" ) ? 0 : 1,
+						  p_SrvrNodeNameStrPt.m_Val,
+						  p_SrvrNodeSrvcStrPt.m_Val,
+						  Integer.parseInt( ( ( TextView ) m_MainActPt.m_SrvrStngLyotViewPt.findViewById( R.id.MaxCnctNumEdTxtId ) ).getText().toString() ), 2 );
 
 				//我的服务端线程启动。
 				start();
@@ -115,10 +106,9 @@ public class MySrvrThrd extends SrvrThrd
 		}
 
 		if( p_SrvrUrlVstrPt != null ) p_SrvrUrlVstrPt.Dstoy();
-		if( p_ErrInfoVstrPt != null ) p_ErrInfoVstrPt.Dstoy();
 		if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
-			Dstoy();
+			RqirExit( 0 );
 		}
 		return p_Rslt;
 	}
@@ -127,7 +117,7 @@ public class MySrvrThrd extends SrvrThrd
 	public void Dstoy()
 	{
 		Log.i( m_CurClsNameStrPt, "请求并等待我的服务端线程退出开始。" );
-		SendRqirExitMsg( 1 );
+		RqirExit( 1 );
 		Log.i( m_CurClsNameStrPt, "请求并等待我的服务端线程退出结束。" );
 	}
 

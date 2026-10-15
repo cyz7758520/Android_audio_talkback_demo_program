@@ -75,25 +75,25 @@ public class VAjb
 	}
 
 	//放入字节型帧到视频自适应抖动缓冲器。
-	public int PutByteFrm( long CurTime, int TimeStamp, byte ByteFrmPt[], long FrmStart, long FrmLen, int IsAutoLock, Vstr ErrInfoVstrPt )
+	public int PutByteFrm( long CurTime, int TimeStamp, byte ByteFrmPt[], long FrmStartByt, long FrmLenByt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
-		return VAjbPutByteFrm( m_VAjbPt, CurTime, TimeStamp, ByteFrmPt, FrmStart, FrmLen, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return VAjbPutByteFrm( m_VAjbPt, CurTime, TimeStamp, ByteFrmPt, FrmStartByt, FrmLenByt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 	//放入短整型帧到视频自适应抖动缓冲器。
-	public int PutShortFrm( long CurTime, int TimeStamp, short ShortFrmPt[], long FrmStart, long FrmLen, int IsAutoLock, Vstr ErrInfoVstrPt )
+	public int PutShortFrm( long CurTime, int TimeStamp, short ShortFrmPt[], long FrmStartByt, long FrmLenTwoByt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
-		return VAjbPutShortFrm( m_VAjbPt, CurTime, TimeStamp, ShortFrmPt, FrmStart, FrmLen, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return VAjbPutShortFrm( m_VAjbPt, CurTime, TimeStamp, ShortFrmPt, FrmStartByt, FrmLenTwoByt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//从视频自适应抖动缓冲器取出字节型帧。
-	public int GetByteFrm( long CurTime, HTInt TimeStampPt, byte ByteFrmPt[], long FrmStart, long FrmStartSzByt, HTLong FrmLenBytPt, int IsAutoLock, Vstr ErrInfoVstrPt )
+	public int GetByteFrm( long CurTime, HTInt TimeStampPt, byte ByteFrmPt[], long FrmStartByt, long FrmStartSzByt, HTLong FrmLenBytPt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
-		return VAjbGetByteFrm( m_VAjbPt, CurTime, TimeStampPt, ByteFrmPt, FrmStart, FrmStartSzByt, FrmLenBytPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return VAjbGetByteFrm( m_VAjbPt, CurTime, TimeStampPt, ByteFrmPt, FrmStartByt, FrmStartSzByt, FrmLenBytPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 	//从视频自适应抖动缓冲器取出短整型帧。
-	public int GetShortFrm( long CurTime, HTInt TimeStampPt, short ShortFrmPt[], long FrmStart, long FrmStartSzTwoByt, HTLong FrmLenTwoBytPt, int IsAutoLock, Vstr ErrInfoVstrPt )
+	public int GetShortFrm( long CurTime, HTInt TimeStampPt, short ShortFrmPt[], long FrmStartByt, long FrmStartSzTwoByt, HTLong FrmLenTwoBytPt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
-		return VAjbGetShortFrm( m_VAjbPt, CurTime, TimeStampPt, ShortFrmPt, FrmStart, FrmStartSzTwoByt, FrmLenTwoBytPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return VAjbGetShortFrm( m_VAjbPt, CurTime, TimeStampPt, ShortFrmPt, FrmStartByt, FrmStartSzTwoByt, FrmLenTwoBytPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//获取缓冲帧的数量。
@@ -122,14 +122,14 @@ public class VAjb
 	private native int VAjbDstoy( long VAjbPt, long ErrInfoVstrPt );
 
 	//放入字节型帧到视频自适应抖动缓冲器。
-	private native int VAjbPutByteFrm( long VAjbPt, long CurTime, int TimeStamp, byte ByteFrmPt[], long FrmStart, long FrmLenByt, int IsAutoLock, long ErrInfoVstrPt );
+	private native int VAjbPutByteFrm( long VAjbPt, long CurTime, int TimeStamp, byte ByteFrmPt[], long FrmStartByt, long FrmLenByt, int IsAutoLock, long ErrInfoVstrPt );
 	//放入短整型帧到视频自适应抖动缓冲器。
-	private native int VAjbPutShortFrm( long VAjbPt, long CurTime, int TimeStamp, short ShortFrmPt[], long FrmStart, long FrmLenTwoByt, int IsAutoLock, long ErrInfoVstrPt );
+	private native int VAjbPutShortFrm( long VAjbPt, long CurTime, int TimeStamp, short ShortFrmPt[], long FrmStartByt, long FrmLenTwoByt, int IsAutoLock, long ErrInfoVstrPt );
 
 	//从视频自适应抖动缓冲器取出字节型帧。
-	private native int VAjbGetByteFrm( long VAjbPt, long CurTime, HTInt TimeStampPt, byte ByteFrmPt[], long FrmStart, long FrmStartBytSz, HTLong FrmLenBytPt, int IsAutoLock, long ErrInfoVstrPt );
+	private native int VAjbGetByteFrm( long VAjbPt, long CurTime, HTInt TimeStampPt, byte ByteFrmPt[], long FrmStartByt, long FrmStartSzByt, HTLong FrmLenBytPt, int IsAutoLock, long ErrInfoVstrPt );
 	//从视频自适应抖动缓冲器取出短整型帧。
-	private native int VAjbGetShortFrm( long VAjbPt, long CurTime, HTInt TimeStampPt, short ShortFrmPt[], long FrmStart, long FrmStartTwoBytSz, HTLong FrmLenTwoBytPt, int IsAutoLock, long ErrInfoVstrPt );
+	private native int VAjbGetShortFrm( long VAjbPt, long CurTime, HTInt TimeStampPt, short ShortFrmPt[], long FrmStartByt, long FrmStartSzTwoByt, HTLong FrmLenTwoBytPt, int IsAutoLock, long ErrInfoVstrPt );
 
 	//获取缓冲帧的数量。
 	private native int VAjbGetBufFrmCnt( long VAjbPt, HTInt CurHaveBufFrmCntPt, HTInt MinNeedBufFrmCntPt, HTInt MaxNeedBufFrmCntPt, HTInt CurNeedBufFrmCntPt, int IsAutoLock, long ErrInfoVstrPt );

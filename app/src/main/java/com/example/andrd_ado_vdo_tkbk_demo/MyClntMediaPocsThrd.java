@@ -24,6 +24,8 @@ import HeavenTao.Media.VdoOtpt;
 
 public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 {
+	public static String m_CurClsNameStrPt = "MyClntMediaPocsThrd"; //存放当前类名称字符串。
+
 	public MainAct m_MainActPt; //存放主界面的指针。
 	public int m_TkbkClntNum; //存放对讲客户端的序号。
 	class VdoSurfaceViewSize
@@ -40,6 +42,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	public VdoSurfaceViewSize m_LastVdoInptSurfaceViewSizePt; //存放上一次视频输入SurfaceView大小的指针。
 	public ConcurrentHashMap< Integer, VdoSurfaceViewSize > m_LastVdoOtptSurfaceViewSizeCntnrPt; //存放上一次视频输出SurfaceView大小的指针。
 
+	//构造函数。
 	public MyClntMediaPocsThrd( MainAct MainActPt, byte LicnCodePt[] )
 	{
 		super( MainActPt, LicnCodePt );
@@ -130,7 +133,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 
 		if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
-			Dstoy();
+			RqirExit( 0, 1 );
 		}
 		return p_Rslt;
 	}
@@ -165,22 +168,22 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 					}
 				}
 
-				//发送对讲客户端设置是否测试网络延迟消息。
-				SendTkbkClntSetIsTstNtwkDlyMsg( 0,
-												( ( ( CheckBox ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.IsTstNtwkDlyCkBoxId ) ).isChecked() ) ? 1 : 0,
-												1000 );
+				//客户端媒体处理线程的对讲客户端设置是否测试网络延迟。
+				TkbkClntSetIsTstNtwkDly( 0,
+										 ( ( ( CheckBox ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.IsTstNtwkDlyCkBoxId ) ).isChecked() ) ? 1 : 0,
+										 1000 );
 
-				//发送对讲客户端的连接初始化消息。
+				//客户端媒体处理线程的对讲客户端的连接初始化。
 				Map< String, String > p_ClntLstItemPt = m_MainActPt.m_ClntLstItemArrayLstPt.get( p_TkbkClntNum );
 				m_TkbkClntNum = p_TkbkClntNum;
-				SendTkbkClntCnctInitMsg( 1, p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1, p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ), p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) );
+				TkbkClntCnctInit( 1, p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1, p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ), p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) );
 
-				//发送对讲客户端的本端对讲模式消息。
-				SendTkbkClntLclTkbkModeMsg( 0,
-											( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).isChecked() ) ? TkbkMode.AdoInpt : 0 ) +
-											( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? TkbkMode.AdoOtpt : 0 ) +
-											( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).isChecked() ) ? TkbkMode.VdoInpt : 0 ) +
-											( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? TkbkMode.VdoOtpt : 0 ) );
+				//客户端媒体处理线程的对讲客户端设置本端对讲模式。
+				TkbkClntSetLclTkbkMode( 0,
+										( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptTkbkModeCkBoxId ) ).isChecked() ) ? TkbkMode.AdoInpt : 0 ) +
+										( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? TkbkMode.AdoOtpt : 0 ) +
+										( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptTkbkModeCkBoxId ) ).isChecked() ) ? TkbkMode.VdoInpt : 0 ) +
+										( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoOtptTkbkModeCkBoxId ) ).isChecked() ) ? TkbkMode.VdoOtpt : 0 ) );
 			}
 
 			Log.i( m_CurClsNameStrPt, "对讲初始化结束。" );
@@ -190,7 +193,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 
 		if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
-			TkbkDstoy();
+			RqirExit( 0, 1 );
 		}
 		return p_Rslt;
 	}
@@ -199,7 +202,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	public void TkbkDstoy()
 	{
 		Log.i( m_CurClsNameStrPt, "开始请求并等待对讲销毁。" );
-		SendTkbkClntCnctDstoyMsg( 1 );
+		TkbkClntCnctDstoy( 1 );
 		Log.i( m_CurClsNameStrPt, "结束请求并等待对讲销毁。" );
 	}
 
@@ -226,18 +229,18 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 				}
 			}
 
-			//发送广播客户端初始化消息。
-			SendBdctClntInitMsg( 0, 0,
-								 ( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptBdctTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoInpt : 0 ) +
-								 ( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptBdctTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoInpt : 0 ) );
+			//客户端媒体处理线程的广播客户端初始化。
+			BdctClntInit( 0, 0,
+						  ( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseAdoInptBdctTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.AdoInpt : 0 ) +
+						  ( ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.UseVdoInptBdctTkbkModeCkBoxId ) ).isChecked() ) ? MyClntMediaPocsThrd.TkbkMode.VdoInpt : 0 ) );
 
-			//发送广播客户端的连接初始化消息。
+			//客户端媒体处理线程的广播客户端的连接初始化。
 			for( Map< String, String > p_ClntLstItemPt : m_MainActPt.m_ClntLstItemArrayLstPt )
 			{
-				SendBdctClntCnctInitMsg( 0,
-										 p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1,
-										 p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ),
-										 p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) );
+				BdctClntCnctInit( 0,
+								  p_ClntLstItemPt.get( "CnctAndClntLstItemPrtclTxtId" ).equals( "Tcp" ) ? 0 : 1,
+								  p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeNameTxtId" ),
+								  p_ClntLstItemPt.get( "CnctAndClntLstItemRmtNodeSrvcTxtId" ) );
 			}
 
 			Log.i( m_CurClsNameStrPt, "广播初始化结束。" );
@@ -247,7 +250,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 
 		if( p_Rslt != 0 ) //如果本函数执行失败。
 		{
-			BdctDstoy();
+			RqirExit( 0, 1 );
 		}
 		return p_Rslt;
 	}
@@ -256,7 +259,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	public void BdctDstoy()
 	{
 		Log.i( m_CurClsNameStrPt, "开始请求并等待广播销毁。" );
-		SendBdctClntDstoyMsg( 1 );
+		BdctClntDstoy( 1 );
 		Log.i( m_CurClsNameStrPt, "结束请求并等待广播销毁。" );
 	}
 
@@ -362,22 +365,22 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 											  byte VdoOtptEncdSrcFrmPt[], long VdoOtptEncdSrcFrmLenByt )
 	{
 		{
-			VdoSurfaceViewSize m_LastVdoOtptSurfaceViewSizePt = m_LastVdoOtptSurfaceViewSizeCntnrPt.get( VdoOtptStrmIdx );
+			VdoSurfaceViewSize p_LastVdoOtptSurfaceViewSizePt = m_LastVdoOtptSurfaceViewSizeCntnrPt.get( VdoOtptStrmIdx );
 
-			if( ( ( m_LastVdoOtptSurfaceViewSizePt.m_Width != VdoOtptYu12SrcFrmWidth ) || ( m_LastVdoOtptSurfaceViewSizePt.m_Height != VdoOtptYu12SrcFrmHeight ) ) )
+			if( ( ( p_LastVdoOtptSurfaceViewSizePt.m_Width != VdoOtptYu12SrcFrmWidth ) || ( p_LastVdoOtptSurfaceViewSizePt.m_Height != VdoOtptYu12SrcFrmHeight ) ) )
 			{
-				m_LastVdoOtptSurfaceViewSizePt.m_SurfaceViewPt.post( new Runnable()
+				p_LastVdoOtptSurfaceViewSizePt.m_SurfaceViewPt.post( new Runnable()
 				{
 					@Override
 					public void run()
 					{
-						ConstraintLayout.LayoutParams p_ParamsPt = ( ConstraintLayout.LayoutParams )m_LastVdoOtptSurfaceViewSizePt.m_SurfaceViewPt.getLayoutParams();
+						ConstraintLayout.LayoutParams p_ParamsPt = ( ConstraintLayout.LayoutParams )p_LastVdoOtptSurfaceViewSizePt.m_SurfaceViewPt.getLayoutParams();
 						p_ParamsPt.dimensionRatio = String.valueOf( ( ( double )VdoOtptYu12SrcFrmWidth / ( double )VdoOtptYu12SrcFrmHeight ) );
-						m_LastVdoOtptSurfaceViewSizePt.m_SurfaceViewPt.setLayoutParams( p_ParamsPt );
+						p_LastVdoOtptSurfaceViewSizePt.m_SurfaceViewPt.setLayoutParams( p_ParamsPt );
 					}
 				} ); //刷新视频输出SurfaceView的宽高比显示。
-				m_LastVdoOtptSurfaceViewSizePt.m_Width = VdoOtptYu12SrcFrmWidth;
-				m_LastVdoOtptSurfaceViewSizePt.m_Height = VdoOtptYu12SrcFrmHeight;
+				p_LastVdoOtptSurfaceViewSizePt.m_Width = VdoOtptYu12SrcFrmWidth;
+				p_LastVdoOtptSurfaceViewSizePt.m_Height = VdoOtptYu12SrcFrmHeight;
 			}
 		}
 	}
@@ -440,7 +443,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		{
 			m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.ClntLstModifyItem, m_TkbkClntNum, "已连接", null , null );
 		}
-		else if( CurCnctSts == CnctSts.SrvrMaxCnct )
+		else if( CurCnctSts == ClntMediaPocsThrd.CnctSts.SrvrMaxCnct )
 		{
 			m_MainActPt.SendMainActMsg( MainAct.MainActMsgTyp.ClntLstModifyItem, m_TkbkClntNum, "服务端达到最大连接数", null , null );
 		}
@@ -457,11 +460,11 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	//用户定义的对讲客户端我的对讲索引函数。
 	@Override public void UserTkbkClntMyTkbkIdx( int MyTkbkIdx )
 	{
-		m_MainActPt.SendVdoInptOtptViewSetTitleMsg( m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt, "视频输入预览" + MyTkbkIdx );
+		m_MainActPt.VdoInptOtptViewSetTitle( m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt, "视频输入预览" + MyTkbkIdx );
 	}
 
-	//用户定义的对讲客户端本端对讲模式函数。
-	@Override public void UserTkbkClntLclTkbkMode( int OldLclTkbkMode, int NewLclTkbkMode )
+	//用户定义的对讲客户端设置本端对讲模式函数。
+	@Override public void UserTkbkClntSetLclTkbkMode( int OldLclTkbkMode, int NewLclTkbkMode )
 	{
 		if( ( NewLclTkbkMode & TkbkMode.AdoInpt ) != 0 ) //如果新对讲模式有音频输入。
 		{
@@ -979,8 +982,8 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		//设置音频输入是否绘制音频波形到Surface。
 		AdoInptSetIsDrawAdoWavfmToSurface( 0,
 										   ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
-										   ( ( SurfaceView ) m_MainActPt.findViewById( R.id.AdoInptWavfmSurfaceId ) ),
-										   ( ( SurfaceView ) m_MainActPt.findViewById( R.id.AdoRsltWavfmSurfaceId ) ) );
+										   ( ( SurfaceView ) m_MainActPt.findViewById( R.id.AdoInptSrcWavfmSurfaceId ) ),
+										   ( ( SurfaceView ) m_MainActPt.findViewById( R.id.AdoInptRsltWavfmSurfaceId ) ) );
 
 		//设置音频输入是否静音。
 		AdoInptSetIsMute( 0,
@@ -1034,18 +1037,20 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		//设置音频输出是否绘制音频波形到Surface。
 		AdoOtptSetIsDrawAdoWavfmToSurface( 0,
 										   ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.IsDrawAdoWavfmToSurfaceCkBoxId ) ).isChecked() ) ? 1 : 0,
-										   ( ( SurfaceView ) m_MainActPt.findViewById( R.id.AdoOtptWavfmSurfaceId ) ) );
+										   ( ( SurfaceView ) m_MainActPt.findViewById( R.id.AdoOtptSrcWavfmSurfaceId ) ) );
 
 		//设置音频输出是否静音。
 		AdoOtptSetIsMute( 0,
 						  ( ( ( CheckBox ) m_MainActPt.m_MainLyotViewPt.findViewById( R.id.AdoOtptIsMuteCkBoxId ) ).isChecked() ) ? 1 : 0 );
 
-		for( TkbkClnt.TkbkInfo p_TkbkInfoTmpPt : m_TkbkClntPt.m_TkbkInfoCntnrPt )
+		for( int p_TkbkInfoIdx = 0; p_TkbkInfoIdx < this.m_TkbkClntPt.m_TkbkInfoCntnrPt.size(); p_TkbkInfoIdx++ )
 		{
-			if( ( p_TkbkInfoTmpPt.m_IsInit != 0 ) &&
-				( ( p_TkbkInfoTmpPt.m_RmtTkbkMode & TkbkMode.AdoInpt ) != 0 ) )
+			TkbkClnt.TkbkInfo p_TkbkInfoPt = this.m_TkbkClntPt.m_TkbkInfoCntnrPt.get( p_TkbkInfoIdx );
+
+			if( ( p_TkbkInfoPt.m_IsInit != 0 ) &&
+				( ( p_TkbkInfoPt.m_RmtTkbkMode & TkbkMode.AdoInpt ) != 0 ) )
 			{
-				SetToUseAdoOtptStrm( p_TkbkInfoTmpPt.m_TkbkIdx );
+				SetToUseAdoOtptStrm( p_TkbkInfoPt.m_TkbkIdx );
 			}
 		}
 	}
@@ -1053,12 +1058,14 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	//设置不使用音频输出。
 	void SetNotUseAdoOtpt()
 	{
-		for( TkbkClnt.TkbkInfo p_TkbkInfoTmpPt : m_TkbkClntPt.m_TkbkInfoCntnrPt )
+		for( int p_TkbkInfoIdx = 0; p_TkbkInfoIdx < this.m_TkbkClntPt.m_TkbkInfoCntnrPt.size(); p_TkbkInfoIdx++ )
 		{
-			if( ( p_TkbkInfoTmpPt.m_IsInit != 0 ) &&
-				( ( p_TkbkInfoTmpPt.m_RmtTkbkMode & TkbkMode.AdoInpt ) != 0 ) )
+			TkbkClnt.TkbkInfo p_TkbkInfoPt = this.m_TkbkClntPt.m_TkbkInfoCntnrPt.get( p_TkbkInfoIdx );
+
+			if( ( p_TkbkInfoPt.m_IsInit != 0 ) &&
+				( ( p_TkbkInfoPt.m_RmtTkbkMode & TkbkMode.AdoInpt ) != 0 ) )
 			{
-				SetNotUseAdoOtptStrm( p_TkbkInfoTmpPt.m_TkbkIdx );
+				SetNotUseAdoOtptStrm( p_TkbkInfoPt.m_TkbkIdx );
 			}
 		}
 	}
@@ -1110,7 +1117,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	void SetToUseVdoInpt()
 	{
 		//设置视频输入。
-		SurfaceView p_SurfaceViewPt = m_MainActPt.SendVdoInptOtptViewInitMsg( "视频输入预览" + m_TkbkClntPt.m_MyTkbkIdx );
+		SurfaceView p_SurfaceViewPt = m_MainActPt.VdoInptOtptViewInit( "视频输入预览" + m_TkbkClntPt.m_MyTkbkIdx );
 		if( ( ( RadioButton ) m_MainActPt.m_StngLyotViewPt.findViewById( R.id.UseVdoFrmSzPrsetRdBtnId ) ).isChecked() ) //如果要使用预设的帧的大小。
 		{
 			SetVdoInpt( 0,
@@ -1200,7 +1207,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	//设置不使用视频输入。
 	void SetNotUseVdoInpt()
 	{
-		m_MainActPt.SendVdoInptOtptViewDstoyMsg( m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt );
+		m_MainActPt.VdoInptOtptViewDstoy( m_VdoInptPt.m_DvcPt.m_PrvwSurfaceViewPt );
 		m_LastVdoInptSurfaceViewSizePt = null;
 	}
 
@@ -1208,12 +1215,14 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	void SetToUseVdoOtpt()
 	{
 		m_LastVdoOtptSurfaceViewSizeCntnrPt = new ConcurrentHashMap< Integer, VdoSurfaceViewSize >();
-		for( TkbkClnt.TkbkInfo p_TkbkInfoTmpPt : m_TkbkClntPt.m_TkbkInfoCntnrPt )
+		for( int p_TkbkInfoIdx = 0; p_TkbkInfoIdx < this.m_TkbkClntPt.m_TkbkInfoCntnrPt.size(); p_TkbkInfoIdx++ )
 		{
-			if( ( p_TkbkInfoTmpPt.m_IsInit != 0 ) &&
-				( ( p_TkbkInfoTmpPt.m_RmtTkbkMode & TkbkMode.VdoInpt ) != 0 ) )
+			TkbkClnt.TkbkInfo p_TkbkInfoPt = this.m_TkbkClntPt.m_TkbkInfoCntnrPt.get( p_TkbkInfoIdx );
+
+			if( ( p_TkbkInfoPt.m_IsInit != 0 ) &&
+				( ( p_TkbkInfoPt.m_RmtTkbkMode & TkbkMode.VdoInpt ) != 0 ) )
 			{
-				SetToUseVdoOtptStrm( p_TkbkInfoTmpPt.m_TkbkIdx );
+				SetToUseVdoOtptStrm( p_TkbkInfoPt.m_TkbkIdx );
 			}
 		}
 	}
@@ -1221,12 +1230,14 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	//设置不使用视频输出。
 	void SetNotUseVdoOtpt()
 	{
-		for( TkbkClnt.TkbkInfo p_TkbkInfoTmpPt : m_TkbkClntPt.m_TkbkInfoCntnrPt )
+		for( int p_TkbkInfoIdx = 0; p_TkbkInfoIdx < this.m_TkbkClntPt.m_TkbkInfoCntnrPt.size(); p_TkbkInfoIdx++ )
 		{
-			if( ( p_TkbkInfoTmpPt.m_IsInit != 0 ) &&
-				( ( p_TkbkInfoTmpPt.m_RmtTkbkMode & TkbkMode.VdoInpt ) != 0 ) )
+			TkbkClnt.TkbkInfo p_TkbkInfoPt = this.m_TkbkClntPt.m_TkbkInfoCntnrPt.get( p_TkbkInfoIdx );
+
+			if( ( p_TkbkInfoPt.m_IsInit != 0 ) &&
+				( ( p_TkbkInfoPt.m_RmtTkbkMode & TkbkMode.VdoInpt ) != 0 ) )
 			{
-				SetNotUseVdoOtptStrm( p_TkbkInfoTmpPt.m_TkbkIdx );
+				SetNotUseVdoOtptStrm( p_TkbkInfoPt.m_TkbkIdx );
 			}
 		}
 		m_LastVdoOtptSurfaceViewSizeCntnrPt = null;
@@ -1239,7 +1250,7 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 		VdoOtptAddStrm( 0, TkbkIdx );
 
 		//视频输出设置流。
-		SurfaceView p_SurfaceViewPt = m_MainActPt.SendVdoInptOtptViewInitMsg( "视频输出显示" + TkbkIdx );
+		SurfaceView p_SurfaceViewPt = m_MainActPt.VdoInptOtptViewInit( "视频输出显示" + TkbkIdx );
 		VdoOtptSetStrm( 0,
 						TkbkIdx,
 						p_SurfaceViewPt );
@@ -1277,12 +1288,13 @@ public class MyClntMediaPocsThrd extends ClntMediaPocsThrd
 	{
 		for( int p_StrmCntnrNum = 0; p_StrmCntnrNum < m_VdoOtptPt.m_StrmCntnrPt.size(); p_StrmCntnrNum++ )
 		{
-			VdoOtpt.Strm p_VdoOtptStrm = m_VdoOtptPt.m_StrmCntnrPt.get( p_StrmCntnrNum );
+			VdoOtpt.Strm p_VdoOtptStrmPt = m_VdoOtptPt.m_StrmCntnrPt.get( p_StrmCntnrNum );
 
-			if( p_VdoOtptStrm.m_Idx == TkbkIdx ) //如果流索引找到了。
+			if( p_VdoOtptStrmPt.m_Idx == TkbkIdx ) //如果流索引找到了。
 			{
-				m_MainActPt.SendVdoInptOtptViewDstoyMsg( p_VdoOtptStrm.m_DvcPt.m_DspySurfaceViewPt );
-				VdoOtptDelStrm( 1, 0, TkbkIdx ); //删除流操作需要立即执行，因为要防止中途出现其他消息导致重复删除流。
+				SurfaceView p_DspySurfaceViewPt = p_VdoOtptStrmPt.m_DvcPt.m_DspySurfaceViewPt;
+				VdoOtptDelStrm( 1, 0, TkbkIdx ); //删除流操作需要立即执行，因为要防止中途出现其他消息导致重复删除流，且要在销毁视频输入输出窗口前删除流，否则会导致渲染错误。
+				m_MainActPt.VdoInptOtptViewDstoy( p_DspySurfaceViewPt );
 				m_LastVdoOtptSurfaceViewSizeCntnrPt.remove( TkbkIdx );
 			}
 		}

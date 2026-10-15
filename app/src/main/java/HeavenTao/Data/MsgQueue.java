@@ -35,7 +35,7 @@ public abstract class MsgQueue //消息队列。
 	//消息处理线程进行消息处理。
 	public int MsgPocsThrdMsgPocs()
 	{
-		int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
+		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 		Msg p_MsgPt;
 
 		Out:
@@ -58,7 +58,7 @@ public abstract class MsgQueue //消息队列。
 	//发送消息。
 	public int SendMsg( int IsBlockWait, int AddFirstOrLast, int MsgTyp, Object... MsgParmPt )
 	{
-		int p_Rslt = -1; //存放本函数的执行结果，为0表示成功，为非0表示失败。
+		int p_Rslt = -1; //存放本函数执行结果，为0表示成功，为非0表示失败。
 
 		Out:
 		{

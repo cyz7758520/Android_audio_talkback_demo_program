@@ -2468,7 +2468,7 @@ public class AndrdAdoVdoTkbkStng
 				( ( CheckBox ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).setChecked( true );
 				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAec3DelayEdTxtId ) ).setText( "0" );
 				( ( CheckBox ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecIsUseSameRoomAecCkBoxId ) ).setChecked( false );
-				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).setText( "380" );
+				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).setText( "320" );
 
 				( ( CheckBox ) MainActPt.m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseNsCkBoxId ) ).setChecked( true );
 				( ( TextView ) MainActPt.m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsNoiseSupesEdTxtId ) ).setText( "-32768" );
@@ -2562,7 +2562,7 @@ public class AndrdAdoVdoTkbkStng
 				( ( CheckBox ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).setChecked( true );
 				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAec3DelayEdTxtId ) ).setText( "0" );
 				( ( CheckBox ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecIsUseSameRoomAecCkBoxId ) ).setChecked( false );
-				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).setText( "380" );
+				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).setText( "320" );
 
 				( ( CheckBox ) MainActPt.m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseNsCkBoxId ) ).setChecked( true );
 				( ( TextView ) MainActPt.m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsNoiseSupesEdTxtId ) ).setText( "-32768" );
@@ -2656,7 +2656,7 @@ public class AndrdAdoVdoTkbkStng
 				( ( CheckBox ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).setChecked( true );
 				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAec3DelayEdTxtId ) ).setText( "0" );
 				( ( CheckBox ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecIsUseSameRoomAecCkBoxId ) ).setChecked( false );
-				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).setText( "380" );
+				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).setText( "320" );
 
 				( ( CheckBox ) MainActPt.m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseNsCkBoxId ) ).setChecked( true );
 				( ( TextView ) MainActPt.m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsNoiseSupesEdTxtId ) ).setText( "-32768" );
@@ -2750,7 +2750,7 @@ public class AndrdAdoVdoTkbkStng
 				( ( CheckBox ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).setChecked( true );
 				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAec3DelayEdTxtId ) ).setText( "0" );
 				( ( CheckBox ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecIsUseSameRoomAecCkBoxId ) ).setChecked( true );
-				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).setText( "380" );
+				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).setText( "320" );
 
 				( ( CheckBox ) MainActPt.m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseNsCkBoxId ) ).setChecked( true );
 				( ( TextView ) MainActPt.m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsNoiseSupesEdTxtId ) ).setText( "-32768" );
@@ -2844,7 +2844,7 @@ public class AndrdAdoVdoTkbkStng
 				( ( CheckBox ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAecIsUseAdaptAdjDelayCkBoxId ) ).setChecked( true );
 				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecWebRtcAec3DelayEdTxtId ) ).setText( "0" );
 				( ( CheckBox ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecIsUseSameRoomAecCkBoxId ) ).setChecked( true );
-				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).setText( "380" );
+				( ( TextView ) MainActPt.m_SpeexWebRtcAecStngLyotViewPt.findViewById( R.id.SpeexWebRtcAecSameRoomEchoMinDelayEdTxtId ) ).setText( "320" );
 
 				( ( CheckBox ) MainActPt.m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsIsUseNsCkBoxId ) ).setChecked( true );
 				( ( TextView ) MainActPt.m_SpeexPrpocsNsStngLyotViewPt.findViewById( R.id.SpeexPrpocsNoiseSupesEdTxtId ) ).setText( "-32768" );

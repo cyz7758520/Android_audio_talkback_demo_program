@@ -75,25 +75,25 @@ public class AAjb
 	}
 
 	//放入字节型帧到音频自适应抖动缓冲器。
-	public int PutByteFrm( int TimeStamp, byte ByteFrmPt[], long FrmStart, long FrmLen, int IsAutoLock, Vstr ErrInfoVstrPt )
+	public int PutByteFrm( int TimeStamp, byte ByteFrmPt[], long FrmStartByt, long FrmLenByt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
-		return AAjbPutByteFrm( m_AAjbPt, TimeStamp, ByteFrmPt, FrmStart, FrmLen, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return AAjbPutByteFrm( m_AAjbPt, TimeStamp, ByteFrmPt, FrmStartByt, FrmLenByt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 	//放入短整型帧到音频自适应抖动缓冲器。
-	public int PutShortFrm( int TimeStamp, short ShortFrmPt[], long FrmStart, long FrmLen, int IsAutoLock, Vstr ErrInfoVstrPt )
+	public int PutShortFrm( int TimeStamp, short ShortFrmPt[], long FrmStartByt, long FrmLenTwoByt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
-		return AAjbPutShortFrm( m_AAjbPt, TimeStamp, ShortFrmPt, FrmStart, FrmLen, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return AAjbPutShortFrm( m_AAjbPt, TimeStamp, ShortFrmPt, FrmStartByt, FrmLenTwoByt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//从音频自适应抖动缓冲器取出字节型帧。
-	public int GetByteFrm( HTInt TimeStampPt, byte ByteFrmPt[], long FrmStart, long FrmSz, HTLong FrmLenPt, int IsAutoLock, Vstr ErrInfoVstrPt )
+	public int GetByteFrm( HTInt TimeStampPt, byte ByteFrmPt[], long FrmStartByt, long FrmStartSzByt, HTLong FrmLenBytPt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
-		return AAjbGetByteFrm( m_AAjbPt, TimeStampPt, ByteFrmPt, FrmStart, FrmSz, FrmLenPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return AAjbGetByteFrm( m_AAjbPt, TimeStampPt, ByteFrmPt, FrmStartByt, FrmStartSzByt, FrmLenBytPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 	//从音频自适应抖动缓冲器取出短整型帧。
-	public int GetShortFrm( HTInt TimeStampPt, short ShortFrmPt[], long FrmStart, long FrmSz, HTLong FrmLenPt, int IsAutoLock, Vstr ErrInfoVstrPt )
+	public int GetShortFrm( HTInt TimeStampPt, short ShortFrmPt[], long FrmStartByt, long FrmStartSzTwoByt, HTLong FrmLenTwoBytPt, int IsAutoLock, Vstr ErrInfoVstrPt )
 	{
-		return AAjbGetShortFrm( m_AAjbPt, TimeStampPt, ShortFrmPt, FrmStart, FrmSz, FrmLenPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
+		return AAjbGetShortFrm( m_AAjbPt, TimeStampPt, ShortFrmPt, FrmStartByt, FrmStartSzTwoByt, FrmLenTwoBytPt, IsAutoLock, ( ErrInfoVstrPt != null ) ? ErrInfoVstrPt.m_VstrPt : 0 );
 	}
 
 	//获取缓冲帧的数量。
@@ -122,14 +122,14 @@ public class AAjb
 	private native int AAjbDstoy( long AAjbPt, long ErrInfoVstrPt );
 
 	//放入字节型帧到音频自适应抖动缓冲器。
-	private native int AAjbPutByteFrm( long AAjbPt, int TimeStamp, byte ByteFrmPt[], long FrmStart, long FrmStartLenByt, int IsAutoLock, long ErrInfoVstrPt );
+	private native int AAjbPutByteFrm( long AAjbPt, int TimeStamp, byte ByteFrmPt[], long FrmStartByt, long FrmLenByt, int IsAutoLock, long ErrInfoVstrPt );
 	//放入短整型帧到音频自适应抖动缓冲器。
-	private native int AAjbPutShortFrm( long AAjbPt, int TimeStamp, short ShortFrmPt[], long FrmStart, long FrmStartLenTwoByt, int IsAutoLock, long ErrInfoVstrPt );
+	private native int AAjbPutShortFrm( long AAjbPt, int TimeStamp, short ShortFrmPt[], long FrmStartByt, long FrmLenTwoByt, int IsAutoLock, long ErrInfoVstrPt );
 
 	//从音频自适应抖动缓冲器取出字节型帧。
-	private native int AAjbGetByteFrm( long AAjbPt, HTInt TimeStampPt, byte ByteFrmPt[], long FrmStart, long FrmStartSzByt, HTLong FrmLenBytPt, int IsAutoLock, long ErrInfoVstrPt );
+	private native int AAjbGetByteFrm( long AAjbPt, HTInt TimeStampPt, byte ByteFrmPt[], long FrmStartByt, long FrmStartSzByt, HTLong FrmLenBytPt, int IsAutoLock, long ErrInfoVstrPt );
 	//从音频自适应抖动缓冲器取出短整型帧。
-	private native int AAjbGetShortFrm( long AAjbPt, HTInt TimeStampPt, short ShortFrmPt[], long FrmStart, long FrmStartSzTwoByt, HTLong FrmLenTwoBytPt, int IsAutoLock, long ErrInfoVstrPt );
+	private native int AAjbGetShortFrm( long AAjbPt, HTInt TimeStampPt, short ShortFrmPt[], long FrmStartByt, long FrmStartSzTwoByt, HTLong FrmLenTwoBytPt, int IsAutoLock, long ErrInfoVstrPt );
 
 	//获取缓冲帧的数量。
 	private native int AAjbGetBufFrmCnt( long AAjbPt, HTInt CurHaveBufActFrmCntPt, HTInt CurHaveBufInactFrmCntPt, HTInt CurHaveBufFrmCntPt, HTInt MinNeedBufFrmCntPt, HTInt MaxNeedBufFrmCntPt, HTInt MaxCntuLostFrmCntPt, HTInt CurNeedBufFrmCntPt, int IsAutoLock, long ErrInfoVstrPt );

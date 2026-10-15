@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="版本：2026年06月23日"
+                android:text="版本：2026年10月15日"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:textStyle="normal|bold" />
@@ -551,7 +551,7 @@
                             android:text="音频输入\n原始波形:" />
 
                         <SurfaceView
-                            android:id="@+id/AdoInptWavfmSurfaceId"
+                            android:id="@+id/AdoInptSrcWavfmSurfaceId"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent" />
 
@@ -569,7 +569,7 @@
                             android:text="音频输入\n结果波形:" />
 
                         <SurfaceView
-                            android:id="@+id/AdoRsltWavfmSurfaceId"
+                            android:id="@+id/AdoInptRsltWavfmSurfaceId"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent" />
 
@@ -587,7 +587,7 @@
                             android:text="音频输出\n原始波形:" />
 
                         <SurfaceView
-                            android:id="@+id/AdoOtptWavfmSurfaceId"
+                            android:id="@+id/AdoOtptSrcWavfmSurfaceId"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent" />
 
